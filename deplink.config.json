@@ -1,0 +1,23 @@
+{
+  "databases": {
+    "files": "b39a1619-780c-489d-a23a-952d709d65c8",
+    "functions": "815f4c38-d817-4019-847d-94145cb42e9f",
+    "dependencies": "2c1bd0d0-e3f3-4cfd-97dd-dd32d69a1d63",
+    "libraries": "1d383314-f8d4-43a9-9ec5-c242b9dcf3c1",
+    "classes": "9731e5bb-83cb-42cb-aeae-7db56fd4fa7b",
+    "relationships": "3ac647f4-d24a-4fba-bb6f-e28654c2a1ca"
+  },
+  "environment": "development",
+  "workspaceInfo": {
+    "userId": "",
+    "projectName": "@context-action/dependency-linker",
+    "setupDate": "2025-09-10T10:02:48.070Z",
+    "workspaceUrl": "https://www.notion.so/graph-mcp/"
+  },
+  "git": {
+    "enabled": false,
+    "autoSync": false,
+    "watchBranches": [],
+    "ignorePatterns": []
+  }
+}

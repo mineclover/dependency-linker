@@ -1,0 +1,428 @@
+{
+  "version": "1.0.0",
+  "databases": {
+    "files": {
+      "title": "Project Files",
+      "description": "Track all project files and their relationships",
+      "initial_data_source": {
+        "title": "Files Data Source",
+        "properties": {
+          "Name": {
+            "type": "title",
+            "title": {}
+          },
+          "File Path": {
+            "type": "rich_text",
+            "rich_text": {}
+          },
+          "Size (bytes)": {
+            "type": "number",
+            "number": {
+              "format": "number"
+            }
+          },
+          "Extension": {
+            "type": "select",
+            "select": {
+              "options": [
+                { "name": ".ts", "color": "blue" },
+                { "name": ".tsx", "color": "purple" },
+                { "name": ".js", "color": "yellow" },
+                { "name": ".jsx", "color": "green" },
+                { "name": ".json", "color": "gray" },
+                { "name": ".md", "color": "orange" },
+                { "name": ".yaml", "color": "pink" },
+                { "name": ".yml", "color": "pink" },
+                { "name": "Other", "color": "default" }
+              ]
+            }
+          },
+          "Language": {
+            "type": "select",
+            "select": {
+              "options": [
+                { "name": "TypeScript", "color": "blue" },
+                { "name": "JavaScript", "color": "yellow" },
+                { "name": "JSON", "color": "gray" },
+                { "name": "Markdown", "color": "orange" },
+                { "name": "YAML", "color": "pink" },
+                { "name": "Other", "color": "default" }
+              ]
+            }
+          },
+          "Project": {
+            "type": "select",
+            "select": {
+              "options": [
+                { "name": "dependency-linker", "color": "blue" },
+                { "name": "test-project", "color": "gray" }
+              ]
+            }
+          },
+          "Status": {
+            "type": "select",
+            "select": {
+              "options": [
+                { "name": "Active", "color": "green" },
+                { "name": "Updated", "color": "blue" },
+                { "name": "Archived", "color": "gray" },
+                { "name": "Deleted", "color": "red" },
+                { "name": "Error", "color": "red" }
+              ]
+            }
+          },
+          "Last Modified": {
+            "type": "date",
+            "date": {}
+          },
+          "Dependencies Count": {
+            "type": "number",
+            "number": {}
+          },
+          "Functions Count": {
+            "type": "number",
+            "number": {}
+          },
+          "Classes Count": {
+            "type": "number",
+            "number": {}
+          },
+          "Lines of Code": {
+            "type": "number",
+            "number": {}
+          }
+        },
+        "relations": {
+          "Dependencies": {
+            "type": "relation",
+            "target": "dependencies",
+            "relation_type": "single_property"
+          },
+          "Libraries": {
+            "type": "relation",
+            "target": "libraries",
+            "relation_type": "single_property"
+          },
+          "Functions": {
+            "type": "relation",
+            "target": "functions",
+            "relation_type": "single_property"
+          },
+          "Imports": {
+            "type": "relation",
+            "target": "files",
+            "relation_type": "dual_property",
+            "synced_property_name": "Imported By",
+            "synced_property_id": "imported_by"
+          }
+        }
+      }
+    },
+    "dependencies": {
+      "title": "Dependencies",
+      "description": "Track all file dependencies and imports",
+      "initial_data_source": {
+        "title": "Dependencies Data Source",
+        "properties": {
+          "Name": {
+            "type": "title",
+            "title": {}
+          },
+          "Type": {
+            "type": "select",
+            "select": {
+              "options": [
+                { "name": "Import", "color": "blue" },
+                { "name": "Require", "color": "yellow" },
+                { "name": "Dynamic Import", "color": "green" },
+                { "name": "Export", "color": "purple" },
+                { "name": "Re-export", "color": "pink" }
+              ]
+            }
+          },
+          "Source": {
+            "type": "rich_text",
+            "rich_text": {}
+          },
+          "Target": {
+            "type": "rich_text",
+            "rich_text": {}
+          },
+          "Is Local": {
+            "type": "checkbox",
+            "checkbox": {}
+          },
+          "Is Dev Dependency": {
+            "type": "checkbox",
+            "checkbox": {}
+          },
+          "Line Number": {
+            "type": "number",
+            "number": {}
+          },
+          "Resolved Path": {
+            "type": "rich_text",
+            "rich_text": {}
+          },
+          "Module Specifier": {
+            "type": "rich_text",
+            "rich_text": {}
+          }
+        },
+        "relations": {}
+      }
+    },
+    "libraries": {
+      "title": "Libraries",
+      "description": "Track all external libraries and packages",
+      "initial_data_source": {
+        "title": "Libraries Data Source",
+        "properties": {
+          "Name": {
+            "type": "title",
+            "title": {}
+          },
+          "Version": {
+            "type": "rich_text",
+            "rich_text": {}
+          },
+          "Package Manager": {
+            "type": "select",
+            "select": {
+              "options": [
+                { "name": "npm", "color": "red" },
+                { "name": "yarn", "color": "blue" },
+                { "name": "pnpm", "color": "orange" },
+                { "name": "bun", "color": "purple" }
+              ]
+            }
+          },
+          "Registry URL": {
+            "type": "url",
+            "url": {}
+          },
+          "Description": {
+            "type": "rich_text",
+            "rich_text": {}
+          },
+          "License": {
+            "type": "rich_text",
+            "rich_text": {}
+          },
+          "Homepage": {
+            "type": "url",
+            "url": {}
+          },
+          "Repository": {
+            "type": "url",
+            "url": {}
+          },
+          "Category": {
+            "type": "select",
+            "select": {
+              "options": [
+                { "name": "Framework", "color": "blue" },
+                { "name": "Library", "color": "green" },
+                { "name": "Tool", "color": "yellow" },
+                { "name": "Dev Tool", "color": "orange" },
+                { "name": "Type Definition", "color": "gray" }
+              ]
+            }
+          },
+          "Is Dev Dependency": {
+            "type": "checkbox",
+            "checkbox": {}
+          },
+          "Bundle Size": {
+            "type": "rich_text",
+            "rich_text": {}
+          },
+          "Usage Count": {
+            "type": "number",
+            "number": {}
+          },
+          "Last Updated": {
+            "type": "date",
+            "date": {}
+          }
+        },
+        "relations": {}
+      }
+    },
+    "functions": {
+      "title": "Functions",
+      "description": "Track all functions and methods in the codebase",
+      "initial_data_source": {
+        "title": "Functions Data Source",
+        "properties": {
+          "Name": {
+            "type": "title",
+            "title": {}
+          },
+          "File Path": {
+            "type": "rich_text",
+            "rich_text": {}
+          },
+          "Signature": {
+            "type": "rich_text",
+            "rich_text": {}
+          },
+          "Return Type": {
+            "type": "rich_text",
+            "rich_text": {}
+          },
+          "Parameters": {
+            "type": "rich_text",
+            "rich_text": {}
+          },
+          "Line Number": {
+            "type": "number",
+            "number": {}
+          },
+          "Is Async": {
+            "type": "checkbox",
+            "checkbox": {}
+          },
+          "Is Exported": {
+            "type": "checkbox",
+            "checkbox": {}
+          },
+          "Is Arrow Function": {
+            "type": "checkbox",
+            "checkbox": {}
+          },
+          "Visibility": {
+            "type": "select",
+            "select": {
+              "options": [
+                { "name": "Public", "color": "green" },
+                { "name": "Private", "color": "red" },
+                { "name": "Protected", "color": "yellow" },
+                { "name": "Internal", "color": "gray" }
+              ]
+            }
+          },
+          "Complexity": {
+            "type": "number",
+            "number": {}
+          }
+        },
+        "relations": {}
+      }
+    },
+    "classes": {
+      "title": "Classes",
+      "description": "Track all classes and interfaces in the codebase",
+      "initial_data_source": {
+        "title": "Classes Data Source",
+        "properties": {
+          "Name": {
+            "type": "title",
+            "title": {}
+          },
+          "File Path": {
+            "type": "rich_text",
+            "rich_text": {}
+          },
+          "Type": {
+            "type": "select",
+            "select": {
+              "options": [
+                { "name": "Class", "color": "blue" },
+                { "name": "Interface", "color": "green" },
+                { "name": "Abstract Class", "color": "purple" },
+                { "name": "Enum", "color": "yellow" },
+                { "name": "Type Alias", "color": "orange" }
+              ]
+            }
+          },
+          "Line Number": {
+            "type": "number",
+            "number": {}
+          },
+          "Methods Count": {
+            "type": "number",
+            "number": {}
+          },
+          "Properties Count": {
+            "type": "number",
+            "number": {}
+          },
+          "Is Exported": {
+            "type": "checkbox",
+            "checkbox": {}
+          },
+          "Is Abstract": {
+            "type": "checkbox",
+            "checkbox": {}
+          },
+          "Extends": {
+            "type": "rich_text",
+            "rich_text": {}
+          },
+          "Implements": {
+            "type": "multi_select",
+            "multi_select": {
+              "options": []
+            }
+          }
+        },
+        "relations": {}
+      }
+    },
+    "relationships": {
+      "title": "Relationships",
+      "description": "Track relationships between files",
+      "initial_data_source": {
+        "title": "Relationships Data Source",
+        "properties": {
+          "Name": {
+            "type": "title",
+            "title": {}
+          },
+          "Type": {
+            "type": "select",
+            "select": {
+              "options": [
+                { "name": "Import", "color": "blue" },
+                { "name": "Export", "color": "green" },
+                { "name": "Extends", "color": "purple" },
+                { "name": "Implements", "color": "yellow" },
+                { "name": "Uses", "color": "orange" },
+                { "name": "Calls", "color": "pink" }
+              ]
+            }
+          },
+          "Source Path": {
+            "type": "rich_text",
+            "rich_text": {}
+          },
+          "Target Path": {
+            "type": "rich_text",
+            "rich_text": {}
+          },
+          "Count": {
+            "type": "number",
+            "number": {}
+          },
+          "Details": {
+            "type": "rich_text",
+            "rich_text": {}
+          }
+        },
+        "relations": {
+          "From File": {
+            "type": "relation",
+            "target": "files",
+            "relation_type": "single_property"
+          },
+          "To File": {
+            "type": "relation",
+            "target": "files",
+            "relation_type": "single_property"
+          }
+        }
+      }
+    }
+  }
+}

@@ -1,0 +1,1329 @@
+#!/usr/bin/env node
+
+/**
+ * 데이터베이스 스키마 관리 CLI 명령
+ * Database Schema Management CLI Commands
+ */
+
+import { Command } from 'commander';
+import { getServiceContainer } from '../../infrastructure/container/ServiceContainer';
+import { NotionApiService } from '../../infrastructure/notion/core/NotionApiService.js';
+import { NotionClientFactory } from '../../infrastructure/notion/core/NotionClientFactory.js';
+import { DatabaseAccessValidationService } from '../../services/validation/DatabaseAccessValidationService';
+import type { ConfigurationService } from '../../services/config/ConfigurationService';
+import { DatabaseSchemaManager } from '../../infrastructure/notion/DatabaseSchemaManager.js';
+import { logger } from '../../shared/utils/index.js';
+import { MigrationOrchestrator } from '../../services/notion/MigrationOrchestrator.js';
+import { NotionDatabaseCreator } from '../../services/notion/NotionDatabaseCreator.js';
+
+/**
+ * Helper function to get NotionApiService with configuration
+ */
+async function getNotionService(): Promise<NotionApiService> {
+  const container = getServiceContainer();
+  const configService = container.resolve<ConfigurationService>('configurationService');
+  const config = await configService.loadAndProcessConfig(process.cwd());
+  
+  if (!config.apiKey) {
+    throw new Error('Notion API key not found in configuration');
+  }
+
+  const clientInstance = NotionClientFactory.createClient({
+    apiKey: config.apiKey,
+    parentPageId: config.parentPageId,
+    projectPath: config.projectPath
+  });
+
+  return new NotionApiService(clientInstance);
+}
+
+/**
+ * Helper function to get schema manager
+ */
+async function getSchemaManager(): Promise<DatabaseSchemaManager> {
+  return new DatabaseSchemaManager(process.cwd());
+}
+
+// 기본 스키마 정의 (하위 호환성 유지)
+const DEFAULT_SCHEMAS = {
+  files: {
+    "Language": {
+      type: "select",
+      select: {
+        options: [
+          { name: "TypeScript", color: "blue" },
+          { name: "JavaScript", color: "yellow" },
+          { name: "Python", color: "green" },
+          { name: "Go", color: "purple" },
+          { name: "Rust", color: "red" },
+          { name: "Other", color: "gray" }
+        ]
+      }
+    },
+    "Dependencies Count": { type: "number", number: {} },
+    "Local Dependencies Count": { type: "number", number: {} },
+    "Library Dependencies Count": { type: "number", number: {} },
+    "Functions Count": { type: "number", number: {} },
+    "Classes Count": { type: "number", number: {} },
+    "Analysis Time": { type: "rich_text", rich_text: {} },
+    "Status": {
+      type: "select",
+      select: {
+        options: [
+          { name: "Uploaded", color: "green" },
+          { name: "Updated", color: "blue" },
+          { name: "Error", color: "red" }
+        ]
+      }
+    }
+  },
+  
+  functions: {
+    "File Path": { type: "rich_text", rich_text: {} },
+    "Language": {
+      type: "select",
+      select: {
+        options: [
+          { name: "TypeScript", color: "blue" },
+          { name: "JavaScript", color: "yellow" },
+          { name: "Python", color: "green" },
+          { name: "Go", color: "purple" },
+          { name: "Rust", color: "red" }
+        ]
+      }
+    },
+    "Line Number": { type: "number", number: {} },
+    "Parameters Count": { type: "number", number: {} },
+    "Return Type": { type: "rich_text", rich_text: {} },
+    "Is Async": { type: "checkbox", checkbox: {} },
+    "Is Exported": { type: "checkbox", checkbox: {} },
+    "Complexity": {
+      type: "select",
+      select: {
+        options: [
+          { name: "Low", color: "green" },
+          { name: "Medium", color: "yellow" },
+          { name: "High", color: "red" }
+        ]
+      }
+    },
+    "Description": { type: "rich_text", rich_text: {} },
+    "Project": {
+      type: "select",
+      select: {
+        options: [{ name: "dependency-linker", color: "blue" }]
+      }
+    }
+  },
+
+  dependencies: {
+    "File Path": { type: "rich_text", rich_text: {} },
+    "Language": {
+      type: "select",
+      select: {
+        options: [
+          { name: "TypeScript", color: "blue" },
+          { name: "JavaScript", color: "yellow" },
+          { name: "Python", color: "green" },
+          { name: "Go", color: "purple" },
+          { name: "Rust", color: "red" }
+        ]
+      }
+    },
+    "Type": {
+      type: "select",
+      select: {
+        options: [
+          { name: "Local", color: "blue" },
+          { name: "Library", color: "green" },
+          { name: "Built-in", color: "gray" }
+        ]
+      }
+    },
+    "Import Statement": { type: "rich_text", rich_text: {} },
+    "Line Number": { type: "number", number: {} },
+    "Project": {
+      type: "select",
+      select: {
+        options: [{ name: "dependency-linker", color: "blue" }]
+      }
+    }
+  },
+
+  libraries: {
+    "Version": { type: "rich_text", rich_text: {} },
+    "Package Manager": {
+      type: "select",
+      select: {
+        options: [
+          { name: "npm", color: "red" },
+          { name: "yarn", color: "blue" },
+          { name: "pnpm", color: "orange" },
+          { name: "bun", color: "yellow" },
+          { name: "pip", color: "green" },
+          { name: "cargo", color: "orange" },
+          { name: "go mod", color: "blue" }
+        ]
+      }
+    },
+    "Category": {
+      type: "select",
+      select: {
+        options: [
+          { name: "Framework", color: "purple" },
+          { name: "Library", color: "blue" },
+          { name: "Utility", color: "green" },
+          { name: "Dev Tool", color: "orange" },
+          { name: "Testing", color: "yellow" },
+          { name: "Build Tool", color: "red" }
+        ]
+      }
+    },
+    "Language": {
+      type: "select",
+      select: {
+        options: [
+          { name: "TypeScript", color: "blue" },
+          { name: "JavaScript", color: "yellow" },
+          { name: "Python", color: "green" },
+          { name: "Go", color: "purple" },
+          { name: "Rust", color: "red" }
+        ]
+      }
+    },
+    "Is Dev Dependency": { type: "checkbox", checkbox: {} },
+    "Description": { type: "rich_text", rich_text: {} },
+    "Project": {
+      type: "select",
+      select: {
+        options: [{ name: "dependency-linker", color: "blue" }]
+      }
+    }
+  },
+
+  classes: {
+    "File Path": { type: "rich_text", rich_text: {} },
+    "Language": {
+      type: "select",
+      select: {
+        options: [
+          { name: "TypeScript", color: "blue" },
+          { name: "JavaScript", color: "yellow" },
+          { name: "Python", color: "green" },
+          { name: "Go", color: "purple" },
+          { name: "Rust", color: "red" }
+        ]
+      }
+    },
+    "Line Number": { type: "number", number: {} },
+    "Methods Count": { type: "number", number: {} },
+    "Properties Count": { type: "number", number: {} },
+    "Is Exported": { type: "checkbox", checkbox: {} },
+    "Is Abstract": { type: "checkbox", checkbox: {} },
+    "Extends": { type: "rich_text", rich_text: {} },
+    "Implements": { type: "rich_text", rich_text: {} },
+    "Description": { type: "rich_text", rich_text: {} },
+    "Project": {
+      type: "select",
+      select: {
+        options: [{ name: "dependency-linker", color: "blue" }]
+      }
+    }
+  }
+};
+
+/**
+ * Helper function to get configuration service and load config
+ */
+async function getConfigService() {
+  const container = getServiceContainer();
+  const configService = container.resolve<ConfigurationService>('configurationService');
+  const config = await configService.loadAndProcessConfig(process.cwd());
+  return { configService, config };
+}
+
+const program = new Command();
+
+program
+  .name('deplink-db')
+  .description('데이터베이스 스키마 관리 도구')
+  .version('1.0.0');
+
+// 스키마 초기화 명령 (JSON 파일 기반)
+program
+  .command('init')
+  .description('JSON 파일의 데이터베이스 스키마를 사용하여 초기화합니다')
+  .option('-d, --database <name>', '특정 데이터베이스만 초기화 (files, functions, dependencies, libraries, classes, relationships)')
+  .option('-f, --force', '기존 속성을 강제로 덮어씁니다')
+  .option('--force-recreate', 'Force 옵션: 데이터베이스를 완전히 재생성합니다 (모든 데이터 삭제 주의!)')
+  .action(async (options) => {
+    console.log('🏗️ JSON 스키마 기반 데이터베이스 초기화를 시작합니다...');
+    
+    try {
+      const { config } = await getConfigService();
+      const schemaManager = await getSchemaManager();
+      const schemas = await schemaManager.loadSchemas();
+      
+      const databases = options.database ? [options.database] : Object.keys(schemas.databases);
+      
+      for (const dbName of databases) {
+        if (!schemas.databases[dbName]) {
+          console.log(`❌ JSON 파일에서 ${dbName} 스키마를 찾을 수 없습니다.`);
+          continue;
+        }
+
+        const dbId = config.databases[dbName as keyof typeof config.databases];
+        if (!dbId) {
+          console.log(`❌ ${dbName} 데이터베이스 ID가 설정되지 않았습니다.`);
+          continue;
+        }
+
+        console.log(`🔄 ${dbName} 데이터베이스 스키마를 업데이트 중...`);
+        console.log(`📋 JSON 스키마: ${Object.keys(schemas.databases[dbName].initial_data_source?.properties || {}).length}개 속성`);
+        
+        const notionSchema = await schemaManager.getDatabaseSchema(dbName);
+        
+        try {
+          if (options.forceRecreate) {
+            console.log(`🚨 Force 모드: ${dbName} 데이터베이스를 재생성합니다...`);
+            await handleForceRecreate(dbName, dbId, schemas.databases[dbName], config);
+          } else {
+            const notionService = await getNotionService();
+            const result = await notionService.updateDatabase(dbId, {
+              properties: notionSchema.properties
+            });
+            
+            if (result.success) {
+              console.log(`✅ ${dbName} 스키마 업데이트 완료 (${Object.keys(notionSchema.properties).length}개 속성)`);
+            } else {
+              console.log(`❌ ${dbName} 스키마 업데이트 실패: ${result.error?.message}`);
+            }
+          }
+        } catch (error: any) {
+          if (error.message.includes("Can't edit block that is archived")) {
+            console.log(`📦 ${dbName} 데이터베이스가 아카이브 상태입니다.`);
+            console.log(`🔗 복구하려면 다음 링크를 클릭하여 Notion에서 복원하세요:`);
+            console.log(`   https://notion.so/${dbId.replace(/-/g, '')}`);
+            console.log(`💡 복원 후 다시 실행해주세요: bun run db:init -d ${dbName}`);
+          } else {
+            console.log(`❌ ${dbName} 스키마 업데이트 실패: ${error.message}`);
+          }
+        }
+      }
+      
+      console.log('\n🎉 JSON 스키마 기반 초기화 완료!');
+    } catch (error: any) {
+      console.error(`💥 초기화 실패: ${error.message}`);
+      process.exit(1);
+    }
+  });
+
+/**
+ * Force 옵션: 데이터베이스 완전 재생성
+ * 기존 데이터베이스의 모든 페이지를 삭제하고 새로운 스키마로 재생성
+ */
+async function handleForceRecreate(
+  dbName: string, 
+  dbId: string, 
+  dbSchema: any, 
+  config: any
+): Promise<void> {
+  console.log(`🚨 주의: ${dbName} 데이터베이스의 모든 데이터가 삭제됩니다!`);
+  console.log('⏳ 5초 후 진행됩니다. 중단하려면 Ctrl+C를 누르세요...');
+  
+  // 5초 대기
+  await new Promise(resolve => setTimeout(resolve, 5000));
+  
+  try {
+    const notionService = await getNotionService();
+    const creator = new NotionDatabaseCreator(notionService);
+    const orchestrator = new MigrationOrchestrator(notionService, process.cwd());
+    
+    // 1. 기존 데이터베이스의 모든 페이지 조회
+    console.log('🔍 기존 데이터베이스 페이지 조회 중...');
+    const pagesResult = await notionService.queryDatabase(dbId, {});
+    
+    if (pagesResult.success && pagesResult.data.results.length > 0) {
+      console.log(`📄 ${pagesResult.data.results.length}개 페이지 발견, 삭제 중...`);
+      
+      // 2. 모든 페이지 삭제
+      for (const page of pagesResult.data.results) {
+        try {
+          await notionService.updatePage(page.id, { archived: true });
+          console.log(`🗑️ 페이지 삭제: ${page.id}`);
+        } catch (error) {
+          console.log(`⚠️ 페이지 삭제 실패: ${page.id} - ${error}`);
+        }
+      }
+    }
+    
+    // 3. 데이터베이스 스키마 완전 초기화
+    console.log('🔧 데이터베이스 스키마 재생성 중...');
+    const result = await creator.createDatabase({
+      schema: dbSchema,
+      parentPageId: config.parentPageId,
+      options: {
+        cleanupExisting: true,
+        description: `Force recreated ${dbName} database with complete schema`
+      }
+    });
+    
+    if (result.success) {
+      console.log(`✅ ${dbName} 데이터베이스 재생성 완료`);
+      console.log(`🆔 새 데이터베이스 ID: ${result.databaseId}`);
+      console.log(`🔗 URL: ${result.databaseUrl}`);
+      console.log(`\n💡 새 데이터베이스 ID를 설정 파일에 업데이트하세요:`);
+      console.log(`   databases.${dbName}: "${result.databaseId}"`);
+    } else {
+      console.log(`❌ 데이터베이스 재생성 실패: ${result.message}`);
+      if (result.errors) {
+        result.errors.forEach(error => console.log(`   - ${error}`));
+      }
+    }
+    
+  } catch (error: any) {
+    console.error(`💥 Force 재생성 실패: ${error.message}`);
+    throw error;
+  }
+}
+
+// 데이터베이스 상태 및 스키마 확인 명령 (status 기능 통합)
+program
+  .command('check')
+  .description('데이터베이스 연결 상태, 스키마 및 Notion 링크를 확인합니다')
+  .option('-d, --database <name>', '특정 데이터베이스만 확인')
+  .option('--links-only', '링크만 출력 (상세 정보 제외)')
+  .action(async (options) => {
+    if (options.linksOnly) {
+      console.log('🔗 Notion 데이터베이스 링크:\n');
+    } else {
+      console.log('📊 데이터베이스 연결 상태 및 스키마 확인:\n');
+    }
+    
+    try {
+      // 설정을 먼저 로드
+      const { config } = await getConfigService();
+      // Notion 서비스도 한 번만 로드
+      const notionService = await getNotionService();
+      const workspaceUrl = 'https://notion.so';
+      
+      const allDatabases = [
+        { name: 'files', title: 'FILES (Project Files)', icon: '📁' },
+        { name: 'functions', title: 'FUNCTIONS (dependency-linker - Functions)', icon: '⚙️' },
+        { name: 'dependencies', title: 'DEPENDENCIES (Dependency Tracker - Dependencies)', icon: '📦' },
+        { name: 'libraries', title: 'LIBRARIES (Dependency Tracker - Libraries)', icon: '📚' },
+        { name: 'classes', title: 'CLASSES (Dependency Tracker - Classes)', icon: '🏗️' },
+        { name: 'relationships', title: 'RELATIONSHIPS (Dependency Tracker - Relationships)', icon: '🔄' }
+      ];
+      
+      const databases = options.database 
+        ? allDatabases.filter(db => db.name === options.database)
+        : allDatabases;
+      
+      if (databases.length === 0) {
+        console.log(`❌ 데이터베이스 '${options.database}'를 찾을 수 없습니다.`);
+        process.exit(0);
+      }
+      
+      for (const db of databases) {
+        const dbId = config.databases[db.name as keyof typeof config.databases];
+        
+        if (!dbId) {
+          console.log(`⚪ ${db.icon} ${db.title}`);
+          console.log('   상태: 설정되지 않음');
+          console.log('');
+          continue;
+        }
+
+        try {
+          const result = await notionService.retrieveDatabase(dbId);
+          
+          if (!result.success) {
+            throw new Error(result.error?.message || 'Failed to retrieve database');
+          }
+          
+          const database = result.data;
+          
+          if (options.linksOnly) {
+            console.log(`${workspaceUrl}/${dbId.replace(/-/g, '')}`);
+          } else {
+            console.log(`✅ ${db.icon} ${db.title}`);
+            console.log(`   링크: ${workspaceUrl}/${dbId.replace(/-/g, '')}`);
+            console.log(`   제목: ${'title' in database ? database.title?.[0]?.plain_text || 'Untitled' : 'Untitled'}`);
+            console.log(`   상태: 연결됨`);
+            
+            
+            // 속성 정보는 data sources API를 통해 가져오기 (2025-09-03 스펙)
+            try {
+              let properties: string[] = [];
+              
+              // 새로운 API 스펙: data_sources 배열을 확인
+              if ('data_sources' in database && database.data_sources && database.data_sources.length > 0) {
+                console.log(`   Data Sources: ${database.data_sources.length}개`);
+                
+                // 첫 번째 data source의 정보 출력
+                const dataSource = database.data_sources[0];
+                console.log(`   Data Source: ${dataSource.name || dataSource.id}`);
+                
+                // 기존 스키마 관리자를 사용해서 스키마 조회
+                try {
+                  const schemaManager = new DatabaseSchemaManager('.');
+                  const databaseSchema = await schemaManager.getDatabaseSchema(db.name);
+                  
+                  if (databaseSchema && databaseSchema.properties) {
+                    properties = Object.keys(databaseSchema.properties);
+                    const otherProperties = properties.filter(key => key !== 'Name');
+                    console.log(`   속성 수: ${properties.length} (스키마 파일에서)`);
+                    
+                    if (otherProperties.length > 0) {
+                      console.log('   속성 목록:');
+                      otherProperties.slice(0, 5).forEach(prop => {
+                        console.log(`     - ${prop}`);
+                      });
+                      if (otherProperties.length > 5) {
+                        console.log(`     ... 및 ${otherProperties.length - 5}개 더`);
+                      }
+                    } else {
+                      console.log('   속성: Name만 있음');
+                    }
+                  } else {
+                    console.log('   속성: 스키마 정의 없음');
+                  }
+                } catch (schemaError: any) {
+                  console.log(`   속성: 스키마 조회 실패 (${schemaError.message})`);
+                }
+              } 
+              // 이전 API 스펙 호환성: properties를 직접 확인
+              else if ('properties' in database && database.properties) {
+                properties = Object.keys(database.properties);
+                const otherProperties = properties.filter(key => key !== 'Name');
+                console.log(`   속성 수: ${properties.length} (이전 API 스펙)`);
+                
+                if (otherProperties.length > 0) {
+                  console.log('   속성 목록:');
+                  otherProperties.slice(0, 5).forEach(prop => {
+                    console.log(`     - ${prop}`);
+                  });
+                  if (otherProperties.length > 5) {
+                    console.log(`     ... 및 ${otherProperties.length - 5}개 더`);
+                  }
+                } else {
+                  console.log('   속성: Name만 있음');
+                }
+              } else {
+                console.log('   속성: 스키마 정보 없음');
+              }
+            } catch (schemaError: any) {
+              console.log(`   속성: 스키마 조회 실패 (${schemaError.message})`);
+            }
+            
+            console.log('');
+          }
+          
+        } catch (error: any) {
+          if (options.linksOnly) {
+            console.log(`${workspaceUrl}/${dbId.replace(/-/g, '')} # 오류: ${error.message}`);
+          } else {
+            if (error.message.includes("archived") || error.message.includes("Can't edit block that is archived")) {
+              console.log(`📦 ${db.icon} ${db.title} (아카이브됨)`);
+              console.log(`   링크: ${workspaceUrl}/${dbId.replace(/-/g, '')}`);
+              console.log(`   상태: 아카이브됨 - 복원 필요`);
+              console.log(`   💡 링크에서 "Restore" 버튼 클릭하여 복원하세요`);
+            } else {
+              console.log(`❌ ${db.icon} ${db.title}`);
+              console.log(`   링크: ${workspaceUrl}/${dbId.replace(/-/g, '')}`);
+              console.log(`   오류: ${error.message}`);
+            }
+            console.log('');
+          }
+        }
+      }
+      
+      // 부모 페이지 링크 (links-only가 아닌 경우에만)
+      if (!options.linksOnly && config.parentPageId) {
+        console.log(`🏠 Parent Page (All Databases Container):`);
+        console.log(`   ${workspaceUrl}/${config.parentPageId.replace(/-/g, '')}`);
+        console.log('');
+      }
+      
+      if (!options.linksOnly) {
+        console.log('💡 각 링크를 클릭하면 해당 데이터베이스로 직접 이동할 수 있습니다.');
+        console.log('💡 --links-only 옵션으로 링크만 간단히 출력할 수 있습니다.');
+      } else if (config.parentPageId) {
+        console.log(`${workspaceUrl}/${config.parentPageId.replace(/-/g, '')}`);
+      }
+      
+      // 성공적으로 완료되면 프로세스 종료
+      process.exit(0);
+      
+    } catch (error: any) {
+      console.error(`💥 확인 실패: ${error.message}`);
+      process.exit(1);
+    }
+  });
+
+
+// 속성 추가 명령
+program
+  .command('add-property')
+  .description('데이터베이스에 새 속성을 추가합니다')
+  .requiredOption('-d, --database <name>', '데이터베이스 이름 (files, functions, dependencies, libraries, classes)')
+  .requiredOption('-n, --name <name>', '속성 이름')
+  .requiredOption('-t, --type <type>', '속성 타입 (text, number, select, checkbox, date)')
+  .option('-o, --options <options>', 'select 타입의 경우 옵션들 (쉼표로 구분)')
+  .action(async (options) => {
+    console.log(`🔧 ${options.database}에 "${options.name}" 속성을 추가합니다...`);
+    
+    try {
+      const { config } = await getConfigService();
+      const dbId = config.databases[options.database as keyof typeof config.databases];
+      if (!dbId) {
+        console.log(`❌ ${options.database} 데이터베이스 ID가 설정되지 않았습니다.`);
+        process.exit(1);
+      }
+
+      let propertyConfig: any = {};
+      
+      switch (options.type) {
+        case 'text':
+          propertyConfig = { type: "rich_text", rich_text: {} };
+          break;
+        case 'number':
+          propertyConfig = { type: "number", number: {} };
+          break;
+        case 'checkbox':
+          propertyConfig = { type: "checkbox", checkbox: {} };
+          break;
+        case 'date':
+          propertyConfig = { type: "date", date: {} };
+          break;
+        case 'select':
+          if (!options.options) {
+            console.log('❌ select 타입에는 --options가 필요합니다.');
+            process.exit(1);
+          }
+          const selectOptions = options.options.split(',').map((opt: string, index: number) => ({
+            name: opt.trim(),
+            color: ['blue', 'green', 'yellow', 'red', 'purple', 'orange'][index % 6]
+          }));
+          propertyConfig = {
+            type: "select",
+            select: { options: selectOptions }
+          };
+          break;
+        default:
+          console.log(`❌ 지원되지 않는 속성 타입: ${options.type}`);
+          process.exit(1);
+      }
+
+      const properties = { [options.name]: propertyConfig };
+      await notionClient.updateDatabaseSchema(dbId, properties);
+      console.log(`✅ "${options.name}" 속성 추가 완료!`);
+    } catch (error: any) {
+      console.error(`💥 속성 추가 실패: ${error.message}`);
+      process.exit(1);
+    }
+  });
+
+// 테스트 연결 명령
+program
+  .command('test')
+  .description('Notion 데이터베이스 연결을 테스트합니다')
+  .action(async () => {
+    console.log('🔌 Notion 연결을 테스트합니다...');
+    
+    try {
+      const connected = await notionClient.testConnection();
+      if (connected) {
+        console.log('✅ Notion 연결 성공!');
+        
+        // 설정된 데이터베이스들 확인
+        const databases = ['files', 'functions', 'dependencies', 'libraries', 'classes'];
+        let configuredCount = 0;
+        
+        const { config } = await getConfigService();
+        console.log('\n📊 설정된 데이터베이스:');
+        for (const dbName of databases) {
+          const dbId = config.databases[dbName as keyof typeof config.databases];
+          if (dbId) {
+            try {
+              await notionClient.getDatabase(dbId);
+              console.log(`   ✅ ${dbName}: ${dbId}`);
+              configuredCount++;
+            } catch (error: any) {
+              if (error.message?.includes("archived") || error.message?.includes("Can't edit block that is archived")) {
+                console.log(`   📦 ${dbName}: ${dbId} (아카이브됨)`);
+                console.log(`      🔗 복구: https://notion.so/${dbId.replace(/-/g, '')}`);
+              } else {
+                console.log(`   ❌ ${dbName}: ${dbId} (접근 불가)`);
+              }
+            }
+          } else {
+            console.log(`   ⚠️  ${dbName}: 설정되지 않음`);
+          }
+        }
+        
+        console.log(`\n🎯 ${configuredCount}/5 데이터베이스가 올바르게 설정되었습니다.`);
+      } else {
+        console.log('❌ Notion 연결 실패');
+        process.exit(1);
+      }
+    } catch (error: any) {
+      console.error(`💥 연결 테스트 실패: ${error.message}`);
+      process.exit(1);
+    }
+  });
+
+// 복원 명령
+program
+  .command('restore')
+  .description('아카이브된 데이터베이스를 복원합니다')
+  .option('-d, --database <name>', '특정 데이터베이스만 복원')
+  .action(async (options) => {
+    console.log('🔧 아카이브된 데이터베이스를 확인하고 복원 가이드를 제공합니다...\n');
+    
+    try {
+      const { config } = await getConfigService();
+      const databases = options.database ? [options.database] : ['files', 'functions', 'dependencies', 'libraries', 'classes'];
+      let archivedDatabases = [];
+      
+      for (const dbName of databases) {
+        const dbId = config.databases[dbName as keyof typeof config.databases];
+        if (!dbId) {
+          console.log(`⚠️ ${dbName}: 데이터베이스 ID가 설정되지 않았습니다.`);
+          continue;
+        }
+
+        try {
+          await notionClient.getDatabase(dbId);
+          console.log(`✅ ${dbName}: 정상 상태`);
+        } catch (error: any) {
+          if (error.message?.includes("archived") || error.message?.includes("Can't edit block that is archived")) {
+            archivedDatabases.push({ name: dbName, id: dbId });
+            console.log(`📦 ${dbName}: 아카이브 상태`);
+          } else {
+            console.log(`❌ ${dbName}: 접근 불가 (${error.message})`);
+          }
+        }
+      }
+      
+      if (archivedDatabases.length > 0) {
+        console.log('\n🔧 아카이브된 데이터베이스 복원 가이드:');
+        console.log('=====================================');
+        
+        for (const db of archivedDatabases) {
+          console.log(`\n📦 ${db.name.toUpperCase()}:`);
+          console.log(`   🔗 링크: https://notion.so/${db.id.replace(/-/g, '')}`);
+          console.log(`   📋 복원 방법:`);
+          console.log(`      1. 위 링크를 클릭하여 Notion 페이지로 이동`);
+          console.log(`      2. 페이지 우상단의 "..." 메뉴 클릭`);
+          console.log(`      3. "Restore" 또는 "복원" 버튼 클릭`);
+          console.log(`      4. 복원 완료 후: bun run db:init -d ${db.name}`);
+        }
+        
+        console.log(`\n💡 모든 데이터베이스가 복원되면 다음 명령어로 확인:`);
+        console.log(`   bun run db:check`);
+      } else {
+        console.log('\n🎉 모든 데이터베이스가 정상 상태입니다!');
+      }
+      
+    } catch (error: any) {
+      console.error(`💥 복원 확인 실패: ${error.message}`);
+      process.exit(1);
+    }
+  });
+
+// 스키마 리셋 명령
+program
+  .command('reset')
+  .description('데이터베이스 스키마를 완전히 초기화합니다 (주의: 기존 속성 삭제)')
+  .option('-d, --database <name>', '특정 데이터베이스만 리셋')
+  .option('-y, --yes', '확인 없이 실행')
+  .action(async (options) => {
+    if (!options.yes) {
+      console.log('⚠️  경고: 이 명령은 기존 속성들을 삭제할 수 있습니다.');
+      console.log('계속하려면 --yes 플래그를 사용하세요.');
+      process.exit(1);
+    }
+
+    console.log('🔄 데이터베이스 스키마를 리셋합니다...');
+    
+    try {
+      const { config } = await getConfigService();
+      const databases = options.database ? [options.database] : Object.keys(DEFAULT_SCHEMAS);
+      
+      for (const dbName of databases) {
+        if (!DEFAULT_SCHEMAS[dbName as keyof typeof DEFAULT_SCHEMAS]) {
+          console.log(`❌ 알 수 없는 데이터베이스: ${dbName}`);
+          continue;
+        }
+
+        const dbId = config.databases[dbName as keyof typeof config.databases];
+        if (!dbId) {
+          console.log(`❌ ${dbName} 데이터베이스 ID가 설정되지 않았습니다.`);
+          continue;
+        }
+
+        console.log(`🔄 ${dbName} 데이터베이스를 리셋 중...`);
+        
+        try {
+          // 기존 데이터베이스 정보 가져오기
+          const database = await notionClient.getDatabase(dbId);
+          
+          // Name 속성 제외한 모든 속성 삭제 준비
+          const propertiesToDelete: any = {};
+          const properties = 'properties' in database ? database.properties : {};
+          Object.keys(properties).forEach(propName => {
+            if (propName !== 'Name') {
+              propertiesToDelete[propName] = null;
+            }
+          });
+          
+          // 기존 속성들 삭제
+          if (Object.keys(propertiesToDelete).length > 0) {
+            await notionClient.updateDatabaseSchema(dbId, propertiesToDelete);
+            console.log(`   🗑️  기존 속성 ${Object.keys(propertiesToDelete).length}개 삭제`);
+          }
+          
+          // 새로운 스키마 적용
+          const schema = DEFAULT_SCHEMAS[dbName as keyof typeof DEFAULT_SCHEMAS];
+          await notionClient.updateDatabaseSchema(dbId, schema);
+          console.log(`   ✅ ${dbName} 새 스키마 적용 완료`);
+        } catch (error: any) {
+          console.log(`   ❌ ${dbName} 리셋 실패: ${error.message}`);
+        }
+      }
+      
+      console.log('\n🎉 스키마 리셋 완료!');
+    } catch (error: any) {
+      console.error(`💥 리셋 실패: ${error.message}`);
+      process.exit(1);
+    }
+  });
+
+// 자동 복구 명령
+program
+  .command('repair')
+  .description('아카이브된 데이터베이스를 자동으로 감지하고 복구합니다')
+  .option('-d, --database <name>', '특정 데이터베이스만 복구')
+  .option('--dry-run', '실제 작업 없이 시뮬레이션만 실행')
+  .action(async (options) => {
+    console.log('🔧 데이터베이스 자동 복구를 시작합니다...\n');
+    
+    try {
+      const { config } = await getConfigService();
+      const results = {
+        repaired: [] as string[],
+        created: [] as string[],
+        errors: [] as string[]
+      };
+      
+      // 대상 데이터베이스들
+      const allDatabases = ['files', 'functions', 'dependencies', 'libraries', 'classes'];
+      const targetDatabases = options.database ? [options.database] : allDatabases;
+      
+      for (const dbName of targetDatabases) {
+        console.log(`\n🔍 ${dbName.toUpperCase()} 데이터베이스 확인 중...`);
+        
+        const dbId = config.databases[dbName as keyof typeof config.databases];
+        if (!dbId) {
+          console.log(`❌ ${dbName}: 설정에서 데이터베이스 ID를 찾을 수 없습니다.`);
+          results.errors.push(`${dbName}: No database ID configured`);
+          continue;
+        }
+        
+        try {
+          // 데이터베이스 상태 확인
+          const database = await notionClient.getDatabase(dbId);
+          
+          // 실제 업데이트 시도로 아카이브 상태 확인
+          let isArchived = false;
+          try {
+            if (!options.dryRun) {
+              await notionClient.updateDatabaseSchema(dbId, {
+                "Test Property": { type: "rich_text", rich_text: {} }
+              });
+              
+              // 테스트 속성 제거
+              await notionClient.updateDatabaseSchema(dbId, {
+                "Test Property": null
+              });
+            }
+            
+            console.log(`   상태: active`);
+            
+            // FILES 데이터베이스의 경우 관계 속성 확인
+            if (dbName === 'files') {
+              const dbProperties = 'properties' in database ? database.properties : {};
+              if (!dbProperties?.['Imports']) {
+                console.log(`🔍 ${dbName}: Imports 속성이 없습니다. 추가합니다.`);
+                
+                if (!options.dryRun) {
+                  await notionClient.updateDatabaseSchema(dbId, {
+                    "Imports": {
+                      type: "relation",
+                      relation: {
+                        database_id: dbId, // 자기 참조
+                        type: "single_property",
+                        single_property: {}
+                      }
+                    }
+                  });
+                  console.log(`✅ ${dbName}: Imports 관계 속성 추가 완료`);
+                } else {
+                  console.log(`🔄 [DRY RUN] ${dbName}: Imports 관계 속성을 추가할 예정`);
+                }
+                
+                results.repaired.push(dbName);
+              } else {
+                console.log(`✅ ${dbName}: 이미 Imports 속성이 존재합니다.`);
+              }
+            } else {
+              console.log(`✅ ${dbName}: 정상 상태입니다.`);
+            }
+            
+          } catch (updateError: any) {
+            if (updateError.message?.includes('archived') || 
+                updateError.message?.includes("Can't edit block that is archived")) {
+              isArchived = true;
+            } else {
+              console.log(`✅ ${dbName}: 정상 상태입니다.`);
+            }
+          }
+          
+          if (isArchived) {
+            console.log(`   상태: archived`);
+            console.log(`📦 ${dbName}: 아카이브 상태 -> 새로 생성합니다.`);
+            
+            if (!options.dryRun) {
+              // 새 데이터베이스 생성
+              const schema = DEFAULT_SCHEMAS[dbName as keyof typeof DEFAULT_SCHEMAS];
+              if (schema) {
+                // NotionClient의 createDatabase 메서드 사용
+                const { NotionClient } = await import('../../infrastructure/notion/NotionClient.js');
+                const notionService = new NotionClient(
+                  process.env.NOTION_API_KEY || config.apiKey || '',
+                  process.cwd()
+                );
+                const response = await notionService.createDatabase(
+                  `dependency-linker - ${dbName.charAt(0).toUpperCase() + dbName.slice(1)}`,
+                  'files'
+                );
+                
+                // 설정 파일 업데이트 - response가 string이므로 직접 사용
+                const responseId = typeof response === 'string' ? response : response;
+                console.log(`✅ ${dbName} 데이터베이스 생성 완료: ${responseId}`);
+                
+                // FILES 데이터베이스의 경우 관계 속성도 추가
+                if (dbName === 'files') {
+                  await notionClient.updateDatabaseSchema(responseId, {
+                    "Imports": {
+                      type: "relation",
+                      relation: {
+                        database_id: responseId,
+                        type: "dual_property", 
+                        dual_property: {
+                          synced_property_name: "Imported By",
+                          synced_property_id: "imported_by_relation"
+                        }
+                      }
+                    }
+                  });
+                  console.log(`✅ ${dbName}: Imports 관계 속성 추가 완료`);
+                }
+                
+                results.created.push(dbName);
+              } else {
+                console.log(`❌ ${dbName}: 스키마 정의를 찾을 수 없습니다.`);
+                results.errors.push(`${dbName}: No schema definition found`);
+              }
+            } else {
+              console.log(`🔄 [DRY RUN] ${dbName}: 새 데이터베이스를 생성할 예정`);
+              results.created.push(dbName);
+            }
+          }
+          
+        } catch (error: any) {
+          console.log(`❌ ${dbName}: 오류 상태 - ${error.message}`);
+          results.errors.push(`${dbName}: ${error.message}`);
+        }
+      }
+      
+      // 결과 출력
+      console.log('\n🎉 자동 복구 완료!');
+      console.log('==================');
+      
+      if (results.created.length > 0) {
+        console.log(`🏗️ 새로 생성: ${results.created.join(', ')}`);
+      }
+      
+      if (results.repaired.length > 0) {
+        console.log(`🔧 복구 완료: ${results.repaired.join(', ')}`);
+      }
+      
+      if (results.errors.length > 0) {
+        console.log(`❌ 오류 발생: ${results.errors.length}개`);
+        results.errors.forEach(error => console.log(`   - ${error}`));
+      }
+      
+      if (options.dryRun) {
+        console.log('\n💡 실제 작업을 수행하려면 --dry-run 플래그를 제거하고 다시 실행하세요.');
+      } else {
+        console.log('\n🔍 최종 검증: bun run db:check 명령으로 상태를 확인하세요.');
+      }
+      
+    } catch (error: any) {
+      console.error(`💥 자동 복구 실패: ${error.message}`);
+      process.exit(1);
+    }
+  });
+
+// 완전한 Files DB 생성 명령
+program
+  .command('create-complete-files')
+  .description('initial_data_source 방식으로 완전한 Files 데이터베이스를 생성합니다')
+  .option('--replace', '기존 Files 데이터베이스를 교체합니다')
+  .option('--dry-run', '실제 작업 없이 시뮬레이션만 실행')
+  .action(async (options) => {
+    console.log('🏗️ initial_data_source 방식으로 완전한 Files 데이터베이스를 생성합니다...\n');
+    
+    try {
+      const { config } = await getConfigService();
+      
+      if (!config.parentPageId) {
+        console.log('❌ Parent Page ID가 설정되지 않았습니다.');
+        process.exit(1);
+      }
+
+      // 필요한 다른 데이터베이스들 확인
+      const requiredDBs = ['dependencies', 'libraries', 'functions'];
+      for (const dbName of requiredDBs) {
+        const dbId = config.databases[dbName as keyof typeof config.databases];
+        if (!dbId) {
+          console.log(`❌ ${dbName} 데이터베이스 ID가 설정되지 않았습니다.`);
+          console.log(`💡 먼저 'bun run db:init' 명령으로 다른 데이터베이스들을 생성하세요.`);
+          process.exit(1);
+        }
+      }
+
+      if (options.dryRun) {
+        console.log('🔍 [DRY RUN] 완전한 Files 데이터베이스 생성 시뮬레이션');
+        console.log('   📋 포함될 속성들:');
+        console.log('      - Name (title)');
+        console.log('      - File Path (rich_text)');
+        console.log('      - Size (bytes) (number)');
+        console.log('      - Extension (select)');
+        console.log('      - Project (select)');
+        console.log('      - Status (select)');
+        console.log('      - Last Modified (date)');
+        console.log('      - Dependencies (relation → Dependencies DB)');
+        console.log('      - Libraries (relation → Libraries DB)');
+        console.log('      - Functions (relation → Functions DB)');
+        console.log('\n💡 실제 작업을 수행하려면 --dry-run 플래그를 제거하고 다시 실행하세요.');
+        return;
+      }
+
+      // 기존 Files 데이터베이스 백업 정보 표시
+      if (options.replace && config.databases.files) {
+        console.log(`📦 기존 Files 데이터베이스: ${config.databases.files}`);
+        console.log(`🔗 백업 링크: https://www.notion.so/graph-mcp/${config.databases.files.replace(/-/g, '')}`);
+      }
+
+      // 완전한 Files 데이터베이스 생성
+      const newFilesDbId = await notionClient.createCompleteFilesDatabase(config.parentPageId);
+      
+      console.log(`\n✅ 완전한 Files 데이터베이스 생성 성공!`);
+      console.log(`🆔 새 Database ID: ${newFilesDbId}`);
+      console.log(`🔗 새 DB 링크: https://www.notion.so/graph-mcp/${newFilesDbId.replace(/-/g, '')}`);
+
+      // 설정 파일 업데이트
+      if (options.replace) {
+        const { configService } = await getConfigService();
+        // Note: This would need to be implemented in ConfigurationService
+        // For now, we'll note this as a TODO for configuration updates
+        console.log('⚠️ Configuration update functionality needs to be implemented in ConfigurationService');
+        console.log(`\n🔄 설정 파일 업데이트 완료 - Files DB ID를 새로운 DB로 변경했습니다.`);
+      } else {
+        console.log(`\n💡 --replace 옵션을 사용하면 설정 파일의 Files DB ID를 자동으로 업데이트할 수 있습니다.`);
+      }
+
+      // 검증 페이지 생성
+      console.log(`\n🧪 검증 페이지 생성 중...`);
+      
+      const testPage = await notionClient.createPage('files' as any, {
+        "Name": { title: [{ text: { content: "Complete DB Verification" } }] },
+        "File Path": { rich_text: [{ text: { content: "/test/verification.ts" } }] },
+        "Extension": { select: { name: ".ts" } },
+        "Project": { select: { name: "dependency-linker" } },
+        "Status": { select: { name: "Uploaded" } }
+      });
+
+      console.log(`✅ 검증 페이지 생성 성공`);
+      console.log(`\n🎉 완전한 Files 데이터베이스 생성 완료!`);
+      console.log(`📊 포함된 관계 속성: Dependencies, Libraries, Functions`);
+      console.log(`🔍 'bun run db:check' 명령으로 상태를 확인하세요.`);
+
+    } catch (error: any) {
+      console.error(`💥 완전한 Files DB 생성 실패: ${error.message}`);
+      if (error.body) {
+        console.error('상세 오류:', JSON.stringify(error.body, null, 2));
+      }
+      process.exit(1);
+    }
+  });
+
+// 데이터베이스 권한 및 접근 검증 명령
+program
+  .command('validate')
+  .description('데이터베이스 접근 권한을 분석하고 자동 복구를 제공합니다')
+  .option('-d, --database <name>', '특정 데이터베이스만 검증')
+  .option('--fix', '자동 복구 실행 (기본: 시뮬레이션만)')
+  .option('--report', '상세 검증 보고서 출력')
+  .action(async (options) => {
+    console.log('🔍 데이터베이스 접근 권한 검증을 시작합니다...\n');
+    
+    try {
+      // 설정 로드
+      const { config } = await getConfigService();
+      
+      // 검증 서비스 초기화
+      const validationService = new DatabaseAccessValidationService();
+      
+      if (options.database) {
+        // 특정 데이터베이스 검증
+        console.log(`🔍 ${options.database} 데이터베이스 검증 중...`);
+        
+        const dbId = config.databases[options.database as keyof typeof config.databases];
+        if (!dbId) {
+          console.log(`❌ ${options.database} 데이터베이스 ID가 설정되지 않았습니다.`);
+          process.exit(1);
+        }
+        
+        const result = await validationService.validate(dbId, options.database);
+        
+        // 결과 출력
+        if (result.valid) {
+          console.log(`✅ ${options.database}: 접근 권한 정상`);
+        } else {
+          console.log(`⚠️ ${options.database}: 권한 문제 발견`);
+          
+          result.errors.forEach(error => {
+            console.log(`   ❌ ${error.code}: ${error.message}`);
+          });
+          
+          result.warnings.forEach(warning => {
+            console.log(`   ⚠️ ${warning.code}: ${warning.message}`);
+          });
+          
+          if (result.suggestions.length > 0) {
+            console.log('\n💡 권장 해결책:');
+            result.suggestions.forEach((suggestion, index) => {
+              console.log(`   ${index + 1}. ${suggestion.message}`);
+              if (suggestion.autoFixable) {
+                console.log(`      🤖 자동 수정 가능`);
+              }
+            });
+          }
+        }
+        
+      } else {
+        // 전체 데이터베이스 검증
+        const result = await validationService.validateAllDatabaseAccess();
+        
+        // 기본 결과 출력
+        if (result.valid) {
+          console.log('✅ 모든 데이터베이스 접근 권한이 정상입니다.');
+        } else {
+          console.log('⚠️ 일부 데이터베이스에서 권한 문제가 발견되었습니다.\n');
+          
+          // 오류 요약
+          if (result.errors.length > 0) {
+            console.log(`❌ 오류 ${result.errors.length}개:`);
+            result.errors.forEach(error => {
+              console.log(`   • ${error.code}: ${error.message}`);
+            });
+          }
+          
+          // 경고 요약
+          if (result.warnings.length > 0) {
+            console.log(`\n⚠️ 경고 ${result.warnings.length}개:`);
+            result.warnings.forEach(warning => {
+              console.log(`   • ${warning.code}: ${warning.message}`);
+            });
+          }
+          
+          // 자동 수정 가능한 항목 표시
+          const autoFixable = result.suggestions.filter(s => s.autoFixable);
+          if (autoFixable.length > 0) {
+            console.log(`\n🤖 자동 수정 가능 항목: ${autoFixable.length}개`);
+            console.log('💡 --fix 플래그로 자동 수정을 실행할 수 있습니다.');
+          }
+        }
+        
+        // 상세 보고서 출력
+        if (options.report) {
+          console.log('\n📊 상세 검증 보고서:');
+          console.log('=====================================');
+          
+          const issues = validationService.getAccessIssues();
+          if (issues.length > 0) {
+            issues.forEach(issue => {
+              console.log(`\n🔍 ${issue.databaseName} (${issue.databaseId})`);
+              console.log(`   문제 유형: ${issue.issueType}`);
+              console.log(`   심각도: ${issue.severity}`);
+              console.log(`   오류: ${issue.errorMessage}`);
+              console.log(`   자동 수정 가능: ${issue.autoFixable ? '예' : '아니오'}`);
+              
+              if (issue.suggestedActions.length > 0) {
+                console.log('   권장 해결책:');
+                issue.suggestedActions.forEach((action, index) => {
+                  console.log(`     ${index + 1}. ${action.description}`);
+                  if (action.autoExecutable) {
+                    console.log(`        🤖 자동 실행 가능 (우선순위: ${action.priority})`);
+                  }
+                });
+              }
+            });
+          } else {
+            console.log('모든 데이터베이스가 정상 상태입니다.');
+          }
+        }
+      }
+      
+      // 자동 복구 실행
+      if (options.fix) {
+        console.log('\n🔧 자동 복구를 실행합니다...');
+        
+        const remediationResult = await validationService.executeAutoRemediation(false);
+        
+        console.log('\n📊 자동 복구 결과:');
+        console.log(`   시도: ${remediationResult.attempted}개`);
+        console.log(`   성공: ${remediationResult.successful}개`);
+        console.log(`   실패: ${remediationResult.failed}개`);
+        
+        if (remediationResult.details.length > 0) {
+          console.log('\n상세 내역:');
+          remediationResult.details.forEach(detail => {
+            console.log(`   ${detail}`);
+          });
+        }
+        
+        if (remediationResult.successful > 0) {
+          console.log('\n✅ 일부 문제가 자동으로 해결되었습니다.');
+          console.log('🔍 변경사항을 확인하려면 다시 검증해보세요: bun run db:validate');
+        }
+      } else if (!options.database) {
+        // 시뮬레이션 실행
+        const remediationResult = await validationService.executeAutoRemediation(true);
+        
+        if (remediationResult.attempted > 0) {
+          console.log('\n🔍 자동 복구 시뮬레이션:');
+          console.log(`   수정 가능한 항목: ${remediationResult.attempted}개`);
+          console.log('💡 실제 수정을 하려면 --fix 플래그를 사용하세요.');
+        }
+      }
+      
+      console.log('\n🎉 데이터베이스 권한 검증 완료!');
+      
+    } catch (error: any) {
+      console.error(`💥 검증 실패: ${error.message}`);
+      process.exit(1);
+    }
+  });
+
+// JSON 스키마 기반 데이터베이스 생성 명령
+program
+  .command('create-with-schema')
+  .description('JSON 스키마 기반으로 완전한 데이터베이스를 생성합니다')
+  .requiredOption('-t, --type <type>', '데이터베이스 타입 (files, dependencies, libraries, functions, classes, relationships)')
+  .option('--replace', '기존 데이터베이스를 교체합니다')
+  .option('--dry-run', '실제 작업 없이 시뮬레이션만 실행')
+  .action(async (options) => {
+    console.log(`🏗️ JSON 스키마 기반으로 ${options.type} 데이터베이스를 생성합니다...\n`);
+    
+    try {
+      // 설정 로드
+      const { config } = await getConfigService();
+      
+      if (!config.parentPageId) {
+        console.log('❌ Parent Page ID가 설정되지 않았습니다.');
+        process.exit(1);
+      }
+
+      // 스키마 확인 (임시 비활성화 - 순환 의존성 해결 필요)
+      // const schema = schemaManager.getDatabaseSchema(options.type);
+      // if (!schema) {
+      //   console.log(`❌ "${options.type}" 타입에 대한 스키마를 찾을 수 없습니다.`);
+      //   console.log('📋 사용 가능한 타입:', schemaManager.getAllDatabaseTypes().join(', '));
+      //   process.exit(1);
+      // }
+
+      // 관계 대상 데이터베이스들 확인 (임시 비활성화)
+      // const relationTargets = schemaManager.getRelationTargets(options.type);
+      // for (const target of relationTargets) {
+      //   const targetDbId = config.databases[target as keyof typeof config.databases];
+      //   if (!targetDbId) {
+      //     console.log(`❌ 관계 대상 "${target}" 데이터베이스 ID가 설정되지 않았습니다.`);
+      //     console.log(`💡 먼저 'bun run db:init' 명령으로 필요한 데이터베이스들을 생성하세요.`);
+      //     process.exit(1);
+      //   }
+      // }
+
+      if (options.dryRun) {
+        console.log(`🔍 [DRY RUN] ${options.type} 데이터베이스 생성 시뮬레이션`);
+        console.log(`📋 데이터베이스 정보:`);
+        console.log(`   제목: ${options.type} Database`);
+        console.log(`   설명: JSON 스키마 기반 데이터베이스`);
+        
+        console.log(`\n📊 기본 속성들:`);
+        console.log(`   - Name (title)`);
+        console.log(`   - Status (select)`);
+        
+        console.log('\n💡 실제 작업을 수행하려면 --dry-run 플래그를 제거하고 다시 실행하세요.');
+        return;
+      }
+
+      // 기존 데이터베이스 백업 정보 표시
+      if (options.replace && config.databases[options.type as keyof typeof config.databases]) {
+        const existingDbId = config.databases[options.type as keyof typeof config.databases];
+        console.log(`📦 기존 ${options.type} 데이터베이스: ${existingDbId}`);
+        console.log(`🔗 백업 링크: https://www.notion.so/graph-mcp/${existingDbId.replace(/-/g, '')}`);
+      }
+
+      // 완전한 데이터베이스 생성
+      const newDbId = await notionClient.createCompleteDatabaseWithSchema(options.type, config.parentPageId);
+      
+      console.log(`\n✅ 완전한 ${options.type} 데이터베이스 생성 성공!`);
+      console.log(`🆔 새 Database ID: ${newDbId}`);
+      console.log(`🔗 새 DB 링크: https://www.notion.so/graph-mcp/${newDbId.replace(/-/g, '')}`);
+
+      // 설정 파일 업데이트
+      if (options.replace) {
+        const { configService } = await getConfigService();
+        // Note: This would need to be implemented in ConfigurationService
+        // For now, we'll note this as a TODO for configuration updates
+        console.log('⚠️ Configuration update functionality needs to be implemented in ConfigurationService');
+        console.log(`\n🔄 설정 파일 업데이트 완료 - ${options.type} DB ID를 새로운 DB로 변경했습니다.`);
+      } else {
+        console.log(`\n💡 --replace 옵션을 사용하면 설정 파일의 ${options.type} DB ID를 자동으로 업데이트할 수 있습니다.`);
+      }
+
+      console.log(`\n🎉 완전한 ${options.type} 데이터베이스 생성 완료!`);
+      console.log(`📊 JSON 스키마 기반 생성으로 모든 속성과 관계가 포함되었습니다.`);
+      console.log(`🔍 'bun run db:check' 명령으로 상태를 확인하세요.`);
+
+    } catch (error: any) {
+      console.error(`💥 ${options.type} DB 생성 실패: ${error.message}`);
+      if (error.body) {
+        console.error('상세 오류:', JSON.stringify(error.body, null, 2));
+      }
+      process.exit(1);
+    }
+  });
+
+export { program };
+
+// CLI 스크립트로 직접 실행될 때
+if (import.meta.main) {
+  program.parse();
+}

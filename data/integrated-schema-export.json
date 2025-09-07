@@ -1,0 +1,165 @@
+{
+  "databases": {
+    "files": "26848583-7460-816d-b8c5-cc9f91a55cc5",
+    "docs": "26848583-7460-8150-86d1-e31e1725108b",
+    "functions": "26848583-7460-81f4-92fa-f7f15370afdf"
+  },
+  "propertyMappings": {
+    "26848583-7460-816d-b8c5-cc9f91a55cc5.Status": {
+      "id": "H%7By%7D",
+      "name": "Status",
+      "type": "select",
+      "database": "26848583-7460-816d-b8c5-cc9f91a55cc5"
+    },
+    "26848583-7460-816d-b8c5-cc9f91a55cc5.Last Modified": {
+      "id": "UEcd",
+      "name": "Last Modified",
+      "type": "date",
+      "database": "26848583-7460-816d-b8c5-cc9f91a55cc5"
+    },
+    "26848583-7460-816d-b8c5-cc9f91a55cc5.File Path": {
+      "id": "U%7Dj%7C",
+      "name": "File Path",
+      "type": "rich_text",
+      "database": "26848583-7460-816d-b8c5-cc9f91a55cc5"
+    },
+    "26848583-7460-816d-b8c5-cc9f91a55cc5.Project": {
+      "id": "XgQ%5B",
+      "name": "Project",
+      "type": "select",
+      "database": "26848583-7460-816d-b8c5-cc9f91a55cc5"
+    },
+    "26848583-7460-816d-b8c5-cc9f91a55cc5.Size (bytes)": {
+      "id": "oIVA",
+      "name": "Size (bytes)",
+      "type": "number",
+      "database": "26848583-7460-816d-b8c5-cc9f91a55cc5"
+    },
+    "26848583-7460-816d-b8c5-cc9f91a55cc5.Extension": {
+      "id": "%7CwD%7C",
+      "name": "Extension",
+      "type": "select",
+      "database": "26848583-7460-816d-b8c5-cc9f91a55cc5"
+    },
+    "26848583-7460-816d-b8c5-cc9f91a55cc5.Name": {
+      "id": "title",
+      "name": "Name",
+      "type": "title",
+      "database": "26848583-7460-816d-b8c5-cc9f91a55cc5"
+    },
+    "26848583-7460-8150-86d1-e31e1725108b.Priority": {
+      "id": "%3AW%3EZ",
+      "name": "Priority",
+      "type": "select",
+      "database": "26848583-7460-8150-86d1-e31e1725108b"
+    },
+    "26848583-7460-8150-86d1-e31e1725108b.Last Updated": {
+      "id": "Pup~",
+      "name": "Last Updated",
+      "type": "date",
+      "database": "26848583-7460-8150-86d1-e31e1725108b"
+    },
+    "26848583-7460-8150-86d1-e31e1725108b.Document Type": {
+      "id": "Xi%7BC",
+      "name": "Document Type",
+      "type": "select",
+      "database": "26848583-7460-8150-86d1-e31e1725108b"
+    },
+    "26848583-7460-8150-86d1-e31e1725108b.Tags": {
+      "id": "%5Ei%3DP",
+      "name": "Tags",
+      "type": "multi_select",
+      "database": "26848583-7460-8150-86d1-e31e1725108b"
+    },
+    "26848583-7460-8150-86d1-e31e1725108b.Content": {
+      "id": "uGww",
+      "name": "Content",
+      "type": "rich_text",
+      "database": "26848583-7460-8150-86d1-e31e1725108b"
+    },
+    "26848583-7460-8150-86d1-e31e1725108b.Status": {
+      "id": "vdfF",
+      "name": "Status",
+      "type": "select",
+      "database": "26848583-7460-8150-86d1-e31e1725108b"
+    },
+    "26848583-7460-8150-86d1-e31e1725108b.Name": {
+      "id": "title",
+      "name": "Name",
+      "type": "title",
+      "database": "26848583-7460-8150-86d1-e31e1725108b"
+    },
+    "26848583-7460-81f4-92fa-f7f15370afdf.Complexity": {
+      "id": "D%7CPf",
+      "name": "Complexity",
+      "type": "select",
+      "database": "26848583-7460-81f4-92fa-f7f15370afdf"
+    },
+    "26848583-7460-81f4-92fa-f7f15370afdf.Description": {
+      "id": "Yue%7D",
+      "name": "Description",
+      "type": "rich_text",
+      "database": "26848583-7460-81f4-92fa-f7f15370afdf"
+    },
+    "26848583-7460-81f4-92fa-f7f15370afdf.Return Type": {
+      "id": "eERb",
+      "name": "Return Type",
+      "type": "rich_text",
+      "database": "26848583-7460-81f4-92fa-f7f15370afdf"
+    },
+    "26848583-7460-81f4-92fa-f7f15370afdf.Type": {
+      "id": "hl%3A%5B",
+      "name": "Type",
+      "type": "select",
+      "database": "26848583-7460-81f4-92fa-f7f15370afdf"
+    },
+    "26848583-7460-81f4-92fa-f7f15370afdf.Parameters": {
+      "id": "us%3B%5C",
+      "name": "Parameters",
+      "type": "rich_text",
+      "database": "26848583-7460-81f4-92fa-f7f15370afdf"
+    },
+    "26848583-7460-81f4-92fa-f7f15370afdf.Name": {
+      "id": "title",
+      "name": "Name",
+      "type": "title",
+      "database": "26848583-7460-81f4-92fa-f7f15370afdf"
+    },
+    "26848583-7460-816d-b8c5-cc9f91a55cc5.Dependencies": {
+      "id": "Y%60Bf",
+      "name": "Dependencies",
+      "type": "relation",
+      "database": "26848583-7460-816d-b8c5-cc9f91a55cc5"
+    },
+    "26848583-7460-816d-b8c5-cc9f91a55cc5.Dependents": {
+      "id": "%5DpBu",
+      "name": "Dependents",
+      "type": "relation",
+      "database": "26848583-7460-816d-b8c5-cc9f91a55cc5"
+    },
+    "26848583-7460-8150-86d1-e31e1725108b.Related Files": {
+      "id": "W%7Byc",
+      "name": "Related Files",
+      "type": "relation",
+      "database": "26848583-7460-8150-86d1-e31e1725108b"
+    },
+    "26848583-7460-81f4-92fa-f7f15370afdf.File": {
+      "id": "ZQBy",
+      "name": "File",
+      "type": "relation",
+      "database": "26848583-7460-81f4-92fa-f7f15370afdf"
+    },
+    "26848583-7460-81f4-92fa-f7f15370afdf.Calls": {
+      "id": "uh%5C%7B",
+      "name": "Calls",
+      "type": "relation",
+      "database": "26848583-7460-81f4-92fa-f7f15370afdf"
+    },
+    "26848583-7460-81f4-92fa-f7f15370afdf.Called By": {
+      "id": "%7DY%7D%3A",
+      "name": "Called By",
+      "type": "relation",
+      "database": "26848583-7460-81f4-92fa-f7f15370afdf"
+    }
+  }
+}

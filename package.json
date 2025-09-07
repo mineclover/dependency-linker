@@ -1,0 +1,110 @@
+{
+  "name": "@context-action/dependency-linker",
+  "version": "0.0.1",
+  "description": "CLI tool to explore project files and upload dependency information to Notion",
+  "main": "dist/main.js",
+  "module": "src/main.ts",
+  "type": "module",
+  "bin": {
+    "deplink": "./dist/main.js",
+    "deplink-db": "./dist/cli/commands/database.js"
+  },
+  "publishConfig": {
+    "access": "public",
+    "registry": "https://registry.npmjs.org/"
+  },
+  "repository": {
+    "type": "git",
+    "url": "git+https://github.com/mineclover/dependency-linker.git"
+  },
+  "bugs": {
+    "url": "https://github.com/mineclover/dependency-linker/issues"
+  },
+  "homepage": "https://github.com/mineclover/dependency-linker#readme",
+  "scripts": {
+    "dev": "bun run src/main.ts",
+    "build": "bun build src/main.ts --outdir dist --target node",
+    "start": "bun run dist/main.js",
+    "type-check": "tsc --noEmit",
+    
+    "init": "bun run src/main.ts init",
+    "analyze": "bun run src/main.ts upload --project",
+    "sync": "bun run src/main.ts sync",
+    "sync:dry": "bun run src/main.ts sync --dry-run",
+    
+    "test": "vitest",
+    "test:watch": "vitest --watch",
+    "test:coverage": "vitest --coverage",
+    "test:ui": "vitest --ui",
+    "test:unit": "vitest test/unit/",
+    "test:integration": "vitest test/integration/",
+    "test:e2e": "vitest test/e2e",
+    "test:architecture": "bun test test/architecture/",
+    "test:domain": "vitest test/unit/domain/",
+    "test:quick": "bun test test/unit/",
+    "test:json-schema": "vitest test/integration/json-schema-integration.test.ts",
+    "test:json-schema:watch": "vitest test/integration/json-schema-integration.test.ts --watch",
+    "test:real-api": "vitest test/integration/real-api-integration.test.ts",
+    "test:real-api:watch": "vitest test/integration/real-api-integration.test.ts --watch",
+    "test:markdown": "bun test test/integration/markdownUploadDownload.bun.test.ts",
+    "test:notion": "bun run src/sample.ts",
+    
+    "db:init": "bun run src/main.ts db:init",
+    "db:check": "bun run src/main.ts db:check",
+    "db:test": "bun run src/main.ts db:test",
+    "db:reset": "bun run src/main.ts db:reset",
+    "db:validate": "bun run src/main.ts db:validate",
+    "db:add-property": "bun run src/main.ts db:add-property",
+    "db:restore": "bun run src/main.ts db:restore",
+    "db:repair": "bun run src/main.ts db:repair",
+    "db:create-complete-files": "bun run src/main.ts db:create-complete-files",
+    "db:create-with-schema": "bun run src/main.ts db:create-with-schema",
+    
+    
+    "prepare": "bun run build",
+    "prepublishOnly": "bun run type-check && bun run build",
+    "preversion": "bun run type-check",
+    "version": "bun run build && git add -A dist",
+    "postversion": "git push && git push --tags"
+  },
+  "keywords": ["cli", "notion", "dependency", "typescript", "bun", "project-analysis", "file-tracking"],
+  "author": "context-action",
+  "license": "MIT",
+  "dependencies": {
+    "@notionhq/client": "^5.0.0",
+    "@types/marked": "^6.0.0",
+    "ajv": "^8.17.1",
+    "ajv-formats": "^3.0.1",
+    "chokidar": "^4.0.1",
+    "commander": "^14.0.0",
+    "dotenv": "^17.2.2",
+    "glob": "^11.0.3",
+    "gray-matter": "^4.0.3",
+    "lodash": "^4.17.21",
+    "marked": "^16.2.1",
+    "minimatch": "^10.0.3",
+    "prompts": "^2.4.2",
+    "tree-sitter": "^0.21.1",
+    "tree-sitter-c": "^0.21.4",
+    "tree-sitter-cpp": "^0.22.3",
+    "tree-sitter-go": "^0.21.1",
+    "tree-sitter-java": "^0.21.0",
+    "tree-sitter-javascript": "^0.21.4",
+    "tree-sitter-python": "^0.21.0",
+    "tree-sitter-rust": "^0.21.0",
+    "tree-sitter-typescript": "^0.21.2",
+    "typescript": "^5.0.0"
+  },
+  "devDependencies": {
+    "@types/bun": "latest",
+    "@types/chokidar": "^2.1.3",
+    "@types/lodash": "^4.17.13",
+    "@types/node": "^20.0.0",
+    "@types/prompts": "^2.4.9",
+    "@vitest/ui": "^3.2.4",
+    "vitest": "^3.2.4"
+  },
+  "peerDependencies": {
+    "typescript": "^5"
+  }
+}

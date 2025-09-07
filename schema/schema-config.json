@@ -1,0 +1,140 @@
+{
+  "version": "1.2.0",
+  "database_path": "./file-index.db",
+  "backup_retention_days": 30,
+  
+  "schemas": {
+    "core": {
+      "coordinates": {
+        "version": "1.0.0", 
+        "required": true,
+        "description": "workspace root 기준 파일 좌표 관리",
+        "file": "schema/core/coordinates.sql"
+      },
+      "dependencies": {
+        "version": "1.1.0", 
+        "required": true,
+        "description": "파일 간 import/export 의존성 관리",
+        "file": "schema/core/dependencies.sql"
+      },
+      "tracking": {
+        "version": "1.0.0", 
+        "required": true,
+        "description": "Notion 페이지 ID와 로컬 파일 연결",
+        "file": "schema/core/tracking.sql"
+      }
+    },
+    "extensions": {
+      "documentation": {
+        "version": "1.0.0", 
+        "required": false,
+        "description": "Glob 기반 문서 매칭 및 동기화",
+        "file": "schema/extensions/documentation.sql",
+        "depends_on": ["core.tracking"]
+      },
+      "functions": {
+        "version": "0.9.0", 
+        "required": false,
+        "description": "함수/클래스 레벨 추적 (Phase 2)",
+        "file": "schema/extensions/functions.sql",
+        "depends_on": ["core.tracking", "core.coordinates"]
+      },
+      "analytics": {
+        "version": "0.8.0", 
+        "required": false,
+        "description": "사용 패턴 및 성능 분석",
+        "file": "schema/extensions/analytics.sql",
+        "depends_on": ["core.dependencies", "extensions.documentation"]
+      }
+    }
+  },
+  
+  "migrations": {
+    "applied": [
+      {
+        "id": "001",
+        "name": "initial_core_setup", 
+        "applied_at": "2025-09-07T02:00:00Z",
+        "description": "초기 좌표, 의존성, 추적 시스템 설정"
+      }
+    ],
+    "pending": [
+      {
+        "id": "002",
+        "name": "add_documentation_system",
+        "description": "문서화 연동 시스템 추가",
+        "file": "migrations/002_add_documentation.sql"
+      }
+    ],
+    "auto_migrate": true
+  },
+  
+  "indexes": {
+    "optimization_level": "high",
+    "custom_indexes": [
+      {
+        "name": "idx_file_dependencies_composite",
+        "table": "dependencies", 
+        "columns": ["source_path", "is_external", "is_valid"],
+        "description": "복합 쿼리 최적화"
+      },
+      {
+        "name": "idx_document_matches_performance",
+        "table": "file_document_matches",
+        "columns": ["file_path", "match_priority", "is_valid"],
+        "description": "문서 매칭 성능 최적화"
+      }
+    ]
+  },
+  
+  "maintenance": {
+    "auto_vacuum": true,
+    "vacuum_schedule": "daily",
+    "analyze_schedule": "weekly",
+    "cleanup_tasks": [
+      {
+        "name": "clean_old_sync_logs",
+        "description": "30일 이상된 동기화 로그 정리",
+        "query": "DELETE FROM sync_log WHERE started_at < datetime('now', '-30 days')"
+      },
+      {
+        "name": "refresh_document_cache",
+        "description": "유효하지 않은 문서 매칭 캐시 정리",
+        "query": "DELETE FROM file_document_matches WHERE is_valid = FALSE AND created_at < datetime('now', '-7 days')"
+      }
+    ]
+  },
+  
+  "performance": {
+    "journal_mode": "WAL",
+    "synchronous": "NORMAL", 
+    "cache_size": 10000,
+    "temp_store": "MEMORY",
+    "connection_pool_size": 5
+  },
+  
+  "features": {
+    "enable_foreign_keys": true,
+    "enable_triggers": true,
+    "enable_views": true,
+    "enable_full_text_search": false
+  },
+  
+  "validation": {
+    "check_constraints": true,
+    "referential_integrity": true,
+    "data_type_validation": true,
+    "custom_validators": [
+      {
+        "name": "valid_glob_pattern",
+        "description": "Glob 패턴 유효성 검사",
+        "function": "validateGlobPattern"
+      },
+      {
+        "name": "tracking_id_format",
+        "description": "Tracking ID 형식 검사",
+        "pattern": "^(DL|FN|DOC)-[a-zA-Z]+-[0-9]+$"
+      }
+    ]
+  }
+}

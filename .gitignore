@@ -1,0 +1,71 @@
+# dependencies (bun install)
+node_modules
+
+# output
+out
+dist
+*.tgz
+
+# code coverage
+coverage
+*.lcov
+
+# logs
+logs
+_.log
+report.[0-9]_.[0-9]_.[0-9]_.[0-9]_.json
+
+# dotenv environment variable files and sensitive configuration
+.env
+.env.*
+.env.test
+.env.development.local
+.env.test.local
+.env.production.local
+.env.local
+
+# Security-sensitive files
+*.pem
+*.key
+*.p12
+*.pfx
+**/secrets.json
+**/credentials.json
+**/*secret*
+**/*credential*
+**/*token*
+**/*key*
+*.env.backup
+
+# caches
+.eslintcache
+.cache
+*.tsbuildinfo
+
+# project specific temporary files
+.deplink-*
+coordinate-index.db
+file-index.db
+*.db-shm
+*.db-wal
+performance-analysis-*.json
+quality-report-*.json
+workspace-templates.json
+test-*.js
+test-*.md
+demo-*.js
+*-backup*
+*downloaded*
+enhanced-download-test.md
+scripts/temp/
+
+# Legacy code archive
+legacy/
+
+# IntelliJ based IDEs
+.idea
+
+# Finder (MacOS) folder config
+.DS_Store
+.deplink/
+.deplink-*.json

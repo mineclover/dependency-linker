@@ -1,0 +1,16 @@
+{
+  "originalLength": 867,
+  "downloadedLength": 1307,
+  "lengthDifference": 440,
+  "hasMetadata": true,
+  "preservedElements": {
+    "headers": true,
+    "bold": true,
+    "italic": true,
+    "code": true,
+    "codeBlock": true,
+    "lists": true,
+    "tables": true,
+    "quotes": true
+  }
+}

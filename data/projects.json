@@ -1,0 +1,32 @@
+{
+  "projects": {
+    "5536ff06-b5ef-4bbf-84d1-d630488a14e9": {
+      "name": "Dependency Linker",
+      "rootPath": "/Users/junwoobang/project/dependency-linker",
+      "projectType": "typescript",
+      "status": "initialized",
+      "trackingId": "DL-mf9rjxx4-x9ghg4",
+      "settings": {
+        "includePatterns": [
+          "**/*.{js,ts,jsx,tsx,py,java,go,rs}"
+        ],
+        "excludePatterns": [
+          "**/node_modules/**",
+          "**/dist/**",
+          "**/build/**",
+          "**/.git/**"
+        ],
+        "maxFileSize": 1048576,
+        "enableGitIntegration": true,
+        "enableNotionSync": true,
+        "autoInjectIds": true,
+        "trackingEnabled": true
+      },
+      "id": "5536ff06-b5ef-4bbf-84d1-d630488a14e9",
+      "createdAt": "2025-09-07T14:03:40.792Z",
+      "nodeIds": [],
+      "analyzedPaths": []
+    }
+  },
+  "lastModified": "2025-09-07T14:03:40.792Z"
+}

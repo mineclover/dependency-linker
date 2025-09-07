@@ -1,0 +1,359 @@
+{
+  "$schema": "http://json-schema.org/draft-07/schema#",
+  "$id": "https://dependency-linker.io/schemas/deplink-config.json",
+  "title": "Dependency Linker Configuration",
+  "description": "JSON Schema specification for Dependency Linker configuration file",
+  "type": "object",
+  "required": ["project"],
+  "properties": {
+    "notion": {
+      "type": "object",
+      "description": "Notion integration configuration",
+      "properties": {
+        "workspaceUrl": {
+          "type": "string",
+          "format": "uri",
+          "pattern": "^https://www\\.notion\\.so/",
+          "description": "Notion workspace URL"
+        },
+        "parentPageId": {
+          "type": "string",
+          "pattern": "^[0-9a-fA-F]{32}$",
+          "description": "Parent page ID in Notion (32 character hex string)"
+        },
+        "schemaVersion": {
+          "type": "string",
+          "pattern": "^\\d+\\.\\d+(\\.\\d+)?$",
+          "description": "Schema version for compatibility",
+          "default": "2.0"
+        },
+        "databases": {
+          "type": "object",
+          "description": "Database ID mappings",
+          "patternProperties": {
+            "^[a-z][a-z0-9_]*$": {
+              "type": "string",
+              "pattern": "^[0-9a-fA-F]{8}-[0-9a-fA-F]{4}-[0-9a-fA-F]{4}-[0-9a-fA-F]{4}-[0-9a-fA-F]{12}$",
+              "description": "Notion database ID (UUID format)"
+            }
+          },
+          "additionalProperties": false,
+          "minProperties": 1
+        },
+        "apiKey": {
+          "type": "string",
+          "description": "Notion API key (stored separately for security)",
+          "pattern": "^secret_[A-Za-z0-9]{43}$"
+        },
+        "retryOptions": {
+          "type": "object",
+          "description": "API retry configuration",
+          "properties": {
+            "maxRetries": {
+              "type": "integer",
+              "minimum": 0,
+              "maximum": 10,
+              "default": 3,
+              "description": "Maximum number of retry attempts"
+            },
+            "retryDelay": {
+              "type": "integer",
+              "minimum": 100,
+              "maximum": 10000,
+              "default": 1000,
+              "description": "Delay between retries in milliseconds"
+            },
+            "exponentialBackoff": {
+              "type": "boolean",
+              "default": true,
+              "description": "Use exponential backoff for retries"
+            }
+          },
+          "additionalProperties": false
+        }
+      },
+      "additionalProperties": false
+    },
+
+    "project": {
+      "type": "object",
+      "required": ["name", "path"],
+      "description": "Project configuration",
+      "properties": {
+        "name": {
+          "type": "string",
+          "minLength": 1,
+          "maxLength": 100,
+          "pattern": "^[a-zA-Z0-9][a-zA-Z0-9-_]*[a-zA-Z0-9]$",
+          "description": "Project name (alphanumeric with hyphens/underscores)"
+        },
+        "path": {
+          "type": "string",
+          "minLength": 1,
+          "description": "Absolute path to project root directory"
+        },
+        "environment": {
+          "type": "string",
+          "enum": ["development", "staging", "production", "test"],
+          "default": "development",
+          "description": "Current environment"
+        },
+        "version": {
+          "type": "string",
+          "pattern": "^\\d+\\.\\d+\\.\\d+(-[a-zA-Z0-9.-]+)?(\\+[a-zA-Z0-9.-]+)?$",
+          "description": "Project version (semantic versioning)"
+        },
+        "description": {
+          "type": "string",
+          "maxLength": 500,
+          "description": "Project description"
+        },
+        "repository": {
+          "type": "object",
+          "description": "Repository information",
+          "properties": {
+            "type": {
+              "type": "string",
+              "enum": ["git", "mercurial", "svn"],
+              "default": "git"
+            },
+            "url": {
+              "type": "string",
+              "format": "uri",
+              "description": "Repository URL"
+            },
+            "branch": {
+              "type": "string",
+              "default": "main",
+              "description": "Default branch name"
+            }
+          },
+          "additionalProperties": false
+        }
+      },
+      "additionalProperties": false
+    },
+
+    "database": {
+      "type": "object",
+      "description": "Local database configuration",
+      "properties": {
+        "sqlitePath": {
+          "type": "string",
+          "default": "./file-index.db",
+          "description": "Path to SQLite database file"
+        },
+        "walMode": {
+          "type": "boolean",
+          "default": true,
+          "description": "Enable SQLite WAL mode for better performance"
+        },
+        "backupEnabled": {
+          "type": "boolean",
+          "default": false,
+          "description": "Enable automatic database backups"
+        },
+        "backupInterval": {
+          "type": "integer",
+          "minimum": 300,
+          "maximum": 86400,
+          "default": 3600,
+          "description": "Backup interval in seconds"
+        },
+        "maxConnections": {
+          "type": "integer",
+          "minimum": 1,
+          "maximum": 100,
+          "default": 10,
+          "description": "Maximum database connections"
+        }
+      },
+      "additionalProperties": false
+    },
+
+    "parser": {
+      "type": "object",
+      "description": "File parsing configuration",
+      "properties": {
+        "maxFileSize": {
+          "type": "integer",
+          "minimum": 1000,
+          "maximum": 100000000,
+          "default": 5000000,
+          "description": "Maximum file size to parse in bytes"
+        },
+        "extensions": {
+          "type": "array",
+          "items": {
+            "type": "string",
+            "pattern": "^\\.[a-zA-Z0-9]+$",
+            "description": "File extension (starting with dot)"
+          },
+          "uniqueItems": true,
+          "minItems": 1,
+          "default": [".ts", ".js", ".tsx", ".jsx", ".py", ".go", ".rs"],
+          "description": "Supported file extensions"
+        },
+        "ignorePatterns": {
+          "type": "array",
+          "items": {
+            "type": "string",
+            "minLength": 1,
+            "description": "Glob pattern for files/directories to ignore"
+          },
+          "uniqueItems": true,
+          "default": [
+            "node_modules/**",
+            "dist/**", 
+            ".git/**",
+            "**/*.log",
+            "**/*.tmp",
+            "**/*.test.*",
+            "**/*.spec.*"
+          ],
+          "description": "Patterns for files to ignore during parsing"
+        },
+        "parallelism": {
+          "type": "integer",
+          "minimum": 1,
+          "maximum": 32,
+          "default": 4,
+          "description": "Number of parallel parsing workers"
+        },
+        "timeout": {
+          "type": "integer",
+          "minimum": 1000,
+          "maximum": 300000,
+          "default": 30000,
+          "description": "Parsing timeout per file in milliseconds"
+        },
+        "encoding": {
+          "type": "string",
+          "enum": ["utf8", "utf16le", "latin1", "ascii"],
+          "default": "utf8",
+          "description": "File encoding to assume"
+        }
+      },
+      "additionalProperties": false
+    },
+
+    "features": {
+      "type": "object",
+      "description": "Feature toggles",
+      "properties": {
+        "autoClassification": {
+          "type": "boolean",
+          "default": true,
+          "description": "Enable automatic file classification"
+        },
+        "sqliteIndexing": {
+          "type": "boolean", 
+          "default": true,
+          "description": "Enable SQLite indexing for better performance"
+        },
+        "notionUpload": {
+          "type": "boolean",
+          "default": true,
+          "description": "Enable uploading data to Notion"
+        },
+        "realTimeSync": {
+          "type": "boolean",
+          "default": false,
+          "description": "Enable real-time synchronization"
+        },
+        "incrementalParsing": {
+          "type": "boolean",
+          "default": false,
+          "description": "Parse only changed files"
+        },
+        "watchMode": {
+          "type": "boolean",
+          "default": false,
+          "description": "Watch files for changes"
+        },
+        "compressionEnabled": {
+          "type": "boolean",
+          "default": false,
+          "description": "Enable data compression"
+        },
+        "analyticsEnabled": {
+          "type": "boolean",
+          "default": false,
+          "description": "Enable usage analytics"
+        }
+      },
+      "additionalProperties": false
+    },
+
+    "logging": {
+      "type": "object",
+      "description": "Logging configuration",
+      "properties": {
+        "level": {
+          "type": "string",
+          "enum": ["debug", "info", "warn", "error"],
+          "default": "info",
+          "description": "Logging level"
+        },
+        "format": {
+          "type": "string", 
+          "enum": ["json", "text", "structured"],
+          "default": "text",
+          "description": "Log output format"
+        },
+        "file": {
+          "type": "string",
+          "description": "Log file path (if not specified, logs to console)"
+        },
+        "maxSize": {
+          "type": "integer",
+          "minimum": 1000000,
+          "maximum": 1000000000,
+          "default": 10000000,
+          "description": "Maximum log file size in bytes"
+        },
+        "maxFiles": {
+          "type": "integer",
+          "minimum": 1,
+          "maximum": 100,
+          "default": 5,
+          "description": "Maximum number of log files to keep"
+        }
+      },
+      "additionalProperties": false
+    },
+
+    "sync": {
+      "type": "object",
+      "description": "Synchronization settings",
+      "properties": {
+        "batchSize": {
+          "type": "integer",
+          "minimum": 1,
+          "maximum": 1000,
+          "default": 100,
+          "description": "Number of items to process in each batch"
+        },
+        "concurrency": {
+          "type": "integer",
+          "minimum": 1,
+          "maximum": 20,
+          "default": 3,
+          "description": "Number of concurrent sync operations"
+        },
+        "retryFailed": {
+          "type": "boolean",
+          "default": true,
+          "description": "Retry failed sync operations"
+        },
+        "dryRun": {
+          "type": "boolean",
+          "default": false,
+          "description": "Perform dry run without making changes"
+        }
+      },
+      "additionalProperties": false
+    }
+  },
+  "additionalProperties": true
+}
