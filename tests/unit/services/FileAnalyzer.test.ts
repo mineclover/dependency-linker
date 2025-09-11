@@ -172,7 +172,7 @@ describe('FileAnalyzer', () => {
 
       // Make parser hang longer than timeout
       mockParser.parseFile.mockImplementation(() => 
-        new Promise(resolve => setTimeout(resolve, 100))
+        new Promise(() => {}) // Never resolves to simulate timeout
       );
 
       const result = await fileAnalyzer.analyzeFile(timeoutRequest);
