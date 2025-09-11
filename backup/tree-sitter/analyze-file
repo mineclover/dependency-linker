@@ -1,0 +1,23 @@
+#!/bin/bash
+
+# Tree-sitter Analyzer CLI Wrapper
+# Executable wrapper for the analyze-file CLI tool
+
+# Get the directory of this script
+DIR="$( cd "$( dirname "${BASH_SOURCE[0]}" )" && pwd )"
+
+# Check if Node.js is available
+if ! command -v node &> /dev/null; then
+    echo "Error: Node.js is required but not installed." >&2
+    echo "Please install Node.js from https://nodejs.org/" >&2
+    exit 1
+fi
+
+# Check if the compiled JavaScript file exists
+if [ ! -f "$DIR/dist/cli/analyze-file.js" ]; then
+    echo "Error: analyze-file.js not found. Please run 'npm run build' first." >&2
+    exit 1
+fi
+
+# Execute the Node.js CLI with all arguments passed through
+exec node "$DIR/dist/cli/analyze-file.js" "$@"
