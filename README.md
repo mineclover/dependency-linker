@@ -4,7 +4,7 @@
 
 ## 프로젝트 완료 🚀
 
-이 프로젝트는 **완료**되었으며, 완성된 TypeScript 파일 분석기는 `backup/tree-sitter/` 디렉토리에 위치합니다.
+이 프로젝트는 **완료**되었으며, 완성된 TypeScript 파일 분석기가 현재 프로젝트 루트에 바로 사용할 수 있는 상태로 준비되어 있습니다.
 
 ## 주요 성과
 
@@ -22,16 +22,14 @@
 - **CLI Tests**: ✅ (모든 명령줄 인터페이스 검증)
 
 ### 📚 문서화
-- **README.md**: 기술 개요 및 설치 가이드
+- **README.md**: 기술 개요 및 설치 가이드 (현재 파일)
 - **quickstart.md**: 빠른 시작 가이드
 - **USAGE.md**: 실제 사용 사례 및 고급 활용법 (한국어)
 
-## 사용 방법
+## 즉시 사용하기
 
 ### 기본 사용
 ```bash
-cd backup/tree-sitter
-
 # TypeScript 파일 분석 (JSON)
 ./analyze-file src/component.tsx
 
@@ -40,6 +38,9 @@ cd backup/tree-sitter
 
 # 소스 위치 정보 포함
 ./analyze-file src/component.tsx --include-sources
+
+# 도움말
+./analyze-file --help
 ```
 
 ### 분석 결과 예시
@@ -85,9 +86,7 @@ function analyzeDependencies(filePath) {
 ```yaml
 # GitHub Actions에서 의존성 검사
 - name: Check dependencies
-  run: |
-    cd backup/tree-sitter
-    ./analyze-file src/index.ts | jq '.dependencies[].source'
+  run: ./analyze-file src/index.ts | jq '.dependencies[].source'
 ```
 
 ## 기술 스택
@@ -106,18 +105,16 @@ function analyzeDependencies(filePath) {
 ## 설치 및 실행
 
 ```bash
-cd backup/tree-sitter
-
-# 의존성 설치
+# 의존성 설치 (이미 완료됨)
 npm install
 
 # tree-sitter 리빌드 (필요한 경우)
 npm rebuild tree-sitter
 
-# 프로젝트 빌드
+# 프로젝트 빌드 (이미 완료됨)
 npm run build
 
-# CLI 실행 권한 부여
+# CLI 실행 권한 확인
 chmod +x analyze-file
 
 # 테스트 실행
@@ -129,9 +126,9 @@ npm test
 
 ## 문서 가이드
 
-- 📖 **[quickstart.md](backup/tree-sitter/quickstart.md)**: 빠른 시작 가이드
-- 📚 **[USAGE.md](backup/tree-sitter/USAGE.md)**: 실제 활용법 및 고급 사용법 (한국어)
-- 🔧 **[README.md](backup/tree-sitter/README.md)**: 기술 문서 및 API 참조
+- 📖 **[quickstart.md](quickstart.md)**: 빠른 시작 가이드와 기본 예시
+- 📚 **[USAGE.md](USAGE.md)**: 실제 활용법 및 고급 사용법 (한국어)
+- 🔧 **[README.md](README.md)**: 기술 문서 및 API 참조 (현재 파일)
 
 ## 알려진 제한사항
 
@@ -146,6 +143,6 @@ MIT 라이선스로 제공됩니다.
 
 **🎯 프로젝트 상태: 완료 ✅**  
 **📦 준비된 제품: TypeScript 파일 분석기**  
-**📍 위치: `backup/tree-sitter/`**
+**📍 위치: 프로젝트 루트**
 
 완성된 도구를 바로 사용하거나 프로젝트에 통합하실 수 있습니다!
