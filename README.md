@@ -26,6 +26,24 @@
 - **README.md**: 기술 개요 및 설치 가이드 (현재 파일)
 - **quickstart.md**: 빠른 시작 가이드
 - **USAGE.md**: 실제 사용 사례 및 고급 활용법 (한국어)
+- **demo/README.md**: 🎯 **인터랙티브 데모 가이드** - 실제 실행 가능한 예제들
+
+## 🎯 인터랙티브 데모 체험
+
+### 🚀 원클릭 데모 실행
+```bash
+# 모든 예제를 자동으로 분석하고 결과 생성
+./demo/run-demo.sh
+```
+
+**포함된 데모:**
+- ✅ 간단한 React 컴포넌트 (1개 의존성)
+- ✅ 복잡한 React 앱 (11개 의존성 - MUI, axios, lodash 등)
+- ✅ Node.js Express 서버 (20개 의존성)
+- ✅ 구문 오류 파일 (에러 복구 능력 테스트)
+- ✅ 성능 벤치마크 및 통계
+
+**📖 상세 가이드**: [demo/README.md](demo/README.md)
 
 ## 즉시 사용하기
 
@@ -127,6 +145,7 @@ npm test
 
 ## 문서 가이드
 
+- 🎯 **[demo/README.md](demo/README.md)**: 인터랙티브 데모 - 실제 실행 가능한 예제들
 - 📖 **[quickstart.md](quickstart.md)**: 빠른 시작 가이드와 기본 예시
 - 📚 **[USAGE.md](USAGE.md)**: 실제 활용법 및 고급 사용법 (한국어)
 - 🔧 **[README.md](README.md)**: 기술 문서 및 API 참조 (현재 파일)

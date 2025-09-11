@@ -1,0 +1,108 @@
+{
+  "filePath": "demo/examples/broken-syntax.tsx",
+  "success": true,
+  "dependencies": [
+    {
+      "source": "react",
+      "type": "external",
+      "location": {
+        "line": 1,
+        "column": 0,
+        "offset": 0
+      },
+      "isNodeBuiltin": false,
+      "isScopedPackage": false,
+      "packageName": "react"
+    },
+    {
+      "source": "@mui/material",
+      "type": "external",
+      "location": {
+        "line": 2,
+        "column": 0,
+        "offset": 41
+      },
+      "isNodeBuiltin": false,
+      "isScopedPackage": true,
+      "packageName": "@mui/material"
+    },
+    {
+      "source": "axios",
+      "type": "external",
+      "location": {
+        "line": 3,
+        "column": 0,
+        "offset": 89
+      },
+      "isNodeBuiltin": false,
+      "isScopedPackage": false,
+      "packageName": "axios"
+    }
+  ],
+  "imports": [
+    {
+      "source": "react",
+      "specifiers": [
+        {
+          "type": "named",
+          "imported": "useState",
+          "local": "useState"
+        },
+        {
+          "type": "default",
+          "imported": "default",
+          "local": "React"
+        }
+      ],
+      "location": {
+        "line": 1,
+        "column": 0,
+        "offset": 0
+      },
+      "isTypeOnly": false
+    },
+    {
+      "source": "@mui/material",
+      "specifiers": [
+        {
+          "type": "named",
+          "imported": "Button",
+          "local": "Button"
+        },
+        {
+          "type": "named",
+          "imported": "Dialog",
+          "local": "Dialog"
+        }
+      ],
+      "location": {
+        "line": 2,
+        "column": 0,
+        "offset": 41
+      },
+      "isTypeOnly": false
+    },
+    {
+      "source": "axios",
+      "specifiers": [
+        {
+          "type": "default",
+          "imported": "default",
+          "local": "axios"
+        }
+      ],
+      "location": {
+        "line": 3,
+        "column": 0,
+        "offset": 89
+      },
+      "isTypeOnly": false
+    }
+  ],
+  "exports": [],
+  "parseTime": 7,
+  "error": {
+    "code": "PARSE_ERROR",
+    "message": "File contains syntax errors but partial analysis was possible"
+  }
+}
