@@ -1,7 +1,7 @@
 {
-	"name": "tree-sitter-analyzer",
+	"name": "dependency-linker",
 	"version": "1.0.0",
-	"description": "TypeScript single-file analysis tool using tree-sitter",
+	"description": "A powerful and extensible tool for analyzing, visualizing, and managing dependencies in TypeScript projects. Provides a rich API for dependency analysis, task management, and batch processing.",
 	"main": "dist/index.js",
 	"types": "dist/index.d.ts",
 	"bin": {
