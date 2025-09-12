@@ -25,22 +25,52 @@
 ./analyze-file demo/examples/broken-syntax.tsx --format text
 ```
 
+### 3️⃣ 새로운 커스텀 출력 형식 테스트
+```bash
+# 🎨 커스텀 출력 형식 전체 데모
+./demo/format-demo.sh
+
+# 빠른 요약 (CI/CD 파이프라인용)
+./analyze-file demo/examples/complex-app.tsx --format summary
+
+# 외부 패키지만 추출 (package.json 업데이트용)
+./analyze-file demo/examples/complex-app.tsx --format deps-only
+
+# CSV 형식 (스프레드시트 분석용)
+./analyze-file demo/examples/node-backend.ts --format csv
+
+# 테이블 형식 (터미널에서 시각적 확인)
+./analyze-file demo/examples/complex-app.tsx --format table
+
+# 압축된 JSON (API 응답용)
+./analyze-file demo/examples/simple-component.tsx --format compact
+```
+
 ## 📁 Demo 구조
 
 ```
 demo/
-├── README.md              # 이 파일
+├── README.md              # 이 파일  
 ├── run-demo.sh            # 자동 데모 스크립트
+├── format-demo.sh         # 커스텀 출력 형식 데모 스크립트
 ├── examples/              # 테스트용 예제 파일들
 │   ├── simple-component.tsx    # 기본 React 컴포넌트
 │   ├── complex-app.tsx         # 복잡한 React 앱 (11개 의존성)
 │   ├── node-backend.ts         # Express 서버 (20개 의존성)
 │   └── broken-syntax.tsx       # 구문 오류 파일 (에러 복구 테스트)
-└── results/               # 분석 결과 JSON 파일들 (자동 생성)
-    ├── simple-component.json
-    ├── complex-app.json
-    ├── node-backend.json
-    └── broken-syntax.json
+├── results/               # 분석 결과 JSON 파일들 (자동 생성)
+│   ├── simple-component.json
+│   ├── complex-app.json  
+│   ├── node-backend.json
+│   └── broken-syntax.json
+└── format-results/        # 커스텀 형식 결과 파일들 (자동 생성)
+    ├── summary.txt        # 요약 형식
+    ├── deps-only.txt      # 의존성 전용 형식
+    ├── output.csv         # CSV 형식
+    ├── table.txt          # 테이블 형식
+    ├── compact.json       # 압축 JSON
+    ├── pretty.json        # 예쁜 JSON
+    └── detailed.txt       # 상세 텍스트
 ```
 
 ## 🧪 예제 파일 상세 정보
@@ -82,7 +112,46 @@ demo/
 
 ## 📊 분석 결과 예시
 
-### JSON 출력 (API 연동용)
+### 🎨 새로운 커스텀 출력 형식들
+
+#### Summary Format (요약 형식) - CI/CD에 최적
+```
+✅ demo/examples/complex-app.tsx: 11 deps, 11 imports, 5 exports (9ms)
+```
+
+#### Dependencies Only Format (의존성만) - Package 관리용
+```
+@mui/material
+axios  
+date-fns
+lodash
+react
+react-toastify
+```
+
+#### CSV Format (CSV 형식) - 스프레드시트 분석용
+```
+filepath,status,dependencies,imports,exports,parsetime,error
+"demo/examples/complex-app.tsx","success",11,11,5,9,""
+```
+
+#### Table Format (테이블 형식) - 터미널에서 시각적 확인
+```
+📁 File: demo/examples/complex-app.tsx
+⏱️  Parse time: 9ms
+
+📦 DEPENDENCIES
+┌────────────────────────────────────────────────────┬──────────┬──────────┐
+│ Package/Module                                     │ Type     │ Location │
+├────────────────────────────────────────────────────┼──────────┼──────────┤
+│ react                                              │ external │ 1:0      │
+│ @mui/material                                      │ external │ 2:0      │
+└────────────────────────────────────────────────────┴──────────┴──────────┘
+```
+
+### 🔧 기존 형식들
+
+#### JSON 출력 (API 연동용)
 ```json
 {
   "filePath": "demo/examples/complex-app.tsx",
@@ -103,7 +172,7 @@ demo/
 }
 ```
 
-### Text 출력 (사람용)
+#### Text 출력 (상세 정보용)
 ```
 File: demo/examples/complex-app.tsx
 Dependencies:
@@ -186,19 +255,29 @@ jq '[.dependencies[] | select(.type == "external")] | length'
 # 1. 전체 자동 데모
 ./demo/run-demo.sh
 
-# 2. 개별 파일 테스트
+# 2. 커스텀 출력 형식 데모
+./demo/format-demo.sh
+
+# 3. 개별 파일 테스트
 ./analyze-file demo/examples/simple-component.tsx --format text
 ./analyze-file demo/examples/complex-app.tsx --format json
 ./analyze-file demo/examples/node-backend.ts --format text
 ./analyze-file demo/examples/broken-syntax.tsx --format text
 
-# 3. 의존성 분석
+# 4. 새로운 출력 형식들
+./analyze-file demo/examples/complex-app.tsx --format summary     # 요약
+./analyze-file demo/examples/complex-app.tsx --format deps-only  # 패키지만  
+./analyze-file demo/examples/complex-app.tsx --format csv        # CSV
+./analyze-file demo/examples/complex-app.tsx --format table     # 테이블
+./analyze-file demo/examples/complex-app.tsx --format compact   # 압축 JSON
+
+# 5. 의존성 분석
 ./analyze-file demo/examples/complex-app.tsx --format json | jq '.dependencies'
 
-# 4. 성능 측정
+# 6. 성능 측정
 time ./analyze-file demo/examples/node-backend.ts > /dev/null
 
-# 5. 결과 저장
+# 7. 결과 저장
 ./analyze-file demo/examples/complex-app.tsx --format json > my-result.json
 ```
 

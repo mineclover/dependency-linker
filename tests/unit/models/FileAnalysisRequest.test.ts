@@ -103,7 +103,7 @@ describe('FileAnalysisRequest Model', () => {
       const result = validateFileAnalysisRequest(request);
 
       expect(result.isValid).toBe(false);
-      expect(result.errors).toContain('format must be either "json" or "text"');
+      expect(result.errors).toContain('format must be one of: json, text, compact, summary, csv, deps-only, table');
     });
 
     test('should reject invalid parseTimeout', () => {

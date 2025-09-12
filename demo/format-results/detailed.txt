@@ -1,0 +1,68 @@
+File: demo/examples/complex-app.tsx
+Parse Time: 10ms
+Status: Success
+
+Dependencies:
+  External:
+    react (1:0)
+    @mui/material (2:0)
+    axios (3:0)
+    lodash (4:0)
+    date-fns (5:0)
+    react-toastify (6:0)
+  Relative:
+    ./styles.css (7:0)
+    ../services/ApiClient (8:0)
+    ../services/UserService (9:0)
+    ./utils/validators (10:0)
+    ../config/app.config.json (11:0)
+
+Imports:
+  react (1:0)
+    named: useState
+    named: useEffect
+    named: useCallback
+    default: default as React
+  @mui/material (2:0)
+    named: Button
+    named: TextField
+    named: Card
+    named: Typography
+    named: Box
+  axios (3:0)
+    default: default as axios
+  lodash (4:0)
+    named: debounce
+  date-fns (5:0)
+    named: format
+    named: parseISO
+  react-toastify (6:0)
+    named: toast
+  ./styles.css (7:0)
+    side-effect import
+  ../services/ApiClient (8:0)
+    named: ApiClient
+  ../services/UserService (9:0)
+    named: UserService
+  ./utils/validators (10:0)
+    named: validateEmail
+    named: formatName
+  ../config/app.config.json (11:0)
+    default: default as config
+
+Exports:
+  Default:
+    default (253:0)
+  Named:
+    User (type-only) (21:0)
+    AppProps (type-only) (28:0)
+    userUtils (226:0)
+    ApiResponse (type-only) (251:0)
+
+Summary:
+  Total Dependencies: 11
+  Total Imports: 11
+  Total Exports: 5
+  External: 6
+  Internal: 0
+  Relative: 5

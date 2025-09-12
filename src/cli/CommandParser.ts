@@ -3,9 +3,11 @@
  * Parses command line arguments for the analyze-file CLI
  */
 
+import { OutputFormat } from '../models/FileAnalysisRequest';
+
 export interface CliOptions {
   file?: string;
-  format: 'json' | 'text';
+  format: OutputFormat;
   includeSources: boolean;
   parseTimeout: number;
   help: boolean;
@@ -25,6 +27,8 @@ export class CommandParser {
     help: false,
     version: false
   };
+
+  private readonly validFormats: OutputFormat[] = ['json', 'text', 'compact', 'summary', 'csv', 'deps-only', 'table'];
 
   /**
    * Parses command line arguments
@@ -61,11 +65,11 @@ export class CommandParser {
                 }
               };
             }
-            const format = args[++i];
-            if (format !== 'json' && format !== 'text') {
+            const format = args[++i] as OutputFormat;
+            if (!this.validFormats.includes(format)) {
               return {
                 error: {
-                  message: 'Format must be either "json" or "text"',
+                  message: `Format must be one of: ${this.validFormats.join(', ')}`,
                   exitCode: 1
                 }
               };
@@ -171,7 +175,7 @@ ARGUMENTS:
 
 OPTIONS:
   -f, --file <path>         TypeScript file to analyze
-      --format <format>     Output format: json or text (default: json)
+      --format <format>     Output format: json, text, compact, summary, csv, deps-only, table (default: json)
       --include-sources     Include source location information
       --parse-timeout <ms>  Maximum parsing time in milliseconds (default: 5000)
   -h, --help               Show this help message
@@ -181,14 +185,19 @@ EXAMPLES:
   analyze-file src/component.tsx
   analyze-file --file src/utils.ts --format text
   analyze-file --file src/api.ts --include-sources --format json
+  analyze-file --file src/components.tsx --format summary
+  analyze-file --file src/index.ts --format csv
+  analyze-file --file src/types.ts --format deps-only
   analyze-file src/large-file.ts --parse-timeout 10000
 
-OUTPUT:
-  The tool outputs dependency information in JSON or text format, including:
-  - Import statements and their types
-  - Export statements
-  - Dependency classification (external, internal, relative)
-  - Source location information (if --include-sources is used)
+OUTPUT FORMATS:
+  json        - Full JSON output with all details (default)
+  text        - Human-readable detailed format
+  compact     - Minified JSON without formatting
+  summary     - Single line summary with key metrics
+  csv         - CSV format for spreadsheet analysis
+  deps-only   - Dependencies only (external packages)
+  table       - Formatted table view of dependencies
 `.trim();
   }
 
@@ -232,7 +241,7 @@ OUTPUT:
    * @returns Analysis options
    */
   toAnalysisOptions(cliOptions: CliOptions): {
-    format: 'json' | 'text';
+    format: OutputFormat;
     includeSources: boolean;
     parseTimeout: number;
   } {
@@ -260,8 +269,8 @@ OUTPUT:
     const env = process.env;
     const envOptions: Partial<CliOptions> = {};
 
-    if (env.ANALYZE_FORMAT && ['json', 'text'].includes(env.ANALYZE_FORMAT)) {
-      envOptions.format = env.ANALYZE_FORMAT as 'json' | 'text';
+    if (env.ANALYZE_FORMAT && this.validFormats.includes(env.ANALYZE_FORMAT as OutputFormat)) {
+      envOptions.format = env.ANALYZE_FORMAT as OutputFormat;
     }
 
     if (env.ANALYZE_INCLUDE_SOURCES === 'true') {

@@ -1,16 +1,17 @@
 /**
- * Output Formatter
- * Formats analysis results for JSON and text output
+ * Core Output Formatter
+ * Implements IOutputFormatter interface for modular architecture
  */
 
-import { AnalysisResult } from '../models/AnalysisResult';
-import { DependencyInfo, getPackageName } from '../models/DependencyInfo';
-import { ImportInfo } from '../models/ImportInfo';
-import { ExportInfo } from '../models/ExportInfo';
-import { SourceLocation } from '../models/SourceLocation';
-import { OutputFormat } from '../models/FileAnalysisRequest';
+import { IOutputFormatter } from '../interfaces/IOutputFormatter';
+import { AnalysisResult } from '../../models/AnalysisResult';
+import { DependencyInfo, getPackageName } from '../../models/DependencyInfo';
+import { ImportInfo } from '../../models/ImportInfo';
+import { ExportInfo } from '../../models/ExportInfo';
+import { SourceLocation } from '../../models/SourceLocation';
+import { OutputFormat } from '../../models/FileAnalysisRequest';
 
-export class OutputFormatter {
+export class OutputFormatter implements IOutputFormatter {
   /**
    * Formats analysis result based on the specified format
    * @param result Analysis result to format

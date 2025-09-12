@@ -3,9 +3,11 @@
  * Represents a request to analyze a single TypeScript file
  */
 
+export type OutputFormat = 'json' | 'text' | 'compact' | 'summary' | 'csv' | 'deps-only' | 'table';
+
 export interface AnalysisOptions {
   /** Output format */
-  format: 'json' | 'text';
+  format: OutputFormat;
   /** Include source location information */
   includeSources: boolean;
   /** Maximum time for parsing in milliseconds */
@@ -48,8 +50,8 @@ export function validateFileAnalysisRequest(request: FileAnalysisRequest): {
   if (request.options) {
     const { format, includeSources, parseTimeout } = request.options;
 
-    if (format !== undefined && !['json', 'text'].includes(format)) {
-      errors.push('format must be either "json" or "text"');
+    if (format !== undefined && !['json', 'text', 'compact', 'summary', 'csv', 'deps-only', 'table'].includes(format)) {
+      errors.push('format must be one of: json, text, compact, summary, csv, deps-only, table');
     }
 
     if (includeSources !== undefined && typeof includeSources !== 'boolean') {

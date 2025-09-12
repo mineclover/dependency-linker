@@ -3,6 +3,7 @@
   "version": "1.0.0",
   "description": "TypeScript single-file analysis tool using tree-sitter",
   "main": "dist/index.js",
+  "types": "dist/index.d.ts",
   "bin": {
     "analyze-file": "analyze-file"
   },
@@ -15,7 +16,11 @@
     "lint:fix": "eslint src/**/*.ts --fix",
     "dev": "tsc --watch",
     "start": "node dist/cli/analyze-file.js",
-    "verify-separation": "bash scripts/verify-separation.sh"
+    "verify-separation": "bash scripts/verify-separation.sh",
+    "validate-types": "node scripts/validate-types.js",
+    "benchmark": "node scripts/benchmark.js",
+    "benchmark:quick": "node -e \"require('./scripts/benchmark.js').runBenchmark('Single File Analysis (Medium)', require('./scripts/benchmark.js').benchmarks['Single File Analysis (Medium)'], 1)\"",
+    "diagnostic": "node scripts/diagnostic-cli.js"
   },
   "keywords": [
     "tree-sitter",

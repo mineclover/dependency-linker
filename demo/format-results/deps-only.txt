@@ -1,0 +1,6 @@
+@mui/material
+axios
+date-fns
+lodash
+react
+react-toastify

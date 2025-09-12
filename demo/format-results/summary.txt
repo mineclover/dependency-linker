@@ -1,0 +1,1 @@
+✅ demo/examples/complex-app.tsx: 11 deps, 11 imports, 5 exports (9ms)

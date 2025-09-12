@@ -1,19 +1,28 @@
 # TypeScript File Analyzer
 
-🎯 **완성된 tree-sitter 기반 TypeScript/TSX 파일 분석기**
+🎯 **Advanced TypeScript/TSX Analysis Tool with Dual CLI and API Interface**
 
-## 프로젝트 완료 🚀
+## 🚀 Now Supporting Both CLI and Programmatic API
 
-이 프로젝트는 **완료**되었으며, 완성된 TypeScript 파일 분석기가 현재 프로젝트 루트에 바로 사용할 수 있는 상태로 준비되어 있습니다.
+This project provides a comprehensive TypeScript file analyzer with both command-line interface and programmatic API access, built on tree-sitter for maximum performance and reliability.
 
-## 주요 성과
+## 🌟 Key Features
 
-### ✅ 구현 완료
-- **빠른 파싱**: tree-sitter 기반으로 <10ms 분석 성능
-- **포괄적 분석**: 의존성, Import/Export, 소스 위치 추적
-- **다중 출력**: JSON (API용) + 텍스트 (사람용) 형식
-- **CLI 인터페이스**: 완전한 명령줄 도구
-- **에러 복구**: 부분 파싱 및 강건한 오류 처리
+### ✅ Dual Interface Architecture
+- **🖥️ CLI Tool**: Complete command-line interface for terminal usage
+- **🔧 Programmatic API**: Full API access for integration into applications
+- **⚡ High Performance**: <10ms analysis time with tree-sitter parsing
+- **🔍 Comprehensive Analysis**: Dependencies, imports, exports, and source locations
+- **📊 Multiple Formats**: JSON (API), compact, summary, table, CSV, and more
+- **🛡️ Error Recovery**: Robust parsing with graceful error handling
+
+### 🚀 API Capabilities
+- **Class-based API**: `TypeScriptAnalyzer` with dependency injection
+- **Factory Functions**: Simple function-based API (`analyzeTypeScriptFile`, `extractDependencies`)
+- **Batch Processing**: `BatchAnalyzer` with concurrency control and resource monitoring
+- **Advanced Caching**: Multi-tier caching with memory and file storage
+- **Event System**: Progress tracking and real-time analysis events
+- **CLI Integration**: Seamless CLI-to-API bridge with perfect compatibility
 
 ### 🧪 테스트 현황
 - **Unit Tests**: 100% ✅ (모든 핵심 기능 검증 완료)
@@ -45,24 +54,48 @@
 
 **📖 상세 가이드**: [demo/README.md](demo/README.md)
 
-## 즉시 사용하기
+## 🚀 Quick Start
 
-### 기본 사용
+### 📦 Installation & Package Usage
+
 ```bash
-# TypeScript 파일 분석 (JSON)
+# Install from npm (when published)
+npm install tree-sitter-analyzer
+
+# Or use locally after building
+npm run build
+```
+
+```javascript
+// Simple function-based API
+const { analyzeTypeScriptFile, extractDependencies } = require('tree-sitter-analyzer');
+
+// Analyze a file
+const result = await analyzeTypeScriptFile('./src/component.tsx');
+console.log(result.dependencies);
+
+// Extract dependencies only
+const deps = await extractDependencies('./src/component.tsx');
+console.log(deps); // ['react', 'lodash', './utils']
+```
+
+### 🖥️ CLI Usage
+
+```bash
+# TypeScript file analysis (JSON)
 ./analyze-file src/component.tsx
 
-# 사람이 읽기 쉬운 형식
-./analyze-file src/component.tsx --format text
+# Human-readable format
+./analyze-file src/component.tsx --format summary
 
-# 소스 위치 정보 포함
+# Include source locations
 ./analyze-file src/component.tsx --include-sources
 
-# 도움말
+# Help
 ./analyze-file --help
 ```
 
-### 분석 결과 예시
+### 📊 Analysis Result Example
 ```json
 {
   "filePath": "example.tsx",
@@ -80,7 +113,122 @@
 }
 ```
 
-## 실제 활용 사례
+## 🔧 API Reference
+
+### Simple Function API
+
+```javascript
+const { 
+  analyzeTypeScriptFile, 
+  extractDependencies, 
+  getBatchAnalysis, 
+  analyzeDirectory 
+} = require('tree-sitter-analyzer');
+
+// Single file analysis
+const result = await analyzeTypeScriptFile('./src/index.ts', {
+  format: 'json',
+  includeSources: true,
+  parseTimeout: 10000
+});
+
+// Batch processing
+const results = await getBatchAnalysis([
+  './src/index.ts',
+  './src/utils.ts'
+], {
+  concurrency: 3,
+  onProgress: (completed, total) => console.log(`${completed}/${total}`)
+});
+
+// Directory analysis
+const dirResults = await analyzeDirectory('./src', {
+  extensions: ['.ts', '.tsx'],
+  ignorePatterns: ['**/*.test.ts', '**/node_modules/**']
+});
+```
+
+### Class-based API
+
+```javascript
+const { TypeScriptAnalyzer } = require('tree-sitter-analyzer');
+
+// Create analyzer with options
+const analyzer = new TypeScriptAnalyzer({
+  enableCache: true,
+  cacheSize: 1000,
+  defaultTimeout: 30000
+});
+
+// Analyze file with options
+const result = await analyzer.analyzeFile('./src/index.ts', {
+  format: 'json',
+  includeSources: true
+});
+
+// Convenience methods
+const dependencies = await analyzer.extractDependencies('./src/index.ts');
+const imports = await analyzer.getImports('./src/index.ts');
+const exports = await analyzer.getExports('./src/index.ts');
+
+// Batch processing
+const batchResult = await analyzer.analyzeFiles([
+  './src/index.ts',
+  './src/utils.ts'
+], {
+  concurrency: 5,
+  continueOnError: true
+});
+
+// Clean up
+analyzer.clearCache();
+```
+
+### Advanced Batch Processing
+
+```javascript
+const { BatchAnalyzer } = require('tree-sitter-analyzer/dist/api/BatchAnalyzer');
+
+const batchAnalyzer = new BatchAnalyzer(analyzer, {
+  maxConcurrency: 5,
+  enableResourceMonitoring: true,
+  memoryLimit: 512 // MB
+});
+
+const result = await batchAnalyzer.processBatch(filePaths, {
+  continueOnError: true,
+  onProgress: (completed, total) => {
+    console.log(`Progress: ${completed}/${total}`);
+  },
+  onFileError: (filePath, error) => {
+    console.log(`Error in ${filePath}: ${error.message}`);
+  }
+});
+
+console.log('Resource metrics:', batchAnalyzer.getResourceMetrics());
+batchAnalyzer.dispose();
+```
+
+## 📚 Examples & Integration
+
+### 🎯 Comprehensive Examples
+
+The `examples/` directory contains production-ready integration examples:
+
+- **`basic-usage.js`**: Simple API usage patterns and error handling
+- **`batch-processing.js`**: Advanced batch processing with progress tracking
+- **`webpack-plugin.js`**: Custom Webpack plugin for build-time analysis
+- **`vscode-extension.js`**: VS Code extension development example
+
+```bash
+# Run any example
+node examples/basic-usage.js
+node examples/batch-processing.js
+```
+
+**📖 See [examples/README.md](examples/README.md) for detailed guides and integration patterns.**
+
+## 🔨 Real-World Use Cases
 
 ### 1. 의존성 관리
 ```bash

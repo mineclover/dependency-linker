@@ -107,9 +107,9 @@ export class Logger {
         console.warn('Data:', entry.data);
       }
     } else {
-      console.log(message);
+      console.error(message); // Use stderr for all logging to avoid interfering with CLI JSON output
       if (entry.data && this.level >= LogLevel.DEBUG) {
-        console.log('Data:', entry.data);
+        console.error('Data:', entry.data);
       }
     }
   }

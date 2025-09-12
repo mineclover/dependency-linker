@@ -6,9 +6,7 @@
  */
 
 import { CommandParser } from './CommandParser';
-import { FileAnalyzer } from '../services/FileAnalyzer';
-import { OutputFormatter } from '../formatters/OutputFormatter';
-import { FileAnalysisRequest } from '../models/FileAnalysisRequest';
+import { CLIAdapter } from './CLIAdapter';
 
 function outputError(error: any, format: string = 'json'): void {
   if (format === 'json') {
@@ -26,8 +24,7 @@ function outputError(error: any, format: string = 'json'): void {
 
 async function main(): Promise<void> {
   const parser = new CommandParser();
-  const analyzer = new FileAnalyzer();
-  const formatter = new OutputFormatter();
+  const cliAdapter = new CLIAdapter();
 
   try {
     // Parse command line arguments
@@ -72,11 +69,19 @@ async function main(): Promise<void> {
       process.exit(1);
     }
 
-    // Validate file can be analyzed
-    const fileValidation = await analyzer.validateFile(mergedOptions.file!);
-    if (!fileValidation.canAnalyze) {
+    // Use CLI adapter for validation and analysis
+    const cliOptions = {
+      file: mergedOptions.file!,
+      format: mergedOptions.format,
+      includeSources: mergedOptions.includeSources,
+      parseTimeout: mergedOptions.parseTimeout
+    };
+
+    // Validate using adapter
+    const cliValidation = await cliAdapter.validateOptions(cliOptions);
+    if (!cliValidation.isValid) {
       let errorCode = 'UNKNOWN_ERROR';
-      const errorMessage = fileValidation.errors.join(', ');
+      const errorMessage = cliValidation.errors.join(', ');
       
       if (errorMessage.includes('not found') || errorMessage.includes('does not exist') || errorMessage.includes('no such file')) {
         errorCode = 'FILE_NOT_FOUND';
@@ -91,23 +96,18 @@ async function main(): Promise<void> {
       process.exit(1);
     }
 
-    // Create analysis request
-    const request: FileAnalysisRequest = {
-      filePath: mergedOptions.file!,
-      options: parser.toAnalysisOptions(mergedOptions)
-    };
+    // Perform analysis using adapter
+    const result = await cliAdapter.analyzeFile(cliOptions);
 
-    // Perform analysis
-    const result = await analyzer.analyzeFile(request);
-
-    // Format and output result
-    if (mergedOptions.format === 'json') {
-      const jsonOutput = formatter.formatAsJson(result);
-      console.log(jsonOutput);
-    } else {
-      const textOutput = formatter.formatAsText(result);
-      console.log(textOutput);
+    // Format and output result using adapter
+    const header = cliAdapter.getFormatHeader(mergedOptions.format);
+    if (header) {
+      console.log(header);
     }
+    
+    const output = cliAdapter.formatResult(result, mergedOptions.format);
+    
+    console.log(output);
 
     // Exit with appropriate code
     process.exit(result.success ? 0 : 1);
@@ -120,6 +120,9 @@ async function main(): Promise<void> {
     }
     
     process.exit(1);
+  } finally {
+    // Clean up adapter resources
+    cliAdapter.dispose();
   }
 }
 
