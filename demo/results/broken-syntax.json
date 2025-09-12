@@ -100,7 +100,7 @@
     }
   ],
   "exports": [],
-  "parseTime": 5,
+  "parseTime": 6,
   "error": {
     "code": "PARSE_ERROR",
     "message": "File contains syntax errors but partial analysis was possible",

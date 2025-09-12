@@ -1,4 +1,4 @@
-# TypeScript File Analyzer
+# TypeScript Dependency Linker
 
 🎯 **Advanced TypeScript/TSX Analysis Tool with Dual CLI and API Interface**
 
@@ -54,13 +54,23 @@ This project provides a comprehensive TypeScript file analyzer with both command
 
 **📖 상세 가이드**: [demo/README.md](demo/README.md)
 
+### 📁 데모 디렉토리 구성
+`demo/` 디렉토리에는 실제 실행 가능한 예제 파일들과 자동화된 테스트 스크립트가 포함되어 있습니다. 각 예제는 다양한 복잡도와 의존성 패턴을 보여주어 실제 프로젝트에서의 활용법을 이해할 수 있도록 구성되었습니다.
+
+**데모 실행 결과 (최신 검증):**
+- ✅ **간단한 컴포넌트**: 1개 의존성, 분석 시간 ~6ms
+- ✅ **복잡한 앱**: 11개 의존성 (React, MUI, axios 등), 분석 시간 ~10ms  
+- ✅ **Express 서버**: 20개 의존성, 분석 시간 ~13ms
+- ✅ **구문 오류 파일**: 에러 복구 성공, 3개 의존성 추출
+- ✅ **성능 측정**: 모든 파일 50ms 미만 고속 분석
+
 ## 🚀 Quick Start
 
 ### 📦 Installation & Package Usage
 
 ```bash
-# Install from npm (when published)
-npm install tree-sitter-analyzer
+# Install from npm
+npm install @context-action/dependency-linker
 
 # Or use locally after building
 npm run build
@@ -68,7 +78,7 @@ npm run build
 
 ```javascript
 // Simple function-based API
-const { analyzeTypeScriptFile, extractDependencies } = require('tree-sitter-analyzer');
+const { analyzeTypeScriptFile, extractDependencies } = require('@context-action/dependency-linker');
 
 // Analyze a file
 const result = await analyzeTypeScriptFile('./src/component.tsx');
@@ -123,7 +133,7 @@ const {
   extractDependencies, 
   getBatchAnalysis, 
   analyzeDirectory 
-} = require('tree-sitter-analyzer');
+} = require('@context-action/dependency-linker');
 
 // Single file analysis
 const result = await analyzeTypeScriptFile('./src/index.ts', {
@@ -151,7 +161,7 @@ const dirResults = await analyzeDirectory('./src', {
 ### Class-based API
 
 ```javascript
-const { TypeScriptAnalyzer } = require('tree-sitter-analyzer');
+const { TypeScriptAnalyzer } = require('@context-action/dependency-linker');
 
 // Create analyzer with options
 const analyzer = new TypeScriptAnalyzer({
@@ -187,7 +197,7 @@ analyzer.clearCache();
 ### Advanced Batch Processing
 
 ```javascript
-const { BatchAnalyzer } = require('tree-sitter-analyzer/dist/api/BatchAnalyzer');
+const { BatchAnalyzer } = require('@context-action/dependency-linker/dist/api/BatchAnalyzer');
 
 const batchAnalyzer = new BatchAnalyzer(analyzer, {
   maxConcurrency: 5,
