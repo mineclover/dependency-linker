@@ -22,7 +22,7 @@ import {
   DiagnosticTool,
   DebugHelper,
   errorReporter 
-} from 'tree-sitter-analyzer';
+} from 'dependency-linker';
 
 // Create analyzer with enhanced error reporting
 const analyzer = new TypeScriptAnalyzer();
