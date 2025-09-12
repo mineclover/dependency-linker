@@ -3,35 +3,39 @@
  * The result of analyzing a TypeScript file
  */
 
-import { DependencyInfo } from './DependencyInfo';
-import { ImportInfo } from './ImportInfo';
-import { ExportInfo } from './ExportInfo';
-import { SourceLocation } from './SourceLocation';
+import type { DependencyInfo } from "./DependencyInfo";
+import type { ExportInfo } from "./ExportInfo";
+import type { ImportInfo } from "./ImportInfo";
 
 export interface AnalysisError {
-  /** Error code */
-  code: 'PARSE_ERROR' | 'FILE_NOT_FOUND' | 'INVALID_FILE_TYPE' | 'PERMISSION_DENIED' | 'TIMEOUT';
-  /** Human-readable error message */
-  message: string;
-  /** Additional error context */
-  details?: any;
+	/** Error code */
+	code:
+		| "PARSE_ERROR"
+		| "FILE_NOT_FOUND"
+		| "INVALID_FILE_TYPE"
+		| "PERMISSION_DENIED"
+		| "TIMEOUT";
+	/** Human-readable error message */
+	message: string;
+	/** Additional error context */
+	details?: any;
 }
 
 export interface AnalysisResult {
-  /** The analyzed file path */
-  filePath: string;
-  /** Whether analysis completed successfully */
-  success: boolean;
-  /** Extracted dependencies */
-  dependencies: DependencyInfo[];
-  /** Import statements */
-  imports: ImportInfo[];
-  /** Exported symbols */
-  exports: ExportInfo[];
-  /** Time taken to parse in milliseconds */
-  parseTime: number;
-  /** Error details if analysis failed */
-  error?: AnalysisError;
+	/** The analyzed file path */
+	filePath: string;
+	/** Whether analysis completed successfully */
+	success: boolean;
+	/** Extracted dependencies */
+	dependencies: DependencyInfo[];
+	/** Import statements */
+	imports: ImportInfo[];
+	/** Exported symbols */
+	exports: ExportInfo[];
+	/** Time taken to parse in milliseconds */
+	parseTime: number;
+	/** Error details if analysis failed */
+	error?: AnalysisError;
 }
 
 /**
@@ -44,20 +48,20 @@ export interface AnalysisResult {
  * @returns Successful analysis result
  */
 export function createSuccessResult(
-  filePath: string,
-  parseTime: number,
-  dependencies: DependencyInfo[] = [],
-  imports: ImportInfo[] = [],
-  exports: ExportInfo[] = []
+	filePath: string,
+	parseTime: number,
+	dependencies: DependencyInfo[] = [],
+	imports: ImportInfo[] = [],
+	exports: ExportInfo[] = [],
 ): AnalysisResult {
-  return {
-    filePath,
-    success: true,
-    dependencies,
-    imports,
-    exports,
-    parseTime
-  };
+	return {
+		filePath,
+		success: true,
+		dependencies,
+		imports,
+		exports,
+		parseTime,
+	};
 }
 
 /**
@@ -68,22 +72,22 @@ export function createSuccessResult(
  * @returns Failed analysis result with partial data
  */
 export function createErrorResult(
-  filePath: string,
-  error: AnalysisError,
-  parseTime: number = 0,
-  dependencies: DependencyInfo[] = [],
-  imports: ImportInfo[] = [],
-  exports: ExportInfo[] = []
+	filePath: string,
+	error: AnalysisError,
+	parseTime: number = 0,
+	dependencies: DependencyInfo[] = [],
+	imports: ImportInfo[] = [],
+	exports: ExportInfo[] = [],
 ): AnalysisResult {
-  return {
-    filePath,
-    success: false,
-    dependencies,
-    imports,
-    exports,
-    parseTime,
-    error
-  };
+	return {
+		filePath,
+		success: false,
+		dependencies,
+		imports,
+		exports,
+		parseTime,
+		error,
+	};
 }
 
 /**
@@ -92,11 +96,11 @@ export function createErrorResult(
  * @returns AnalysisError for file not found
  */
 export function createFileNotFoundError(filePath: string): AnalysisException {
-  return new AnalysisException({
-    code: 'FILE_NOT_FOUND',
-    message: `File not found: ${filePath}`,
-    details: { filePath }
-  });
+	return new AnalysisException({
+		code: "FILE_NOT_FOUND",
+		message: `File not found: ${filePath}`,
+		details: { filePath },
+	});
 }
 
 /**
@@ -105,24 +109,24 @@ export function createFileNotFoundError(filePath: string): AnalysisException {
  * @returns AnalysisError for invalid file type
  */
 export function createInvalidFileTypeError(filePath: string): AnalysisError {
-  return {
-    code: 'INVALID_FILE_TYPE',
-    message: `Invalid file type. Only TypeScript files (.ts, .tsx) are supported: ${filePath}`,
-    details: { filePath }
-  };
+	return {
+		code: "INVALID_FILE_TYPE",
+		message: `Invalid file type. Only TypeScript files (.ts, .tsx) are supported: ${filePath}`,
+		details: { filePath },
+	};
 }
 
 /**
  * Custom error class that carries AnalysisError information
  */
 export class AnalysisException extends Error {
-  public readonly analysisError: AnalysisError;
-  
-  constructor(analysisError: AnalysisError) {
-    super(analysisError.message);
-    this.name = 'AnalysisException';
-    this.analysisError = analysisError;
-  }
+	public readonly analysisError: AnalysisError;
+
+	constructor(analysisError: AnalysisError) {
+		super(analysisError.message);
+		this.name = "AnalysisException";
+		this.analysisError = analysisError;
+	}
 }
 
 /**
@@ -130,12 +134,14 @@ export class AnalysisException extends Error {
  * @param filePath The file path that couldn't be accessed
  * @returns AnalysisError for permission denied
  */
-export function createPermissionDeniedError(filePath: string): AnalysisException {
-  return new AnalysisException({
-    code: 'PERMISSION_DENIED',
-    message: `Permission denied: Cannot read file ${filePath}`,
-    details: { filePath }
-  });
+export function createPermissionDeniedError(
+	filePath: string,
+): AnalysisException {
+	return new AnalysisException({
+		code: "PERMISSION_DENIED",
+		message: `Permission denied: Cannot read file ${filePath}`,
+		details: { filePath },
+	});
 }
 
 /**
@@ -144,11 +150,11 @@ export function createPermissionDeniedError(filePath: string): AnalysisException
  * @returns AnalysisError for timeout
  */
 export function createTimeoutError(timeout: number): AnalysisError {
-  return {
-    code: 'TIMEOUT',
-    message: `Analysis timed out after ${timeout}ms`,
-    details: { timeout }
-  };
+	return {
+		code: "TIMEOUT",
+		message: `Analysis timed out after ${timeout}ms`,
+		details: { timeout },
+	};
 }
 
 /**
@@ -157,15 +163,19 @@ export function createTimeoutError(timeout: number): AnalysisError {
  * @returns AnalysisError for parse error
  */
 export function createParseError(originalError: Error | string): AnalysisError {
-  const message = originalError instanceof Error ? originalError.message : originalError;
-  return {
-    code: 'PARSE_ERROR',
-    message: `Parse error: ${message}`,
-    details: originalError instanceof Error ? {
-      name: originalError.name,
-      stack: originalError.stack
-    } : { message: originalError }
-  };
+	const message =
+		originalError instanceof Error ? originalError.message : originalError;
+	return {
+		code: "PARSE_ERROR",
+		message: `Parse error: ${message}`,
+		details:
+			originalError instanceof Error
+				? {
+						name: originalError.name,
+						stack: originalError.stack,
+					}
+				: { message: originalError },
+	};
 }
 
 /**
@@ -174,19 +184,18 @@ export function createParseError(originalError: Error | string): AnalysisError {
  * @returns True if the result structure is valid
  */
 export function isValidAnalysisResult(result: any): result is AnalysisResult {
-  return (
-    result &&
-    typeof result === 'object' &&
-    typeof result.filePath === 'string' &&
-    typeof result.success === 'boolean' &&
-    Array.isArray(result.dependencies) &&
-    Array.isArray(result.imports) &&
-    Array.isArray(result.exports) &&
-    typeof result.parseTime === 'number' &&
-    (result.error === undefined || (
-      typeof result.error === 'object' &&
-      typeof result.error.code === 'string' &&
-      typeof result.error.message === 'string'
-    ))
-  );
+	return (
+		result &&
+		typeof result === "object" &&
+		typeof result.filePath === "string" &&
+		typeof result.success === "boolean" &&
+		Array.isArray(result.dependencies) &&
+		Array.isArray(result.imports) &&
+		Array.isArray(result.exports) &&
+		typeof result.parseTime === "number" &&
+		(result.error === undefined ||
+			(typeof result.error === "object" &&
+				typeof result.error.code === "string" &&
+				typeof result.error.message === "string"))
+	);
 }

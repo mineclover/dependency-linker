@@ -5,157 +5,179 @@
  * Command-line interface for TypeScript file analysis
  */
 
-import { CommandParser } from './CommandParser';
-import { CLIAdapter } from './CLIAdapter';
+import { CLIAdapter } from "./CLIAdapter";
+import { CommandParser } from "./CommandParser";
 
-function outputError(error: any, format: string = 'json'): void {
-  if (format === 'json') {
-    const errorOutput = {
-      error: {
-        code: error.code || 'UNKNOWN_ERROR',
-        message: error.message || 'An unknown error occurred'
-      }
-    };
-    console.log(JSON.stringify(errorOutput, null, 2));
-  } else {
-    console.error('Error: ' + error.message);
-  }
+function outputError(error: any, format: string = "json"): void {
+	if (format === "json") {
+		const errorOutput = {
+			error: {
+				code: error.code || "UNKNOWN_ERROR",
+				message: error.message || "An unknown error occurred",
+			},
+		};
+		console.log(JSON.stringify(errorOutput, null, 2));
+	} else {
+		console.error(`Error: ${error.message}`);
+	}
 }
 
 async function main(): Promise<void> {
-  const parser = new CommandParser();
-  const cliAdapter = new CLIAdapter();
+	const parser = new CommandParser();
+	const cliAdapter = new CLIAdapter();
 
-  try {
-    // Parse command line arguments
-    const parseResult = parser.parse(process.argv.slice(2));
-    
-    if (parseResult.error) {
-      console.error(parser.formatError(parseResult.error));
-      process.exit(parseResult.error.exitCode);
-    }
+	try {
+		// Parse command line arguments
+		const parseResult = parser.parse(process.argv.slice(2));
 
-    const options = parseResult.options!;
+		if (parseResult.error) {
+			console.error(parser.formatError(parseResult.error));
+			process.exit(parseResult.error.exitCode);
+		}
 
-    // Handle help and version flags
-    if (options.help) {
-      console.log(parser.getHelpText());
-      process.exit(0);
-    }
+		const options = parseResult.options!;
 
-    if (options.version) {
-      console.log(parser.getVersionText());
-      process.exit(0);
-    }
+		// Handle help and version flags
+		if (options.help) {
+			console.log(parser.getHelpText());
+			process.exit(0);
+		}
 
-    // Merge with environment variables
-    const mergedOptions = parser.mergeWithEnvironment(options);
+		if (options.version) {
+			console.log(parser.getVersionText());
+			process.exit(0);
+		}
 
-    // Validate options
-    const validation = parser.validateOptions(mergedOptions);
-    if (!validation.isValid) {
-      let errorCode = 'INVALID_OPTIONS';
-      const errorMessage = validation.errors.join(', ');
-      
-      // Check if it's a file type validation error
-      if (errorMessage.includes('.ts or .tsx extension')) {
-        errorCode = 'INVALID_FILE_TYPE';
-      }
-      
-      outputError({ 
-        code: errorCode, 
-        message: errorMessage 
-      }, mergedOptions.format);
-      process.exit(1);
-    }
+		// Merge with environment variables
+		const mergedOptions = parser.mergeWithEnvironment(options);
 
-    // Use CLI adapter for validation and analysis
-    const cliOptions = {
-      file: mergedOptions.file!,
-      format: mergedOptions.format,
-      includeSources: mergedOptions.includeSources,
-      parseTimeout: mergedOptions.parseTimeout
-    };
+		// Validate options
+		const validation = parser.validateOptions(mergedOptions);
+		if (!validation.isValid) {
+			let errorCode = "INVALID_OPTIONS";
+			const errorMessage = validation.errors.join(", ");
 
-    // Validate using adapter
-    const cliValidation = await cliAdapter.validateOptions(cliOptions);
-    if (!cliValidation.isValid) {
-      let errorCode = 'UNKNOWN_ERROR';
-      const errorMessage = cliValidation.errors.join(', ');
-      
-      if (errorMessage.includes('not found') || errorMessage.includes('does not exist') || errorMessage.includes('no such file')) {
-        errorCode = 'FILE_NOT_FOUND';
-      } else if (errorMessage.includes('not a TypeScript') || errorMessage.includes('Invalid file type') || errorMessage.includes('TypeScript')) {
-        errorCode = 'INVALID_FILE_TYPE';
-      }
-      
-      outputError({ 
-        code: errorCode, 
-        message: errorMessage 
-      }, mergedOptions.format);
-      process.exit(1);
-    }
+			// Check if it's a file type validation error
+			if (errorMessage.includes(".ts or .tsx extension")) {
+				errorCode = "INVALID_FILE_TYPE";
+			}
 
-    // Perform analysis using adapter
-    const result = await cliAdapter.analyzeFile(cliOptions);
+			outputError(
+				{
+					code: errorCode,
+					message: errorMessage,
+				},
+				mergedOptions.format,
+			);
+			process.exit(1);
+		}
 
-    // Format and output result using adapter
-    const header = cliAdapter.getFormatHeader(mergedOptions.format);
-    if (header) {
-      console.log(header);
-    }
-    
-    const output = cliAdapter.formatResult(result, mergedOptions.format);
-    
-    console.log(output);
+		// Use CLI adapter for validation and analysis
+		const cliOptions = {
+			file: mergedOptions.file!,
+			format: mergedOptions.format,
+			includeSources: mergedOptions.includeSources,
+			parseTimeout: mergedOptions.parseTimeout,
+		};
 
-    // Exit with appropriate code
-    process.exit(result.success ? 0 : 1);
+		// Validate using adapter
+		const cliValidation = await cliAdapter.validateOptions(cliOptions);
+		if (!cliValidation.isValid) {
+			let errorCode = "UNKNOWN_ERROR";
+			const errorMessage = cliValidation.errors.join(", ");
 
-  } catch (error) {
-    console.error('Unexpected error:', error instanceof Error ? error.message : String(error));
-    
-    if (process.env.DEBUG) {
-      console.error('Stack trace:', error instanceof Error ? error.stack : 'No stack trace available');
-    }
-    
-    process.exit(1);
-  } finally {
-    // Clean up adapter resources
-    cliAdapter.dispose();
-  }
+			if (
+				errorMessage.includes("not found") ||
+				errorMessage.includes("does not exist") ||
+				errorMessage.includes("no such file")
+			) {
+				errorCode = "FILE_NOT_FOUND";
+			} else if (
+				errorMessage.includes("not a TypeScript") ||
+				errorMessage.includes("Invalid file type") ||
+				errorMessage.includes("TypeScript")
+			) {
+				errorCode = "INVALID_FILE_TYPE";
+			}
+
+			outputError(
+				{
+					code: errorCode,
+					message: errorMessage,
+				},
+				mergedOptions.format,
+			);
+			process.exit(1);
+		}
+
+		// Perform analysis using adapter
+		const result = await cliAdapter.analyzeFile(cliOptions);
+
+		// Format and output result using adapter
+		const header = cliAdapter.getFormatHeader(mergedOptions.format);
+		if (header) {
+			console.log(header);
+		}
+
+		const output = cliAdapter.formatResult(result, mergedOptions.format);
+
+		console.log(output);
+
+		// Exit with appropriate code
+		process.exit(result.success ? 0 : 1);
+	} catch (error) {
+		console.error(
+			"Unexpected error:",
+			error instanceof Error ? error.message : String(error),
+		);
+
+		if (process.env.DEBUG) {
+			console.error(
+				"Stack trace:",
+				error instanceof Error ? error.stack : "No stack trace available",
+			);
+		}
+
+		process.exit(1);
+	} finally {
+		// Clean up adapter resources
+		cliAdapter.dispose();
+	}
 }
 
 // Handle uncaught errors
-process.on('uncaughtException', (error) => {
-  console.error('Uncaught exception:', error.message);
-  if (process.env.DEBUG) {
-    console.error(error.stack);
-  }
-  process.exit(1);
+process.on("uncaughtException", (error) => {
+	console.error("Uncaught exception:", error.message);
+	if (process.env.DEBUG) {
+		console.error(error.stack);
+	}
+	process.exit(1);
 });
 
-process.on('unhandledRejection', (reason, promise) => {
-  console.error('Unhandled rejection at:', promise, 'reason:', reason);
-  process.exit(1);
+process.on("unhandledRejection", (reason, promise) => {
+	console.error("Unhandled rejection at:", promise, "reason:", reason);
+	process.exit(1);
 });
 
 // Handle SIGINT (Ctrl+C) gracefully
-process.on('SIGINT', () => {
-  console.log('\nReceived SIGINT. Exiting gracefully...');
-  process.exit(0);
+process.on("SIGINT", () => {
+	console.log("\nReceived SIGINT. Exiting gracefully...");
+	process.exit(0);
 });
 
 // Handle SIGTERM gracefully
-process.on('SIGTERM', () => {
-  console.log('\nReceived SIGTERM. Exiting gracefully...');
-  process.exit(0);
+process.on("SIGTERM", () => {
+	console.log("\nReceived SIGTERM. Exiting gracefully...");
+	process.exit(0);
 });
 
 // Run the main function
 if (require.main === module) {
-  main().catch((error) => {
-    console.error('Fatal error:', error instanceof Error ? error.message : String(error));
-    process.exit(1);
-  });
+	main().catch((error) => {
+		console.error(
+			"Fatal error:",
+			error instanceof Error ? error.message : String(error),
+		);
+		process.exit(1);
+	});
 }

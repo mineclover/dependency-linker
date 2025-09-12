@@ -5,564 +5,608 @@
  * Demonstrates how to integrate the TypeScript Analyzer with VS Code extension development
  */
 
-const { TypeScriptAnalyzer } = require('../dist/index.js');
-const { CacheManager } = require('../dist/api/cache/CacheManager.js');
-const path = require('path');
+const { TypeScriptAnalyzer } = require("../dist/index.js");
+const { CacheManager } = require("../dist/api/cache/CacheManager.js");
+const path = require("path");
 
 /**
  * Simulated VS Code Extension API
  * In real VS Code extension, these would be imported from 'vscode' package
  */
 class MockVSCodeAPI {
-  constructor() {
-    this.window = {
-      showInformationMessage: (message) => console.log(`[INFO] ${message}`),
-      showWarningMessage: (message) => console.log(`[WARN] ${message}`),
-      showErrorMessage: (message) => console.log(`[ERROR] ${message}`),
-      createOutputChannel: (name) => ({
-        appendLine: (line) => console.log(`[${name}] ${line}`),
-        show: () => {}
-      })
-    };
+	constructor() {
+		this.window = {
+			showInformationMessage: (message) => console.log(`[INFO] ${message}`),
+			showWarningMessage: (message) => console.log(`[WARN] ${message}`),
+			showErrorMessage: (message) => console.log(`[ERROR] ${message}`),
+			createOutputChannel: (name) => ({
+				appendLine: (line) => console.log(`[${name}] ${line}`),
+				show: () => {},
+			}),
+		};
 
-    this.workspace = {
-      getWorkspaceFolder: () => ({ uri: { fsPath: process.cwd() } }),
-      onDidSaveTextDocument: (callback) => {
-        // Simulate document save events
-        setTimeout(() => callback({ fileName: './demo/examples/simple-component.tsx' }), 1000);
-      },
-      onDidChangeTextDocument: (callback) => {
-        // Simulate document change events
-        setTimeout(() => callback({ document: { fileName: './demo/examples/simple-component.tsx' } }), 500);
-      }
-    };
+		this.workspace = {
+			getWorkspaceFolder: () => ({ uri: { fsPath: process.cwd() } }),
+			onDidSaveTextDocument: (callback) => {
+				// Simulate document save events
+				setTimeout(
+					() => callback({ fileName: "./demo/examples/simple-component.tsx" }),
+					1000,
+				);
+			},
+			onDidChangeTextDocument: (callback) => {
+				// Simulate document change events
+				setTimeout(
+					() =>
+						callback({
+							document: { fileName: "./demo/examples/simple-component.tsx" },
+						}),
+					500,
+				);
+			},
+		};
 
-    this.languages = {
-      createDiagnosticCollection: (name) => ({
-        set: (uri, diagnostics) => console.log(`[DIAGNOSTICS] ${uri}: ${diagnostics?.length || 0} issues`),
-        clear: () => console.log('[DIAGNOSTICS] Cleared')
-      })
-    };
+		this.languages = {
+			createDiagnosticCollection: (name) => ({
+				set: (uri, diagnostics) =>
+					console.log(
+						`[DIAGNOSTICS] ${uri}: ${diagnostics?.length || 0} issues`,
+					),
+				clear: () => console.log("[DIAGNOSTICS] Cleared"),
+			}),
+		};
 
-    this.Uri = {
-      file: (path) => ({ fsPath: path })
-    };
+		this.Uri = {
+			file: (path) => ({ fsPath: path }),
+		};
 
-    this.DiagnosticSeverity = {
-      Error: 0,
-      Warning: 1,
-      Information: 2,
-      Hint: 3
-    };
+		this.DiagnosticSeverity = {
+			Error: 0,
+			Warning: 1,
+			Information: 2,
+			Hint: 3,
+		};
 
-    this.Range = class {
-      constructor(start, end) {
-        this.start = start;
-        this.end = end;
-      }
-    };
+		this.Range = class {
+			constructor(start, end) {
+				this.start = start;
+				this.end = end;
+			}
+		};
 
-    this.Position = class {
-      constructor(line, character) {
-        this.line = line;
-        this.character = character;
-      }
-    };
+		this.Position = class {
+			constructor(line, character) {
+				this.line = line;
+				this.character = character;
+			}
+		};
 
-    this.Diagnostic = class {
-      constructor(range, message, severity) {
-        this.range = range;
-        this.message = message;
-        this.severity = severity;
-      }
-    };
-  }
+		this.Diagnostic = class {
+			constructor(range, message, severity) {
+				this.range = range;
+				this.message = message;
+				this.severity = severity;
+			}
+		};
+	}
 }
 
 /**
  * TypeScript Dependency Analyzer VS Code Extension
  */
 class TypeScriptDependencyExtension {
-  constructor(context, vscode) {
-    this.context = context;
-    this.vscode = vscode;
-    this.outputChannel = vscode.window.createOutputChannel('TypeScript Dependencies');
-    this.diagnosticCollection = vscode.languages.createDiagnosticCollection('typescript-deps');
-    
-    // Initialize analyzer with caching
-    this.cacheManager = new CacheManager({
-      enableMemoryCache: true,
-      enableFileCache: true,
-      maxSize: 1000,
-      ttl: 5 * 60 * 1000 // 5 minutes for real-time editing
-    });
+	constructor(context, vscode) {
+		this.context = context;
+		this.vscode = vscode;
+		this.outputChannel = vscode.window.createOutputChannel(
+			"TypeScript Dependencies",
+		);
+		this.diagnosticCollection =
+			vscode.languages.createDiagnosticCollection("typescript-deps");
 
-    this.analyzer = new TypeScriptAnalyzer({
-      enableCache: false, // We use our own cache manager
-      defaultTimeout: 5000 // Faster timeout for real-time analysis
-    });
+		// Initialize analyzer with caching
+		this.cacheManager = new CacheManager({
+			enableMemoryCache: true,
+			enableFileCache: true,
+			maxSize: 1000,
+			ttl: 5 * 60 * 1000, // 5 minutes for real-time editing
+		});
 
-    this.isAnalyzing = false;
-    this.pendingAnalysis = new Map();
+		this.analyzer = new TypeScriptAnalyzer({
+			enableCache: false, // We use our own cache manager
+			defaultTimeout: 5000, // Faster timeout for real-time analysis
+		});
 
-    this.outputChannel.appendLine('TypeScript Dependency Analyzer initialized');
-  }
+		this.isAnalyzing = false;
+		this.pendingAnalysis = new Map();
 
-  activate() {
-    // Register commands
-    this.registerCommands();
-    
-    // Set up file watchers
-    this.setupFileWatchers();
-    
-    // Initialize workspace analysis
-    this.analyzeWorkspace();
+		this.outputChannel.appendLine("TypeScript Dependency Analyzer initialized");
+	}
 
-    this.outputChannel.appendLine('Extension activated');
-  }
+	activate() {
+		// Register commands
+		this.registerCommands();
 
-  registerCommands() {
-    // Command: Analyze current file
-    const analyzeCurrentFile = this.vscode.commands.registerCommand(
-      'typescript-deps.analyzeCurrentFile',
-      async () => {
-        const editor = this.vscode.window.activeTextEditor;
-        if (!editor) {
-          this.vscode.window.showErrorMessage('No active TypeScript file');
-          return;
-        }
+		// Set up file watchers
+		this.setupFileWatchers();
 
-        await this.analyzeFile(editor.document.fileName, true);
-      }
-    );
+		// Initialize workspace analysis
+		this.analyzeWorkspace();
 
-    // Command: Analyze workspace
-    const analyzeWorkspace = this.vscode.commands.registerCommand(
-      'typescript-deps.analyzeWorkspace',
-      () => this.analyzeWorkspace()
-    );
+		this.outputChannel.appendLine("Extension activated");
+	}
 
-    // Command: Show dependency graph
-    const showDependencyGraph = this.vscode.commands.registerCommand(
-      'typescript-deps.showDependencyGraph',
-      () => this.showDependencyGraph()
-    );
+	registerCommands() {
+		// Command: Analyze current file
+		const analyzeCurrentFile = this.vscode.commands.registerCommand(
+			"typescript-deps.analyzeCurrentFile",
+			async () => {
+				const editor = this.vscode.window.activeTextEditor;
+				if (!editor) {
+					this.vscode.window.showErrorMessage("No active TypeScript file");
+					return;
+				}
 
-    // Command: Clear cache
-    const clearCache = this.vscode.commands.registerCommand(
-      'typescript-deps.clearCache',
-      async () => {
-        await this.cacheManager.clear();
-        this.vscode.window.showInformationMessage('Dependency analysis cache cleared');
-      }
-    );
+				await this.analyzeFile(editor.document.fileName, true);
+			},
+		);
 
-    // Store commands for cleanup
-    this.context.subscriptions.push(
-      analyzeCurrentFile,
-      analyzeWorkspace,
-      showDependencyGraph,
-      clearCache
-    );
-  }
+		// Command: Analyze workspace
+		const analyzeWorkspace = this.vscode.commands.registerCommand(
+			"typescript-deps.analyzeWorkspace",
+			() => this.analyzeWorkspace(),
+		);
 
-  setupFileWatchers() {
-    // Watch for file saves
-    this.vscode.workspace.onDidSaveTextDocument(async (document) => {
-      if (this.isTypeScriptFile(document.fileName)) {
-        this.outputChannel.appendLine(`File saved: ${document.fileName}`);
-        await this.analyzeFile(document.fileName, false);
-      }
-    });
+		// Command: Show dependency graph
+		const showDependencyGraph = this.vscode.commands.registerCommand(
+			"typescript-deps.showDependencyGraph",
+			() => this.showDependencyGraph(),
+		);
 
-    // Watch for file changes (debounced)
-    this.vscode.workspace.onDidChangeTextDocument(async (event) => {
-      const fileName = event.document.fileName;
-      if (this.isTypeScriptFile(fileName)) {
-        // Debounce analysis to avoid excessive processing
-        this.debounceAnalysis(fileName);
-      }
-    });
-  }
+		// Command: Clear cache
+		const clearCache = this.vscode.commands.registerCommand(
+			"typescript-deps.clearCache",
+			async () => {
+				await this.cacheManager.clear();
+				this.vscode.window.showInformationMessage(
+					"Dependency analysis cache cleared",
+				);
+			},
+		);
 
-  debounceAnalysis(fileName) {
-    // Clear existing timeout
-    if (this.pendingAnalysis.has(fileName)) {
-      clearTimeout(this.pendingAnalysis.get(fileName));
-    }
+		// Store commands for cleanup
+		this.context.subscriptions.push(
+			analyzeCurrentFile,
+			analyzeWorkspace,
+			showDependencyGraph,
+			clearCache,
+		);
+	}
 
-    // Set new timeout
-    const timeoutId = setTimeout(async () => {
-      this.outputChannel.appendLine(`Analyzing changes: ${fileName}`);
-      await this.analyzeFile(fileName, false);
-      this.pendingAnalysis.delete(fileName);
-    }, 1000); // 1 second debounce
+	setupFileWatchers() {
+		// Watch for file saves
+		this.vscode.workspace.onDidSaveTextDocument(async (document) => {
+			if (this.isTypeScriptFile(document.fileName)) {
+				this.outputChannel.appendLine(`File saved: ${document.fileName}`);
+				await this.analyzeFile(document.fileName, false);
+			}
+		});
 
-    this.pendingAnalysis.set(fileName, timeoutId);
-  }
+		// Watch for file changes (debounced)
+		this.vscode.workspace.onDidChangeTextDocument(async (event) => {
+			const fileName = event.document.fileName;
+			if (this.isTypeScriptFile(fileName)) {
+				// Debounce analysis to avoid excessive processing
+				this.debounceAnalysis(fileName);
+			}
+		});
+	}
 
-  async analyzeFile(fileName, showResults = false) {
-    if (this.isAnalyzing) {
-      return; // Prevent concurrent analysis
-    }
+	debounceAnalysis(fileName) {
+		// Clear existing timeout
+		if (this.pendingAnalysis.has(fileName)) {
+			clearTimeout(this.pendingAnalysis.get(fileName));
+		}
 
-    try {
-      this.isAnalyzing = true;
-      
-      // Check cache first
-      const cacheKey = `analysis:${fileName}`;
-      let result = await this.cacheManager.get(cacheKey);
+		// Set new timeout
+		const timeoutId = setTimeout(async () => {
+			this.outputChannel.appendLine(`Analyzing changes: ${fileName}`);
+			await this.analyzeFile(fileName, false);
+			this.pendingAnalysis.delete(fileName);
+		}, 1000); // 1 second debounce
 
-      if (!result) {
-        this.outputChannel.appendLine(`Analyzing: ${path.basename(fileName)}`);
-        result = await this.analyzer.analyzeFile(fileName, {
-          format: 'json',
-          parseTimeout: 5000
-        });
+		this.pendingAnalysis.set(fileName, timeoutId);
+	}
 
-        // Cache successful results
-        if (result.success) {
-          await this.cacheManager.set(cacheKey, result);
-        }
-      } else {
-        this.outputChannel.appendLine(`Using cached result: ${path.basename(fileName)}`);
-      }
+	async analyzeFile(fileName, showResults = false) {
+		if (this.isAnalyzing) {
+			return; // Prevent concurrent analysis
+		}
 
-      // Update diagnostics
-      await this.updateDiagnostics(fileName, result);
+		try {
+			this.isAnalyzing = true;
 
-      // Show results if requested
-      if (showResults) {
-        this.showAnalysisResults(result);
-      }
+			// Check cache first
+			const cacheKey = `analysis:${fileName}`;
+			let result = await this.cacheManager.get(cacheKey);
 
-    } catch (error) {
-      this.outputChannel.appendLine(`Analysis error: ${error.message}`);
-      this.vscode.window.showErrorMessage(`Analysis failed: ${error.message}`);
-    } finally {
-      this.isAnalyzing = false;
-    }
-  }
+			if (!result) {
+				this.outputChannel.appendLine(`Analyzing: ${path.basename(fileName)}`);
+				result = await this.analyzer.analyzeFile(fileName, {
+					format: "json",
+					parseTimeout: 5000,
+				});
 
-  async updateDiagnostics(fileName, result) {
-    const diagnostics = [];
-    const uri = this.vscode.Uri.file(fileName);
+				// Cache successful results
+				if (result.success) {
+					await this.cacheManager.set(cacheKey, result);
+				}
+			} else {
+				this.outputChannel.appendLine(
+					`Using cached result: ${path.basename(fileName)}`,
+				);
+			}
 
-    if (result.success) {
-      // Check for potential issues
-      result.dependencies.forEach((dep, index) => {
-        // Example: Flag external dependencies without version constraints
-        if (this.isExternalDependency(dep.source) && !this.hasVersionConstraint(dep.source)) {
-          const range = new this.vscode.Range(
-            new this.vscode.Position(dep.line || 0, 0),
-            new this.vscode.Position(dep.line || 0, 100)
-          );
-          
-          diagnostics.push(new this.vscode.Diagnostic(
-            range,
-            `External dependency '${dep.source}' might benefit from explicit version constraint`,
-            this.vscode.DiagnosticSeverity.Information
-          ));
-        }
+			// Update diagnostics
+			await this.updateDiagnostics(fileName, result);
 
-        // Example: Flag unused imports (simplified check)
-        if (dep.type === 'import' && dep.imported && dep.imported.length === 0) {
-          const range = new this.vscode.Range(
-            new this.vscode.Position(dep.line || 0, 0),
-            new this.vscode.Position(dep.line || 0, 100)
-          );
-          
-          diagnostics.push(new this.vscode.Diagnostic(
-            range,
-            `Import from '${dep.source}' appears to be unused`,
-            this.vscode.DiagnosticSeverity.Warning
-          ));
-        }
-      });
+			// Show results if requested
+			if (showResults) {
+				this.showAnalysisResults(result);
+			}
+		} catch (error) {
+			this.outputChannel.appendLine(`Analysis error: ${error.message}`);
+			this.vscode.window.showErrorMessage(`Analysis failed: ${error.message}`);
+		} finally {
+			this.isAnalyzing = false;
+		}
+	}
 
-      // Check for circular dependencies (simplified)
-      const fileName = path.basename(uri.fsPath, path.extname(uri.fsPath));
-      result.dependencies.forEach(dep => {
-        if (dep.source.includes(fileName) && !this.isExternalDependency(dep.source)) {
-          const range = new this.vscode.Range(
-            new this.vscode.Position(dep.line || 0, 0),
-            new this.vscode.Position(dep.line || 0, 100)
-          );
-          
-          diagnostics.push(new this.vscode.Diagnostic(
-            range,
-            `Potential circular dependency: ${dep.source}`,
-            this.vscode.DiagnosticSeverity.Warning
-          ));
-        }
-      });
+	async updateDiagnostics(fileName, result) {
+		const diagnostics = [];
+		const uri = this.vscode.Uri.file(fileName);
 
-    } else {
-      // Analysis failed - show error
-      const range = new this.vscode.Range(
-        new this.vscode.Position(0, 0),
-        new this.vscode.Position(0, 100)
-      );
-      
-      diagnostics.push(new this.vscode.Diagnostic(
-        range,
-        `Dependency analysis failed: ${result.error?.message || 'Unknown error'}`,
-        this.vscode.DiagnosticSeverity.Error
-      ));
-    }
+		if (result.success) {
+			// Check for potential issues
+			result.dependencies.forEach((dep, index) => {
+				// Example: Flag external dependencies without version constraints
+				if (
+					this.isExternalDependency(dep.source) &&
+					!this.hasVersionConstraint(dep.source)
+				) {
+					const range = new this.vscode.Range(
+						new this.vscode.Position(dep.line || 0, 0),
+						new this.vscode.Position(dep.line || 0, 100),
+					);
 
-    this.diagnosticCollection.set(uri, diagnostics);
-  }
+					diagnostics.push(
+						new this.vscode.Diagnostic(
+							range,
+							`External dependency '${dep.source}' might benefit from explicit version constraint`,
+							this.vscode.DiagnosticSeverity.Information,
+						),
+					);
+				}
 
-  showAnalysisResults(result) {
-    if (result.success) {
-      const summary = `Dependencies: ${result.dependencies.length}, ` +
-                     `Imports: ${result.imports.length}, ` +
-                     `Exports: ${result.exports.length}`;
-      
-      this.vscode.window.showInformationMessage(
-        `Analysis complete: ${summary}`
-      );
+				// Example: Flag unused imports (simplified check)
+				if (
+					dep.type === "import" &&
+					dep.imported &&
+					dep.imported.length === 0
+				) {
+					const range = new this.vscode.Range(
+						new this.vscode.Position(dep.line || 0, 0),
+						new this.vscode.Position(dep.line || 0, 100),
+					);
 
-      // Show details in output channel
-      this.outputChannel.appendLine(`\n=== Analysis Results ===`);
-      this.outputChannel.appendLine(`File: ${result.filePath}`);
-      this.outputChannel.appendLine(`Parse time: ${result.parseTime}ms`);
-      this.outputChannel.appendLine(`Dependencies:`);
-      
-      result.dependencies.forEach(dep => {
-        this.outputChannel.appendLine(`  - ${dep.source} (${dep.type})`);
-      });
-      
-      this.outputChannel.show();
-    } else {
-      this.vscode.window.showErrorMessage(
-        `Analysis failed: ${result.error?.message || 'Unknown error'}`
-      );
-    }
-  }
+					diagnostics.push(
+						new this.vscode.Diagnostic(
+							range,
+							`Import from '${dep.source}' appears to be unused`,
+							this.vscode.DiagnosticSeverity.Warning,
+						),
+					);
+				}
+			});
 
-  async analyzeWorkspace() {
-    try {
-      this.outputChannel.appendLine('Starting workspace analysis...');
-      this.vscode.window.showInformationMessage('Analyzing TypeScript dependencies in workspace...');
+			// Check for circular dependencies (simplified)
+			const fileName = path.basename(uri.fsPath, path.extname(uri.fsPath));
+			result.dependencies.forEach((dep) => {
+				if (
+					dep.source.includes(fileName) &&
+					!this.isExternalDependency(dep.source)
+				) {
+					const range = new this.vscode.Range(
+						new this.vscode.Position(dep.line || 0, 0),
+						new this.vscode.Position(dep.line || 0, 100),
+					);
 
-      const workspaceFolder = this.vscode.workspace.getWorkspaceFolder();
-      if (!workspaceFolder) {
-        this.vscode.window.showErrorMessage('No workspace folder open');
-        return;
-      }
+					diagnostics.push(
+						new this.vscode.Diagnostic(
+							range,
+							`Potential circular dependency: ${dep.source}`,
+							this.vscode.DiagnosticSeverity.Warning,
+						),
+					);
+				}
+			});
+		} else {
+			// Analysis failed - show error
+			const range = new this.vscode.Range(
+				new this.vscode.Position(0, 0),
+				new this.vscode.Position(0, 100),
+			);
 
-      // Find TypeScript files (simplified - in real extension, use vscode.workspace.findFiles)
-      const tsFiles = this.findTypeScriptFiles(workspaceFolder.uri.fsPath);
-      
-      let analyzed = 0;
-      let errors = 0;
-      const allDependencies = new Set();
+			diagnostics.push(
+				new this.vscode.Diagnostic(
+					range,
+					`Dependency analysis failed: ${result.error?.message || "Unknown error"}`,
+					this.vscode.DiagnosticSeverity.Error,
+				),
+			);
+		}
 
-      for (const file of tsFiles.slice(0, 10)) { // Limit for demo
-        try {
-          await this.analyzeFile(file, false);
-          analyzed++;
-          
-          // Collect dependencies
-          const result = await this.analyzer.analyzeFile(file);
-          if (result.success) {
-            result.dependencies.forEach(dep => allDependencies.add(dep.source));
-          }
-        } catch (error) {
-          errors++;
-          this.outputChannel.appendLine(`Failed to analyze ${file}: ${error.message}`);
-        }
-      }
+		this.diagnosticCollection.set(uri, diagnostics);
+	}
 
-      const message = `Workspace analysis complete: ${analyzed} files analyzed, ` +
-                     `${errors} errors, ${allDependencies.size} unique dependencies`;
-      
-      this.vscode.window.showInformationMessage(message);
-      this.outputChannel.appendLine(message);
+	showAnalysisResults(result) {
+		if (result.success) {
+			const summary =
+				`Dependencies: ${result.dependencies.length}, ` +
+				`Imports: ${result.imports.length}, ` +
+				`Exports: ${result.exports.length}`;
 
-    } catch (error) {
-      this.vscode.window.showErrorMessage(`Workspace analysis failed: ${error.message}`);
-    }
-  }
+			this.vscode.window.showInformationMessage(
+				`Analysis complete: ${summary}`,
+			);
 
-  showDependencyGraph() {
-    // In a real extension, this would create a webview with a dependency graph
-    this.vscode.window.showInformationMessage('Dependency graph visualization would be shown in a webview panel');
-    
-    this.outputChannel.appendLine('=== Dependency Graph (Text Format) ===');
-    this.outputChannel.appendLine('In a full VS Code extension, this would show an interactive dependency graph');
-    this.outputChannel.show();
-  }
+			// Show details in output channel
+			this.outputChannel.appendLine(`\n=== Analysis Results ===`);
+			this.outputChannel.appendLine(`File: ${result.filePath}`);
+			this.outputChannel.appendLine(`Parse time: ${result.parseTime}ms`);
+			this.outputChannel.appendLine(`Dependencies:`);
 
-  isTypeScriptFile(fileName) {
-    const ext = path.extname(fileName);
-    return ['.ts', '.tsx', '.d.ts'].includes(ext);
-  }
+			result.dependencies.forEach((dep) => {
+				this.outputChannel.appendLine(`  - ${dep.source} (${dep.type})`);
+			});
 
-  isExternalDependency(source) {
-    return /^[a-zA-Z@]/.test(source);
-  }
+			this.outputChannel.show();
+		} else {
+			this.vscode.window.showErrorMessage(
+				`Analysis failed: ${result.error?.message || "Unknown error"}`,
+			);
+		}
+	}
 
-  hasVersionConstraint(source) {
-    // Simplified check - in real extension, check package.json
-    return true; // Assume all external deps have versions for demo
-  }
+	async analyzeWorkspace() {
+		try {
+			this.outputChannel.appendLine("Starting workspace analysis...");
+			this.vscode.window.showInformationMessage(
+				"Analyzing TypeScript dependencies in workspace...",
+			);
 
-  findTypeScriptFiles(rootPath) {
-    // Simplified file discovery - in real extension, use vscode.workspace.findFiles
-    return [
-      './demo/examples/simple-component.tsx',
-      './demo/examples/complex-app.tsx',
-      './demo/examples/node-backend.ts'
-    ];
-  }
+			const workspaceFolder = this.vscode.workspace.getWorkspaceFolder();
+			if (!workspaceFolder) {
+				this.vscode.window.showErrorMessage("No workspace folder open");
+				return;
+			}
 
-  async deactivate() {
-    // Clean up resources
-    if (this.diagnosticCollection) {
-      this.diagnosticCollection.clear();
-    }
-    
-    if (this.cacheManager) {
-      await this.cacheManager.clear();
-    }
+			// Find TypeScript files (simplified - in real extension, use vscode.workspace.findFiles)
+			const tsFiles = this.findTypeScriptFiles(workspaceFolder.uri.fsPath);
 
-    // Clear pending analysis
-    for (const timeoutId of this.pendingAnalysis.values()) {
-      clearTimeout(timeoutId);
-    }
-    this.pendingAnalysis.clear();
+			let analyzed = 0;
+			let errors = 0;
+			const allDependencies = new Set();
 
-    this.outputChannel.appendLine('Extension deactivated');
-  }
+			for (const file of tsFiles.slice(0, 10)) {
+				// Limit for demo
+				try {
+					await this.analyzeFile(file, false);
+					analyzed++;
+
+					// Collect dependencies
+					const result = await this.analyzer.analyzeFile(file);
+					if (result.success) {
+						result.dependencies.forEach((dep) =>
+							allDependencies.add(dep.source),
+						);
+					}
+				} catch (error) {
+					errors++;
+					this.outputChannel.appendLine(
+						`Failed to analyze ${file}: ${error.message}`,
+					);
+				}
+			}
+
+			const message =
+				`Workspace analysis complete: ${analyzed} files analyzed, ` +
+				`${errors} errors, ${allDependencies.size} unique dependencies`;
+
+			this.vscode.window.showInformationMessage(message);
+			this.outputChannel.appendLine(message);
+		} catch (error) {
+			this.vscode.window.showErrorMessage(
+				`Workspace analysis failed: ${error.message}`,
+			);
+		}
+	}
+
+	showDependencyGraph() {
+		// In a real extension, this would create a webview with a dependency graph
+		this.vscode.window.showInformationMessage(
+			"Dependency graph visualization would be shown in a webview panel",
+		);
+
+		this.outputChannel.appendLine("=== Dependency Graph (Text Format) ===");
+		this.outputChannel.appendLine(
+			"In a full VS Code extension, this would show an interactive dependency graph",
+		);
+		this.outputChannel.show();
+	}
+
+	isTypeScriptFile(fileName) {
+		const ext = path.extname(fileName);
+		return [".ts", ".tsx", ".d.ts"].includes(ext);
+	}
+
+	isExternalDependency(source) {
+		return /^[a-zA-Z@]/.test(source);
+	}
+
+	hasVersionConstraint(source) {
+		// Simplified check - in real extension, check package.json
+		return true; // Assume all external deps have versions for demo
+	}
+
+	findTypeScriptFiles(rootPath) {
+		// Simplified file discovery - in real extension, use vscode.workspace.findFiles
+		return [
+			"./demo/examples/simple-component.tsx",
+			"./demo/examples/complex-app.tsx",
+			"./demo/examples/node-backend.ts",
+		];
+	}
+
+	async deactivate() {
+		// Clean up resources
+		if (this.diagnosticCollection) {
+			this.diagnosticCollection.clear();
+		}
+
+		if (this.cacheManager) {
+			await this.cacheManager.clear();
+		}
+
+		// Clear pending analysis
+		for (const timeoutId of this.pendingAnalysis.values()) {
+			clearTimeout(timeoutId);
+		}
+		this.pendingAnalysis.clear();
+
+		this.outputChannel.appendLine("Extension deactivated");
+	}
 }
 
 // Example usage and testing
 async function simulateVSCodeExtension() {
-  console.log('=== VS Code Extension Simulation ===\n');
+	console.log("=== VS Code Extension Simulation ===\n");
 
-  const vscode = new MockVSCodeAPI();
-  const context = {
-    subscriptions: []
-  };
+	const vscode = new MockVSCodeAPI();
+	const context = {
+		subscriptions: [],
+	};
 
-  // Create and activate extension
-  const extension = new TypeScriptDependencyExtension(context, vscode);
-  extension.activate();
+	// Create and activate extension
+	const extension = new TypeScriptDependencyExtension(context, vscode);
+	extension.activate();
 
-  // Simulate some operations
-  console.log('\n1. Analyzing current file...');
-  await extension.analyzeFile('./demo/examples/simple-component.tsx', true);
+	// Simulate some operations
+	console.log("\n1. Analyzing current file...");
+	await extension.analyzeFile("./demo/examples/simple-component.tsx", true);
 
-  console.log('\n2. Simulating file save event...');
-  await new Promise(resolve => {
-    vscode.workspace.onDidSaveTextDocument(async (document) => {
-      console.log(`File saved: ${document.fileName}`);
-      resolve();
-    });
-  });
+	console.log("\n2. Simulating file save event...");
+	await new Promise((resolve) => {
+		vscode.workspace.onDidSaveTextDocument(async (document) => {
+			console.log(`File saved: ${document.fileName}`);
+			resolve();
+		});
+	});
 
-  console.log('\n3. Analyzing workspace...');
-  await extension.analyzeWorkspace();
+	console.log("\n3. Analyzing workspace...");
+	await extension.analyzeWorkspace();
 
-  console.log('\n4. Showing dependency graph...');
-  extension.showDependencyGraph();
+	console.log("\n4. Showing dependency graph...");
+	extension.showDependencyGraph();
 
-  // Clean up
-  await extension.deactivate();
-  console.log('\n✅ VS Code extension simulation completed!');
+	// Clean up
+	await extension.deactivate();
+	console.log("\n✅ VS Code extension simulation completed!");
 }
 
 // Package.json configuration for VS Code extension
 function generateVSCodeExtensionConfig() {
-  return {
-    "name": "typescript-dependency-analyzer",
-    "displayName": "TypeScript Dependency Analyzer",
-    "description": "Analyze and visualize TypeScript dependencies in your workspace",
-    "version": "1.0.0",
-    "engines": {
-      "vscode": "^1.60.0"
-    },
-    "categories": [
-      "Other",
-      "Linters"
-    ],
-    "activationEvents": [
-      "onLanguage:typescript",
-      "onLanguage:typescriptreact"
-    ],
-    "main": "./out/extension.js",
-    "contributes": {
-      "commands": [
-        {
-          "command": "typescript-deps.analyzeCurrentFile",
-          "title": "Analyze Dependencies",
-          "category": "TypeScript Deps"
-        },
-        {
-          "command": "typescript-deps.analyzeWorkspace",
-          "title": "Analyze Workspace Dependencies",
-          "category": "TypeScript Deps"
-        },
-        {
-          "command": "typescript-deps.showDependencyGraph",
-          "title": "Show Dependency Graph",
-          "category": "TypeScript Deps"
-        },
-        {
-          "command": "typescript-deps.clearCache",
-          "title": "Clear Analysis Cache",
-          "category": "TypeScript Deps"
-        }
-      ],
-      "menus": {
-        "explorer/context": [
-          {
-            "command": "typescript-deps.analyzeCurrentFile",
-            "when": "resourceExtname == .ts || resourceExtname == .tsx",
-            "group": "typescript-deps"
-          }
-        ],
-        "editor/context": [
-          {
-            "command": "typescript-deps.analyzeCurrentFile",
-            "when": "resourceExtname == .ts || resourceExtname == .tsx",
-            "group": "typescript-deps"
-          }
-        ]
-      },
-      "configuration": {
-        "title": "TypeScript Dependency Analyzer",
-        "properties": {
-          "typescriptDeps.enableRealTimeAnalysis": {
-            "type": "boolean",
-            "default": true,
-            "description": "Enable real-time dependency analysis as you type"
-          },
-          "typescriptDeps.cacheEnabled": {
-            "type": "boolean",
-            "default": true,
-            "description": "Enable caching for better performance"
-          },
-          "typescriptDeps.analysisTimeout": {
-            "type": "number",
-            "default": 5000,
-            "description": "Timeout for dependency analysis in milliseconds"
-          }
-        }
-      }
-    }
-  };
+	return {
+		name: "typescript-dependency-analyzer",
+		displayName: "TypeScript Dependency Analyzer",
+		description:
+			"Analyze and visualize TypeScript dependencies in your workspace",
+		version: "1.0.0",
+		engines: {
+			vscode: "^1.60.0",
+		},
+		categories: ["Other", "Linters"],
+		activationEvents: ["onLanguage:typescript", "onLanguage:typescriptreact"],
+		main: "./out/extension.js",
+		contributes: {
+			commands: [
+				{
+					command: "typescript-deps.analyzeCurrentFile",
+					title: "Analyze Dependencies",
+					category: "TypeScript Deps",
+				},
+				{
+					command: "typescript-deps.analyzeWorkspace",
+					title: "Analyze Workspace Dependencies",
+					category: "TypeScript Deps",
+				},
+				{
+					command: "typescript-deps.showDependencyGraph",
+					title: "Show Dependency Graph",
+					category: "TypeScript Deps",
+				},
+				{
+					command: "typescript-deps.clearCache",
+					title: "Clear Analysis Cache",
+					category: "TypeScript Deps",
+				},
+			],
+			menus: {
+				"explorer/context": [
+					{
+						command: "typescript-deps.analyzeCurrentFile",
+						when: "resourceExtname == .ts || resourceExtname == .tsx",
+						group: "typescript-deps",
+					},
+				],
+				"editor/context": [
+					{
+						command: "typescript-deps.analyzeCurrentFile",
+						when: "resourceExtname == .ts || resourceExtname == .tsx",
+						group: "typescript-deps",
+					},
+				],
+			},
+			configuration: {
+				title: "TypeScript Dependency Analyzer",
+				properties: {
+					"typescriptDeps.enableRealTimeAnalysis": {
+						type: "boolean",
+						default: true,
+						description: "Enable real-time dependency analysis as you type",
+					},
+					"typescriptDeps.cacheEnabled": {
+						type: "boolean",
+						default: true,
+						description: "Enable caching for better performance",
+					},
+					"typescriptDeps.analysisTimeout": {
+						type: "number",
+						default: 5000,
+						description: "Timeout for dependency analysis in milliseconds",
+					},
+				},
+			},
+		},
+	};
 }
 
 // Export extension class and run simulation
 module.exports = TypeScriptDependencyExtension;
 
 if (require.main === module) {
-  simulateVSCodeExtension().catch(error => {
-    console.error('Simulation failed:', error.message);
-    process.exit(1);
-  });
+	simulateVSCodeExtension().catch((error) => {
+		console.error("Simulation failed:", error.message);
+		process.exit(1);
+	});
 }

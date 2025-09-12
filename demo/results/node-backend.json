@@ -596,9 +596,9 @@
       "name": "default",
       "type": "default",
       "location": {
-        "line": 404,
+        "line": 426,
         "column": 0,
-        "offset": 10696
+        "offset": 9872
       },
       "isTypeOnly": false
     },
@@ -606,9 +606,9 @@
       "name": "ApiServer",
       "type": "named",
       "location": {
-        "line": 405,
+        "line": 427,
         "column": 0,
-        "offset": 10719
+        "offset": 9895
       },
       "isTypeOnly": false
     },
@@ -616,12 +616,12 @@
       "name": "User",
       "type": "named",
       "location": {
-        "line": 406,
+        "line": 428,
         "column": 0,
-        "offset": 10741
+        "offset": 9917
       },
       "isTypeOnly": true
     }
   ],
-  "parseTime": 12
+  "parseTime": 15
 }

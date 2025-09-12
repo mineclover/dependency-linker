@@ -4,12 +4,12 @@
  */
 
 export interface SourceLocation {
-  /** Line number (1-indexed) */
-  line: number;
-  /** Column number (0-indexed) */
-  column: number;
-  /** Byte offset from file start */
-  offset: number;
+	/** Line number (1-indexed) */
+	line: number;
+	/** Column number (0-indexed) */
+	column: number;
+	/** Byte offset from file start */
+	offset: number;
 }
 
 /**
@@ -20,15 +20,15 @@ export interface SourceLocation {
  * @returns SourceLocation object
  */
 export function createSourceLocation(
-  line: number,
-  column: number,
-  offset: number
+	line: number,
+	column: number,
+	offset: number,
 ): SourceLocation {
-  return {
-    line: Math.max(1, line), // Ensure line is at least 1
-    column: Math.max(0, column), // Ensure column is at least 0
-    offset: Math.max(0, offset) // Ensure offset is at least 0
-  };
+	return {
+		line: Math.max(1, line), // Ensure line is at least 1
+		column: Math.max(0, column), // Ensure column is at least 0
+		offset: Math.max(0, offset), // Ensure offset is at least 0
+	};
 }
 
 /**
@@ -37,14 +37,14 @@ export function createSourceLocation(
  * @returns SourceLocation object
  */
 export function createLocationFromTreeSitterPosition(position: {
-  row: number;
-  column: number;
+	row: number;
+	column: number;
 }): SourceLocation {
-  return createSourceLocation(
-    position.row + 1, // Tree-sitter is 0-indexed for lines, we use 1-indexed
-    position.column,  // Tree-sitter is 0-indexed for columns, we keep 0-indexed
-    0 // Offset needs to be calculated separately
-  );
+	return createSourceLocation(
+		position.row + 1, // Tree-sitter is 0-indexed for lines, we use 1-indexed
+		position.column, // Tree-sitter is 0-indexed for columns, we keep 0-indexed
+		0, // Offset needs to be calculated separately
+	);
 }
 
 /**
@@ -55,12 +55,12 @@ export function createLocationFromTreeSitterPosition(position: {
  * @returns SourceLocation object with calculated offset
  */
 export function createLocationWithOffset(
-  content: string,
-  line: number,
-  column: number
+	content: string,
+	line: number,
+	column: number,
 ): SourceLocation {
-  const offset = calculateOffset(content, line, column);
-  return createSourceLocation(line, column, offset);
+	const offset = calculateOffset(content, line, column);
+	return createSourceLocation(line, column, offset);
 }
 
 /**
@@ -70,19 +70,23 @@ export function createLocationWithOffset(
  * @param column Column number (0-indexed)
  * @returns Byte offset
  */
-export function calculateOffset(content: string, line: number, column: number): number {
-  const lines = content.split('\n');
-  let offset = 0;
-  
-  // Add lengths of all previous lines (including newline characters)
-  for (let i = 0; i < line - 1 && i < lines.length; i++) {
-    offset += lines[i].length + 1; // +1 for newline character
-  }
-  
-  // Add column offset within the current line
-  offset += Math.min(column, lines[line - 1]?.length || 0);
-  
-  return offset;
+export function calculateOffset(
+	content: string,
+	line: number,
+	column: number,
+): number {
+	const lines = content.split("\n");
+	let offset = 0;
+
+	// Add lengths of all previous lines (including newline characters)
+	for (let i = 0; i < line - 1 && i < lines.length; i++) {
+		offset += lines[i].length + 1; // +1 for newline character
+	}
+
+	// Add column offset within the current line
+	offset += Math.min(column, lines[line - 1]?.length || 0);
+
+	return offset;
 }
 
 /**
@@ -91,23 +95,26 @@ export function calculateOffset(content: string, line: number, column: number): 
  * @param offset Byte offset
  * @returns Object with line and column
  */
-export function offsetToLineColumn(content: string, offset: number): {
-  line: number;
-  column: number;
+export function offsetToLineColumn(
+	content: string,
+	offset: number,
+): {
+	line: number;
+	column: number;
 } {
-  let line = 1;
-  let column = 0;
-  
-  for (let i = 0; i < Math.min(offset, content.length); i++) {
-    if (content[i] === '\n') {
-      line++;
-      column = 0;
-    } else {
-      column++;
-    }
-  }
-  
-  return { line, column };
+	let line = 1;
+	let column = 0;
+
+	for (let i = 0; i < Math.min(offset, content.length); i++) {
+		if (content[i] === "\n") {
+			line++;
+			column = 0;
+		} else {
+			column++;
+		}
+	}
+
+	return { line, column };
 }
 
 /**
@@ -116,9 +123,12 @@ export function offsetToLineColumn(content: string, offset: number): {
  * @param offset Byte offset
  * @returns SourceLocation object
  */
-export function createLocationFromOffset(content: string, offset: number): SourceLocation {
-  const { line, column } = offsetToLineColumn(content, offset);
-  return createSourceLocation(line, column, offset);
+export function createLocationFromOffset(
+	content: string,
+	offset: number,
+): SourceLocation {
+	const { line, column } = offsetToLineColumn(content, offset);
+	return createSourceLocation(line, column, offset);
 }
 
 /**
@@ -126,17 +136,19 @@ export function createLocationFromOffset(content: string, offset: number): Sourc
  * @param location The location to validate
  * @returns True if the location is valid
  */
-export function isValidSourceLocation(location: any): location is SourceLocation {
-  return (
-    location &&
-    typeof location === 'object' &&
-    typeof location.line === 'number' &&
-    typeof location.column === 'number' &&
-    typeof location.offset === 'number' &&
-    location.line >= 1 &&
-    location.column >= 0 &&
-    location.offset >= 0
-  );
+export function isValidSourceLocation(
+	location: any,
+): location is SourceLocation {
+	return (
+		location &&
+		typeof location === "object" &&
+		typeof location.line === "number" &&
+		typeof location.column === "number" &&
+		typeof location.offset === "number" &&
+		location.line >= 1 &&
+		location.column >= 0 &&
+		location.offset >= 0
+	);
 }
 
 /**
@@ -145,16 +157,19 @@ export function isValidSourceLocation(location: any): location is SourceLocation
  * @param b Second location
  * @returns -1 if a comes before b, 1 if a comes after b, 0 if they're equal
  */
-export function compareSourceLocations(a: SourceLocation, b: SourceLocation): number {
-  if (a.line !== b.line) {
-    return a.line < b.line ? -1 : 1;
-  }
-  
-  if (a.column !== b.column) {
-    return a.column < b.column ? -1 : 1;
-  }
-  
-  return 0;
+export function compareSourceLocations(
+	a: SourceLocation,
+	b: SourceLocation,
+): number {
+	if (a.line !== b.line) {
+		return a.line < b.line ? -1 : 1;
+	}
+
+	if (a.column !== b.column) {
+		return a.column < b.column ? -1 : 1;
+	}
+
+	return 0;
 }
 
 /**
@@ -163,8 +178,11 @@ export function compareSourceLocations(a: SourceLocation, b: SourceLocation): nu
  * @param b Second location
  * @returns True if locations are equal
  */
-export function sourceLocationsEqual(a: SourceLocation, b: SourceLocation): boolean {
-  return a.line === b.line && a.column === b.column && a.offset === b.offset;
+export function sourceLocationsEqual(
+	a: SourceLocation,
+	b: SourceLocation,
+): boolean {
+	return a.line === b.line && a.column === b.column && a.offset === b.offset;
 }
 
 /**
@@ -173,7 +191,7 @@ export function sourceLocationsEqual(a: SourceLocation, b: SourceLocation): bool
  * @returns Human-readable string (e.g., "line 5, column 10")
  */
 export function formatSourceLocation(location: SourceLocation): string {
-  return `line ${location.line}, column ${location.column}`;
+	return `line ${location.line}, column ${location.column}`;
 }
 
 /**
@@ -182,7 +200,7 @@ export function formatSourceLocation(location: SourceLocation): string {
  * @returns Compact string (e.g., "5:10")
  */
 export function formatSourceLocationCompact(location: SourceLocation): string {
-  return `${location.line}:${location.column}`;
+	return `${location.line}:${location.column}`;
 }
 
 /**
@@ -193,27 +211,27 @@ export function formatSourceLocationCompact(location: SourceLocation): string {
  * @returns Object with context information
  */
 export function getLocationContext(
-  content: string,
-  location: SourceLocation,
-  contextLines: number = 2
+	content: string,
+	location: SourceLocation,
+	contextLines: number = 2,
 ): {
-  beforeLines: string[];
-  currentLine: string;
-  afterLines: string[];
-  lineNumber: number;
+	beforeLines: string[];
+	currentLine: string;
+	afterLines: string[];
+	lineNumber: number;
 } {
-  const lines = content.split('\n');
-  const lineIndex = location.line - 1; // Convert to 0-indexed
-  
-  const startIndex = Math.max(0, lineIndex - contextLines);
-  const endIndex = Math.min(lines.length - 1, lineIndex + contextLines);
-  
-  return {
-    beforeLines: lines.slice(startIndex, lineIndex),
-    currentLine: lines[lineIndex] || '',
-    afterLines: lines.slice(lineIndex + 1, endIndex + 1),
-    lineNumber: location.line
-  };
+	const lines = content.split("\n");
+	const lineIndex = location.line - 1; // Convert to 0-indexed
+
+	const startIndex = Math.max(0, lineIndex - contextLines);
+	const endIndex = Math.min(lines.length - 1, lineIndex + contextLines);
+
+	return {
+		beforeLines: lines.slice(startIndex, lineIndex),
+		currentLine: lines[lineIndex] || "",
+		afterLines: lines.slice(lineIndex + 1, endIndex + 1),
+		lineNumber: location.line,
+	};
 }
 
 /**
@@ -222,21 +240,24 @@ export function getLocationContext(
  * @param location The source location to validate
  * @returns True if location is within bounds
  */
-export function isLocationWithinBounds(content: string, location: SourceLocation): boolean {
-  const lines = content.split('\n');
-  
-  if (location.line < 1 || location.line > lines.length) {
-    return false;
-  }
-  
-  const lineContent = lines[location.line - 1];
-  if (location.column < 0 || location.column > lineContent.length) {
-    return false;
-  }
-  
-  if (location.offset < 0 || location.offset > content.length) {
-    return false;
-  }
-  
-  return true;
+export function isLocationWithinBounds(
+	content: string,
+	location: SourceLocation,
+): boolean {
+	const lines = content.split("\n");
+
+	if (location.line < 1 || location.line > lines.length) {
+		return false;
+	}
+
+	const lineContent = lines[location.line - 1];
+	if (location.column < 0 || location.column > lineContent.length) {
+		return false;
+	}
+
+	if (location.offset < 0 || location.offset > content.length) {
+		return false;
+	}
+
+	return true;
 }

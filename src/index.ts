@@ -4,39 +4,71 @@
  */
 
 // Main API exports
-export * from './api';
-
-// Legacy CLI exports (for backward compatibility)
-export { FileAnalyzer } from './services/FileAnalyzer';
-export { TypeScriptParser } from './services/TypeScriptParser';
-export { OutputFormatter } from './formatters/OutputFormatter';
-export { DependencyAnalyzer } from './services/DependencyAnalyzer';
-
-// Core models (for backward compatibility)
-export { AnalysisResult } from './models/AnalysisResult';
-export { DependencyInfo } from './models/DependencyInfo';
-export { ImportInfo } from './models/ImportInfo';
-export { ExportInfo } from './models/ExportInfo';
-export { SourceLocation } from './models/SourceLocation';
-export { FileAnalysisRequest, OutputFormat } from './models/FileAnalysisRequest';
-
-// Utility exports
-export { createLogger } from './utils/logger';
-
+export * from "./api";
 // Diagnostic and debugging utilities
 export {
-  ErrorReporter,
-  errorReporter,
-  DebugHelper,
-  DiagnosticTool,
-  // Types
-  ErrorContext,
-  DiagnosticInfo,
-  ErrorReport,
-  DebugContext,
-  DebugTrace,
-  PerformanceMetrics as DiagnosticPerformanceMetrics,
-  SystemHealthCheck,
-  DiagnosticReport,
-  PerformanceTest
-} from './api/errors/index';
+	DebugContext,
+	DebugHelper,
+	DebugTrace,
+	DiagnosticInfo,
+	DiagnosticReport,
+	DiagnosticTool,
+	// Types
+	ErrorContext,
+	ErrorReport,
+	ErrorReporter,
+	errorReporter,
+	PerformanceMetrics as DiagnosticPerformanceMetrics,
+	PerformanceTest,
+	SystemHealthCheck,
+} from "./api/errors/index";
+export { OutputFormatter } from "./formatters/OutputFormatter";
+// Core models (for backward compatibility)
+export { AnalysisResult } from "./models/AnalysisResult";
+export { DependencyInfo } from "./models/DependencyInfo";
+export { ExportInfo } from "./models/ExportInfo";
+export {
+	FileAnalysisRequest,
+	OutputFormat,
+} from "./models/FileAnalysisRequest";
+export { ImportInfo } from "./models/ImportInfo";
+export { SourceLocation } from "./models/SourceLocation";
+export { DependencyAnalyzer } from "./services/DependencyAnalyzer";
+// Legacy CLI exports (for backward compatibility)
+export { FileAnalyzer } from "./services/FileAnalyzer";
+export { TypeScriptParser } from "./services/TypeScriptParser";
+// Task Management System
+export {
+	createTaskAPI,
+	ITaskExecutor,
+	// Interfaces
+	ITaskManager,
+	ITaskRepository,
+	// Core types
+	Task,
+	TaskAPI,
+	TaskBatch,
+	TaskComplexity,
+	// Error handling
+	TaskError,
+	TaskErrorFactory,
+	TaskExecutionError,
+	TaskExecutionResult,
+	TaskExecutor,
+	// Services
+	TaskManager,
+	TaskNotFoundError,
+	TaskPhase,
+	TaskPriority,
+	TaskProgress,
+	TaskRepository,
+	TaskRisk,
+	TaskStatistics,
+	TaskStatus,
+	TaskStatusError,
+	TaskValidationError,
+	TaskValidator,
+	ValidationResult,
+} from "./task";
+// Utility exports
+export { createLogger } from "./utils/logger";

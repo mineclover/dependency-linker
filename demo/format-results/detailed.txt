@@ -1,5 +1,5 @@
 File: demo/examples/complex-app.tsx
-Parse Time: 10ms
+Parse Time: 9ms
 Status: Success
 
 Dependencies:
@@ -52,12 +52,12 @@ Imports:
 
 Exports:
   Default:
-    default (253:0)
+    default (258:0)
   Named:
     User (type-only) (21:0)
     AppProps (type-only) (28:0)
-    userUtils (226:0)
-    ApiResponse (type-only) (251:0)
+    userUtils (231:0)
+    ApiResponse (type-only) (256:0)
 
 Summary:
   Total Dependencies: 11

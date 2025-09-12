@@ -3,6 +3,6 @@
  * Central export point for all task management interfaces
  */
 
-export * from './ITaskManager';
-export * from './ITaskExecutor';
-export * from './ITaskRepository';
+export * from "./ITaskExecutor";
+export * from "./ITaskManager";
+export * from "./ITaskRepository";

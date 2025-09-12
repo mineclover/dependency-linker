@@ -3,34 +3,36 @@
  * Tests dependency analysis and classification functionality
  */
 
-import * as fs from 'fs';
-import * as path from 'path';
-import { DependencyAnalyzer } from '../../src/services/DependencyAnalyzer';
-import { TypeScriptParser } from '../../src/services/TypeScriptParser';
-import { DependencyInfo } from '../../src/models/DependencyInfo';
+import * as fs from "fs";
+import * as path from "path";
+import { DependencyAnalyzer } from "../../src/services/DependencyAnalyzer";
+import { TypeScriptParser } from "../../src/services/TypeScriptParser";
+import { DependencyInfo } from "../../src/models/DependencyInfo";
 
-describe('Dependency Extraction Integration', () => {
-  let dependencyAnalyzer: DependencyAnalyzer;
-  let parser: TypeScriptParser;
-  const testFilesDir = path.join(__dirname, '../fixtures');
+describe("Dependency Extraction Integration", () => {
+	let dependencyAnalyzer: DependencyAnalyzer;
+	let parser: TypeScriptParser;
+	const testFilesDir = path.join(__dirname, "../fixtures");
 
-  beforeAll(async () => {
-    dependencyAnalyzer = new DependencyAnalyzer();
-    parser = new TypeScriptParser();
-    
-    // Create test fixtures directory
-    await fs.promises.mkdir(testFilesDir, { recursive: true });
-  });
+	beforeAll(async () => {
+		dependencyAnalyzer = new DependencyAnalyzer();
+		parser = new TypeScriptParser();
 
-  afterAll(async () => {
-    // Clean up test fixtures
-    await fs.promises.rm(testFilesDir, { recursive: true, force: true });
-  });
+		// Create test fixtures directory
+		await fs.promises.mkdir(testFilesDir, { recursive: true });
+	});
 
-  describe('Dependency type classification', () => {
-    test('should correctly classify external dependencies', async () => {
-      const testFile = path.join(testFilesDir, 'external-deps.ts');
-      await fs.promises.writeFile(testFile, `
+	afterAll(async () => {
+		// Clean up test fixtures
+		await fs.promises.rm(testFilesDir, { recursive: true, force: true });
+	});
+
+	describe("Dependency type classification", () => {
+		test("should correctly classify external dependencies", async () => {
+			const testFile = path.join(testFilesDir, "external-deps.ts");
+			await fs.promises.writeFile(
+				testFile,
+				`
 // Node.js built-in modules
 import * as fs from 'fs';
 import { readFile } from 'fs/promises';
@@ -50,83 +52,89 @@ import { format } from '@date-fns/format';
 import { Logger } from '@company/logger';
 
 export {};
-`);
+`,
+			);
 
-      const content = await fs.promises.readFile(testFile, 'utf-8');
-      const parseResult = await parser.parseFile(testFile, content);
-      const dependencies = await dependencyAnalyzer.classifyDependencies(parseResult.dependencies, testFile);
+			const content = await fs.promises.readFile(testFile, "utf-8");
+			const parseResult = await parser.parseFile(testFile, content);
+			const dependencies = await dependencyAnalyzer.classifyDependencies(
+				parseResult.dependencies,
+				testFile,
+			);
 
-      // Filter external dependencies
-      const externalDeps = dependencies.filter(d => d.type === 'external');
-      
-      expect(externalDeps).toHaveLength(12);
+			// Filter external dependencies
+			const externalDeps = dependencies.filter((d) => d.type === "external");
 
-      // Node.js built-in modules
-      expect(externalDeps).toEqual(
-        expect.arrayContaining([
-          expect.objectContaining({
-            source: 'fs',
-            type: 'external'
-          }),
-          expect.objectContaining({
-            source: 'fs/promises',
-            type: 'external'
-          }),
-          expect.objectContaining({
-            source: 'path',
-            type: 'external'
-          })
-        ])
-      );
+			expect(externalDeps).toHaveLength(12);
 
-      // Third-party packages
-      expect(externalDeps).toEqual(
-        expect.arrayContaining([
-          expect.objectContaining({
-            source: 'react',
-            type: 'external'
-          }),
-          expect.objectContaining({
-            source: 'lodash',
-            type: 'external'
-          }),
-          expect.objectContaining({
-            source: 'uuid',
-            type: 'external'
-          }),
-          expect.objectContaining({
-            source: 'axios',
-            type: 'external'
-          }),
-          expect.objectContaining({
-            source: 'styled-components',
-            type: 'external'
-          })
-        ])
-      );
+			// Node.js built-in modules
+			expect(externalDeps).toEqual(
+				expect.arrayContaining([
+					expect.objectContaining({
+						source: "fs",
+						type: "external",
+					}),
+					expect.objectContaining({
+						source: "fs/promises",
+						type: "external",
+					}),
+					expect.objectContaining({
+						source: "path",
+						type: "external",
+					}),
+				]),
+			);
 
-      // Scoped packages
-      expect(externalDeps).toEqual(
-        expect.arrayContaining([
-          expect.objectContaining({
-            source: '@mui/material',
-            type: 'external'
-          }),
-          expect.objectContaining({
-            source: '@date-fns/format',
-            type: 'external'
-          }),
-          expect.objectContaining({
-            source: '@company/logger',
-            type: 'external'
-          })
-        ])
-      );
-    });
+			// Third-party packages
+			expect(externalDeps).toEqual(
+				expect.arrayContaining([
+					expect.objectContaining({
+						source: "react",
+						type: "external",
+					}),
+					expect.objectContaining({
+						source: "lodash",
+						type: "external",
+					}),
+					expect.objectContaining({
+						source: "uuid",
+						type: "external",
+					}),
+					expect.objectContaining({
+						source: "axios",
+						type: "external",
+					}),
+					expect.objectContaining({
+						source: "styled-components",
+						type: "external",
+					}),
+				]),
+			);
 
-    test('should correctly classify relative dependencies', async () => {
-      const testFile = path.join(testFilesDir, 'relative-deps.ts');
-      await fs.promises.writeFile(testFile, `
+			// Scoped packages
+			expect(externalDeps).toEqual(
+				expect.arrayContaining([
+					expect.objectContaining({
+						source: "@mui/material",
+						type: "external",
+					}),
+					expect.objectContaining({
+						source: "@date-fns/format",
+						type: "external",
+					}),
+					expect.objectContaining({
+						source: "@company/logger",
+						type: "external",
+					}),
+				]),
+			);
+		});
+
+		test("should correctly classify relative dependencies", async () => {
+			const testFile = path.join(testFilesDir, "relative-deps.ts");
+			await fs.promises.writeFile(
+				testFile,
+				`
 // Same directory
 import { utils } from './utils';
 import config from './config.json';
@@ -145,42 +153,48 @@ import data from './data/users.json';
 import { schema } from './schemas/user.schema';
 
 export {};
-`);
+`,
+			);
 
-      const content = await fs.promises.readFile(testFile, 'utf-8');
-      const parseResult = await parser.parseFile(testFile, content);
-      const dependencies = await dependencyAnalyzer.classifyDependencies(parseResult.dependencies, testFile);
+			const content = await fs.promises.readFile(testFile, "utf-8");
+			const parseResult = await parser.parseFile(testFile, content);
+			const dependencies = await dependencyAnalyzer.classifyDependencies(
+				parseResult.dependencies,
+				testFile,
+			);
 
-      // All dependencies should be classified as relative
-      expect(dependencies).toHaveLength(9);
-      expect(dependencies.every(d => d.type === 'relative')).toBe(true);
+			// All dependencies should be classified as relative
+			expect(dependencies).toHaveLength(9);
+			expect(dependencies.every((d) => d.type === "relative")).toBe(true);
 
-      // Verify specific patterns
-      expect(dependencies).toEqual(
-        expect.arrayContaining([
-          expect.objectContaining({
-            source: './utils',
-            type: 'relative'
-          }),
-          expect.objectContaining({
-            source: '../api/client',
-            type: 'relative'
-          }),
-          expect.objectContaining({
-            source: '../../components/Button',
-            type: 'relative'
-          }),
-          expect.objectContaining({
-            source: './data/users.json',
-            type: 'relative'
-          })
-        ])
-      );
-    });
+			// Verify specific patterns
+			expect(dependencies).toEqual(
+				expect.arrayContaining([
+					expect.objectContaining({
+						source: "./utils",
+						type: "relative",
+					}),
+					expect.objectContaining({
+						source: "../api/client",
+						type: "relative",
+					}),
+					expect.objectContaining({
+						source: "../../components/Button",
+						type: "relative",
+					}),
+					expect.objectContaining({
+						source: "./data/users.json",
+						type: "relative",
+					}),
+				]),
+			);
+		});
 
-    test('should correctly classify internal/absolute dependencies', async () => {
-      const testFile = path.join(testFilesDir, 'internal-deps.ts');
-      await fs.promises.writeFile(testFile, `
+		test("should correctly classify internal/absolute dependencies", async () => {
+			const testFile = path.join(testFilesDir, "internal-deps.ts");
+			await fs.promises.writeFile(
+				testFile,
+				`
 // Internal absolute imports (assuming project structure)
 import { api } from 'src/api';
 import { components } from 'src/components';
@@ -192,37 +206,43 @@ import { database } from 'db/connection';
 import { routes } from 'routes/api';
 
 export {};
-`);
+`,
+			);
 
-      const content = await fs.promises.readFile(testFile, 'utf-8');
-      const parseResult = await parser.parseFile(testFile, content);
-      const dependencies = await dependencyAnalyzer.classifyDependencies(parseResult.dependencies, testFile);
+			const content = await fs.promises.readFile(testFile, "utf-8");
+			const parseResult = await parser.parseFile(testFile, content);
+			const dependencies = await dependencyAnalyzer.classifyDependencies(
+				parseResult.dependencies,
+				testFile,
+			);
 
-      // These should be classified as internal (project-specific modules)
-      expect(dependencies).toHaveLength(6);
-      
-      const internalDeps = dependencies.filter(d => d.type === 'internal');
-      expect(internalDeps.length).toBeGreaterThan(0);
+			// These should be classified as internal (project-specific modules)
+			expect(dependencies).toHaveLength(6);
 
-      expect(dependencies).toEqual(
-        expect.arrayContaining([
-          expect.objectContaining({
-            source: 'src/api',
-            type: 'internal'
-          }),
-          expect.objectContaining({
-            source: 'src/components',
-            type: 'internal'
-          })
-        ])
-      );
-    });
-  });
+			const internalDeps = dependencies.filter((d) => d.type === "internal");
+			expect(internalDeps.length).toBeGreaterThan(0);
 
-  describe('Complex dependency patterns', () => {
-    test('should handle dynamic imports and requires', async () => {
-      const testFile = path.join(testFilesDir, 'dynamic-deps.ts');
-      await fs.promises.writeFile(testFile, `
+			expect(dependencies).toEqual(
+				expect.arrayContaining([
+					expect.objectContaining({
+						source: "src/api",
+						type: "internal",
+					}),
+					expect.objectContaining({
+						source: "src/components",
+						type: "internal",
+					}),
+				]),
+			);
+		});
+	});
+
+	describe("Complex dependency patterns", () => {
+		test("should handle dynamic imports and requires", async () => {
+			const testFile = path.join(testFilesDir, "dynamic-deps.ts");
+			await fs.promises.writeFile(
+				testFile,
+				`
 // Dynamic ES6 imports
 const loadModule = async () => {
   const { default: React } = await import('react');
@@ -247,29 +267,37 @@ const getModule = (name: string) => {
 };
 
 export {};
-`);
+`,
+			);
 
-      const content = await fs.promises.readFile(testFile, 'utf-8');
-      const parseResult = await parser.parseFile(testFile, content);
-      const dependencies = await dependencyAnalyzer.classifyDependencies(parseResult.dependencies, testFile);
+			const content = await fs.promises.readFile(testFile, "utf-8");
+			const parseResult = await parser.parseFile(testFile, content);
+			const dependencies = await dependencyAnalyzer.classifyDependencies(
+				parseResult.dependencies,
+				testFile,
+			);
 
-      // Should detect both static and dynamic imports
-      expect(dependencies.length).toBeGreaterThan(6);
+			// Should detect both static and dynamic imports
+			expect(dependencies.length).toBeGreaterThan(6);
 
-      // Check for dynamic imports
-      const dynamicImports = dependencies.filter(d => d.source === 'react' || d.source === './utils');
-      expect(dynamicImports.length).toBeGreaterThan(0);
+			// Check for dynamic imports
+			const dynamicImports = dependencies.filter(
+				(d) => d.source === "react" || d.source === "./utils",
+			);
+			expect(dynamicImports.length).toBeGreaterThan(0);
 
-      // Check for CommonJS requires
-      const requireImports = dependencies.filter(d => 
-        ['fs', 'path', 'lodash', 'react-devtools'].includes(d.source)
-      );
-      expect(requireImports.length).toBeGreaterThan(0);
-    });
+			// Check for CommonJS requires
+			const requireImports = dependencies.filter((d) =>
+				["fs", "path", "lodash", "react-devtools"].includes(d.source),
+			);
+			expect(requireImports.length).toBeGreaterThan(0);
+		});
 
-    test('should extract dependencies from JSX/TSX components', async () => {
-      const testFile = path.join(testFilesDir, 'jsx-deps.tsx');
-      await fs.promises.writeFile(testFile, `
+		test("should extract dependencies from JSX/TSX components", async () => {
+			const testFile = path.join(testFilesDir, "jsx-deps.tsx");
+			await fs.promises.writeFile(
+				testFile,
+				`
 import React, { useState, useEffect } from 'react';
 import { Button, TextField, Box } from '@mui/material';
 import { styled, ThemeProvider } from '@mui/material/styles';
@@ -327,42 +355,48 @@ export const UserForm: React.FC<Props> = ({ user, theme }) => {
 };
 
 export default UserForm;
-`);
+`,
+			);
 
-      const content = await fs.promises.readFile(testFile, 'utf-8');
-      const parseResult = await parser.parseFile(testFile, content);
-      const dependencies = await dependencyAnalyzer.classifyDependencies(parseResult.dependencies, testFile);
+			const content = await fs.promises.readFile(testFile, "utf-8");
+			const parseResult = await parser.parseFile(testFile, content);
+			const dependencies = await dependencyAnalyzer.classifyDependencies(
+				parseResult.dependencies,
+				testFile,
+			);
 
-      // Verify external dependencies (React ecosystem)
-      const externalDeps = dependencies.filter(d => d.type === 'external');
-      expect(externalDeps).toEqual(
-        expect.arrayContaining([
-          expect.objectContaining({ source: 'react' }),
-          expect.objectContaining({ source: '@mui/material' }),
-          expect.objectContaining({ source: '@mui/material/styles' }),
-          expect.objectContaining({ source: 'date-fns' })
-        ])
-      );
+			// Verify external dependencies (React ecosystem)
+			const externalDeps = dependencies.filter((d) => d.type === "external");
+			expect(externalDeps).toEqual(
+				expect.arrayContaining([
+					expect.objectContaining({ source: "react" }),
+					expect.objectContaining({ source: "@mui/material" }),
+					expect.objectContaining({ source: "@mui/material/styles" }),
+					expect.objectContaining({ source: "date-fns" }),
+				]),
+			);
 
-      // Verify relative dependencies (project files)
-      const relativeDeps = dependencies.filter(d => d.type === 'relative');
-      expect(relativeDeps).toEqual(
-        expect.arrayContaining([
-          expect.objectContaining({ source: '../components/Header' }),
-          expect.objectContaining({ source: '../components/Footer' }),
-          expect.objectContaining({ source: './Modal' }),
-          expect.objectContaining({ source: '../hooks/useApi' }),
-          expect.objectContaining({ source: '../utils/validation' }),
-          expect.objectContaining({ source: '../types' }),
-          expect.objectContaining({ source: '../styles/app.css' }),
-          expect.objectContaining({ source: './Component.module.css' })
-        ])
-      );
-    });
+			// Verify relative dependencies (project files)
+			const relativeDeps = dependencies.filter((d) => d.type === "relative");
+			expect(relativeDeps).toEqual(
+				expect.arrayContaining([
+					expect.objectContaining({ source: "../components/Header" }),
+					expect.objectContaining({ source: "../components/Footer" }),
+					expect.objectContaining({ source: "./Modal" }),
+					expect.objectContaining({ source: "../hooks/useApi" }),
+					expect.objectContaining({ source: "../utils/validation" }),
+					expect.objectContaining({ source: "../types" }),
+					expect.objectContaining({ source: "../styles/app.css" }),
+					expect.objectContaining({ source: "./Component.module.css" }),
+				]),
+			);
+		});
 
-    test('should handle re-exports and barrel exports', async () => {
-      const testFile = path.join(testFilesDir, 'barrel-exports.ts');
-      await fs.promises.writeFile(testFile, `
+		test("should handle re-exports and barrel exports", async () => {
+			const testFile = path.join(testFilesDir, "barrel-exports.ts");
+			await fs.promises.writeFile(
+				testFile,
+				`
 // Re-export everything
 export * from './components/Button';
 export * from './components/Input';
@@ -387,38 +421,44 @@ export { helper1, helper2 };
 // Default re-export
 import DefaultComponent from './DefaultComponent';
 export default DefaultComponent;
-`);
+`,
+			);
 
-      const content = await fs.promises.readFile(testFile, 'utf-8');
-      const parseResult = await parser.parseFile(testFile, content);
-      const dependencies = await dependencyAnalyzer.classifyDependencies(parseResult.dependencies, testFile);
+			const content = await fs.promises.readFile(testFile, "utf-8");
+			const parseResult = await parser.parseFile(testFile, content);
+			const dependencies = await dependencyAnalyzer.classifyDependencies(
+				parseResult.dependencies,
+				testFile,
+			);
 
-      // Should detect dependencies from both imports and re-export statements
-      const relativeDeps = dependencies.filter(d => d.type === 'relative');
-      const externalDeps = dependencies.filter(d => d.type === 'external');
+			// Should detect dependencies from both imports and re-export statements
+			const relativeDeps = dependencies.filter((d) => d.type === "relative");
+			const externalDeps = dependencies.filter((d) => d.type === "external");
 
-      expect(relativeDeps).toEqual(
-        expect.arrayContaining([
-          expect.objectContaining({ source: './components/Button' }),
-          expect.objectContaining({ source: './components/Input' }),
-          expect.objectContaining({ source: '../utils' }),
-          expect.objectContaining({ source: './helpers' })
-        ])
-      );
+			expect(relativeDeps).toEqual(
+				expect.arrayContaining([
+					expect.objectContaining({ source: "./components/Button" }),
+					expect.objectContaining({ source: "./components/Input" }),
+					expect.objectContaining({ source: "../utils" }),
+					expect.objectContaining({ source: "./helpers" }),
+				]),
+			);
 
-      expect(externalDeps).toEqual(
-        expect.arrayContaining([
-          expect.objectContaining({ source: 'react' }),
-          expect.objectContaining({ source: '@mui/material/styles' })
-        ])
-      );
-    });
-  });
+			expect(externalDeps).toEqual(
+				expect.arrayContaining([
+					expect.objectContaining({ source: "react" }),
+					expect.objectContaining({ source: "@mui/material/styles" }),
+				]),
+			);
+		});
+	});
 
-  describe('Edge cases and error handling', () => {
-    test('should handle files with no dependencies', async () => {
-      const testFile = path.join(testFilesDir, 'no-deps.ts');
-      await fs.promises.writeFile(testFile, `
+	describe("Edge cases and error handling", () => {
+		test("should handle files with no dependencies", async () => {
+			const testFile = path.join(testFilesDir, "no-deps.ts");
+			await fs.promises.writeFile(
+				testFile,
+				`
 // Pure utility functions with no external dependencies
 export const add = (a: number, b: number): number => a + b;
 export const multiply = (a: number, b: number): number => a * b;
@@ -429,64 +469,82 @@ export interface MathOperations {
 }
 
 export default { add, multiply };
-`);
+`,
+			);
 
-      const content = await fs.promises.readFile(testFile, 'utf-8');
-      const parseResult = await parser.parseFile(testFile, content);
-      const dependencies = await dependencyAnalyzer.classifyDependencies(parseResult.dependencies, testFile);
+			const content = await fs.promises.readFile(testFile, "utf-8");
+			const parseResult = await parser.parseFile(testFile, content);
+			const dependencies = await dependencyAnalyzer.classifyDependencies(
+				parseResult.dependencies,
+				testFile,
+			);
 
-      expect(dependencies).toHaveLength(0);
-      expect(parseResult.exports).toHaveLength(4); // add, multiply, MathOperations, default
-    });
+			expect(dependencies).toHaveLength(0);
+			expect(parseResult.exports).toHaveLength(4); // add, multiply, MathOperations, default
+		});
 
-    test('should handle circular dependency detection', async () => {
-      const testFile1 = path.join(testFilesDir, 'circular1.ts');
-      const testFile2 = path.join(testFilesDir, 'circular2.ts');
+		test("should handle circular dependency detection", async () => {
+			const testFile1 = path.join(testFilesDir, "circular1.ts");
+			const testFile2 = path.join(testFilesDir, "circular2.ts");
 
-      await fs.promises.writeFile(testFile1, `
+			await fs.promises.writeFile(
+				testFile1,
+				`
 import { functionB } from './circular2';
 
 export const functionA = () => {
   return functionB() + 1;
 };
-`);
+`,
+			);
 
-      await fs.promises.writeFile(testFile2, `
+			await fs.promises.writeFile(
+				testFile2,
+				`
 import { functionA } from './circular1';
 
 export const functionB = () => {
   return functionA() + 2;
 };
-`);
+`,
+			);
 
-      const content1 = await fs.promises.readFile(testFile1, 'utf-8');
-      const result1 = await parser.parseFile(testFile1, content1);
-      const deps1 = await dependencyAnalyzer.classifyDependencies(result1.dependencies, testFile1);
+			const content1 = await fs.promises.readFile(testFile1, "utf-8");
+			const result1 = await parser.parseFile(testFile1, content1);
+			const deps1 = await dependencyAnalyzer.classifyDependencies(
+				result1.dependencies,
+				testFile1,
+			);
 
-      const content2 = await fs.promises.readFile(testFile2, 'utf-8');
-      const result2 = await parser.parseFile(testFile2, content2);
-      const deps2 = await dependencyAnalyzer.classifyDependencies(result2.dependencies, testFile2);
+			const content2 = await fs.promises.readFile(testFile2, "utf-8");
+			const result2 = await parser.parseFile(testFile2, content2);
+			const deps2 = await dependencyAnalyzer.classifyDependencies(
+				result2.dependencies,
+				testFile2,
+			);
 
-      // Both files should have one relative dependency each
-      expect(deps1).toHaveLength(1);
-      expect(deps1[0]).toMatchObject({
-        source: './circular2',
-        type: 'relative'
-      });
+			// Both files should have one relative dependency each
+			expect(deps1).toHaveLength(1);
+			expect(deps1[0]).toMatchObject({
+				source: "./circular2",
+				type: "relative",
+			});
 
-      expect(deps2).toHaveLength(1);
-      expect(deps2[0]).toMatchObject({
-        source: './circular1',
-        type: 'relative'
-      });
+			expect(deps2).toHaveLength(1);
+			expect(deps2[0]).toMatchObject({
+				source: "./circular1",
+				type: "relative",
+			});
 
-      // The analyzer should detect this as a potential circular dependency
-      // (This would require more sophisticated analysis in the actual implementation)
-    });
+			// The analyzer should detect this as a potential circular dependency
+			// (This would require more sophisticated analysis in the actual implementation)
+		});
 
-    test('should handle malformed import statements gracefully', async () => {
-      const testFile = path.join(testFilesDir, 'malformed-imports.ts');
-      await fs.promises.writeFile(testFile, `
+		test("should handle malformed import statements gracefully", async () => {
+			const testFile = path.join(testFilesDir, "malformed-imports.ts");
+			await fs.promises.writeFile(
+				testFile,
+				`
 // Valid imports
 import React from 'react';
 import { useState } from 'react';
@@ -500,25 +558,29 @@ import './side-effect';
 import defaultOnly from 'default-only';
 
 export {};
-`);
+`,
+			);
 
-      const content = await fs.promises.readFile(testFile, 'utf-8');
-      const parseResult = await parser.parseFile(testFile, content);
-      
-      // Should not crash, should extract valid dependencies
-      expect(parseResult).toBeDefined();
-      
-      const dependencies = await dependencyAnalyzer.classifyDependencies(parseResult.dependencies, testFile);
-      
-      // Should have extracted the valid imports
-      expect(dependencies.length).toBeGreaterThanOrEqual(3);
-      expect(dependencies).toEqual(
-        expect.arrayContaining([
-          expect.objectContaining({ source: 'react' }),
-          expect.objectContaining({ source: './side-effect' }),
-          expect.objectContaining({ source: 'default-only' })
-        ])
-      );
-    });
-  });
+			const content = await fs.promises.readFile(testFile, "utf-8");
+			const parseResult = await parser.parseFile(testFile, content);
+
+			// Should not crash, should extract valid dependencies
+			expect(parseResult).toBeDefined();
+
+			const dependencies = await dependencyAnalyzer.classifyDependencies(
+				parseResult.dependencies,
+				testFile,
+			);
+
+			// Should have extracted the valid imports
+			expect(dependencies.length).toBeGreaterThanOrEqual(3);
+			expect(dependencies).toEqual(
+				expect.arrayContaining([
+					expect.objectContaining({ source: "react" }),
+					expect.objectContaining({ source: "./side-effect" }),
+					expect.objectContaining({ source: "default-only" }),
+				]),
+			);
+		});
+	});
 });

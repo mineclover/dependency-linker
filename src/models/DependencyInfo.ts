@@ -3,15 +3,15 @@
  * Information about a dependency found in the file
  */
 
-import { SourceLocation } from './SourceLocation';
+import type { SourceLocation } from "./SourceLocation";
 
 export interface DependencyInfo {
-  /** The module/package being imported from */
-  source: string;
-  /** Type of dependency */
-  type: 'external' | 'internal' | 'relative';
-  /** Where in the file this dependency appears */
-  location: SourceLocation;
+	/** The module/package being imported from */
+	source: string;
+	/** Type of dependency */
+	type: "external" | "internal" | "relative";
+	/** Where in the file this dependency appears */
+	location: SourceLocation;
 }
 
 /**
@@ -19,50 +19,50 @@ export interface DependencyInfo {
  * @param source The import/require source string
  * @returns The classified dependency type
  */
-export function classifyDependencyType(source: string): DependencyInfo['type'] {
-  // Relative imports (start with ./ or ../)
-  if (source.startsWith('./') || source.startsWith('../')) {
-    return 'relative';
-  }
-  
-  // Absolute paths (start with /)
-  if (source.startsWith('/')) {
-    return 'internal';
-  }
-  
-  // Check for common internal module patterns
-  const internalPatterns = [
-    /^src\//,
-    /^lib\//,
-    /^app\//,
-    /^config\//,
-    /^utils\//,
-    /^common\//,
-    /^shared\//,
-    /^components\//,
-    /^services\//,
-    /^models\//,
-    /^types\//,
-    /^hooks\//,
-    /^store\//,
-    /^pages\//,
-    /^views\//,
-    /^routes\//,
-    /^api\//,
-    /^db\//,
-    /^database\//,
-    /^middleware\//,
-    /^controllers\//
-  ];
-  
-  for (const pattern of internalPatterns) {
-    if (pattern.test(source)) {
-      return 'internal';
-    }
-  }
-  
-  // External packages (everything else)
-  return 'external';
+export function classifyDependencyType(source: string): DependencyInfo["type"] {
+	// Relative imports (start with ./ or ../)
+	if (source.startsWith("./") || source.startsWith("../")) {
+		return "relative";
+	}
+
+	// Absolute paths (start with /)
+	if (source.startsWith("/")) {
+		return "internal";
+	}
+
+	// Check for common internal module patterns
+	const internalPatterns = [
+		/^src\//,
+		/^lib\//,
+		/^app\//,
+		/^config\//,
+		/^utils\//,
+		/^common\//,
+		/^shared\//,
+		/^components\//,
+		/^services\//,
+		/^models\//,
+		/^types\//,
+		/^hooks\//,
+		/^store\//,
+		/^pages\//,
+		/^views\//,
+		/^routes\//,
+		/^api\//,
+		/^db\//,
+		/^database\//,
+		/^middleware\//,
+		/^controllers\//,
+	];
+
+	for (const pattern of internalPatterns) {
+		if (pattern.test(source)) {
+			return "internal";
+		}
+	}
+
+	// External packages (everything else)
+	return "external";
 }
 
 /**
@@ -71,22 +71,55 @@ export function classifyDependencyType(source: string): DependencyInfo['type'] {
  * @returns True if it's a Node.js built-in module
  */
 export function isNodeBuiltin(source: string): boolean {
-  const builtins = [
-    'assert', 'buffer', 'child_process', 'cluster', 'crypto', 'dgram', 'dns',
-    'events', 'fs', 'http', 'https', 'net', 'os', 'path', 'querystring',
-    'readline', 'stream', 'string_decoder', 'tls', 'tty', 'url', 'util',
-    'vm', 'zlib', 'constants', 'domain', 'punycode', 'process', 'v8',
-    'async_hooks', 'http2', 'perf_hooks', 'trace_events', 'worker_threads',
-    'inspector', 'timers', 'console', 'module', 'repl'
-  ];
-  
-  // Handle node: protocol
-  if (source.startsWith('node:')) {
-    const moduleName = source.substring(5);
-    return builtins.includes(moduleName);
-  }
-  
-  return builtins.includes(source);
+	const builtins = [
+		"assert",
+		"buffer",
+		"child_process",
+		"cluster",
+		"crypto",
+		"dgram",
+		"dns",
+		"events",
+		"fs",
+		"http",
+		"https",
+		"net",
+		"os",
+		"path",
+		"querystring",
+		"readline",
+		"stream",
+		"string_decoder",
+		"tls",
+		"tty",
+		"url",
+		"util",
+		"vm",
+		"zlib",
+		"constants",
+		"domain",
+		"punycode",
+		"process",
+		"v8",
+		"async_hooks",
+		"http2",
+		"perf_hooks",
+		"trace_events",
+		"worker_threads",
+		"inspector",
+		"timers",
+		"console",
+		"module",
+		"repl",
+	];
+
+	// Handle node: protocol
+	if (source.startsWith("node:")) {
+		const moduleName = source.substring(5);
+		return builtins.includes(moduleName);
+	}
+
+	return builtins.includes(source);
 }
 
 /**
@@ -95,7 +128,7 @@ export function isNodeBuiltin(source: string): boolean {
  * @returns True if it's a scoped package (e.g., @org/package)
  */
 export function isScopedPackage(source: string): boolean {
-  return source.startsWith('@') && source.includes('/');
+	return source.startsWith("@") && source.includes("/");
 }
 
 /**
@@ -104,14 +137,14 @@ export function isScopedPackage(source: string): boolean {
  * @returns The package name (without sub-paths)
  */
 export function getPackageName(source: string): string {
-  if (isScopedPackage(source)) {
-    // For scoped packages like @org/package/sub/path
-    const parts = source.split('/');
-    return `${parts[0]}/${parts[1]}`;
-  }
-  
-  // For regular packages like package/sub/path
-  return source.split('/')[0];
+	if (isScopedPackage(source)) {
+		// For scoped packages like @org/package/sub/path
+		const parts = source.split("/");
+		return `${parts[0]}/${parts[1]}`;
+	}
+
+	// For regular packages like package/sub/path
+	return source.split("/")[0];
 }
 
 /**
@@ -121,14 +154,14 @@ export function getPackageName(source: string): string {
  * @returns DependencyInfo object
  */
 export function createDependencyInfo(
-  source: string,
-  location: SourceLocation
+	source: string,
+	location: SourceLocation,
 ): DependencyInfo {
-  return {
-    source,
-    type: classifyDependencyType(source),
-    location
-  };
+	return {
+		source,
+		type: classifyDependencyType(source),
+		location,
+	};
 }
 
 /**
@@ -136,16 +169,18 @@ export function createDependencyInfo(
  * @param dependency The dependency to validate
  * @returns True if the dependency is valid
  */
-export function isValidDependencyInfo(dependency: any): dependency is DependencyInfo {
-  return (
-    dependency &&
-    typeof dependency === 'object' &&
-    typeof dependency.source === 'string' &&
-    dependency.source.length > 0 &&
-    ['external', 'internal', 'relative'].includes(dependency.type) &&
-    dependency.location &&
-    typeof dependency.location === 'object'
-  );
+export function isValidDependencyInfo(
+	dependency: any,
+): dependency is DependencyInfo {
+	return (
+		dependency &&
+		typeof dependency === "object" &&
+		typeof dependency.source === "string" &&
+		dependency.source.length > 0 &&
+		["external", "internal", "relative"].includes(dependency.type) &&
+		dependency.location &&
+		typeof dependency.location === "object"
+	);
 }
 
 /**
@@ -154,18 +189,21 @@ export function isValidDependencyInfo(dependency: any): dependency is Dependency
  * @returns Dependencies grouped by type
  */
 export function groupDependenciesByType(dependencies: DependencyInfo[]): {
-  external: DependencyInfo[];
-  internal: DependencyInfo[];
-  relative: DependencyInfo[];
+	external: DependencyInfo[];
+	internal: DependencyInfo[];
+	relative: DependencyInfo[];
 } {
-  return dependencies.reduce((groups, dep) => {
-    groups[dep.type].push(dep);
-    return groups;
-  }, {
-    external: [] as DependencyInfo[],
-    internal: [] as DependencyInfo[],
-    relative: [] as DependencyInfo[]
-  });
+	return dependencies.reduce(
+		(groups, dep) => {
+			groups[dep.type].push(dep);
+			return groups;
+		},
+		{
+			external: [] as DependencyInfo[],
+			internal: [] as DependencyInfo[],
+			relative: [] as DependencyInfo[],
+		},
+	);
 }
 
 /**
@@ -174,7 +212,7 @@ export function groupDependenciesByType(dependencies: DependencyInfo[]): {
  * @returns Array of unique source strings
  */
 export function getUniqueSources(dependencies: DependencyInfo[]): string[] {
-  return [...new Set(dependencies.map(dep => dep.source))];
+	return [...new Set(dependencies.map((dep) => dep.source))];
 }
 
 /**
@@ -184,10 +222,10 @@ export function getUniqueSources(dependencies: DependencyInfo[]): string[] {
  * @returns Dependencies matching the specified type
  */
 export function filterByType(
-  dependencies: DependencyInfo[], 
-  type: DependencyInfo['type']
+	dependencies: DependencyInfo[],
+	type: DependencyInfo["type"],
 ): DependencyInfo[] {
-  return dependencies.filter(dep => dep.type === type);
+	return dependencies.filter((dep) => dep.type === type);
 }
 
 /**
@@ -196,27 +234,31 @@ export function filterByType(
  * @returns Statistics about the dependencies
  */
 export function getDependencyStats(dependencies: DependencyInfo[]): {
-  total: number;
-  external: number;
-  internal: number;
-  relative: number;
-  unique: number;
-  nodeBuiltins: number;
-  scopedPackages: number;
+	total: number;
+	external: number;
+	internal: number;
+	relative: number;
+	unique: number;
+	nodeBuiltins: number;
+	scopedPackages: number;
 } {
-  const grouped = groupDependenciesByType(dependencies);
-  const uniqueSources = getUniqueSources(dependencies);
-  
-  const nodeBuiltins = dependencies.filter(dep => isNodeBuiltin(dep.source)).length;
-  const scopedPackages = dependencies.filter(dep => isScopedPackage(dep.source)).length;
-  
-  return {
-    total: dependencies.length,
-    external: grouped.external.length,
-    internal: grouped.internal.length,
-    relative: grouped.relative.length,
-    unique: uniqueSources.length,
-    nodeBuiltins,
-    scopedPackages
-  };
+	const grouped = groupDependenciesByType(dependencies);
+	const uniqueSources = getUniqueSources(dependencies);
+
+	const nodeBuiltins = dependencies.filter((dep) =>
+		isNodeBuiltin(dep.source),
+	).length;
+	const scopedPackages = dependencies.filter((dep) =>
+		isScopedPackage(dep.source),
+	).length;
+
+	return {
+		total: dependencies.length,
+		external: grouped.external.length,
+		internal: grouped.internal.length,
+		relative: grouped.relative.length,
+		unique: uniqueSources.length,
+		nodeBuiltins,
+		scopedPackages,
+	};
 }

@@ -1,48 +1,48 @@
 {
-  "name": "tree-sitter-analyzer",
-  "version": "1.0.0",
-  "description": "TypeScript single-file analysis tool using tree-sitter",
-  "main": "dist/index.js",
-  "types": "dist/index.d.ts",
-  "bin": {
-    "analyze-file": "analyze-file"
-  },
-  "scripts": {
-    "build": "tsc",
-    "test": "jest",
-    "test:watch": "jest --watch",
-    "test:coverage": "jest --coverage",
-    "lint": "eslint src/**/*.ts",
-    "lint:fix": "eslint src/**/*.ts --fix",
-    "dev": "tsc --watch",
-    "start": "node dist/cli/analyze-file.js",
-    "verify-separation": "bash scripts/verify-separation.sh",
-    "validate-types": "node scripts/validate-types.js",
-    "benchmark": "node scripts/benchmark.js",
-    "benchmark:quick": "node -e \"require('./scripts/benchmark.js').runBenchmark('Single File Analysis (Medium)', require('./scripts/benchmark.js').benchmarks['Single File Analysis (Medium)'], 1)\"",
-    "diagnostic": "node scripts/diagnostic-cli.js"
-  },
-  "keywords": [
-    "tree-sitter",
-    "typescript",
-    "ast",
-    "dependency-analysis",
-    "single-file"
-  ],
-  "author": "",
-  "license": "MIT",
-  "dependencies": {
-    "tree-sitter": "^0.21.0",
-    "tree-sitter-typescript": "^0.23.2"
-  },
-  "devDependencies": {
-    "@types/node": "^20.0.0",
-    "@typescript-eslint/eslint-plugin": "^6.0.0",
-    "@typescript-eslint/parser": "^6.0.0",
-    "eslint": "^8.0.0",
-    "jest": "^29.0.0",
-    "@types/jest": "^29.0.0",
-    "ts-jest": "^29.0.0",
-    "typescript": "^5.0.0"
-  }
+	"name": "tree-sitter-analyzer",
+	"version": "1.0.0",
+	"description": "TypeScript single-file analysis tool using tree-sitter",
+	"main": "dist/index.js",
+	"types": "dist/index.d.ts",
+	"bin": {
+		"analyze-file": "analyze-file"
+	},
+	"scripts": {
+		"build": "tsc",
+		"test": "jest",
+		"test:watch": "jest --watch",
+		"test:coverage": "jest --coverage",
+		"lint": "biome check src/",
+		"lint:fix": "biome check --write src/",
+		"format": "biome format --write .",
+		"format:check": "biome format .",
+		"dev": "tsc --watch",
+		"start": "node dist/cli/analyze-file.js",
+		"verify-separation": "bash scripts/verify-separation.sh",
+		"validate-types": "node scripts/validate-types.js",
+		"benchmark": "node scripts/benchmark.js",
+		"benchmark:quick": "node -e \"require('./scripts/benchmark.js').runBenchmark('Single File Analysis (Medium)', require('./scripts/benchmark.js').benchmarks['Single File Analysis (Medium)'], 1)\"",
+		"diagnostic": "node scripts/diagnostic-cli.js"
+	},
+	"keywords": [
+		"tree-sitter",
+		"typescript",
+		"ast",
+		"dependency-analysis",
+		"single-file"
+	],
+	"author": "",
+	"license": "MIT",
+	"dependencies": {
+		"tree-sitter": "^0.21.0",
+		"tree-sitter-typescript": "^0.23.2"
+	},
+	"devDependencies": {
+		"@biomejs/biome": "^2.2.4",
+		"@types/jest": "^29.0.0",
+		"@types/node": "^20.0.0",
+		"jest": "^29.0.0",
+		"ts-jest": "^29.0.0",
+		"typescript": "^5.0.0"
+	}
 }

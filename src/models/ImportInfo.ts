@@ -3,26 +3,26 @@
  * Detailed information about an import statement
  */
 
-import { SourceLocation } from './SourceLocation';
+import type { SourceLocation } from "./SourceLocation";
 
 export interface ImportSpecifier {
-  /** Name in the source module */
-  imported: string;
-  /** Local name in this file */
-  local: string;
-  /** Import type */
-  type: 'default' | 'namespace' | 'named';
+	/** Name in the source module */
+	imported: string;
+	/** Local name in this file */
+	local: string;
+	/** Import type */
+	type: "default" | "namespace" | "named";
 }
 
 export interface ImportInfo {
-  /** The module being imported from */
-  source: string;
-  /** What is being imported */
-  specifiers: ImportSpecifier[];
-  /** Whether this is a type-only import */
-  isTypeOnly: boolean;
-  /** Location in source file */
-  location: SourceLocation;
+	/** The module being imported from */
+	source: string;
+	/** What is being imported */
+	specifiers: ImportSpecifier[];
+	/** Whether this is a type-only import */
+	isTypeOnly: boolean;
+	/** Location in source file */
+	location: SourceLocation;
 }
 
 /**
@@ -33,15 +33,15 @@ export interface ImportInfo {
  * @returns ImportSpecifier object
  */
 export function createImportSpecifier(
-  imported: string,
-  local?: string,
-  type: ImportSpecifier['type'] = 'named'
+	imported: string,
+	local?: string,
+	type: ImportSpecifier["type"] = "named",
 ): ImportSpecifier {
-  return {
-    imported,
-    local: local || imported,
-    type
-  };
+	return {
+		imported,
+		local: local || imported,
+		type,
+	};
 }
 
 /**
@@ -49,8 +49,10 @@ export function createImportSpecifier(
  * @param localName The local name for the default import
  * @returns ImportSpecifier for default import
  */
-export function createDefaultImportSpecifier(localName: string): ImportSpecifier {
-  return createImportSpecifier('default', localName, 'default');
+export function createDefaultImportSpecifier(
+	localName: string,
+): ImportSpecifier {
+	return createImportSpecifier("default", localName, "default");
 }
 
 /**
@@ -58,8 +60,10 @@ export function createDefaultImportSpecifier(localName: string): ImportSpecifier
  * @param localName The local name for the namespace import
  * @returns ImportSpecifier for namespace import
  */
-export function createNamespaceImportSpecifier(localName: string): ImportSpecifier {
-  return createImportSpecifier('*', localName, 'namespace');
+export function createNamespaceImportSpecifier(
+	localName: string,
+): ImportSpecifier {
+	return createImportSpecifier("*", localName, "namespace");
 }
 
 /**
@@ -68,8 +72,11 @@ export function createNamespaceImportSpecifier(localName: string): ImportSpecifi
  * @param local The local name (optional, defaults to imported name)
  * @returns ImportSpecifier for named import
  */
-export function createNamedImportSpecifier(imported: string, local?: string): ImportSpecifier {
-  return createImportSpecifier(imported, local, 'named');
+export function createNamedImportSpecifier(
+	imported: string,
+	local?: string,
+): ImportSpecifier {
+	return createImportSpecifier(imported, local, "named");
 }
 
 /**
@@ -81,17 +88,17 @@ export function createNamedImportSpecifier(imported: string, local?: string): Im
  * @returns ImportInfo object
  */
 export function createImportInfo(
-  source: string,
-  specifiers: ImportSpecifier[],
-  location: SourceLocation,
-  isTypeOnly: boolean = false
+	source: string,
+	specifiers: ImportSpecifier[],
+	location: SourceLocation,
+	isTypeOnly: boolean = false,
 ): ImportInfo {
-  return {
-    source,
-    specifiers,
-    location,
-    isTypeOnly
-  };
+	return {
+		source,
+		specifiers,
+		location,
+		isTypeOnly,
+	};
 }
 
 /**
@@ -100,8 +107,11 @@ export function createImportInfo(
  * @param location Source location
  * @returns ImportInfo for side-effect import
  */
-export function createSideEffectImport(source: string, location: SourceLocation): ImportInfo {
-  return createImportInfo(source, [], location, false);
+export function createSideEffectImport(
+	source: string,
+	location: SourceLocation,
+): ImportInfo {
+	return createImportInfo(source, [], location, false);
 }
 
 /**
@@ -110,7 +120,7 @@ export function createSideEffectImport(source: string, location: SourceLocation)
  * @returns True if it's a side-effect import
  */
 export function isSideEffectImport(importInfo: ImportInfo): boolean {
-  return importInfo.specifiers.length === 0;
+	return importInfo.specifiers.length === 0;
 }
 
 /**
@@ -119,7 +129,7 @@ export function isSideEffectImport(importInfo: ImportInfo): boolean {
  * @returns True if it has default imports
  */
 export function hasDefaultImport(importInfo: ImportInfo): boolean {
-  return importInfo.specifiers.some(spec => spec.type === 'default');
+	return importInfo.specifiers.some((spec) => spec.type === "default");
 }
 
 /**
@@ -128,7 +138,7 @@ export function hasDefaultImport(importInfo: ImportInfo): boolean {
  * @returns True if it has named imports
  */
 export function hasNamedImports(importInfo: ImportInfo): boolean {
-  return importInfo.specifiers.some(spec => spec.type === 'named');
+	return importInfo.specifiers.some((spec) => spec.type === "named");
 }
 
 /**
@@ -137,7 +147,7 @@ export function hasNamedImports(importInfo: ImportInfo): boolean {
  * @returns True if it has namespace imports
  */
 export function hasNamespaceImport(importInfo: ImportInfo): boolean {
-  return importInfo.specifiers.some(spec => spec.type === 'namespace');
+	return importInfo.specifiers.some((spec) => spec.type === "namespace");
 }
 
 /**
@@ -145,8 +155,10 @@ export function hasNamespaceImport(importInfo: ImportInfo): boolean {
  * @param importInfo The import to check
  * @returns Default import specifier or undefined
  */
-export function getDefaultImport(importInfo: ImportInfo): ImportSpecifier | undefined {
-  return importInfo.specifiers.find(spec => spec.type === 'default');
+export function getDefaultImport(
+	importInfo: ImportInfo,
+): ImportSpecifier | undefined {
+	return importInfo.specifiers.find((spec) => spec.type === "default");
 }
 
 /**
@@ -155,7 +167,7 @@ export function getDefaultImport(importInfo: ImportInfo): ImportSpecifier | unde
  * @returns Array of named import specifiers
  */
 export function getNamedImports(importInfo: ImportInfo): ImportSpecifier[] {
-  return importInfo.specifiers.filter(spec => spec.type === 'named');
+	return importInfo.specifiers.filter((spec) => spec.type === "named");
 }
 
 /**
@@ -163,8 +175,10 @@ export function getNamedImports(importInfo: ImportInfo): ImportSpecifier[] {
  * @param importInfo The import to check
  * @returns Namespace import specifier or undefined
  */
-export function getNamespaceImport(importInfo: ImportInfo): ImportSpecifier | undefined {
-  return importInfo.specifiers.find(spec => spec.type === 'namespace');
+export function getNamespaceImport(
+	importInfo: ImportInfo,
+): ImportSpecifier | undefined {
+	return importInfo.specifiers.find((spec) => spec.type === "namespace");
 }
 
 /**
@@ -172,16 +186,18 @@ export function getNamespaceImport(importInfo: ImportInfo): ImportSpecifier | un
  * @param imports Array of imports to group
  * @returns Map of source to imports
  */
-export function groupImportsBySource(imports: ImportInfo[]): Map<string, ImportInfo[]> {
-  const groups = new Map<string, ImportInfo[]>();
-  
-  for (const imp of imports) {
-    const existing = groups.get(imp.source) || [];
-    existing.push(imp);
-    groups.set(imp.source, existing);
-  }
-  
-  return groups;
+export function groupImportsBySource(
+	imports: ImportInfo[],
+): Map<string, ImportInfo[]> {
+	const groups = new Map<string, ImportInfo[]>();
+
+	for (const imp of imports) {
+		const existing = groups.get(imp.source) || [];
+		existing.push(imp);
+		groups.set(imp.source, existing);
+	}
+
+	return groups;
 }
 
 /**
@@ -190,7 +206,7 @@ export function groupImportsBySource(imports: ImportInfo[]): Map<string, ImportI
  * @returns Array of unique source strings
  */
 export function getImportSources(imports: ImportInfo[]): string[] {
-  return [...new Set(imports.map(imp => imp.source))];
+	return [...new Set(imports.map((imp) => imp.source))];
 }
 
 /**
@@ -199,8 +215,11 @@ export function getImportSources(imports: ImportInfo[]): string[] {
  * @param typeOnly Whether to filter for type-only imports
  * @returns Filtered imports
  */
-export function filterTypeOnlyImports(imports: ImportInfo[], typeOnly: boolean = true): ImportInfo[] {
-  return imports.filter(imp => imp.isTypeOnly === typeOnly);
+export function filterTypeOnlyImports(
+	imports: ImportInfo[],
+	typeOnly: boolean = true,
+): ImportInfo[] {
+	return imports.filter((imp) => imp.isTypeOnly === typeOnly);
 }
 
 /**
@@ -209,23 +228,24 @@ export function filterTypeOnlyImports(imports: ImportInfo[], typeOnly: boolean =
  * @returns True if the import is valid
  */
 export function isValidImportInfo(importInfo: any): importInfo is ImportInfo {
-  return (
-    importInfo &&
-    typeof importInfo === 'object' &&
-    typeof importInfo.source === 'string' &&
-    importInfo.source.length > 0 &&
-    Array.isArray(importInfo.specifiers) &&
-    typeof importInfo.isTypeOnly === 'boolean' &&
-    importInfo.location &&
-    typeof importInfo.location === 'object' &&
-    importInfo.specifiers.every((spec: any) =>
-      spec &&
-      typeof spec === 'object' &&
-      typeof spec.imported === 'string' &&
-      typeof spec.local === 'string' &&
-      ['default', 'namespace', 'named'].includes(spec.type)
-    )
-  );
+	return (
+		importInfo &&
+		typeof importInfo === "object" &&
+		typeof importInfo.source === "string" &&
+		importInfo.source.length > 0 &&
+		Array.isArray(importInfo.specifiers) &&
+		typeof importInfo.isTypeOnly === "boolean" &&
+		importInfo.location &&
+		typeof importInfo.location === "object" &&
+		importInfo.specifiers.every(
+			(spec: any) =>
+				spec &&
+				typeof spec === "object" &&
+				typeof spec.imported === "string" &&
+				typeof spec.local === "string" &&
+				["default", "namespace", "named"].includes(spec.type),
+		)
+	);
 }
 
 /**
@@ -234,25 +254,28 @@ export function isValidImportInfo(importInfo: any): importInfo is ImportInfo {
  * @returns Statistics about the imports
  */
 export function getImportStats(imports: ImportInfo[]): {
-  total: number;
-  typeOnly: number;
-  sideEffect: number;
-  withDefault: number;
-  withNamed: number;
-  withNamespace: number;
-  uniqueSources: number;
-  totalSpecifiers: number;
+	total: number;
+	typeOnly: number;
+	sideEffect: number;
+	withDefault: number;
+	withNamed: number;
+	withNamespace: number;
+	uniqueSources: number;
+	totalSpecifiers: number;
 } {
-  const totalSpecifiers = imports.reduce((sum, imp) => sum + imp.specifiers.length, 0);
-  
-  return {
-    total: imports.length,
-    typeOnly: imports.filter(imp => imp.isTypeOnly).length,
-    sideEffect: imports.filter(isSideEffectImport).length,
-    withDefault: imports.filter(hasDefaultImport).length,
-    withNamed: imports.filter(hasNamedImports).length,
-    withNamespace: imports.filter(hasNamespaceImport).length,
-    uniqueSources: getImportSources(imports).length,
-    totalSpecifiers
-  };
+	const totalSpecifiers = imports.reduce(
+		(sum, imp) => sum + imp.specifiers.length,
+		0,
+	);
+
+	return {
+		total: imports.length,
+		typeOnly: imports.filter((imp) => imp.isTypeOnly).length,
+		sideEffect: imports.filter(isSideEffectImport).length,
+		withDefault: imports.filter(hasDefaultImport).length,
+		withNamed: imports.filter(hasNamedImports).length,
+		withNamespace: imports.filter(hasNamespaceImport).length,
+		uniqueSources: getImportSources(imports).length,
+		totalSpecifiers,
+	};
 }

@@ -3,19 +3,19 @@
  * Information about an export statement
  */
 
-import { SourceLocation } from './SourceLocation';
+import type { SourceLocation } from "./SourceLocation";
 
 export interface ExportInfo {
-  /** Exported symbol name */
-  name: string;
-  /** Export type */
-  type: 'default' | 'named' | 'namespace' | 're-export';
-  /** Whether this is a type-only export */
-  isTypeOnly: boolean;
-  /** Location in source file */
-  location: SourceLocation;
-  /** Source module for re-exports */
-  source?: string;
+	/** Exported symbol name */
+	name: string;
+	/** Export type */
+	type: "default" | "named" | "namespace" | "re-export";
+	/** Whether this is a type-only export */
+	isTypeOnly: boolean;
+	/** Location in source file */
+	location: SourceLocation;
+	/** Source module for re-exports */
+	source?: string;
 }
 
 /**
@@ -27,17 +27,17 @@ export interface ExportInfo {
  * @returns ExportInfo object
  */
 export function createExportInfo(
-  name: string,
-  type: ExportInfo['type'],
-  location: SourceLocation,
-  isTypeOnly: boolean = false
+	name: string,
+	type: ExportInfo["type"],
+	location: SourceLocation,
+	isTypeOnly: boolean = false,
 ): ExportInfo {
-  return {
-    name,
-    type,
-    location,
-    isTypeOnly
-  };
+	return {
+		name,
+		type,
+		location,
+		isTypeOnly,
+	};
 }
 
 /**
@@ -48,11 +48,11 @@ export function createExportInfo(
  * @returns ExportInfo for default export
  */
 export function createDefaultExport(
-  name: string = 'default',
-  location: SourceLocation,
-  isTypeOnly: boolean = false
+	name: string = "default",
+	location: SourceLocation,
+	isTypeOnly: boolean = false,
 ): ExportInfo {
-  return createExportInfo(name, 'default', location, isTypeOnly);
+	return createExportInfo(name, "default", location, isTypeOnly);
 }
 
 /**
@@ -63,11 +63,11 @@ export function createDefaultExport(
  * @returns ExportInfo for named export
  */
 export function createNamedExport(
-  name: string,
-  location: SourceLocation,
-  isTypeOnly: boolean = false
+	name: string,
+	location: SourceLocation,
+	isTypeOnly: boolean = false,
 ): ExportInfo {
-  return createExportInfo(name, 'named', location, isTypeOnly);
+	return createExportInfo(name, "named", location, isTypeOnly);
 }
 
 /**
@@ -78,11 +78,11 @@ export function createNamedExport(
  * @returns ExportInfo for namespace export
  */
 export function createNamespaceExport(
-  name: string,
-  location: SourceLocation,
-  isTypeOnly: boolean = false
+	name: string,
+	location: SourceLocation,
+	isTypeOnly: boolean = false,
 ): ExportInfo {
-  return createExportInfo(name, 'namespace', location, isTypeOnly);
+	return createExportInfo(name, "namespace", location, isTypeOnly);
 }
 
 /**
@@ -91,7 +91,7 @@ export function createNamespaceExport(
  * @returns True if it's a default export
  */
 export function isDefaultExport(exportInfo: ExportInfo): boolean {
-  return exportInfo.type === 'default';
+	return exportInfo.type === "default";
 }
 
 /**
@@ -100,7 +100,7 @@ export function isDefaultExport(exportInfo: ExportInfo): boolean {
  * @returns True if it's a named export
  */
 export function isNamedExport(exportInfo: ExportInfo): boolean {
-  return exportInfo.type === 'named';
+	return exportInfo.type === "named";
 }
 
 /**
@@ -109,7 +109,7 @@ export function isNamedExport(exportInfo: ExportInfo): boolean {
  * @returns True if it's a namespace export
  */
 export function isNamespaceExport(exportInfo: ExportInfo): boolean {
-  return exportInfo.type === 'namespace';
+	return exportInfo.type === "namespace";
 }
 
 /**
@@ -119,10 +119,10 @@ export function isNamespaceExport(exportInfo: ExportInfo): boolean {
  * @returns Exports matching the specified type
  */
 export function filterExportsByType(
-  exports: ExportInfo[], 
-  type: ExportInfo['type']
+	exports: ExportInfo[],
+	type: ExportInfo["type"],
 ): ExportInfo[] {
-  return exports.filter(exp => exp.type === type);
+	return exports.filter((exp) => exp.type === type);
 }
 
 /**
@@ -130,8 +130,10 @@ export function filterExportsByType(
  * @param exports Array of exports
  * @returns Default export or undefined
  */
-export function getDefaultExport(exports: ExportInfo[]): ExportInfo | undefined {
-  return exports.find(isDefaultExport);
+export function getDefaultExport(
+	exports: ExportInfo[],
+): ExportInfo | undefined {
+	return exports.find(isDefaultExport);
 }
 
 /**
@@ -140,7 +142,7 @@ export function getDefaultExport(exports: ExportInfo[]): ExportInfo | undefined 
  * @returns Array of named exports
  */
 export function getNamedExports(exports: ExportInfo[]): ExportInfo[] {
-  return filterExportsByType(exports, 'named');
+	return filterExportsByType(exports, "named");
 }
 
 /**
@@ -149,7 +151,7 @@ export function getNamedExports(exports: ExportInfo[]): ExportInfo[] {
  * @returns Array of namespace exports
  */
 export function getNamespaceExports(exports: ExportInfo[]): ExportInfo[] {
-  return filterExportsByType(exports, 'namespace');
+	return filterExportsByType(exports, "namespace");
 }
 
 /**
@@ -158,8 +160,11 @@ export function getNamespaceExports(exports: ExportInfo[]): ExportInfo[] {
  * @param typeOnly Whether to filter for type-only exports
  * @returns Filtered exports
  */
-export function filterTypeOnlyExports(exports: ExportInfo[], typeOnly: boolean = true): ExportInfo[] {
-  return exports.filter(exp => exp.isTypeOnly === typeOnly);
+export function filterTypeOnlyExports(
+	exports: ExportInfo[],
+	typeOnly: boolean = true,
+): ExportInfo[] {
+	return exports.filter((exp) => exp.isTypeOnly === typeOnly);
 }
 
 /**
@@ -168,7 +173,7 @@ export function filterTypeOnlyExports(exports: ExportInfo[], typeOnly: boolean =
  * @returns Array of type-only exports
  */
 export function getTypeExports(exports: ExportInfo[]): ExportInfo[] {
-  return filterTypeOnlyExports(exports, true);
+	return filterTypeOnlyExports(exports, true);
 }
 
 /**
@@ -177,7 +182,7 @@ export function getTypeExports(exports: ExportInfo[]): ExportInfo[] {
  * @returns Array of value exports
  */
 export function getValueExports(exports: ExportInfo[]): ExportInfo[] {
-  return filterTypeOnlyExports(exports, false);
+	return filterTypeOnlyExports(exports, false);
 }
 
 /**
@@ -186,20 +191,23 @@ export function getValueExports(exports: ExportInfo[]): ExportInfo[] {
  * @returns Exports grouped by type
  */
 export function groupExportsByType(exports: ExportInfo[]): {
-  default: ExportInfo[];
-  named: ExportInfo[];
-  namespace: ExportInfo[];
-  're-export': ExportInfo[];
+	default: ExportInfo[];
+	named: ExportInfo[];
+	namespace: ExportInfo[];
+	"re-export": ExportInfo[];
 } {
-  return exports.reduce((groups, exp) => {
-    groups[exp.type].push(exp);
-    return groups;
-  }, {
-    default: [] as ExportInfo[],
-    named: [] as ExportInfo[],
-    namespace: [] as ExportInfo[],
-    're-export': [] as ExportInfo[]
-  });
+	return exports.reduce(
+		(groups, exp) => {
+			groups[exp.type].push(exp);
+			return groups;
+		},
+		{
+			default: [] as ExportInfo[],
+			named: [] as ExportInfo[],
+			namespace: [] as ExportInfo[],
+			"re-export": [] as ExportInfo[],
+		},
+	);
 }
 
 /**
@@ -208,7 +216,7 @@ export function groupExportsByType(exports: ExportInfo[]): {
  * @returns Array of unique export names
  */
 export function getExportNames(exports: ExportInfo[]): string[] {
-  return [...new Set(exports.map(exp => exp.name))];
+	return [...new Set(exports.map((exp) => exp.name))];
 }
 
 /**
@@ -218,7 +226,7 @@ export function getExportNames(exports: ExportInfo[]): string[] {
  * @returns True if the name is exported
  */
 export function isExported(exports: ExportInfo[], name: string): boolean {
-  return exports.some(exp => exp.name === name);
+	return exports.some((exp) => exp.name === name);
 }
 
 /**
@@ -227,8 +235,11 @@ export function isExported(exports: ExportInfo[], name: string): boolean {
  * @param name The name to search for
  * @returns Array of exports with the given name
  */
-export function getExportsByName(exports: ExportInfo[], name: string): ExportInfo[] {
-  return exports.filter(exp => exp.name === name);
+export function getExportsByName(
+	exports: ExportInfo[],
+	name: string,
+): ExportInfo[] {
+	return exports.filter((exp) => exp.name === name);
 }
 
 /**
@@ -240,18 +251,18 @@ export function getExportsByName(exports: ExportInfo[], name: string): ExportInf
  * @returns ExportInfo for re-export
  */
 export function createReExport(
-  name: string,
-  source: string,
-  location: SourceLocation,
-  isTypeOnly: boolean = false
+	name: string,
+	source: string,
+	location: SourceLocation,
+	isTypeOnly: boolean = false,
 ): ExportInfo {
-  return {
-    name,
-    type: 're-export',
-    source,
-    location,
-    isTypeOnly
-  };
+	return {
+		name,
+		type: "re-export",
+		source,
+		location,
+		isTypeOnly,
+	};
 }
 
 /**
@@ -260,16 +271,16 @@ export function createReExport(
  * @returns True if the export is valid
  */
 export function isValidExportInfo(exportInfo: any): exportInfo is ExportInfo {
-  return (
-    exportInfo &&
-    typeof exportInfo === 'object' &&
-    typeof exportInfo.name === 'string' &&
-    exportInfo.name.length > 0 &&
-    ['default', 'named', 'namespace', 're-export'].includes(exportInfo.type) &&
-    typeof exportInfo.isTypeOnly === 'boolean' &&
-    exportInfo.location &&
-    typeof exportInfo.location === 'object'
-  );
+	return (
+		exportInfo &&
+		typeof exportInfo === "object" &&
+		typeof exportInfo.name === "string" &&
+		exportInfo.name.length > 0 &&
+		["default", "named", "namespace", "re-export"].includes(exportInfo.type) &&
+		typeof exportInfo.isTypeOnly === "boolean" &&
+		exportInfo.location &&
+		typeof exportInfo.location === "object"
+	);
 }
 
 /**
@@ -278,27 +289,27 @@ export function isValidExportInfo(exportInfo: any): exportInfo is ExportInfo {
  * @returns Statistics about the exports
  */
 export function getExportStats(exports: ExportInfo[]): {
-  total: number;
-  default: number;
-  named: number;
-  namespace: number;
-  typeOnly: number;
-  values: number;
-  uniqueNames: number;
+	total: number;
+	default: number;
+	named: number;
+	namespace: number;
+	typeOnly: number;
+	values: number;
+	uniqueNames: number;
 } {
-  const grouped = groupExportsByType(exports);
-  const typeOnly = filterTypeOnlyExports(exports, true);
-  const values = filterTypeOnlyExports(exports, false);
-  
-  return {
-    total: exports.length,
-    default: grouped.default.length,
-    named: grouped.named.length,
-    namespace: grouped.namespace.length,
-    typeOnly: typeOnly.length,
-    values: values.length,
-    uniqueNames: getExportNames(exports).length
-  };
+	const grouped = groupExportsByType(exports);
+	const typeOnly = filterTypeOnlyExports(exports, true);
+	const values = filterTypeOnlyExports(exports, false);
+
+	return {
+		total: exports.length,
+		default: grouped.default.length,
+		named: grouped.named.length,
+		namespace: grouped.namespace.length,
+		typeOnly: typeOnly.length,
+		values: values.length,
+		uniqueNames: getExportNames(exports).length,
+	};
 }
 
 /**
@@ -307,27 +318,29 @@ export function getExportStats(exports: ExportInfo[]): {
  * @returns Array of validation errors (empty if valid)
  */
 export function validateExportNames(exports: ExportInfo[]): string[] {
-  const errors: string[] = [];
-  const nameMap = new Map<string, ExportInfo[]>();
-  
-  // Group exports by name
-  for (const exp of exports) {
-    const existing = nameMap.get(exp.name) || [];
-    existing.push(exp);
-    nameMap.set(exp.name, existing);
-  }
-  
-  // Check for conflicts
-  for (const [name, exps] of nameMap.entries()) {
-    if (exps.length > 1) {
-      const types = exps.map(e => e.type);
-      const uniqueTypes = [...new Set(types)];
-      
-      if (uniqueTypes.length > 1) {
-        errors.push(`Export name '${name}' has conflicting types: ${uniqueTypes.join(', ')}`);
-      }
-    }
-  }
-  
-  return errors;
+	const errors: string[] = [];
+	const nameMap = new Map<string, ExportInfo[]>();
+
+	// Group exports by name
+	for (const exp of exports) {
+		const existing = nameMap.get(exp.name) || [];
+		existing.push(exp);
+		nameMap.set(exp.name, existing);
+	}
+
+	// Check for conflicts
+	for (const [name, exps] of nameMap.entries()) {
+		if (exps.length > 1) {
+			const types = exps.map((e) => e.type);
+			const uniqueTypes = [...new Set(types)];
+
+			if (uniqueTypes.length > 1) {
+				errors.push(
+					`Export name '${name}' has conflicting types: ${uniqueTypes.join(", ")}`,
+				);
+			}
+		}
+	}
+
+	return errors;
 }

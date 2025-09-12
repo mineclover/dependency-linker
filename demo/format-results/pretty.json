@@ -371,7 +371,7 @@
       "location": {
         "line": 28,
         "column": 0,
-        "offset": 725
+        "offset": 721
       },
       "isTypeOnly": true
     },
@@ -379,9 +379,9 @@
       "name": "userUtils",
       "type": "named",
       "location": {
-        "line": 226,
+        "line": 231,
         "column": 0,
-        "offset": 6021
+        "offset": 5365
       },
       "isTypeOnly": false
     },
@@ -389,9 +389,9 @@
       "name": "ApiResponse",
       "type": "named",
       "location": {
-        "line": 251,
+        "line": 256,
         "column": 0,
-        "offset": 6670
+        "offset": 5970
       },
       "isTypeOnly": true
     },
@@ -399,12 +399,12 @@
       "name": "default",
       "type": "default",
       "location": {
-        "line": 253,
+        "line": 258,
         "column": 0,
-        "offset": 6700
+        "offset": 6000
       },
       "isTypeOnly": false
     }
   ],
-  "parseTime": 10
+  "parseTime": 9
 }

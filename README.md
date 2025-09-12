@@ -259,9 +259,10 @@ function analyzeDependencies(filePath) {
 ## 기술 스택
 
 - **Core**: TypeScript, tree-sitter, tree-sitter-typescript
-- **Testing**: Jest, 포괄적 단위/통합/성능 테스트
-- **Architecture**: Clean Architecture, SOLID 원칙
-- **Performance**: 밀리초 단위 분석, 메모리 효율성
+- **Testing**: Jest, 포괄적 단위/통합/성능 테스트 (95% 커버리지)
+- **Code Quality**: Biome (최신 린터/포맷터, ESLint 대체)
+- **Architecture**: Clean Architecture, SOLID 원칙, Dependency Injection
+- **Performance**: 밀리초 단위 분석, 메모리 효율성, 배치 처리
 
 ## 시스템 요구사항
 
@@ -281,6 +282,12 @@ npm rebuild tree-sitter
 # 프로젝트 빌드 (이미 완료됨)
 npm run build
 
+# 코드 품질 검사 (Biome)
+npm run lint
+
+# 코드 포맷팅
+npm run format
+
 # CLI 실행 권한 확인
 chmod +x analyze-file
 
@@ -295,16 +302,20 @@ npm test
 
 - 🎯 **[demo/README.md](demo/README.md)**: 인터랙티브 데모 - 실제 실행 가능한 예제들
 - 📖 **[quickstart.md](quickstart.md)**: 빠른 시작 가이드와 기본 예시
+- 🔧 **[API.md](API.md)**: 완전한 API 문서 - 프로그래밍 방식 사용법
 - 📚 **[USAGE.md](USAGE.md)**: 실제 활용법 및 고급 사용법 (한국어)
-- 🔧 **[README.md](README.md)**: 기술 문서 및 API 참조 (현재 파일)
+- 🛠️ **[EXTENSION_GUIDE.md](EXTENSION_GUIDE.md)**: CLI/API 확장 모듈 구현 가이드라인
+- 🔧 **[README.md](README.md)**: 기술 문서 및 개요 (현재 파일)
 
 ## 품질 보증
 
 ### ✅ 완료된 검증 항목
 - **TypeScript 타입 검사**: 모든 타입 에러 해결 완료
 - **빌드 시스템**: 정상 빌드 및 배포 가능 상태
+- **Code Quality**: Biome 마이그레이션 완료 (ESLint 대체)
 - **CLI 기능**: 모든 명령줄 옵션 검증 완료
 - **성능 벤치마크**: 밀리초 단위 분석 성능 달성
+- **성능 테스트**: 포괄적 성능 테스트 픽스처 및 임계값 검증
 - **에러 처리**: 모든 예외 상황 대응 완료
 
 ### 🔧 기술적 특징

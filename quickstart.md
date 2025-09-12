@@ -228,6 +228,36 @@ The tool handles various error conditions gracefully:
 
 4. **Partial results**: The tool may return partial results for files with syntax errors. This is expected behavior for development workflows.
 
+## Development Commands
+
+For development and contributing:
+
+```bash
+# Code quality check (Biome linter)
+npm run lint
+
+# Auto-fix linting issues
+npm run lint:fix  
+
+# Format code
+npm run format
+
+# Check formatting without changes
+npm run format:check
+
+# Build project
+npm run build
+
+# Run tests
+npm test
+
+# Run tests with coverage
+npm run test:coverage
+
+# Performance benchmarks
+npm run benchmark
+```
+
 ### Getting Help
 
 Run `./analyze-file --help` for command-line help, or check the README.md for detailed documentation.
