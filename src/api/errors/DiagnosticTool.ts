@@ -127,6 +127,8 @@ export class DiagnosticTool {
 		score: number;
 		criticalIssues: string[];
 		summary: string;
+		issues?: any[];
+		recommendations?: string[];
 	}> {
 		const healthChecks = await this.runHealthChecks();
 		const criticalIssues: string[] = [];
@@ -164,11 +166,27 @@ export class DiagnosticTool {
 
 		const summary = `${healthyCount}/${totalChecks} components healthy`;
 
+		// Generate issues and recommendations from health checks
+		const issues = healthChecks
+			.filter((check) => check.status !== "healthy")
+			.map((check) => ({
+				category: check.component,
+				severity: check.status === "error" ? "high" : "medium",
+				description: check.message,
+				suggestions: check.suggestions || [],
+			}));
+
+		const recommendations = healthChecks
+			.flatMap((check) => check.suggestions || [])
+			.filter((suggestion, index, arr) => arr.indexOf(suggestion) === index);
+
 		return {
 			status,
 			score,
 			criticalIssues,
 			summary,
+			issues,
+			recommendations,
 		};
 	}
 

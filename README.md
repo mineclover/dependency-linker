@@ -33,7 +33,20 @@ This project provides a comprehensive TypeScript file analyzer with both command
 
 ### 📚 문서화
 - **README.md**: 기술 개요 및 설치 가이드 (현재 파일)
-- **docs/**: 모든 문서는 이 디렉토리 안에 있습니다.
+- **[docs/](docs/)**: 상세 문서 디렉토리
+  - **[API.md](docs/API.md)**: API 개요 및 빠른 참조
+  - **[api/](docs/api/)**: 테스트 기반 상세 API 문서
+    - **[Factory Functions](docs/api/functions/factory-functions.md)**: 단순 함수 API
+    - **[TypeScriptAnalyzer](docs/api/classes/TypeScriptAnalyzer.md)**: 메인 분석기 클래스
+    - **[BatchAnalyzer](docs/api/classes/BatchAnalyzer.md)**: 배치 처리 시스템
+    - **[Core Interfaces](docs/api/core/interfaces.md)**: 핵심 인터페이스
+  - **[quickstart.md](docs/quickstart.md)**: 빠른 시작 가이드
+  - **[CORE_LOGIC.md](docs/CORE_LOGIC.md)**: 핵심 로직과 아키텍처
+  - **[USAGE.md](docs/USAGE.md)**: 실제 활용법 및 고급 사용법
+  - **[EXTENSION_GUIDE.md](docs/EXTENSION_GUIDE.md)**: CLI/API 확장 가이드
+  - **[DEBUGGING.md](docs/DEBUGGING.md)**: 문제 해결 가이드
+  - **[PERFORMANCE.md](docs/PERFORMANCE.md)**: 성능 최적화 가이드
+  - **[TECHNICAL_README.md](docs/TECHNICAL_README.md)**: 기술 세부사항
 - **demo/README.md**: 🎯 **인터랙티브 데모 가이드** - 실제 실행 가능한 예제들
 
 ## 🎯 인터랙티브 데모 체험
@@ -307,13 +320,18 @@ npm test
 ./analyze-file --help
 ```
 
-## 문서 가이드
+## 📚 문서 가이드
+
+모든 상세 문서는 **[docs/](docs/)** 디렉토리에서 찾을 수 있습니다:
 
 - 🎯 **[demo/README.md](demo/README.md)**: 인터랙티브 데모 - 실제 실행 가능한 예제들
-- 📖 **[quickstart.md](quickstart.md)**: 빠른 시작 가이드와 기본 예시
-- 🔧 **[API.md](API.md)**: 완전한 API 문서 - 프로그래밍 방식 사용법
-- 📚 **[USAGE.md](USAGE.md)**: 실제 활용법 및 고급 사용법 (한국어)
-- 🛠️ **[EXTENSION_GUIDE.md](EXTENSION_GUIDE.md)**: CLI/API 확장 모듈 구현 가이드라인
+- 📖 **[docs/quickstart.md](docs/quickstart.md)**: 빠른 시작 가이드와 기본 예시
+- 🔧 **[docs/API.md](docs/API.md)**: 완전한 API 문서 - 프로그래밍 방식 사용법
+- 🏗️ **[docs/CORE_LOGIC.md](docs/CORE_LOGIC.md)**: 핵심 로직, 아키텍처, API/CLI 통합
+- 📚 **[docs/USAGE.md](docs/USAGE.md)**: 실제 활용법 및 고급 사용법
+- 🛠️ **[docs/EXTENSION_GUIDE.md](docs/EXTENSION_GUIDE.md)**: CLI/API 확장 모듈 구현 가이드라인
+- 🔍 **[docs/DEBUGGING.md](docs/DEBUGGING.md)**: 문제 해결 및 디버깅 가이드
+- ⚡ **[docs/PERFORMANCE.md](docs/PERFORMANCE.md)**: 성능 최적화 및 벤치마크
 - 🔧 **[README.md](README.md)**: 기술 문서 및 개요 (현재 파일)
 
 ## 품질 보증

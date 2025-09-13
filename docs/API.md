@@ -1,45 +1,21 @@
 # API Documentation
 
-Complete API reference for programmatic usage of the TypeScript File Analyzer.
-
-## Installation
-
-```bash
-npm install tree-sitter-analyzer
-# or
-npm run build  # for local development
-```
-
-## Quick Start
-
-```javascript
-const { analyzeTypeScriptFile, TypeScriptAnalyzer } = require('tree-sitter-analyzer');
-
-// Simple function API
-const result = await analyzeTypeScriptFile('./src/component.tsx');
-console.log(result.dependencies);
-
-// Class-based API
-const analyzer = new TypeScriptAnalyzer();
-const result = await analyzer.analyzeFile('./src/component.tsx');
-analyzer.clearCache();
-```
-
-## Function-Based API
-
-### `analyzeTypeScriptFile(filePath, options?)`
-
-Main analysis function with comprehensive results.
-
-```javascript
-# API Documentation
-
 Complete API reference for programmatic usage of the TypeScript Dependency Linker.
 
+## 📚 Detailed Documentation
+
+This document provides a quick overview. For comprehensive API documentation with test-driven specifications, see the **[api/](api/)** directory:
+
+- **[Factory Functions](api/functions/factory-functions.md)** - Simple function-based API
+- **[TypeScriptAnalyzer Class](api/classes/TypeScriptAnalyzer.md)** - Full-featured analyzer class  
+- **[BatchAnalyzer Class](api/classes/BatchAnalyzer.md)** - Enterprise batch processing
+- **[Core Interfaces](api/core/interfaces.md)** - System interfaces and contracts
+- **[API Index](api/README.md)** - Complete API documentation index
+
 ## Installation
 
 ```bash
-npm install dependency-linker
+npm install @context-action/dependency-linker
 # or
 npm run build  # for local development
 ```
@@ -47,19 +23,21 @@ npm run build  # for local development
 ## Quick Start
 
 ```javascript
-const { analyzeTypeScriptFile, TypeScriptAnalyzer } = require('dependency-linker');
+const { analyzeTypeScriptFile, TypeScriptAnalyzer } = require('@context-action/dependency-linker');
 
 // Simple function API
 const result = await analyzeTypeScriptFile('./src/component.tsx');
 console.log(result.dependencies);
 
-// Class-based API
+// Class-based API  
 const analyzer = new TypeScriptAnalyzer();
 const result = await analyzer.analyzeFile('./src/component.tsx');
 analyzer.clearCache();
 ```
 
 ## Function-Based API
+
+For detailed documentation with test coverage and examples, see **[Factory Functions API](api/functions/factory-functions.md)**.
 
 ### `analyzeTypeScriptFile(filePath, options?)`
 

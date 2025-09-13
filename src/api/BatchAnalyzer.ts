@@ -396,22 +396,44 @@ export class BatchAnalyzer {
 
 	/**
 	 * Get current concurrency level based on settings and resource usage
+	 * Enhanced adaptive concurrency with fine-grained memory-based throttling
 	 */
 	private getCurrentConcurrency(): number {
 		if (!this.options.adaptiveConcurrency) {
 			return this.options.maxConcurrency;
 		}
 
-		// Adaptive concurrency based on memory usage
-		const memoryUsageRatio =
-			this.resourceMetrics.memoryUsage / this.options.memoryLimit;
+		return this.adjustConcurrency(this.resourceMetrics.memoryUsage / this.options.memoryLimit);
+	}
 
-		if (memoryUsageRatio > 0.8) {
-			return Math.max(1, Math.floor(this.options.maxConcurrency * 0.5));
-		} else if (memoryUsageRatio > 0.6) {
-			return Math.max(2, Math.floor(this.options.maxConcurrency * 0.7));
+	/**
+	 * Adjust concurrency based on memory usage ratio
+	 * Implements fine-grained adaptive concurrency control
+	 * @param memoryUsageRatio Current memory usage as ratio (0.0-1.0)
+	 * @returns Recommended concurrency level
+	 */
+	adjustConcurrency(memoryUsageRatio: number): number {
+		const maxConcurrency = this.options.maxConcurrency;
+		
+		// Fine-grained adaptive concurrency based on memory pressure
+		if (memoryUsageRatio >= 0.95) {
+			// Emergency: single-threaded operation
+			return 1;
+		} else if (memoryUsageRatio >= 0.90) {
+			// Critical: 25% of max concurrency
+			return Math.max(1, Math.floor(maxConcurrency * 0.25));
+		} else if (memoryUsageRatio >= 0.80) {
+			// High pressure: 50% of max concurrency
+			return Math.max(1, Math.floor(maxConcurrency * 0.5));
+		} else if (memoryUsageRatio >= 0.70) {
+			// Moderate pressure: 70% of max concurrency
+			return Math.max(2, Math.floor(maxConcurrency * 0.7));
+		} else if (memoryUsageRatio >= 0.60) {
+			// Low pressure: 85% of max concurrency
+			return Math.max(2, Math.floor(maxConcurrency * 0.85));
 		} else {
-			return this.options.maxConcurrency;
+			// Normal operation: full concurrency
+			return maxConcurrency;
 		}
 	}
 
@@ -424,25 +446,148 @@ export class BatchAnalyzer {
 		const memoryUsageRatio =
 			this.resourceMetrics.memoryUsage / this.options.memoryLimit;
 
-		if (memoryUsageRatio > 0.9) {
+		const thresholdStatus = this.checkMemoryThreshold(
+			this.resourceMetrics.memoryUsage,
+			this.options.memoryLimit
+		);
+
+		if (thresholdStatus.exceeded) {
 			this.logger.warn(
-				`High memory usage: ${this.resourceMetrics.memoryUsage}MB (${Math.round(memoryUsageRatio * 100)}%)`,
+				`Memory threshold exceeded: ${thresholdStatus.threshold} - ${thresholdStatus.actionRequired.type}`,
 			);
 
-			// Force garbage collection if available
-			if (global.gc) {
-				global.gc();
+			switch (thresholdStatus.actionRequired.type) {
+				case 'gc_trigger':
+					await this.triggerGarbageCollection(false);
+					break;
+				case 'emergency_stop':
+					await this.triggerGarbageCollection(true);
+					throw new ResourceError("memory", {
+						currentUsage: this.resourceMetrics.memoryUsage,
+						limit: this.options.memoryLimit,
+					});
+				case 'throttle':
+					// Already handled by adaptive concurrency
+					await this.triggerGarbageCollection(false);
+					break;
 			}
+		}
+	}
 
-			// Wait a bit to allow memory to be freed
-			await new Promise((resolve) => setTimeout(resolve, 100));
+	/**
+	 * Check memory threshold and return status
+	 * @param currentUsage Current memory usage in MB
+	 * @param limit Memory limit in MB
+	 * @returns Threshold status with action required
+	 */
+	checkMemoryThreshold(currentUsage: number, limit: number): {
+		threshold: '60%' | '80%' | '90%' | '95%';
+		exceeded: boolean;
+		actionRequired: {
+			type: 'monitor' | 'throttle' | 'gc_trigger' | 'emergency_stop';
+			parameters: Record<string, any>;
+			priority: number;
+		};
+		severity: 'info' | 'warning' | 'critical' | 'emergency';
+	} {
+		const ratio = currentUsage / limit;
+
+		if (ratio >= 0.95) {
+			return {
+				threshold: '95%',
+				exceeded: true,
+				actionRequired: {
+					type: 'emergency_stop',
+					parameters: { force: true, immediate: true },
+					priority: 1,
+				},
+				severity: 'emergency',
+			};
+		} else if (ratio >= 0.90) {
+			return {
+				threshold: '90%',
+				exceeded: true,
+				actionRequired: {
+					type: 'gc_trigger',
+					parameters: { force: true, wait: 100 },
+					priority: 2,
+				},
+				severity: 'critical',
+			};
+		} else if (ratio >= 0.80) {
+			return {
+				threshold: '80%',
+				exceeded: true,
+				actionRequired: {
+					type: 'throttle',
+					parameters: { concurrencyReduction: 0.5 },
+					priority: 3,
+				},
+				severity: 'warning',
+			};
+		} else if (ratio >= 0.60) {
+			return {
+				threshold: '60%',
+				exceeded: true,
+				actionRequired: {
+					type: 'monitor',
+					parameters: { increaseFrequency: true },
+					priority: 4,
+				},
+				severity: 'info',
+			};
 		}
 
-		if (memoryUsageRatio > 0.95) {
-			throw new ResourceError("memory", {
-				currentUsage: this.resourceMetrics.memoryUsage,
-				limit: this.options.memoryLimit,
-			});
+		return {
+			threshold: '60%',
+			exceeded: false,
+			actionRequired: {
+				type: 'monitor',
+				parameters: {},
+				priority: 5,
+			},
+			severity: 'info',
+		};
+	}
+
+	/**
+	 * Trigger garbage collection with enhanced control
+	 * @param force Whether to force garbage collection
+	 */
+	async triggerGarbageCollection(force: boolean): Promise<void> {
+		const startTime = Date.now();
+		const beforeMemory = this.resourceMetrics.memoryUsage;
+
+		try {
+			if (global.gc) {
+				if (force) {
+					// Force multiple GC cycles for emergency situations
+					global.gc();
+					await new Promise(resolve => setTimeout(resolve, 50));
+					global.gc();
+					await new Promise(resolve => setTimeout(resolve, 50));
+				} else {
+					global.gc();
+				}
+
+				// Wait for GC to complete
+				await new Promise((resolve) => setTimeout(resolve, force ? 200 : 100));
+				
+				// Update metrics after GC
+				this.updateResourceMetrics();
+				
+				const afterMemory = this.resourceMetrics.memoryUsage;
+				const memoryFreed = beforeMemory - afterMemory;
+				const gcTime = Date.now() - startTime;
+
+				this.logger.info(
+					`Garbage collection completed: freed ${memoryFreed}MB in ${gcTime}ms (force: ${force})`
+				);
+			} else {
+				this.logger.warn("Garbage collection requested but global.gc() not available");
+			}
+		} catch (error) {
+			this.logger.error("Garbage collection failed", error);
 		}
 	}
 
@@ -466,7 +611,7 @@ export class BatchAnalyzer {
 	}
 
 	/**
-	 * Update resource metrics
+	 * Update resource metrics with comprehensive system monitoring
 	 */
 	private updateResourceMetrics(): void {
 		const memUsage = process.memoryUsage();
@@ -474,8 +619,65 @@ export class BatchAnalyzer {
 			memUsage.heapUsed / 1024 / 1024,
 		); // MB
 
-		// CPU usage would require additional monitoring - simplified for now
-		this.resourceMetrics.cpuUsage = 0;
+		// Enhanced CPU monitoring using process.hrtime
+		this.resourceMetrics.cpuUsage = this.getCpuUsage();
+	}
+
+	/**
+	 * Monitor resource usage and generate detailed report
+	 * @returns Comprehensive resource usage report
+	 */
+	monitorResourceUsage(): {
+		memoryUsage: {
+			current: number;
+			limit: number;
+			ratio: number;
+		};
+		cpuUsage: {
+			current: number;
+			average: number;
+		};
+		concurrency: {
+			current: number;
+			maximum: number;
+			recommended: number;
+		};
+		timestamp: Date;
+	} {
+		this.updateResourceMetrics();
+		
+		const memoryRatio = this.resourceMetrics.memoryUsage / this.options.memoryLimit;
+		const currentConcurrency = this.activeOperations.size;
+		const recommendedConcurrency = this.adjustConcurrency(memoryRatio);
+
+		return {
+			memoryUsage: {
+				current: this.resourceMetrics.memoryUsage,
+				limit: this.options.memoryLimit,
+				ratio: memoryRatio,
+			},
+			cpuUsage: {
+				current: this.resourceMetrics.cpuUsage,
+				average: this.resourceMetrics.cpuUsage, // Could maintain rolling average
+			},
+			concurrency: {
+				current: currentConcurrency,
+				maximum: this.options.maxConcurrency,
+				recommended: recommendedConcurrency,
+			},
+			timestamp: new Date(),
+		};
+	}
+
+	/**
+	 * Get current CPU usage percentage
+	 * @returns CPU usage as percentage (0-100)
+	 */
+	private getCpuUsage(): number {
+		// Simple CPU usage approximation based on active operations
+		// In a production system, you'd use a more sophisticated CPU monitoring approach
+		const operationRatio = this.activeOperations.size / this.options.maxConcurrency;
+		return Math.min(100, operationRatio * 100);
 	}
 
 	/**

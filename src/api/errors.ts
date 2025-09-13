@@ -66,6 +66,28 @@ export abstract class AnalysisError extends Error {
 	getUserMessage(): string {
 		return this.message;
 	}
+
+	/**
+	 * Get actionable solutions for resolving this error
+	 */
+	getSolutions(): string[] {
+		return [
+			"Check the error details for specific information about what went wrong",
+			"Review the file path and ensure it exists and is accessible",
+			"Verify your TypeScript configuration is correct"
+		];
+	}
+
+	/**
+	 * Get preventive measures to avoid this error in the future
+	 */
+	getPreventiveMeasures(): string[] {
+		return [
+			"Validate input parameters before calling API methods",
+			"Use proper error handling with try-catch blocks",
+			"Monitor system resources during batch operations"
+		];
+	}
 }
 
 /**
@@ -79,6 +101,28 @@ export class FileNotFoundError extends AnalysisError {
 	override getUserMessage(): string {
 		const filePath = this.details.filePath;
 		return `The file "${filePath}" could not be found. Please check the file path and try again.`;
+	}
+
+	override getSolutions(): string[] {
+		const filePath = this.details.filePath;
+		return [
+			`Verify that the file "${filePath}" exists at the specified location`,
+			"Check if the file path is correct and uses the proper path separators for your OS",
+			"Ensure the file hasn't been moved, renamed, or deleted",
+			"Use an absolute path instead of a relative path if applicable",
+			"Check if you have read permissions for the file and its directory",
+			"Verify the current working directory is what you expect"
+		];
+	}
+
+	override getPreventiveMeasures(): string[] {
+		return [
+			"Use fs.existsSync() or fs.access() to check file existence before analysis",
+			"Validate file paths using path.resolve() or path.isAbsolute()",
+			"Implement proper file discovery with glob patterns or directory scanning",
+			"Set up file watchers to detect when files are moved or deleted",
+			"Use TypeScript project configuration (tsconfig.json) to define file inclusion patterns"
+		];
 	}
 }
 
@@ -98,6 +142,34 @@ export class FileAccessError extends AnalysisError {
 	override getUserMessage(): string {
 		const { filePath, operation } = this.details;
 		return `Permission denied when trying to ${operation} "${filePath}". Please check file permissions.`;
+	}
+
+	override getSolutions(): string[] {
+		const { filePath, operation } = this.details;
+		const isWindows = process.platform === 'win32';
+		return [
+			`Grant read permissions to the file "${filePath}"`,
+			isWindows
+				? "Run the command prompt as Administrator and try again"
+				: "Use 'chmod +r' command to add read permissions to the file",
+			"Check if the file is locked by another process",
+			"Ensure the parent directory has appropriate permissions",
+			isWindows
+				? "Check Windows file security settings and ensure your user has access"
+				: "Use 'sudo' if you need elevated permissions (be careful with this)",
+			"Verify the file isn't in a system-protected directory"
+		];
+	}
+
+	override getPreventiveMeasures(): string[] {
+		return [
+			"Check file permissions before attempting analysis operations",
+			"Run your application with appropriate user privileges",
+			"Avoid analyzing files in system-protected directories",
+			"Use proper file access checks (fs.access()) before operations",
+			"Set up proper file ownership and permissions in your deployment environment",
+			"Consider using a dedicated directory with known permissions for temporary files"
+		];
 	}
 }
 
@@ -120,6 +192,32 @@ export class InvalidFileTypeError extends AnalysisError {
 				: "";
 		return `The file "${filePath}" is not a supported TypeScript file type.${supportedTypesText}`;
 	}
+
+	override getSolutions(): string[] {
+		const { filePath, supportedTypes } = this.details;
+		const ext = filePath.split('.').pop() || '';
+		return [
+			`Rename the file to use a supported TypeScript extension (.ts, .tsx, .d.ts)`,
+			supportedTypes.length > 0
+				? `Supported file types are: ${supportedTypes.join(", ")}`
+				: "This analyzer only supports TypeScript files (.ts, .tsx, .d.ts)",
+			`Change the file extension from ".${ext}" to ".ts" or ".tsx"`,
+			"If this is a JavaScript file, consider converting it to TypeScript",
+			"Use a different analyzer or tool for non-TypeScript files",
+			"Check if the file extension is correct and not missing"
+		];
+	}
+
+	override getPreventiveMeasures(): string[] {
+		return [
+			"Validate file extensions before attempting analysis",
+			"Use file filtering to only process supported file types",
+			"Set up proper file discovery patterns that exclude unsupported files",
+			"Configure your build tools to use consistent file extensions",
+			"Document the supported file types for your team",
+			"Use TypeScript's 'include' and 'exclude' patterns in tsconfig.json"
+		];
+	}
 }
 
 /**
@@ -139,6 +237,32 @@ export class ParseTimeoutError extends AnalysisError {
 		const { filePath, timeout } = this.details;
 		return `Parsing "${filePath}" took longer than ${timeout}ms and was cancelled. The file may be too large or complex.`;
 	}
+
+	override getSolutions(): string[] {
+		const { filePath, timeout } = this.details;
+		const timeoutSeconds = Math.round(timeout / 1000);
+		return [
+			`Increase the timeout value to more than ${timeout}ms for large files`,
+			"Break down large files into smaller, more manageable modules",
+			"Optimize the TypeScript code to reduce parsing complexity",
+			"Use a more powerful machine with better CPU performance",
+			"Consider processing the file in smaller chunks if possible",
+			`Current timeout: ${timeoutSeconds}s - try doubling it to ${timeoutSeconds * 2}s`,
+			"Check if the file has extremely deep nesting or complex type definitions"
+		];
+	}
+
+	override getPreventiveMeasures(): string[] {
+		return [
+			"Set appropriate timeout values based on your typical file sizes",
+			"Implement file size checks before attempting to parse large files",
+			"Use code splitting and modularization to keep files smaller",
+			"Monitor parsing performance and adjust timeouts accordingly",
+			"Set up performance budgets for file complexity",
+			"Use streaming or incremental parsing for very large files",
+			"Consider using TypeScript compiler options to optimize parsing"
+		];
+	}
 }
 
 /**
@@ -157,6 +281,34 @@ export class ParseError extends AnalysisError {
 	override getUserMessage(): string {
 		const { filePath, parseDetails } = this.details;
 		return `Failed to parse "${filePath}". ${parseDetails}`;
+	}
+
+	override getSolutions(): string[] {
+		const { filePath, parseDetails } = this.details;
+		return [
+			"Fix the syntax errors in the TypeScript file",
+			"Use a TypeScript-aware editor (VS Code, IntelliJ) to identify syntax issues",
+			"Run 'npx tsc --noEmit' to check for TypeScript compilation errors",
+			"Check for missing brackets, parentheses, or semicolons",
+			"Verify that all imports and exports are properly formatted",
+			"Use 'prettier' or similar formatter to fix formatting issues",
+			"Check if the file uses unsupported TypeScript features for your target version",
+			parseDetails.includes('Unexpected token')
+				? "Look for unexpected characters or malformed syntax near the error location"
+				: "Review the specific parse error details for guidance"
+		];
+	}
+
+	override getPreventiveMeasures(): string[] {
+		return [
+			"Set up TypeScript compilation in your build process to catch syntax errors early",
+			"Use ESLint with TypeScript rules to catch common syntax issues",
+			"Enable TypeScript strict mode to catch more potential issues",
+			"Set up pre-commit hooks to validate TypeScript syntax",
+			"Use proper IDE configuration with TypeScript support",
+			"Implement automated testing that includes TypeScript compilation",
+			"Set up continuous integration to validate all TypeScript files"
+		];
 	}
 }
 
@@ -182,6 +334,49 @@ export class ConfigurationError extends AnalysisError {
 		const { parameter, value, expectedType } = this.details;
 		const typeText = expectedType ? ` Expected type: ${expectedType}.` : "";
 		return `Invalid configuration for "${parameter}": ${value}.${typeText}`;
+	}
+
+	override getSolutions(): string[] {
+		const { parameter, value, expectedType } = this.details;
+		const solutions = [
+			expectedType
+				? `Set "${parameter}" to a ${expectedType} value`
+				: `Provide a valid value for "${parameter}"`,
+			"Check the API documentation for correct configuration options",
+			"Validate your configuration object before passing it to the analyzer",
+		];
+
+		// Specific solutions based on common configuration issues
+		if (typeof value === 'string' && expectedType === 'number') {
+			solutions.push(`Convert the string "${value}" to a number, e.g., ${parameter}: ${parseInt(value) || 0}`);
+		}
+
+		if (parameter.toLowerCase().includes('timeout')) {
+			solutions.push("Timeout values should be positive numbers in milliseconds (e.g., 30000 for 30 seconds)");
+		}
+
+		if (parameter.toLowerCase().includes('cache')) {
+			solutions.push("Cache size should be a positive integer", "Enable cache with 'enableCache: true'");
+		}
+
+		if (parameter.toLowerCase().includes('concurrency')) {
+			solutions.push("Concurrency should be a positive integer between 1 and your CPU core count");
+		}
+
+		return solutions;
+	}
+
+	override getPreventiveMeasures(): string[] {
+		const { parameter } = this.details;
+		return [
+			"Use TypeScript interfaces or types to validate configuration objects at compile time",
+			"Implement runtime validation for configuration parameters",
+			"Provide default values for optional configuration parameters",
+			"Document all configuration options with their expected types and ranges",
+			"Use configuration validation libraries like Joi or Yup",
+			"Set up unit tests for configuration validation",
+			`Review the documentation for "${parameter}" to understand its valid values`
+		];
 	}
 }
 
@@ -222,6 +417,53 @@ export class BatchError extends AnalysisError {
 		return `Batch processing failed for ${failedCount} files. First failed file: ${this.failedFiles[0]}`;
 	}
 
+	override getSolutions(): string[] {
+		const failedCount = this.failedFiles.length;
+		const totalFiles = this.details.totalFiles || failedCount;
+		const successRate = totalFiles > 0 ? ((totalFiles - failedCount) / totalFiles * 100).toFixed(1) : 0;
+
+		const solutions = [
+			"Review the failed files individually to identify specific issues",
+			"Use 'continueOnError: true' option to process successful files even when some fail",
+			"Check system resources (memory, CPU) if processing many files",
+		];
+
+		if (failedCount === 1) {
+			solutions.push(`Focus on fixing the single failed file: ${this.failedFiles[0]}`);
+		} else if (failedCount > 1) {
+			solutions.push(
+				`Start by fixing the first failed file: ${this.failedFiles[0]}`,
+				"Process files in smaller batches to isolate problematic files",
+				"Implement retry logic for transient failures"
+			);
+		}
+
+		if (successRate !== '0') {
+			solutions.push(`Success rate: ${successRate}% - review patterns in failed vs successful files`);
+		}
+
+		solutions.push(
+			"Reduce batch size or concurrency if system resources are limited",
+			"Enable detailed logging to understand failure patterns",
+			"Consider preprocessing files to validate they're ready for analysis"
+		);
+
+		return solutions;
+	}
+
+	override getPreventiveMeasures(): string[] {
+		return [
+			"Validate all files before starting batch processing",
+			"Implement proper error handling with detailed logging",
+			"Use file size and complexity checks before processing",
+			"Set appropriate resource limits for batch operations",
+			"Monitor system resources during batch processing",
+			"Implement circuit breaker patterns for failing operations",
+			"Use staged processing: validate → analyze → report",
+			"Set up file filtering to exclude known problematic files"
+		];
+	}
+
 	/**
 	 * Get list of failed files
 	 */
@@ -252,6 +494,29 @@ export class OperationCancelledError extends AnalysisError {
 		const { operation } = this.details;
 		return `The ${operation} operation was cancelled by the user.`;
 	}
+
+	override getSolutions(): string[] {
+		const { operation, reason } = this.details;
+		return [
+			"If this was unintentional, restart the operation",
+			"Check if the operation was cancelled due to timeout or resource constraints",
+			"Review the cancellation reason if provided",
+			reason ? `Cancellation reason: ${reason}` : "No specific cancellation reason provided",
+			"Consider breaking large operations into smaller, resumable chunks",
+			"Implement proper cancellation handling to save partial progress"
+		];
+	}
+
+	override getPreventiveMeasures(): string[] {
+		return [
+			"Implement graceful cancellation that saves partial progress",
+			"Provide clear feedback about operation progress to reduce premature cancellation",
+			"Set appropriate timeouts to prevent hanging operations",
+			"Allow operations to be paused and resumed instead of only cancelled",
+			"Use progress indicators to show users that work is being done",
+			"Implement auto-save functionality for long-running operations"
+		];
+	}
 }
 
 /**
@@ -274,6 +539,49 @@ export class ResourceError extends AnalysisError {
 	override getUserMessage(): string {
 		const { resource } = this.details;
 		return `Insufficient ${resource} resources to complete the operation. Try reducing the workload or closing other applications.`;
+	}
+
+	override getSolutions(): string[] {
+		const { resource, currentUsage, limit } = this.details;
+		const solutions = [
+			`Close other applications to free up ${resource} resources`,
+			"Reduce the batch size or concurrency for the current operation",
+			"Increase system resources (RAM, CPU) if possible",
+		];
+
+		if (resource === 'memory') {
+			solutions.push(
+				"Enable garbage collection more frequently",
+				"Use memory-efficient processing options",
+				"Process files in smaller chunks",
+				currentUsage && limit
+					? `Current usage: ${currentUsage}MB, Limit: ${limit}MB - consider increasing the limit`
+					: "Check current memory usage and set appropriate limits"
+			);
+		}
+
+		if (resource === 'CPU') {
+			solutions.push(
+				"Reduce concurrency to lower CPU usage",
+				"Use CPU-efficient algorithms if available",
+				"Process during off-peak hours when CPU is less busy"
+			);
+		}
+
+		return solutions;
+	}
+
+	override getPreventiveMeasures(): string[] {
+		const { resource } = this.details;
+		return [
+			`Monitor ${resource} usage during operations`,
+			"Set up resource monitoring and alerting",
+			"Implement adaptive resource management that adjusts to available resources",
+			"Use resource quotas and limits to prevent system overload",
+			"Plan processing schedules around available system resources",
+			"Implement efficient resource cleanup and garbage collection",
+			`Configure ${resource} limits based on your system specifications`
+		];
 	}
 }
 

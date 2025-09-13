@@ -640,6 +640,8 @@ export class TypeScriptAnalyzer {
 		score: number;
 		criticalIssues: string[];
 		summary: string;
+		issues?: any[];
+		recommendations?: string[];
 	}> {
 		const diagnosticTool = new DiagnosticTool();
 		return await diagnosticTool.runQuickHealthCheck();
@@ -701,6 +703,13 @@ export class TypeScriptAnalyzer {
 		errorReporter.clear();
 		DebugHelper.clearTraces();
 		this.logger.info("Diagnostic data cleared");
+	}
+
+	/**
+	 * Get current log level
+	 */
+	public getCurrentLogLevel(): LogLevel {
+		return this.config.logLevel || LogLevel.INFO;
 	}
 
 	/**
