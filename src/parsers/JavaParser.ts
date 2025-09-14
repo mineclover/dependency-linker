@@ -3,8 +3,8 @@
  * Tree-sitter based parser for Java files
  */
 
-import * as fs from "fs/promises";
-import * as path from "path";
+import * as fs from "node:fs/promises";
+import * as path from "node:path";
 import Parser from "tree-sitter";
 import Java from "tree-sitter-java";
 

@@ -3,8 +3,8 @@
  * High-level service for analyzing files using the new plugin architecture
  */
 
-import * as fs from "fs/promises";
-import * as path from "path";
+import * as fs from "node:fs/promises";
+import * as path from "node:path";
 import type { AnalysisConfig } from "../models/AnalysisConfig";
 import type { AnalysisResult } from "../models/AnalysisResult";
 import { AnalysisEngine } from "./AnalysisEngine";

@@ -3,7 +3,7 @@
  * Handles path normalization, validation, and platform-specific operations
  */
 
-import * as path from "path";
+import * as path from "node:path";
 import type { Logger } from "../api/types";
 import { createLogger } from "./logger";
 

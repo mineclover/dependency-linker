@@ -3,8 +3,8 @@
  * Tree-sitter based parser for TypeScript and JavaScript files
  */
 
-import * as fs from "fs/promises";
-import * as path from "path";
+import * as fs from "node:fs/promises";
+import * as path from "node:path";
 import Parser from "tree-sitter";
 import TypeScript from "tree-sitter-typescript";
 // import { LegacyAnalysisResult } from '../models/AnalysisResult'; // Removed - legacy not needed

@@ -3,10 +3,10 @@
  * Manages caching of AST parsing results and analysis data
  */
 
-import * as crypto from "crypto";
-import * as fs from "fs/promises";
-import * as path from "path";
-import * as zlib from "zlib";
+import * as crypto from "node:crypto";
+import * as fs from "node:fs/promises";
+import * as path from "node:path";
+import * as zlib from "node:zlib";
 import {
 	type CacheConfiguration,
 	type CacheEntry,

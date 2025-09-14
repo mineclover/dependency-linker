@@ -3,7 +3,7 @@
  * High-level service for analyzing dependencies in files using the new plugin architecture
  */
 
-import * as path from "path";
+import * as path from "node:path";
 import { DependencyExtractor } from "../extractors/DependencyExtractor";
 import { DependencyAnalysisInterpreter } from "../interpreters/DependencyAnalysisInterpreter";
 import type { AnalysisConfig } from "../models/AnalysisConfig";

@@ -3,8 +3,8 @@
  * Handles complex directory traversal with edge case support
  */
 
-import * as fs from "fs/promises";
-import * as path from "path";
+import * as fs from "node:fs/promises";
+import * as path from "node:path";
 import type { Logger } from "../api/types";
 // import { glob } from "glob";
 import { createLogger } from "../utils/logger";
