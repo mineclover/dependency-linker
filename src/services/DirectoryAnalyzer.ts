@@ -298,7 +298,7 @@ export class DirectoryAnalyzer {
 	 */
 	async resolveGlobPattern(
 		pattern: string,
-		options: GlobOptions = {},
+		_options: GlobOptions = {},
 	): Promise<string[]> {
 		try {
 			// Simplified glob matching without external dependency

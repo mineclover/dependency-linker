@@ -83,7 +83,7 @@ export class DependencyAnalysisInterpreter
 
 	interpret(
 		input: DependencyExtractionResult,
-		context: any = {},
+		_context: any = {},
 	): DependencyAnalysisResult {
 		// Handle both direct array and wrapped object format
 		const dependencies = Array.isArray(input)
@@ -147,7 +147,7 @@ export class DependencyAnalysisInterpreter
 			}
 
 			// Create edges for each specifier
-			dep.specifiers.forEach((specifier) => {
+			dep.specifiers.forEach((_specifier) => {
 				edges.push({
 					from: "current_file", // This would be the current file being analyzed
 					to: nodeId,
@@ -226,7 +226,7 @@ export class DependencyAnalysisInterpreter
 	}
 
 	private detectCircularDependencies(
-		graph: DependencyAnalysisResult["dependencyGraph"],
+		_graph: DependencyAnalysisResult["dependencyGraph"],
 	): string[] {
 		// Simplified circular dependency detection
 		// In a real implementation, this would use DFS or other graph algorithms
@@ -251,7 +251,7 @@ export class DependencyAnalysisInterpreter
 		return unused;
 	}
 
-	private detectMissingDependencies(dependencies: DependencyInfo[]): string[] {
+	private detectMissingDependencies(_dependencies: DependencyInfo[]): string[] {
 		// Simplified missing dependency detection
 		// In a real implementation, this would check against package.json
 		const missing: string[] = [];
@@ -277,7 +277,7 @@ export class DependencyAnalysisInterpreter
 	}
 
 	private identifyRiskFactors(
-		dependencies: DependencyInfo[],
+		_dependencies: DependencyInfo[],
 		graph: DependencyAnalysisResult["dependencyGraph"],
 		summary: DependencyAnalysisResult["summary"],
 	): RiskFactor[] {
@@ -436,7 +436,7 @@ export class DependencyAnalysisInterpreter
 		return this.version;
 	}
 
-	validate(input: DependencyExtractionResult): any {
+	validate(_input: DependencyExtractionResult): any {
 		return {
 			valid: true,
 			errors: [],
@@ -475,7 +475,7 @@ export class DependencyAnalysisInterpreter
 		};
 	}
 
-	configure(options: any): void {
+	configure(_options: any): void {
 		// Configuration implementation
 	}
 

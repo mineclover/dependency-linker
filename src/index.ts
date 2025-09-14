@@ -5,6 +5,8 @@
 
 // Main API exports
 export * from "./api";
+// Batch analyzer
+export { BatchAnalyzer } from "./api/BatchAnalyzer";
 // Diagnostic and debugging utilities
 export {
 	DebugContext,

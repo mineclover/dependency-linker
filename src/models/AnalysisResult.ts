@@ -5,9 +5,6 @@
  */
 
 import type { AnalysisError } from "./AnalysisError";
-import type { DependencyInfo } from "./DependencyInfo";
-import type { ExportInfo } from "./ExportInfo";
-import type { ImportInfo } from "./ImportInfo";
 import type { PerformanceMetrics } from "./PerformanceMetrics";
 
 // Comprehensive analysis result interface
@@ -100,7 +97,10 @@ export interface AnalysisConfiguration {
 /**
  * Creates a new AnalysisResult with default values
  */
-export function createAnalysisResult(filePath: string, language: string): AnalysisResult {
+export function createAnalysisResult(
+	filePath: string,
+	language: string,
+): AnalysisResult {
 	return {
 		filePath,
 		language,
@@ -130,7 +130,10 @@ export function createAnalysisResult(filePath: string, language: string): Analys
 /**
  * Creates an AnalysisResult representing a failed analysis
  */
-export function createErrorAnalysisResult(filePath: string, error: AnalysisError): AnalysisResult {
+export function createErrorAnalysisResult(
+	filePath: string,
+	error: AnalysisError,
+): AnalysisResult {
 	const result = createAnalysisResult(filePath, "unknown");
 	result.errors.push(error);
 	return result;
@@ -240,22 +243,34 @@ export type { AnalysisError } from "./AnalysisError";
 
 // Create an exception class for error handling
 export class AnalysisException extends Error {
-	constructor(message: string, public analysisError: AnalysisError) {
+	constructor(
+		message: string,
+		public analysisError: AnalysisError,
+	) {
 		super(message);
-		this.name = 'AnalysisException';
+		this.name = "AnalysisException";
 	}
 }
 
 // Convenience functions expected by tests
-export function createSuccessResult(filePath: string, language: string): AnalysisResult {
+export function createSuccessResult(
+	filePath: string,
+	language: string,
+): AnalysisResult {
 	return createAnalysisResult(filePath, language);
 }
 
-export function createErrorResult(filePath: string, error: AnalysisError): AnalysisResult {
+export function createErrorResult(
+	filePath: string,
+	error: AnalysisError,
+): AnalysisResult {
 	return createErrorAnalysisResult(filePath, error);
 }
 
-export function createFileNotFoundError(filePath: string, message?: string): AnalysisResult {
+export function createFileNotFoundError(
+	filePath: string,
+	message?: string,
+): AnalysisResult {
 	const error: AnalysisError = {
 		type: "FileNotFound",
 		message: message || `File not found: ${filePath}`,
@@ -263,15 +278,18 @@ export function createFileNotFoundError(filePath: string, message?: string): Ana
 		source: "parser",
 		context: {
 			operation: "file_access",
-			details: { filePath }
+			details: { filePath },
 		},
 		timestamp: new Date(),
-		id: `fnf-${Date.now()}-${Math.random().toString(36).substr(2, 9)}`
+		id: `fnf-${Date.now()}-${Math.random().toString(36).substr(2, 9)}`,
 	};
 	return createErrorResult(filePath, error);
 }
 
-export function createInvalidFileTypeError(filePath: string, message?: string): AnalysisResult {
+export function createInvalidFileTypeError(
+	filePath: string,
+	message?: string,
+): AnalysisResult {
 	const error: AnalysisError = {
 		type: "InvalidFileType",
 		message: message || `Invalid file type: ${filePath}`,
@@ -279,15 +297,18 @@ export function createInvalidFileTypeError(filePath: string, message?: string): 
 		source: "parser",
 		context: {
 			operation: "file_validation",
-			details: { filePath }
+			details: { filePath },
 		},
 		timestamp: new Date(),
-		id: `ift-${Date.now()}-${Math.random().toString(36).substr(2, 9)}`
+		id: `ift-${Date.now()}-${Math.random().toString(36).substr(2, 9)}`,
 	};
 	return createErrorResult(filePath, error);
 }
 
-export function createPermissionDeniedError(filePath: string, message?: string): AnalysisResult {
+export function createPermissionDeniedError(
+	filePath: string,
+	message?: string,
+): AnalysisResult {
 	const error: AnalysisError = {
 		type: "FileAccessDenied",
 		message: message || `Permission denied: ${filePath}`,
@@ -295,15 +316,18 @@ export function createPermissionDeniedError(filePath: string, message?: string):
 		source: "parser",
 		context: {
 			operation: "file_access",
-			details: { filePath }
+			details: { filePath },
 		},
 		timestamp: new Date(),
-		id: `pad-${Date.now()}-${Math.random().toString(36).substr(2, 9)}`
+		id: `pad-${Date.now()}-${Math.random().toString(36).substr(2, 9)}`,
 	};
 	return createErrorResult(filePath, error);
 }
 
-export function createParseError(filePath: string, message?: string): AnalysisResult {
+export function createParseError(
+	filePath: string,
+	message?: string,
+): AnalysisResult {
 	const error: AnalysisError = {
 		type: "ParseError",
 		message: message || `Parse error in: ${filePath}`,
@@ -311,15 +335,18 @@ export function createParseError(filePath: string, message?: string): AnalysisRe
 		source: "parser",
 		context: {
 			operation: "parsing",
-			details: { filePath }
+			details: { filePath },
 		},
 		timestamp: new Date(),
-		id: `pe-${Date.now()}-${Math.random().toString(36).substr(2, 9)}`
+		id: `pe-${Date.now()}-${Math.random().toString(36).substr(2, 9)}`,
 	};
 	return createErrorResult(filePath, error);
 }
 
-export function createTimeoutError(filePath: string, message?: string): AnalysisResult {
+export function createTimeoutError(
+	filePath: string,
+	message?: string,
+): AnalysisResult {
 	const error: AnalysisError = {
 		type: "TimeoutError",
 		message: message || `Timeout while processing: ${filePath}`,
@@ -327,10 +354,10 @@ export function createTimeoutError(filePath: string, message?: string): Analysis
 		source: "parser",
 		context: {
 			operation: "parsing",
-			details: { filePath }
+			details: { filePath },
 		},
 		timestamp: new Date(),
-		id: `to-${Date.now()}-${Math.random().toString(36).substr(2, 9)}`
+		id: `to-${Date.now()}-${Math.random().toString(36).substr(2, 9)}`,
 	};
 	return createErrorResult(filePath, error);
 }

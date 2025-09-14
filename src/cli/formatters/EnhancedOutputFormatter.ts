@@ -344,7 +344,7 @@ export class EnhancedOutputFormatter {
 
 		const parts = filePath.split("/");
 		if (parts.length <= 2) {
-			return "..." + filePath.substring(filePath.length - maxLength + 3);
+			return `...${filePath.substring(filePath.length - maxLength + 3)}`;
 		}
 
 		// Try to keep the filename and some directory structure
@@ -352,7 +352,7 @@ export class EnhancedOutputFormatter {
 		const remaining = maxLength - filename.length - 3; // 3 for "..."
 
 		if (remaining <= 0) {
-			return "..." + filename.substring(filename.length - maxLength + 3);
+			return `...${filename.substring(filename.length - maxLength + 3)}`;
 		}
 
 		let path = "";
@@ -365,7 +365,7 @@ export class EnhancedOutputFormatter {
 			}
 		}
 
-		return path + "/.../" + filename;
+		return `${path}/.../${filename}`;
 	}
 
 	/**

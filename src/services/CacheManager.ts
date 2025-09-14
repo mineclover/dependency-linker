@@ -7,11 +7,10 @@ import * as crypto from "node:crypto";
 import * as fs from "node:fs/promises";
 import * as path from "node:path";
 import * as zlib from "node:zlib";
-import {
-	type CacheConfiguration,
-	type CacheEntry,
-	CacheSource,
-	type CacheStats,
+import type {
+	CacheConfiguration,
+	CacheEntry,
+	CacheStats,
 } from "../models/CacheEntry";
 import { ICacheManager } from "./ICacheManager";
 
@@ -19,10 +18,8 @@ export { ICacheManager };
 
 export class CacheManager implements ICacheManager {
 	private cache: Map<string, CacheEntry<any>> = new Map();
-	private astCache: Map<string, CacheEntry<any>> = new Map(); // Dedicated AST cache
 	private stats: CacheStats;
 	private config: CacheConfiguration;
-	private compressionCache: Map<string, Buffer> = new Map(); // Pre-compressed data cache
 
 	constructor(config?: Partial<CacheConfiguration>) {
 		this.config = {
@@ -247,7 +244,7 @@ export class CacheManager implements ICacheManager {
 				if (entry.metadata.custom.compressed) {
 					try {
 						this.decompress(entry.data);
-					} catch (error) {
+					} catch (_error) {
 						errors.push(`Decompression failed for key: ${key}`);
 					}
 				}
@@ -380,7 +377,7 @@ export class CacheManager implements ICacheManager {
 				} else {
 					success++;
 				}
-			} catch (error) {
+			} catch (_error) {
 				failed++;
 			}
 		});
@@ -573,7 +570,7 @@ export class CacheManager implements ICacheManager {
 			}
 
 			this.updateMemoryUsage();
-		} catch (error) {
+		} catch (_error) {
 			// Cache file doesn't exist or is invalid - start fresh
 		}
 	}
@@ -596,7 +593,7 @@ export class CacheManager implements ICacheManager {
 		try {
 			const cachePath = path.join(this.config.persistencePath, "cache.json");
 			await fs.unlink(cachePath);
-		} catch (error) {
+		} catch (_error) {
 			// File doesn't exist - that's fine
 		}
 	}

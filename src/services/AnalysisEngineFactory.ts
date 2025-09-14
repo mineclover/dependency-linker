@@ -136,8 +136,8 @@ export class AnalysisEngineFactory implements IAnalysisEngineFactory {
 	}
 
 	private attachEvents(
-		engine: AnalysisEngine,
-		events: IAnalysisEngineEvents,
+		_engine: AnalysisEngine,
+		_events: IAnalysisEngineEvents,
 	): void {
 		// TODO: Implement event system
 		// This would involve extending AnalysisEngine with event emitter capabilities
@@ -178,7 +178,7 @@ export class AnalysisEngineBuilder implements IAnalysisEngineBuilder {
 	private extractors: Map<string, IDataExtractor<any>> = new Map();
 	private interpreters: Map<string, IDataInterpreter<any, any>> = new Map();
 	private events?: IAnalysisEngineEvents;
-	private cacheEnabled: boolean = true;
+	private cacheEnabled?: boolean;
 	private cacheSize?: number;
 
 	/**

@@ -349,7 +349,7 @@ export class ConfigurationError extends AnalysisError {
 		// Specific solutions based on common configuration issues
 		if (typeof value === "string" && expectedType === "number") {
 			solutions.push(
-				`Convert the string "${value}" to a number, e.g., ${parameter}: ${parseInt(value) || 0}`,
+				`Convert the string "${value}" to a number, e.g., ${parameter}: ${parseInt(value, 10) || 0}`,
 			);
 		}
 
@@ -738,17 +738,16 @@ export function getUserMessage(error: any): string {
 /**
  * Create error from unknown value
  */
-export function createErrorFromUnknown(value: unknown, context: string): AnalysisError {
+export function createErrorFromUnknown(
+	value: unknown,
+	context: string,
+): AnalysisError {
 	if (value instanceof AnalysisError) {
 		return value;
 	}
 
 	if (value instanceof Error) {
-		return new InternalError(
-			context,
-			{ originalError: value.message },
-			value,
-		);
+		return new InternalError(context, { originalError: value.message }, value);
 	}
 
 	return new InternalError(context, { originalValue: value });

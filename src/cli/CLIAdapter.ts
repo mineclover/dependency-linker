@@ -135,7 +135,6 @@ export class CLIAdapter {
 				return this.formatter.formatAsCSV([result], true);
 			case "summary":
 				return this.formatter.formatAsSummary(result);
-			case "text":
 			default:
 				return this.formatter.formatAsReport(result);
 		}
@@ -146,7 +145,7 @@ export class CLIAdapter {
 	 * @param format Output format
 	 * @returns Header string or empty string
 	 */
-	getFormatHeader(format: string): string {
+	getFormatHeader(_format: string): string {
 		// EnhancedOutputFormatter includes headers in CSV format
 		return "";
 	}

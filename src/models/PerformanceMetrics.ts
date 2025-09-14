@@ -385,7 +385,7 @@ export class PerformanceMonitor {
 		this.takeMemorySnapshot("finish");
 
 		// Calculate memory efficiency and trend
-		const memoryMetrics = this.calculateMemoryMetrics();
+		const _memoryMetrics = this.calculateMemoryMetrics();
 
 		return {
 			parseTime: this.metrics.parseTime || 0,
@@ -531,7 +531,7 @@ export class PerformanceMonitor {
 			const cpuTime = cpuUsageEnd.user + cpuUsageEnd.system;
 
 			return totalTime > 0 ? (cpuTime / totalTime) * 100 : 0;
-		} catch (error) {
+		} catch (_error) {
 			return 0;
 		}
 	}
@@ -543,7 +543,7 @@ export class PerformanceMonitor {
 		try {
 			// On Unix systems, count file descriptors
 			if (process.platform !== "win32") {
-				const fs = require("fs");
+				const fs = require("node:fs");
 				try {
 					const fdDir = "/proc/self/fd";
 					return fs.readdirSync(fdDir).length;
@@ -555,7 +555,7 @@ export class PerformanceMonitor {
 				// Windows: estimate based on operations
 				return 10; // Base file handles
 			}
-		} catch (error) {
+		} catch (_error) {
 			return 0;
 		}
 	}
@@ -566,7 +566,7 @@ export class PerformanceMonitor {
 	private setupGCMonitoring(): void {
 		try {
 			// Try to use performance hooks for GC monitoring
-			const perf = require("perf_hooks");
+			const perf = require("node:perf_hooks");
 			const obs = new perf.PerformanceObserver((list: any) => {
 				for (const entry of list.getEntries()) {
 					if (entry.entryType === "gc") {

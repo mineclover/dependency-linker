@@ -63,8 +63,8 @@ export class DependencyExtractor
 
 	extract(
 		ast: any,
-		filePath: string,
-		options?: any,
+		_filePath: string,
+		_options?: any,
 	): DependencyExtractionResult {
 		const tree = ast as Parser.Tree;
 		const sourceCode = ""; // TODO: Read source code from filePath if needed
@@ -181,7 +181,7 @@ export class DependencyExtractor
 
 	private extractRequireCall(
 		node: Parser.SyntaxNode,
-		sourceCode: string,
+		_sourceCode: string,
 	): DependencyInfo | null {
 		const functionNode = node.childForFieldName("function");
 		if (functionNode?.text !== "require") return null;
@@ -219,7 +219,7 @@ export class DependencyExtractor
 
 	private extractDynamicImport(
 		node: Parser.SyntaxNode,
-		sourceCode: string,
+		_sourceCode: string,
 	): DependencyInfo | null {
 		const functionNode = node.childForFieldName("function");
 		// Check for dynamic import() calls
@@ -258,7 +258,7 @@ export class DependencyExtractor
 
 	private extractImportSpecifiers(
 		node: Parser.SyntaxNode,
-		sourceCode: string,
+		_sourceCode: string,
 	): string[] {
 		const specifiers: string[] = [];
 		const importClause = node.childForFieldName("import");
@@ -284,8 +284,8 @@ export class DependencyExtractor
 	}
 
 	private extractExportSpecifiers(
-		node: Parser.SyntaxNode,
-		sourceCode: string,
+		_node: Parser.SyntaxNode,
+		_sourceCode: string,
 	): string[] {
 		const specifiers: string[] = [];
 		// Implementation for export specifiers would be similar to import specifiers

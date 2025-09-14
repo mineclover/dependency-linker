@@ -451,7 +451,7 @@ export class BatchAnalyzer {
 	private async checkResourceUsage(): Promise<void> {
 		this.updateResourceMetrics();
 
-		const memoryUsageRatio =
+		const _memoryUsageRatio =
 			this.resourceMetrics.memoryUsage / this.options.memoryLimit;
 
 		const thresholdStatus = this.checkMemoryThreshold(

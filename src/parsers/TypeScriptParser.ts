@@ -357,7 +357,7 @@ export class TypeScriptParser implements ILanguageParser {
 		});
 	}
 
-	private extractSyntaxErrors(ast: any, content: string): ParseError[] {
+	private extractSyntaxErrors(ast: any, _content: string): ParseError[] {
 		const errors: ParseError[] = [];
 
 		const visit = (node: any): void => {
@@ -520,7 +520,7 @@ export class TypeScriptParser implements ILanguageParser {
 	/**
 	 * Extract imports from AST
 	 */
-	private extractImportsFromAST(ast: any): ImportInfo[] {
+	private extractImportsFromAST(_ast: any): ImportInfo[] {
 		// Placeholder - implement based on existing ImportInfo structure
 		return [];
 	}

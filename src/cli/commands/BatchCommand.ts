@@ -3,9 +3,9 @@
  * Handles batch analysis of multiple TypeScript files
  */
 
-import fs from "fs";
+import fs from "node:fs";
+import path from "node:path";
 import { glob } from "glob";
-import path from "path";
 import { BatchAnalyzer } from "../../api/BatchAnalyzer";
 import { TypeScriptAnalyzer } from "../../api/TypeScriptAnalyzer";
 import { LogLevel } from "../../api/types";
@@ -54,8 +54,8 @@ export interface BatchResult {
 }
 
 export class BatchCommand {
-	private batchAnalyzer: BatchAnalyzer;
 	private analyzer: TypeScriptAnalyzer;
+	private batchAnalyzer: BatchAnalyzer;
 	private formatter: EnhancedOutputFormatter;
 
 	constructor() {
@@ -409,8 +409,6 @@ export class BatchCommand {
 
 			case "summary":
 				return this.formatSummary(result);
-
-			case "text":
 			default:
 				return this.formatAsText(result);
 		}

@@ -316,13 +316,15 @@ export interface ILanguageSpecificParser extends ILanguageParser {
 
 export interface ASTVisitor {
 	/** Called when entering a node */
-	enter?(node: any, parent?: any): void | boolean;
+	enter?(node: any, parent?: any): undefined | boolean;
 
 	/** Called when leaving a node */
-	leave?(node: any, parent?: any): void;
+	leave?(node: any, parent?: any): undefined | boolean;
 
 	/** Called for specific node types */
-	[nodeType: string]: ((node: any, parent?: any) => void | boolean) | undefined;
+	[nodeType: string]:
+		| ((node: any, parent?: any) => undefined | boolean)
+		| undefined;
 }
 
 export interface SyntaxPattern {

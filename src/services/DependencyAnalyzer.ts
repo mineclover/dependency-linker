@@ -259,7 +259,7 @@ export class DependencyAnalyzer {
 			if (!groups.has(packageName)) {
 				groups.set(packageName, []);
 			}
-			groups.get(packageName)!.push(dep);
+			groups.get(packageName)?.push(dep);
 		}
 
 		return groups;

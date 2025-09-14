@@ -14,20 +14,13 @@ import {
 	type AnalysisConfig,
 	AnalysisConfigUtils,
 } from "../models/AnalysisConfig";
-import {
-	AnalysisError,
-	AnalysisErrorFactory,
-	isAnalysisError,
-} from "../models/AnalysisError";
+import { AnalysisErrorFactory, isAnalysisError } from "../models/AnalysisError";
 import {
 	type AnalysisResult,
 	AnalysisResultFactory,
 } from "../models/AnalysisResult";
 import type { CacheStats } from "../models/CacheEntry";
-import {
-	PerformanceMetrics,
-	PerformanceMonitor,
-} from "../models/PerformanceMetrics";
+import { PerformanceMonitor } from "../models/PerformanceMetrics";
 import { GoParser } from "../parsers/GoParser";
 import { JavaParser } from "../parsers/JavaParser";
 import { JavaScriptParser } from "../parsers/JavaScriptParser";
@@ -37,14 +30,11 @@ import {
 	ExtractorRegistry,
 	type IExtractorRegistry,
 } from "./ExtractorRegistry";
-import {
-	type CacheValidationResult,
-	type CacheWarmupResult,
-	type EnginePerformanceMetrics,
-	ExtractorPerformanceMetrics,
-	type IAnalysisEngine,
-	InterpreterPerformanceMetrics,
-	LanguagePerformanceMetrics,
+import type {
+	CacheValidationResult,
+	CacheWarmupResult,
+	EnginePerformanceMetrics,
+	IAnalysisEngine,
 } from "./IAnalysisEngine";
 import {
 	type IInterpreterRegistry,
@@ -124,7 +114,7 @@ export class AnalysisEngine implements IAnalysisEngine {
 				const cachedResult =
 					await this.cacheManager.get<AnalysisResult>(cacheKey);
 				if (cachedResult) {
-					const cacheTime = Date.now() - cacheStartTime;
+					const _cacheTime = Date.now() - cacheStartTime;
 					const cacheStats = this.cacheManager.getStats();
 					this.performanceMonitor.recordCache(
 						cacheStats.totalHits,
@@ -861,18 +851,5 @@ export class AnalysisEngine implements IAnalysisEngine {
 		confidence += 0.1; // No extraction errors assumed if we got here
 
 		return factors > 0 ? Math.min(confidence, 1.0) : 0.5; // Default to 0.5 if no factors
-	}
-
-	/**
-	 * Calculates validation timing for cache operations
-	 */
-	private measureValidationTime(
-		operation: () => Promise<any>,
-	): Promise<{ result: any; validationTime: number }> {
-		const startTime = Date.now();
-		return operation().then((result) => ({
-			result,
-			validationTime: Date.now() - startTime,
-		}));
 	}
 }

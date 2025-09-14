@@ -40,16 +40,16 @@ export class FileAnalyzer {
 
 		// Configure extractors based on options
 		if (options?.includeDependencies) {
-			config.extractors!.push("dependency");
-			config.interpreters!.push("dependency-analysis");
+			config.extractors?.push("dependency");
+			config.interpreters?.push("dependency-analysis");
 		}
 
 		if (options?.includeExports) {
-			config.extractors!.push("identifier"); // Includes exports
+			config.extractors?.push("identifier"); // Includes exports
 		}
 
 		if (options?.includeImports) {
-			config.extractors!.push("dependency"); // Includes imports
+			config.extractors?.push("dependency"); // Includes imports
 		}
 
 		return this.analysisEngine.analyzeFile(filePath, config);
@@ -125,7 +125,10 @@ export class FileAnalyzer {
 	/**
 	 * Find files matching pattern
 	 */
-	private async findFiles(dirPath: string, pattern: string): Promise<string[]> {
+	private async findFiles(
+		dirPath: string,
+		_pattern: string,
+	): Promise<string[]> {
 		// Simple implementation - could be enhanced with glob matching
 		const files: string[] = [];
 

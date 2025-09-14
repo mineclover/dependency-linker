@@ -142,7 +142,7 @@ export class InterpreterRegistry implements IInterpreterRegistry {
 	executeAll(
 		extractedData: Record<string, any>,
 		context: any,
-		options?: InterpretationOptions,
+		_options?: InterpretationOptions,
 	): Record<string, any> {
 		const results: Record<string, any> = {};
 
@@ -188,7 +188,7 @@ export class InterpreterRegistry implements IInterpreterRegistry {
 		interpreterNames: string[],
 		extractedData: Record<string, any>,
 		context: any,
-		options?: InterpretationOptions,
+		_options?: InterpretationOptions,
 	): Record<string, any> {
 		const results: Record<string, any> = {};
 

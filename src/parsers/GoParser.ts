@@ -318,7 +318,7 @@ export class GoParser implements ILanguageParser {
 		});
 	}
 
-	private extractSyntaxErrors(ast: any, content: string): ParseError[] {
+	private extractSyntaxErrors(ast: any, _content: string): ParseError[] {
 		const errors: ParseError[] = [];
 
 		const visit = (node: any): void => {

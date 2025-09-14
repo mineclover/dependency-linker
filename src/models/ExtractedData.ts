@@ -292,6 +292,10 @@ export function createExtractedDataTemplate(
 	};
 }
 
+/**
+ * Utility class for working with ExtractedData objects
+ */
+export class ExtractedDataUtils {
 	/**
 	 * Merges multiple extracted data objects of the same type
 	 */

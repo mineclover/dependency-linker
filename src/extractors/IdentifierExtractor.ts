@@ -157,7 +157,7 @@ export class IdentifierExtractor
 
 	private extractFunctionDeclaration(
 		node: Parser.SyntaxNode,
-		sourceCode: string,
+		_sourceCode: string,
 	): IdentifierInfo | null {
 		const nameNode = node.childForFieldName("name");
 		if (!nameNode) return null;
@@ -188,7 +188,7 @@ export class IdentifierExtractor
 
 	private extractMethodDefinition(
 		node: Parser.SyntaxNode,
-		sourceCode: string,
+		_sourceCode: string,
 	): IdentifierInfo | null {
 		const nameNode = node.childForFieldName("name");
 		if (!nameNode) return null;
@@ -220,7 +220,7 @@ export class IdentifierExtractor
 
 	private extractClassDeclaration(
 		node: Parser.SyntaxNode,
-		sourceCode: string,
+		_sourceCode: string,
 	): IdentifierInfo | null {
 		const nameNode = node.childForFieldName("name");
 		if (!nameNode) return null;
@@ -245,7 +245,7 @@ export class IdentifierExtractor
 
 	private extractInterfaceDeclaration(
 		node: Parser.SyntaxNode,
-		sourceCode: string,
+		_sourceCode: string,
 	): IdentifierInfo | null {
 		const nameNode = node.childForFieldName("name");
 		if (!nameNode) return null;
@@ -270,7 +270,7 @@ export class IdentifierExtractor
 
 	private extractVariableDeclaration(
 		node: Parser.SyntaxNode,
-		sourceCode: string,
+		_sourceCode: string,
 	): IdentifierInfo | null {
 		const nameNode = node.childForFieldName("name");
 		if (!nameNode) return null;
@@ -299,7 +299,7 @@ export class IdentifierExtractor
 
 	private extractEnumDeclaration(
 		node: Parser.SyntaxNode,
-		sourceCode: string,
+		_sourceCode: string,
 	): IdentifierInfo | null {
 		const nameNode = node.childForFieldName("name");
 		if (!nameNode) return null;
@@ -324,7 +324,7 @@ export class IdentifierExtractor
 
 	private extractTypeDeclaration(
 		node: Parser.SyntaxNode,
-		sourceCode: string,
+		_sourceCode: string,
 	): IdentifierInfo | null {
 		const nameNode = node.childForFieldName("name");
 		if (!nameNode) return null;
@@ -462,7 +462,7 @@ export class IdentifierExtractor
 		};
 	}
 
-	configure(options: ExtractorConfiguration): void {
+	configure(_options: ExtractorConfiguration): void {
 		// Configuration handled via constructor or setter methods
 	}
 

@@ -18,7 +18,7 @@ export function isSuccessful(result: AnalysisResult): boolean {
  * Get dependencies from analysis result
  */
 export function getDependencies(result: AnalysisResult): DependencyInfo[] {
-	const depData = result.extractedData?.["dependency"] as any;
+	const depData = result.extractedData?.dependency as any;
 	return depData?.dependencies || [];
 }
 
@@ -26,7 +26,7 @@ export function getDependencies(result: AnalysisResult): DependencyInfo[] {
  * Get imports from analysis result
  */
 export function getImports(result: AnalysisResult): ImportInfo[] {
-	const depData = result.extractedData?.["dependency"] as any;
+	const depData = result.extractedData?.dependency as any;
 	return depData?.imports || [];
 }
 
@@ -34,7 +34,7 @@ export function getImports(result: AnalysisResult): ImportInfo[] {
  * Get exports from analysis result
  */
 export function getExports(result: AnalysisResult): ExportInfo[] {
-	const identData = result.extractedData?.["identifier"] as any;
+	const identData = result.extractedData?.identifier as any;
 	return identData?.exports || [];
 }
 

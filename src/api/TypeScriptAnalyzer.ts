@@ -17,7 +17,6 @@ import {
 } from "../models/AnalysisConfig";
 import type { AnalysisResult } from "../models/AnalysisResult";
 import type { ExportInfo } from "../models/ExportInfo";
-import type { FileAnalysisRequest } from "../models/FileAnalysisRequest";
 import type { ImportInfo } from "../models/ImportInfo";
 import { AnalysisEngine } from "../services/AnalysisEngine";
 import { createLogger } from "../utils/logger";
@@ -350,8 +349,8 @@ export class TypeScriptAnalyzer {
 		this.throwIfNotInitialized();
 
 		try {
-			const fs = require("fs");
-			const path = require("path");
+			const fs = require("node:fs");
+			const path = require("node:path");
 			const errors: string[] = [];
 
 			// Check if file exists
@@ -542,24 +541,6 @@ export class TypeScriptAnalyzer {
 
 			throw batchError;
 		}
-	}
-
-	/**
-	 * Create file analysis request from options
-	 */
-	private createFileAnalysisRequest(
-		filePath: string,
-		options?: AnalysisOptions,
-	): FileAnalysisRequest {
-		return {
-			filePath,
-			options: {
-				format: options?.format ?? "json",
-				includeSources: options?.includeSources ?? false,
-				parseTimeout:
-					options?.parseTimeout ?? this.config.defaultTimeout ?? 30000,
-			},
-		};
 	}
 
 	/**

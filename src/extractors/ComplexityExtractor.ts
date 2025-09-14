@@ -301,7 +301,7 @@ export class ComplexityExtractor
 
 	private calculateLinesOfCode(
 		node: Parser.SyntaxNode,
-		sourceCode: string,
+		_sourceCode: string,
 	): number {
 		const startLine = node.startPosition.row;
 		const endLine = node.endPosition.row;
@@ -450,7 +450,7 @@ export class ComplexityExtractor
 		};
 	}
 
-	configure(options: ExtractorConfiguration): void {
+	configure(_options: ExtractorConfiguration): void {
 		// Configuration handled via constructor or setter methods
 	}
 

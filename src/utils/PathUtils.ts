@@ -64,10 +64,7 @@ export function normalizePath(
 	try {
 		normalized = path.normalize(normalized);
 	} catch (error) {
-		logger.warn(
-			`Path normalization failed for: ${inputPath}`,
-			error,
-		);
+		logger.warn(`Path normalization failed for: ${inputPath}`, error);
 		return inputPath; // Return original if normalization fails
 	}
 
@@ -194,10 +191,7 @@ function normalizeUnicode(inputPath: string): string {
 		// This combines characters where possible (é instead of e + ´)
 		return inputPath.normalize("NFC");
 	} catch (error) {
-		logger.warn(
-			`Unicode normalization failed for path: ${inputPath}`,
-			error,
-		);
+		logger.warn(`Unicode normalization failed for path: ${inputPath}`, error);
 		return inputPath;
 	}
 }
@@ -262,7 +256,10 @@ export function toPlatformSeparators(
  * @param platform Target platform
  * @returns Safe filename
  */
-export function getSafeFilename(filename: string, platform?: NodeJS.Platform): string {
+export function getSafeFilename(
+	filename: string,
+	platform?: NodeJS.Platform,
+): string {
 	const targetPlatform = platform || process.platform;
 	let safe = filename;
 

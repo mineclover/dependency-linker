@@ -3,7 +3,7 @@
  * Extracts specific types of data from AST nodes
  */
 
-import { ExtractedData, type SourceLocation } from "../models/ExtractedData";
+import type { SourceLocation } from "../models/ExtractedData";
 
 export interface IDataExtractor<T> {
 	/**

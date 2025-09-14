@@ -6,10 +6,7 @@
 import type { IDataExtractor } from "../extractors/IDataExtractor";
 import type { IDataInterpreter } from "../interpreters/IDataInterpreter";
 import type { AnalysisConfig } from "../models/AnalysisConfig";
-import {
-	AnalysisConfiguration,
-	type AnalysisResult,
-} from "../models/AnalysisResult";
+import type { AnalysisResult } from "../models/AnalysisResult";
 import type { CacheStats } from "../models/CacheEntry";
 
 export interface IAnalysisEngine {

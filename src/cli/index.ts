@@ -330,7 +330,7 @@ export class TypeScriptDependencyLinkerCLI {
 							return { error: "Option --max-files requires a value" };
 						}
 						const maxFiles = parseInt(args[++i], 10);
-						if (isNaN(maxFiles) || maxFiles <= 0) {
+						if (Number.isNaN(maxFiles) || maxFiles <= 0) {
 							return { error: "Max files must be a positive number" };
 						}
 						options.maxFiles = maxFiles;

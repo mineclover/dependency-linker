@@ -3,8 +3,8 @@
  * Handles system diagnostics, health checks, and troubleshooting
  */
 
-import fs from "fs";
-import path from "path";
+import fs from "node:fs";
+import path from "node:path";
 import { TypeScriptAnalyzer } from "../../api/TypeScriptAnalyzer";
 import { LogLevel } from "../../api/types";
 
@@ -113,7 +113,7 @@ export class DiagnosticCommand {
 					dependencies: packageJson.dependencies || {},
 				};
 			}
-		} catch (error) {
+		} catch (_error) {
 			// Ignore package.json errors
 		}
 
@@ -145,7 +145,7 @@ export class DiagnosticCommand {
 
 		// Check Node.js version
 		const nodeVersion = process.version;
-		const majorVersion = parseInt(nodeVersion.slice(1).split(".")[0]);
+		const majorVersion = parseInt(nodeVersion.slice(1).split(".")[0], 10);
 		if (majorVersion < 18) {
 			checks.push({
 				name: "Node.js Version",
@@ -477,7 +477,6 @@ export class DiagnosticCommand {
 				return JSON.stringify(result);
 			case "summary":
 				return this.formatSummary(result);
-			case "text":
 			default:
 				return this.formatAsText(result);
 		}

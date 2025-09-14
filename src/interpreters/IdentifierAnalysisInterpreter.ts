@@ -122,7 +122,7 @@ export class IdentifierAnalysisInterpreter
 
 	interpret(
 		input: IdentifierExtractionResult,
-		context?: any,
+		_context?: any,
 	): IdentifierAnalysisResult {
 		const identifiers = input.identifiers;
 
@@ -161,7 +161,8 @@ export class IdentifierAnalysisInterpreter
 		identifiers: IdentifierInfo[],
 	): IdentifierAnalysisResult["summary"]["codebaseStructure"] {
 		const totalIdentifiers = input.totalCount;
-		const publicApi = identifiers.filter(
+		const safeIdentifiers = identifiers || [];
+		const publicApi = safeIdentifiers.filter(
 			(i) => i.visibility === "public" || i.isExported,
 		).length;
 		const privateImplementation = totalIdentifiers - publicApi;
@@ -178,7 +179,8 @@ export class IdentifierAnalysisInterpreter
 	private analyzeComplexity(
 		identifiers: IdentifierInfo[],
 	): IdentifierAnalysisResult["summary"]["complexity"] {
-		const functions = identifiers.filter((i) => i.type === "function");
+		const safeIdentifiers = identifiers || [];
+		const functions = safeIdentifiers.filter((i) => i.type === "function");
 
 		// Calculate average parameters per function
 		const totalParameters = functions.reduce(
@@ -579,7 +581,7 @@ export class IdentifierAnalysisInterpreter
 		return this.version;
 	}
 
-	validate(input: IdentifierExtractionResult): any {
+	validate(_input: IdentifierExtractionResult): any {
 		return {
 			valid: true,
 			errors: [],
@@ -618,7 +620,7 @@ export class IdentifierAnalysisInterpreter
 		};
 	}
 
-	configure(options: any): void {
+	configure(_options: any): void {
 		// Configuration implementation
 	}
 
