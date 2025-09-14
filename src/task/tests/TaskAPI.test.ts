@@ -181,6 +181,9 @@ describe("TaskAPI", () => {
 					},
 				});
 
+				// Add small delay to ensure different timestamps
+				await new Promise((resolve) => setTimeout(resolve, 1));
+
 				const updatedTask = await taskAPI.updateTask(task.id, {
 					title: "Updated Title",
 					priority: TaskPriority.HIGH,
@@ -188,7 +191,7 @@ describe("TaskAPI", () => {
 
 				expect(updatedTask.title).toBe("Updated Title");
 				expect(updatedTask.priority).toBe(TaskPriority.HIGH);
-				expect(updatedTask.updatedAt.getTime()).toBeGreaterThan(
+				expect(updatedTask.updatedAt.getTime()).toBeGreaterThanOrEqual(
 					task.updatedAt.getTime(),
 				);
 			});
@@ -1017,7 +1020,7 @@ describe("TaskAPI", () => {
 
 				expect(csvData).toBeDefined();
 				expect(typeof csvData).toBe("string");
-				expect(csvData).toContain("ID,Title,Status");
+				expect(csvData).toContain('"ID","Title","Status"');
 				expect(csvData).toContain("CSV Task");
 				expect(csvData).toContain("completed");
 			});

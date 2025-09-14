@@ -5,6 +5,13 @@
 
 import { existsSync, readFileSync, statSync } from "node:fs";
 import { extname, resolve } from "node:path";
+import {
+	getDependencies,
+	getError,
+	getExports,
+	getImports,
+	isSuccessful,
+} from "../../lib/AnalysisResultHelper";
 import type { AnalysisResult } from "../../models/AnalysisResult";
 import type { DependencyInfo } from "../../models/DependencyInfo";
 import { logger } from "../../utils/logger";
@@ -295,11 +302,12 @@ export class DebugHelper {
 		const suggestions: string[] = [];
 
 		// Basic structure validation
-		if (!result.success && !result.error) {
+		const resultError = getError(result);
+		if (!isSuccessful(result) && !resultError) {
 			errors.push("Result marked as failed but no error provided");
 		}
 
-		if (result.success && result.error) {
+		if (isSuccessful(result) && resultError) {
 			warnings.push("Result marked as successful but error is present");
 		}
 
@@ -309,27 +317,31 @@ export class DebugHelper {
 			);
 		}
 
-		if (result.success) {
+		if (isSuccessful(result)) {
 			// Validate successful analysis
-			if (!result.dependencies || !Array.isArray(result.dependencies)) {
+			const dependencies = getDependencies(result);
+			const imports = getImports(result);
+			const exports = getExports(result);
+
+			if (!Array.isArray(dependencies)) {
 				errors.push("Dependencies array is missing or invalid");
-			} else if (result.dependencies.length === 0) {
+			} else if (dependencies.length === 0) {
 				warnings.push("No dependencies found - verify this is expected");
 				suggestions.push("Check if file contains import statements");
 			}
 
-			if (!result.exports || !Array.isArray(result.exports)) {
+			if (!Array.isArray(exports)) {
 				warnings.push("Exports array is missing or invalid");
 			}
 
-			if (!result.imports || !Array.isArray(result.imports)) {
+			if (!Array.isArray(imports)) {
 				warnings.push("Imports array is missing or invalid");
 			}
 
 			// Cross-reference validation
-			if (result.dependencies && result.imports) {
-				const dependencyCount = result.dependencies.length;
-				const importCount = result.imports.length;
+			if (Array.isArray(dependencies) && Array.isArray(imports)) {
+				const dependencyCount = dependencies.length;
+				const importCount = imports.length;
 
 				if (Math.abs(dependencyCount - importCount) > importCount * 0.5) {
 					warnings.push(
@@ -609,15 +621,17 @@ export class DebugHelper {
 			report += "\n";
 
 			// Dependency analysis if available
-			if (analysisResult.success && analysisResult.dependencies) {
-				const depAnalysis = DebugHelper.analyzeDependencyPatterns(
-					analysisResult.dependencies,
-				);
-				report += "Dependency Analysis:\n";
-				report += `  Total Dependencies: ${analysisResult.dependencies.length}\n`;
-				report += `  Heavy Dependencies: ${depAnalysis.heavyDependencies.length}\n`;
-				report += `  Circular Risks: ${depAnalysis.circularRisks.length}\n`;
-				report += `  Unusual Patterns: ${depAnalysis.unusualPatterns.length}\n\n`;
+			if (isSuccessful(analysisResult)) {
+				const dependencies = getDependencies(analysisResult);
+				if (dependencies.length > 0) {
+					const depAnalysis =
+						DebugHelper.analyzeDependencyPatterns(dependencies);
+					report += "Dependency Analysis:\n";
+					report += `  Total Dependencies: ${dependencies.length}\n`;
+					report += `  Heavy Dependencies: ${depAnalysis.heavyDependencies.length}\n`;
+					report += `  Circular Risks: ${depAnalysis.circularRisks.length}\n`;
+					report += `  Unusual Patterns: ${depAnalysis.unusualPatterns.length}\n\n`;
+				}
 			}
 		}
 

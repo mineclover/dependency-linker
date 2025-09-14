@@ -9,13 +9,15 @@ export interface ExportInfo {
 	/** Exported symbol name */
 	name: string;
 	/** Export type */
-	type: "default" | "named" | "namespace" | "re-export";
+	type: "default" | "named" | "namespace" | "re-export" | "function";
 	/** Whether this is a type-only export */
 	isTypeOnly: boolean;
 	/** Location in source file */
 	location: SourceLocation;
 	/** Source module for re-exports */
 	source?: string;
+	/** Line number (backward compatibility) */
+	line?: number;
 }
 
 /**
@@ -195,6 +197,7 @@ export function groupExportsByType(exports: ExportInfo[]): {
 	named: ExportInfo[];
 	namespace: ExportInfo[];
 	"re-export": ExportInfo[];
+	function: ExportInfo[];
 } {
 	return exports.reduce(
 		(groups, exp) => {
@@ -206,6 +209,7 @@ export function groupExportsByType(exports: ExportInfo[]): {
 			named: [] as ExportInfo[],
 			namespace: [] as ExportInfo[],
 			"re-export": [] as ExportInfo[],
+			function: [] as ExportInfo[],
 		},
 	);
 }

@@ -23,6 +23,8 @@ export interface ImportInfo {
 	isTypeOnly: boolean;
 	/** Location in source file */
 	location: SourceLocation;
+	/** Import clause (backward compatibility) */
+	importClause?: string;
 }
 
 /**

@@ -58,8 +58,7 @@ export {};
 			const content = await fs.promises.readFile(testFile, "utf-8");
 			const parseResult = await parser.parseFile(testFile, content);
 			const dependencies = await dependencyAnalyzer.classifyDependencies(
-				parseResult.dependencies,
-				testFile,
+				parseResult.dependencies
 			);
 
 			// Filter external dependencies
@@ -159,8 +158,7 @@ export {};
 			const content = await fs.promises.readFile(testFile, "utf-8");
 			const parseResult = await parser.parseFile(testFile, content);
 			const dependencies = await dependencyAnalyzer.classifyDependencies(
-				parseResult.dependencies,
-				testFile,
+				parseResult.dependencies
 			);
 
 			// All dependencies should be classified as relative
@@ -212,8 +210,7 @@ export {};
 			const content = await fs.promises.readFile(testFile, "utf-8");
 			const parseResult = await parser.parseFile(testFile, content);
 			const dependencies = await dependencyAnalyzer.classifyDependencies(
-				parseResult.dependencies,
-				testFile,
+				parseResult.dependencies
 			);
 
 			// These should be classified as internal (project-specific modules)
@@ -273,8 +270,7 @@ export {};
 			const content = await fs.promises.readFile(testFile, "utf-8");
 			const parseResult = await parser.parseFile(testFile, content);
 			const dependencies = await dependencyAnalyzer.classifyDependencies(
-				parseResult.dependencies,
-				testFile,
+				parseResult.dependencies
 			);
 
 			// Should detect both static and dynamic imports
@@ -361,8 +357,7 @@ export default UserForm;
 			const content = await fs.promises.readFile(testFile, "utf-8");
 			const parseResult = await parser.parseFile(testFile, content);
 			const dependencies = await dependencyAnalyzer.classifyDependencies(
-				parseResult.dependencies,
-				testFile,
+				parseResult.dependencies
 			);
 
 			// Verify external dependencies (React ecosystem)
@@ -427,8 +422,7 @@ export default DefaultComponent;
 			const content = await fs.promises.readFile(testFile, "utf-8");
 			const parseResult = await parser.parseFile(testFile, content);
 			const dependencies = await dependencyAnalyzer.classifyDependencies(
-				parseResult.dependencies,
-				testFile,
+				parseResult.dependencies
 			);
 
 			// Should detect dependencies from both imports and re-export statements
@@ -475,8 +469,7 @@ export default { add, multiply };
 			const content = await fs.promises.readFile(testFile, "utf-8");
 			const parseResult = await parser.parseFile(testFile, content);
 			const dependencies = await dependencyAnalyzer.classifyDependencies(
-				parseResult.dependencies,
-				testFile,
+				parseResult.dependencies
 			);
 
 			expect(dependencies).toHaveLength(0);
@@ -512,15 +505,13 @@ export const functionB = () => {
 			const content1 = await fs.promises.readFile(testFile1, "utf-8");
 			const result1 = await parser.parseFile(testFile1, content1);
 			const deps1 = await dependencyAnalyzer.classifyDependencies(
-				result1.dependencies,
-				testFile1,
+				result1.dependencies
 			);
 
 			const content2 = await fs.promises.readFile(testFile2, "utf-8");
 			const result2 = await parser.parseFile(testFile2, content2);
 			const deps2 = await dependencyAnalyzer.classifyDependencies(
-				result2.dependencies,
-				testFile2,
+				result2.dependencies
 			);
 
 			// Both files should have one relative dependency each
@@ -568,8 +559,7 @@ export {};
 			expect(parseResult).toBeDefined();
 
 			const dependencies = await dependencyAnalyzer.classifyDependencies(
-				parseResult.dependencies,
-				testFile,
+				parseResult.dependencies
 			);
 
 			// Should have extracted the valid imports

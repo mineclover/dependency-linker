@@ -660,11 +660,11 @@ export const slugify = (text: string): string => {
 			// Verify each file was analyzed correctly
 			const appResult = results.find((r) => r.filePath.includes("App.tsx"));
 			expect(appResult?.success).toBe(true);
-			expect(appResult?.dependencies.some((d) => d.source === "react")).toBe(
+			expect(appResult?.dependencies?.some((d) => d.source === "react")).toBe(
 				true,
 			);
 			expect(
-				appResult?.dependencies.some((d) =>
+				appResult?.dependencies?.some((d) =>
 					d.source.includes("./components/Header"),
 				),
 			).toBe(true);
@@ -674,7 +674,7 @@ export const slugify = (text: string): string => {
 			);
 			expect(headerResult?.success).toBe(true);
 			expect(
-				headerResult?.dependencies.some((d) =>
+				headerResult?.dependencies?.some((d) =>
 					d.source.includes("../utils/text"),
 				),
 			).toBe(true);
@@ -740,14 +740,14 @@ export const UserDisplay: React.FC<Props> = ({ userId }) => {
 			expect(results.length).toBe(2);
 
 			const coreResult = results.find((r) => r.filePath.includes("core"));
-			expect(coreResult?.exports.length).toBeGreaterThanOrEqual(2);
+			expect(coreResult?.exports?.length).toBeGreaterThanOrEqual(2);
 
 			const uiResult = results.find((r) => r.filePath.includes("ui"));
-			expect(uiResult?.dependencies.some((d) => d.source === "react")).toBe(
+			expect(uiResult?.dependencies?.some((d) => d.source === "react")).toBe(
 				true,
 			);
 			expect(
-				uiResult?.dependencies.some((d) => d.source === "@myapp/core"),
+				uiResult?.dependencies?.some((d) => d.source === "@myapp/core"),
 			).toBe(true);
 		});
 	});

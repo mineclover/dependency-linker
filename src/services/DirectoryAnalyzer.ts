@@ -5,9 +5,9 @@
 
 import * as fs from "fs/promises";
 import * as path from "path";
+import type { Logger } from "../api/types";
 // import { glob } from "glob";
 import { createLogger } from "../utils/logger";
-import type { Logger } from "../api/types";
 
 export interface DirectoryAnalysisOptions {
 	followSymlinks: boolean;
@@ -19,7 +19,14 @@ export interface DirectoryAnalysisOptions {
 }
 
 export interface DirectoryError {
-	code: 'ENOENT' | 'EACCES' | 'EISDIR' | 'ENOTDIR' | 'EMFILE' | 'ENFILE' | 'ELOOP';
+	code:
+		| "ENOENT"
+		| "EACCES"
+		| "EISDIR"
+		| "ENOTDIR"
+		| "EMFILE"
+		| "ENFILE"
+		| "ELOOP";
 	message: string;
 	path: string;
 	syscall?: string;
@@ -27,7 +34,7 @@ export interface DirectoryError {
 }
 
 export interface DirectoryContext {
-	operation: 'read' | 'scan' | 'access' | 'resolve';
+	operation: "read" | "scan" | "access" | "resolve";
 	currentPath: string;
 	parentPath?: string;
 	options: DirectoryAnalysisOptions;
@@ -35,7 +42,7 @@ export interface DirectoryContext {
 
 export interface DirectoryErrorResponse {
 	handled: boolean;
-	action: 'retry' | 'skip' | 'abort' | 'fallback';
+	action: "retry" | "skip" | "abort" | "fallback";
 	fallbackPath?: string;
 	retryDelay?: number;
 	userMessage?: string;
@@ -83,7 +90,7 @@ export class DirectoryAnalyzer {
 		if (!patterns || patterns.length === 0) return false;
 
 		// Normalize path for consistent matching
-		const normalizedPath = path.normalize(filePath).replace(/\\/g, '/');
+		const normalizedPath = path.normalize(filePath).replace(/\\/g, "/");
 		const fileName = path.basename(filePath);
 		const dirName = path.dirname(filePath);
 
@@ -102,14 +109,17 @@ export class DirectoryAnalyzer {
 	 * @param followSymlinks Whether to follow symlinks
 	 * @returns Resolved path or original path if not following symlinks
 	 */
-	async resolveSymlinks(linkPath: string, followSymlinks: boolean): Promise<string> {
+	async resolveSymlinks(
+		linkPath: string,
+		followSymlinks: boolean,
+	): Promise<string> {
 		if (!followSymlinks) {
 			return linkPath;
 		}
 
 		try {
 			const stats = await fs.lstat(linkPath);
-			
+
 			if (!stats.isSymbolicLink()) {
 				return linkPath;
 			}
@@ -123,14 +133,16 @@ export class DirectoryAnalyzer {
 			// Track symlink depth to prevent deep chains
 			const depth = this.symlinkDepthMap.get(linkPath) || 0;
 			if (depth > 10) {
-				this.logger.warn(`Deep symlink chain detected: ${linkPath} (depth: ${depth})`);
+				this.logger.warn(
+					`Deep symlink chain detected: ${linkPath} (depth: ${depth})`,
+				);
 				return linkPath;
 			}
 
 			// Resolve the symlink
 			const resolvedPath = await fs.realpath(linkPath);
 			this.symlinkDepthMap.set(resolvedPath, depth + 1);
-			
+
 			return resolvedPath;
 		} catch (error) {
 			this.logger.warn(`Failed to resolve symlink: ${linkPath}`, error);
@@ -144,60 +156,63 @@ export class DirectoryAnalyzer {
 	 * @param context Operation context
 	 * @returns Error response with action plan
 	 */
-	handleDirectoryError(error: DirectoryError, context: DirectoryContext): DirectoryErrorResponse {
+	handleDirectoryError(
+		error: DirectoryError,
+		context: DirectoryContext,
+	): DirectoryErrorResponse {
 		const { code, path: errorPath } = error;
 		const { operation } = context;
 
 		switch (code) {
-			case 'ENOENT':
+			case "ENOENT":
 				return {
 					handled: true,
-					action: 'skip',
+					action: "skip",
 					userMessage: `Path does not exist: ${errorPath}`,
 				};
 
-			case 'EACCES':
+			case "EACCES":
 				return {
 					handled: true,
-					action: operation === 'read' ? 'skip' : 'retry',
+					action: operation === "read" ? "skip" : "retry",
 					retryDelay: 1000,
 					userMessage: `Access denied: ${errorPath}`,
 				};
 
-			case 'EMFILE':
-			case 'ENFILE':
+			case "EMFILE":
+			case "ENFILE":
 				return {
 					handled: true,
-					action: 'retry',
+					action: "retry",
 					retryDelay: 2000,
 					userMessage: `Too many open files, retrying: ${errorPath}`,
 				};
 
-			case 'ELOOP':
+			case "ELOOP":
 				return {
 					handled: true,
-					action: 'skip',
+					action: "skip",
 					userMessage: `Circular symlink detected: ${errorPath}`,
 				};
 
-			case 'EISDIR':
+			case "EISDIR":
 				return {
 					handled: true,
-					action: 'fallback',
+					action: "fallback",
 					userMessage: `Expected file but found directory: ${errorPath}`,
 				};
 
-			case 'ENOTDIR':
+			case "ENOTDIR":
 				return {
 					handled: true,
-					action: 'skip',
+					action: "skip",
 					userMessage: `Expected directory but found file: ${errorPath}`,
 				};
 
 			default:
 				return {
 					handled: false,
-					action: 'abort',
+					action: "abort",
 					userMessage: `Unhandled directory error: ${error.message}`,
 				};
 		}
@@ -208,13 +223,15 @@ export class DirectoryAnalyzer {
 	 * @param dirPath Path to directory
 	 * @returns Access validation result
 	 */
-	async validateDirectoryAccess(dirPath: string): Promise<DirectoryAccessResult> {
+	async validateDirectoryAccess(
+		dirPath: string,
+	): Promise<DirectoryAccessResult> {
 		try {
 			const stats = await fs.lstat(dirPath);
 			const isSymlink = stats.isSymbolicLink();
-			const isDirectory = isSymlink ? 
-				(await fs.stat(dirPath)).isDirectory() : 
-				stats.isDirectory();
+			const isDirectory = isSymlink
+				? (await fs.stat(dirPath)).isDirectory()
+				: stats.isDirectory();
 
 			// Test access permissions
 			const access = {
@@ -253,7 +270,6 @@ export class DirectoryAnalyzer {
 				isSymlink,
 				permissions: this.formatPermissions(stats.mode),
 			};
-
 		} catch (error: any) {
 			return {
 				accessible: false,
@@ -262,9 +278,9 @@ export class DirectoryAnalyzer {
 				executable: false,
 				isDirectory: false,
 				isSymlink: false,
-				permissions: '',
+				permissions: "",
 				error: {
-					code: error.code || 'UNKNOWN',
+					code: error.code || "UNKNOWN",
 					message: error.message,
 					path: dirPath,
 					syscall: error.syscall,
@@ -280,11 +296,16 @@ export class DirectoryAnalyzer {
 	 * @param options Glob options
 	 * @returns Array of matching paths
 	 */
-	async resolveGlobPattern(pattern: string, options: GlobOptions = {}): Promise<string[]> {
+	async resolveGlobPattern(
+		pattern: string,
+		options: GlobOptions = {},
+	): Promise<string[]> {
 		try {
 			// Simplified glob matching without external dependency
 			// In a full implementation, you'd use a proper glob library
-			this.logger.warn(`Glob pattern resolution not fully implemented: ${pattern}`);
+			this.logger.warn(
+				`Glob pattern resolution not fully implemented: ${pattern}`,
+			);
 			return [];
 		} catch (error) {
 			this.logger.error(`Glob pattern resolution failed: ${pattern}`, error);
@@ -300,7 +321,7 @@ export class DirectoryAnalyzer {
 	private detectCircularReference(linkPath: string): boolean {
 		try {
 			const realPath = path.resolve(linkPath);
-			
+
 			if (this.visitedPaths.has(realPath)) {
 				return true;
 			}
@@ -320,9 +341,14 @@ export class DirectoryAnalyzer {
 	 * @param dirName Directory name
 	 * @returns true if pattern matches
 	 */
-	private matchesPattern(pattern: string, normalizedPath: string, fileName: string, dirName: string): boolean {
+	private matchesPattern(
+		pattern: string,
+		normalizedPath: string,
+		fileName: string,
+		dirName: string,
+	): boolean {
 		// Handle different pattern types
-		if (pattern.startsWith('/') && pattern.endsWith('/')) {
+		if (pattern.startsWith("/") && pattern.endsWith("/")) {
 			// Regex pattern
 			try {
 				const regex = new RegExp(pattern.slice(1, -1));
@@ -333,18 +359,25 @@ export class DirectoryAnalyzer {
 		}
 
 		// Glob patterns
-		if (pattern.includes('*') || pattern.includes('?') || pattern.includes('[')) {
+		if (
+			pattern.includes("*") ||
+			pattern.includes("?") ||
+			pattern.includes("[")
+		) {
 			return this.matchGlob(pattern, normalizedPath);
 		}
 
 		// Directory patterns (end with /)
-		if (pattern.endsWith('/')) {
+		if (pattern.endsWith("/")) {
 			const dirPattern = pattern.slice(0, -1);
-			return dirName.includes(dirPattern) || normalizedPath.includes(`/${dirPattern}/`);
+			return (
+				dirName.includes(dirPattern) ||
+				normalizedPath.includes(`/${dirPattern}/`)
+			);
 		}
 
 		// Extension patterns
-		if (pattern.startsWith('*.')) {
+		if (pattern.startsWith("*.")) {
 			const ext = pattern.slice(2);
 			return fileName.endsWith(`.${ext}`);
 		}
@@ -362,10 +395,10 @@ export class DirectoryAnalyzer {
 	private matchGlob(pattern: string, filePath: string): boolean {
 		// Simple glob matching implementation
 		const regexPattern = pattern
-			.replace(/\./g, '\\.')
-			.replace(/\*/g, '.*')
-			.replace(/\?/g, '.')
-			.replace(/\[([^\]]+)\]/g, '[$1]');
+			.replace(/\./g, "\\.")
+			.replace(/\*/g, ".*")
+			.replace(/\?/g, ".")
+			.replace(/\[([^\]]+)\]/g, "[$1]");
 
 		try {
 			const regex = new RegExp(`^${regexPattern}$`);
@@ -381,8 +414,8 @@ export class DirectoryAnalyzer {
 	 * @returns Formatted permission string
 	 */
 	private formatPermissions(mode: number): string {
-		const perms = (mode & parseInt('777', 8)).toString(8);
-		return perms.padStart(3, '0');
+		const perms = (mode & 0o777).toString(8);
+		return perms.padStart(3, "0");
 	}
 
 	/**

@@ -1,201 +1,324 @@
 /**
  * Analysis Result Model
- * The result of analyzing a TypeScript file
+ * Represents the complete result of a code analysis operation
+ * Consolidates parsed AST, extracted data, interpreted results, and metadata
  */
 
+import type { AnalysisError } from "./AnalysisError";
 import type { DependencyInfo } from "./DependencyInfo";
 import type { ExportInfo } from "./ExportInfo";
 import type { ImportInfo } from "./ImportInfo";
+import type { PerformanceMetrics } from "./PerformanceMetrics";
 
-export interface AnalysisError {
-	/** Error code */
-	code:
-		| "PARSE_ERROR"
-		| "FILE_NOT_FOUND"
-		| "INVALID_FILE_TYPE"
-		| "PERMISSION_DENIED"
-		| "TIMEOUT";
-	/** Human-readable error message */
-	message: string;
-	/** Additional error context */
-	details?: any;
-}
-
+// Comprehensive analysis result interface
 export interface AnalysisResult {
-	/** The analyzed file path */
+	/** Absolute path to the analyzed file */
 	filePath: string;
-	/** Whether analysis completed successfully */
-	success: boolean;
-	/** Extracted dependencies */
-	dependencies: DependencyInfo[];
-	/** Import statements */
-	imports: ImportInfo[];
-	/** Exported symbols */
-	exports: ExportInfo[];
-	/** Time taken to parse in milliseconds */
-	parseTime: number;
-	/** Error details if analysis failed */
-	error?: AnalysisError;
-}
 
-/**
- * Creates a successful analysis result
- * @param filePath The analyzed file path
- * @param parseTime Time taken for parsing
- * @param dependencies Extracted dependencies
- * @param imports Import statements
- * @param exports Export statements
- * @returns Successful analysis result
- */
-export function createSuccessResult(
-	filePath: string,
-	parseTime: number,
-	dependencies: DependencyInfo[] = [],
-	imports: ImportInfo[] = [],
-	exports: ExportInfo[] = [],
-): AnalysisResult {
-	return {
-		filePath,
-		success: true,
-		dependencies,
-		imports,
-		exports,
-		parseTime,
+	/** Detected or specified programming language */
+	language: string;
+
+	/** Raw data extracted from the AST by registered extractors */
+	extractedData: Record<string, any>;
+
+	/** Processed analysis results from registered interpreters */
+	interpretedData: Record<string, any>;
+
+	/** Performance metrics for this analysis operation */
+	performanceMetrics: PerformanceMetrics;
+
+	/** Any errors encountered during analysis */
+	errors: AnalysisError[];
+
+	/** Analysis metadata and context */
+	metadata: AnalysisMetadata;
+
+	/** Cache metadata (optional) */
+	cacheMetadata?: {
+		cached: boolean;
+		key: string;
+		timestamp: Date;
+		ttl: number;
 	};
 }
 
-/**
- * Creates a failed analysis result
- * @param filePath The file path that failed analysis
- * @param error Error information
- * @param parseTime Time taken before failure (default: 0)
- * @returns Failed analysis result with partial data
- */
-export function createErrorResult(
-	filePath: string,
-	error: AnalysisError,
-	parseTime: number = 0,
-	dependencies: DependencyInfo[] = [],
-	imports: ImportInfo[] = [],
-	exports: ExportInfo[] = [],
-): AnalysisResult {
-	return {
-		filePath,
-		success: false,
-		dependencies,
-		imports,
-		exports,
-		parseTime,
-		error,
-	};
+export interface AnalysisMetadata {
+	/** Timestamp when analysis was performed */
+	timestamp: Date;
+
+	/** Version of the analysis engine used */
+	version: string;
+
+	/** Analysis configuration used */
+	config: any;
+
+	/** Whether this result came from cache (optional for compatibility) */
+	fromCache?: boolean;
+
+	/** List of extractors that were executed (optional for compatibility) */
+	extractorsUsed?: string[];
+
+	/** List of interpreters that were executed (optional for compatibility) */
+	interpretersUsed?: string[];
+
+	/** File size in bytes (optional for compatibility) */
+	fileSize?: number;
+
+	/** File last modified timestamp (optional for compatibility) */
+	lastModified?: Date;
+}
+
+export interface AnalysisConfiguration {
+	/** Target language (if not auto-detected) */
+	language?: string;
+
+	/** Specific extractors to run (if not all) */
+	extractors?: string[];
+
+	/** Specific interpreters to run (if not all) */
+	interpreters?: string[];
+
+	/** Whether to use cached results */
+	useCache?: boolean;
+
+	/** Maximum cache size */
+	maxCacheSize?: number;
+
+	/** Additional options for extractors */
+	extractorOptions?: Record<string, any>;
+
+	/** Additional options for interpreters */
+	interpreterOptions?: Record<string, any>;
+
+	/** Analysis depth level (1-5, where 5 is most comprehensive) */
+	depth?: number;
+
+	/** Whether to include detailed debugging information */
+	includeDebugInfo?: boolean;
 }
 
 /**
- * Creates an error for file not found
- * @param filePath The missing file path
- * @returns AnalysisError for file not found
+ * Factory class for creating AnalysisResult instances
  */
-export function createFileNotFoundError(filePath: string): AnalysisException {
-	return new AnalysisException({
-		code: "FILE_NOT_FOUND",
-		message: `File not found: ${filePath}`,
-		details: { filePath },
-	});
-}
+export class AnalysisResultFactory {
+	/**
+	 * Creates a new AnalysisResult with default values
+	 */
+	static create(filePath: string, language: string): AnalysisResult {
+		return {
+			filePath,
+			language,
+			extractedData: {},
+			interpretedData: {},
+			performanceMetrics: {
+				parseTime: 0,
+				extractionTime: 0,
+				interpretationTime: 0,
+				totalTime: 0,
+				memoryUsage: 0,
+			},
+			errors: [],
+			metadata: {
+				timestamp: new Date(),
+				version: "2.0.0",
+				config: {},
+				extractorsUsed: [],
+				interpretersUsed: [],
+				fromCache: false,
+				fileSize: 0,
+				lastModified: new Date(),
+			},
+		};
+	}
 
-/**
- * Creates an error for invalid file type
- * @param filePath The file path with invalid type
- * @returns AnalysisError for invalid file type
- */
-export function createInvalidFileTypeError(filePath: string): AnalysisError {
-	return {
-		code: "INVALID_FILE_TYPE",
-		message: `Invalid file type. Only TypeScript files (.ts, .tsx) are supported: ${filePath}`,
-		details: { filePath },
-	};
-}
-
-/**
- * Custom error class that carries AnalysisError information
- */
-export class AnalysisException extends Error {
-	public readonly analysisError: AnalysisError;
-
-	constructor(analysisError: AnalysisError) {
-		super(analysisError.message);
-		this.name = "AnalysisException";
-		this.analysisError = analysisError;
+	/**
+	 * Creates an AnalysisResult representing a failed analysis
+	 */
+	static createError(filePath: string, error: AnalysisError): AnalysisResult {
+		const result = AnalysisResultFactory.create(filePath, "unknown");
+		result.errors.push(error);
+		return result;
 	}
 }
 
 /**
- * Creates an error for permission denied
- * @param filePath The file path that couldn't be accessed
- * @returns AnalysisError for permission denied
+ * Utility functions for working with AnalysisResult
  */
-export function createPermissionDeniedError(
-	filePath: string,
-): AnalysisException {
-	return new AnalysisException({
-		code: "PERMISSION_DENIED",
-		message: `Permission denied: Cannot read file ${filePath}`,
-		details: { filePath },
-	});
+export class AnalysisResultUtils {
+	/**
+	 * Checks if an analysis was successful (no errors)
+	 */
+	static isSuccessful(result: AnalysisResult): boolean {
+		return result.errors.length === 0;
+	}
+
+	/**
+	 * Gets all errors of a specific type
+	 */
+	static getErrorsByType(
+		result: AnalysisResult,
+		errorType: string,
+	): AnalysisError[] {
+		return result.errors.filter((error) => error.type === errorType);
+	}
+
+	/**
+	 * Formats the result for display
+	 */
+	static format(
+		result: AnalysisResult,
+		format: "json" | "summary" | "detailed" = "summary",
+	): string {
+		switch (format) {
+			case "json":
+				return JSON.stringify(result, null, 2);
+			case "summary":
+				return `Analysis of ${result.filePath}:
+Language: ${result.language}
+Time: ${result.performanceMetrics.totalTime}ms
+Errors: ${result.errors.length}
+From Cache: ${result.metadata.fromCache}`;
+			case "detailed":
+				return `=== Analysis Result ===
+File: ${result.filePath}
+Language: ${result.language}
+Total Time: ${result.performanceMetrics.totalTime}ms
+Extractors: ${result.metadata.extractorsUsed?.join(", ") || "none"}
+Interpreters: ${result.metadata.interpretersUsed?.join(", ") || "none"}
+Errors: ${result.errors.length}`;
+			default:
+				return AnalysisResultUtils.format(result, "summary");
+		}
+	}
+
+	/**
+	 * Validates that an AnalysisResult has the required structure
+	 */
+	static validate(result: any): result is AnalysisResult {
+		if (!result || typeof result !== "object") {
+			return false;
+		}
+
+		const requiredFields = [
+			"filePath",
+			"language",
+			"extractedData",
+			"interpretedData",
+			"performanceMetrics",
+			"errors",
+			"metadata",
+		];
+
+		for (const field of requiredFields) {
+			if (!(field in result)) {
+				return false;
+			}
+		}
+
+		return (
+			typeof result.filePath === "string" &&
+			typeof result.language === "string" &&
+			typeof result.extractedData === "object" &&
+			typeof result.interpretedData === "object" &&
+			Array.isArray(result.errors)
+		);
+	}
 }
 
 /**
- * Creates an error for parsing timeout
- * @param timeout The timeout value that was exceeded
- * @returns AnalysisError for timeout
+ * Convenience exports for backwards compatibility with tests
  */
-export function createTimeoutError(timeout: number): AnalysisError {
-	return {
-		code: "TIMEOUT",
-		message: `Analysis timed out after ${timeout}ms`,
-		details: { timeout },
+
+// Re-export AnalysisError type from its module
+export type { AnalysisError } from "./AnalysisError";
+
+// Create an exception class for error handling
+export class AnalysisException extends Error {
+	constructor(message: string, public analysisError: AnalysisError) {
+		super(message);
+		this.name = 'AnalysisException';
+	}
+}
+
+// Convenience functions expected by tests
+export function createSuccessResult(filePath: string, language: string): AnalysisResult {
+	return AnalysisResultFactory.create(filePath, language);
+}
+
+export function createErrorResult(filePath: string, error: AnalysisError): AnalysisResult {
+	return AnalysisResultFactory.createError(filePath, error);
+}
+
+export function createFileNotFoundError(filePath: string, message?: string): AnalysisResult {
+	const error: AnalysisError = {
+		type: "FileNotFound",
+		message: message || `File not found: ${filePath}`,
+		severity: "error",
+		source: "parser",
+		context: {
+			operation: "file_access",
+			details: { filePath }
+		}
 	};
+	return createErrorResult(filePath, error);
 }
 
-/**
- * Creates an error for parsing failure
- * @param originalError The original error that caused parsing to fail
- * @returns AnalysisError for parse error
- */
-export function createParseError(originalError: Error | string): AnalysisError {
-	const message =
-		originalError instanceof Error ? originalError.message : originalError;
-	return {
-		code: "PARSE_ERROR",
-		message: `Parse error: ${message}`,
-		details:
-			originalError instanceof Error
-				? {
-						name: originalError.name,
-						stack: originalError.stack,
-					}
-				: { message: originalError },
+export function createInvalidFileTypeError(filePath: string, message?: string): AnalysisResult {
+	const error: AnalysisError = {
+		type: "InvalidFileType",
+		message: message || `Invalid file type: ${filePath}`,
+		severity: "error",
+		source: "parser",
+		context: {
+			operation: "file_validation",
+			details: { filePath }
+		}
 	};
+	return createErrorResult(filePath, error);
 }
 
-/**
- * Validates an analysis result structure
- * @param result The result to validate
- * @returns True if the result structure is valid
- */
+export function createPermissionDeniedError(filePath: string, message?: string): AnalysisResult {
+	const error: AnalysisError = {
+		type: "FileAccessDenied",
+		message: message || `Permission denied: ${filePath}`,
+		severity: "error",
+		source: "parser",
+		context: {
+			operation: "file_access",
+			details: { filePath }
+		}
+	};
+	return createErrorResult(filePath, error);
+}
+
+export function createParseError(filePath: string, message?: string): AnalysisResult {
+	const error: AnalysisError = {
+		type: "ParseError",
+		message: message || `Parse error in: ${filePath}`,
+		severity: "error",
+		source: "parser",
+		context: {
+			operation: "parsing",
+			details: { filePath }
+		}
+	};
+	return createErrorResult(filePath, error);
+}
+
+export function createTimeoutError(filePath: string, message?: string): AnalysisResult {
+	const error: AnalysisError = {
+		type: "TimeoutError",
+		message: message || `Timeout while processing: ${filePath}`,
+		severity: "error",
+		source: "parser",
+		context: {
+			operation: "parsing",
+			details: { filePath }
+		}
+	};
+	return createErrorResult(filePath, error);
+}
+
 export function isValidAnalysisResult(result: any): result is AnalysisResult {
-	return (
-		result &&
-		typeof result === "object" &&
-		typeof result.filePath === "string" &&
-		typeof result.success === "boolean" &&
-		Array.isArray(result.dependencies) &&
-		Array.isArray(result.imports) &&
-		Array.isArray(result.exports) &&
-		typeof result.parseTime === "number" &&
-		(result.error === undefined ||
-			(typeof result.error === "object" &&
-				typeof result.error.code === "string" &&
-				typeof result.error.message === "string"))
-	);
+	return AnalysisResultUtils.validate(result);
 }

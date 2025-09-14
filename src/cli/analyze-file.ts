@@ -5,6 +5,7 @@
  * Command-line interface for TypeScript file analysis
  */
 
+import { AnalysisResultUtils } from "../models/AnalysisResult";
 import { CLIAdapter } from "./CLIAdapter";
 import { CommandParser } from "./CommandParser";
 
@@ -124,7 +125,7 @@ async function main(): Promise<void> {
 		console.log(output);
 
 		// Exit with appropriate code
-		process.exit(result.success ? 0 : 1);
+		process.exit(AnalysisResultUtils.isSuccessful(result) ? 0 : 1);
 	} catch (error) {
 		console.error(
 			"Unexpected error:",

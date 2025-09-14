@@ -5,6 +5,11 @@
 
 import { existsSync, readFileSync, statSync } from "node:fs";
 import { join, resolve } from "node:path";
+import {
+	getDependencies,
+	getError,
+	isSuccessful,
+} from "../../lib/AnalysisResultHelper";
 import { logger } from "../../utils/logger";
 import { TypeScriptAnalyzer } from "../TypeScriptAnalyzer";
 import { DebugHelper } from "./DebugHelper";
@@ -233,10 +238,12 @@ export class DiagnosticTool {
 
 			// Analyze dependencies if successful
 			let dependencyAnalysis;
-			if (analysisResult.success && analysisResult.dependencies) {
-				dependencyAnalysis = DebugHelper.analyzeDependencyPatterns(
-					analysisResult.dependencies,
-				);
+			if (isSuccessful(analysisResult)) {
+				const dependencies = getDependencies(analysisResult);
+				if (dependencies.length > 0) {
+					dependencyAnalysis =
+						DebugHelper.analyzeDependencyPatterns(dependencies);
+				}
 			}
 
 			// Generate recommendations
@@ -623,22 +630,23 @@ export class DiagnosticTool {
 
 			const result = await this.analyzer.analyzeFile(testFile);
 
-			if (result.success) {
+			if (isSuccessful(result)) {
 				return {
 					component: "Analyzer Functionality",
 					status: "healthy",
 					message: "TypeScript analysis is working correctly",
 					details: {
 						testPassed: true,
-						dependencies: result.dependencies?.length || 0,
+						dependencies: getDependencies(result).length,
 						// analysisTime not available on AnalysisResult
 					},
 				};
 			} else {
+				const error = getError(result);
 				return {
 					component: "Analyzer Functionality",
 					status: "error",
-					message: `Analysis test failed: ${result.error}`,
+					message: `Analysis test failed: ${error?.message || "Unknown error"}`,
 					suggestions: [
 						"Check parser installation",
 						"Verify test file integrity",

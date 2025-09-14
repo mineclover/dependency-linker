@@ -3,16 +3,7 @@
  * Main entry point for the API layer of the TypeScript File Analyzer
  */
 
-// Re-export core interfaces
-export { IFileAnalyzer } from "../core/interfaces/IFileAnalyzer";
-export { IOutputFormatter } from "../core/interfaces/IOutputFormatter";
-export { ITypeScriptParser } from "../core/interfaces/ITypeScriptParser";
-// Re-export core types
-export {
-	ParseOptions,
-	ParseResult,
-	ValidationResult,
-} from "../core/types/ParseTypes";
+// Core types removed - using new architecture
 // Re-export core models for convenience
 export { AnalysisResult } from "../models/AnalysisResult";
 export { DependencyInfo } from "../models/DependencyInfo";

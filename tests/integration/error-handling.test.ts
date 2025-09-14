@@ -5,15 +5,15 @@
 
 import * as fs from "fs";
 import * as path from "path";
-import { FileAnalyzer } from "../../src/services/FileAnalyzer";
-import { FileAnalysisRequest } from "../../src/models/FileAnalysisRequest";
+import { AnalysisEngine } from '../../src/services/AnalysisEngine';
+import { AnalysisConfig } from '../../src/models/AnalysisConfig';
 
 describe("Error Handling Integration", () => {
-	let fileAnalyzer: FileAnalyzer;
+	let analysisEngine: AnalysisEngine;
 	const testFilesDir = path.join(__dirname, "../fixtures");
 
 	beforeAll(async () => {
-		fileAnalyzer = new FileAnalyzer();
+		analysisEngine = new AnalysisEngine();
 
 		// Create test fixtures directory
 		await fs.promises.mkdir(testFilesDir, { recursive: true });
@@ -26,7 +26,7 @@ describe("Error Handling Integration", () => {
 			"large-test.ts",
 			"syntax-errors.ts",
 			"completely-invalid.ts",
-			"unicode.ts",
+			"unitype.ts",
 			"timeout-test.ts",
 			"potential-loop.ts",
 			"memory-test.ts",
@@ -47,16 +47,15 @@ describe("Error Handling Integration", () => {
 		test("should handle non-existent file", async () => {
 			const nonExistentFile = path.join(testFilesDir, "does-not-exist.ts");
 
-			const request: FileAnalysisRequest = {
-				filePath: nonExistentFile,
-				options: { format: "json" },
+			const config: AnalysisConfig = {
+				extractors: ['dependency']
 			};
 
-			const result = await fileAnalyzer.analyzeFile(request);
+			const result = await analysisEngine.analyzeFile(nonExistentFile, config);
 
-			expect(result.success).toBe(false);
-			expect(result.error).toMatchObject({
-				code: "FILE_NOT_FOUND",
+			expect(result.errors.length).toBeGreaterThan(0);
+			expect(result.errors[0]).toMatchObject({
+				type: "FileNotFound",
 				message: expect.stringContaining("not found"),
 			});
 			expect(result.filePath).toBe(nonExistentFile);
@@ -66,16 +65,15 @@ describe("Error Handling Integration", () => {
 			const invalidFile = path.join(testFilesDir, "invalid.txt");
 			await fs.promises.writeFile(invalidFile, "This is not TypeScript");
 
-			const request: FileAnalysisRequest = {
-				filePath: invalidFile,
-				options: { format: "json" },
+			const config: AnalysisConfig = {
+				extractors: ['dependency']
 			};
 
-			const result = await fileAnalyzer.analyzeFile(request);
+			const result = await analysisEngine.analyzeFile(invalidFile, config);
 
-			expect(result.success).toBe(false);
-			expect(result.error).toMatchObject({
-				code: "INVALID_FILE_TYPE",
+			expect(result.errors.length).toBeGreaterThan(0);
+			expect(result.errors[0]).toMatchObject({
+				type: "InvalidFileType",
 				message: expect.stringContaining("TypeScript"),
 			});
 		});
@@ -101,21 +99,20 @@ describe("Error Handling Integration", () => {
 					// Permission restriction is working
 				}
 
-				const request: FileAnalysisRequest = {
-					filePath: restrictedFile,
-					options: { format: "json" },
+				const config: AnalysisConfig = {
+					extractors: ['dependency']
 				};
 
-				const result = await fileAnalyzer.analyzeFile(request);
+				const result = await analysisEngine.analyzeFile(restrictedFile, config);
 
 				if (canStillRead) {
 					// System doesn't enforce permission restrictions, skip test
-					expect(result.success).toBe(true);
+					expect(result.errors.length === 0).toBe(true);
 				} else {
 					// Permission restriction is working, expect failure
-					expect(result.success).toBe(false);
-					expect(result.error?.code).toMatch(
-						/FILE_NOT_FOUND|PERMISSION_DENIED/,
+					expect(result.errors.length === 0).toBe(false);
+					expect(result.errors[0]?.type).toMatch(
+						/FileNotFound|FileAccessDenied/,
 					);
 				}
 			} finally {
@@ -140,21 +137,18 @@ describe("Error Handling Integration", () => {
 
 			await fs.promises.writeFile(largeFile, content);
 
-			const request: FileAnalysisRequest = {
-				filePath: largeFile,
-				options: {
-					format: "json",
-					parseTimeout: 10000, // 10 second timeout
-				},
+			const config: AnalysisConfig = {
+				extractors: ['dependency'],
+				timeout: 10000 // 10 second timeout
 			};
 
-			const result = await fileAnalyzer.analyzeFile(request);
+			const result = await analysisEngine.analyzeFile(largeFile, config);
 
 			// Should either succeed or fail gracefully with timeout
-			if (result.success === false) {
-				expect(result.error?.code).toMatch(/TIMEOUT|PARSE_ERROR/);
+			if (result.errors.length === 0 === false) {
+				expect(result.errors[0]?.type).toMatch(/TimeoutError|ParseError/);
 			} else {
-				expect(result.parseTime).toBeLessThan(10000);
+				expect(result.performanceMetrics.parseTime).toBeLessThan(10000);
 			}
 		});
 	});
@@ -192,26 +186,25 @@ export default broken;
 `,
 			);
 
-			const request: FileAnalysisRequest = {
-				filePath: syntaxErrorFile,
-				options: { format: "json" },
+			const config: AnalysisConfig = {
+				extractors: ['dependency']
 			};
 
-			const result = await fileAnalyzer.analyzeFile(request);
+			const result = await analysisEngine.analyzeFile(syntaxErrorFile, config);
 
 			// Should not crash, might succeed with partial results or fail with parse error
 			expect(result).toBeDefined();
 			expect(result.filePath).toBe(syntaxErrorFile);
 
-			if (result.success === false) {
-				expect(result.error).toMatchObject({
-					code: "PARSE_ERROR",
+			if (result.errors.length === 0 === false) {
+				expect(result.errors[0]).toMatchObject({
+					type: "ParseError",
 					message: expect.stringContaining("error"),
 				});
 			} else {
 				// If it succeeded, should have extracted what it could
-				expect(result.imports).toBeDefined();
-				expect(result.exports).toBeDefined();
+				expect(result.extractedData.dependency).toBeDefined();
+				expect(result.extractedData.dependency.imports).toBeDefined();
 			}
 		});
 
@@ -230,26 +223,25 @@ Binary data: \x00\x01\x02\x03
 `,
 			);
 
-			const request: FileAnalysisRequest = {
-				filePath: invalidTsFile,
-				options: { format: "json" },
+			const config: AnalysisConfig = {
+				extractors: ['dependency']
 			};
 
-			const result = await fileAnalyzer.analyzeFile(request);
+			const result = await analysisEngine.analyzeFile(invalidTsFile, config);
 
-			expect(result.success).toBe(false);
-			expect(result.error).toMatchObject({
-				code: "PARSE_ERROR",
+			expect(result.errors.length === 0).toBe(false);
+			expect(result.errors[0]).toMatchObject({
+				type: "ParseError",
 				message: expect.any(String),
 			});
 		});
 
-		test("should handle Unicode and special characters", async () => {
-			const unicodeFile = path.join(testFilesDir, "unicode.ts");
+		test("should handle Unitype and special characters", async () => {
+			const unitypeFile = path.join(testFilesDir, "unitype.ts");
 			await fs.promises.writeFile(
-				unicodeFile,
+				unitypeFile,
 				`
-// File with Unicode characters and emoji
+// File with Unitype characters and emoji
 export const message = "Hello 世界! 🌍";
 export const japanese = "こんにちは";
 export const arabic = "مرحبا";
@@ -266,15 +258,14 @@ export default { message, japanese, arabic, emoji, symbols, spaces };
 				"utf-8",
 			);
 
-			const request: FileAnalysisRequest = {
-				filePath: unicodeFile,
-				options: { format: "json" },
+			const config: AnalysisConfig = {
+				extractors: ['dependency']
 			};
 
-			const result = await fileAnalyzer.analyzeFile(request);
+			const result = await analysisEngine.analyzeFile(unitypeFile, config);
 
-			expect(result.success).toBe(true);
-			expect(result.exports).toHaveLength(7); // 6 named + 1 default
+			expect(result.errors.length === 0).toBe(true);
+			expect(result.extractedData.dependency.exports).toHaveLength(7); // 6 named + 1 default
 		});
 	});
 
@@ -290,24 +281,21 @@ export default { message, japanese, arabic, emoji, symbols, spaces };
 
 			await fs.promises.writeFile(timeoutFile, content);
 
-			const request: FileAnalysisRequest = {
-				filePath: timeoutFile,
-				options: {
-					format: "json",
-					parseTimeout: 100, // Very short timeout (100ms)
-				},
+			const config: AnalysisConfig = {
+				extractors: ['dependency'],
+				timeout: 100 // Very short timeout (100ms)
 			};
 
 			const startTime = Date.now();
-			const result = await fileAnalyzer.analyzeFile(request);
+			const result = await analysisEngine.analyzeFile(timeoutFile, config);
 			const totalTime = Date.now() - startTime;
 
-			if (result.success === false && result.error?.code === "TIMEOUT") {
+			if (result.errors.length > 0 && result.errors[0]?.type === "TimeoutError") {
 				expect(totalTime).toBeLessThan(1000); // Should timeout quickly
-				expect(result.error.message).toContain("timeout");
+				expect(result.errors[0].message).toContain("timeout");
 			} else {
 				// If it succeeded, it should be within reasonable time
-				expect(result.parseTime).toBeLessThan(5000);
+				expect(result.performanceMetrics.parseTime).toBeLessThan(5000);
 			}
 		});
 
@@ -352,15 +340,12 @@ export default {};
 `,
 			);
 
-			const request: FileAnalysisRequest = {
-				filePath: loopFile,
-				options: {
-					format: "json",
-					parseTimeout: 5000,
-				},
+			const config: AnalysisConfig = {
+				extractors: ['dependency'],
+				timeout: 5000
 			};
 
-			const result = await fileAnalyzer.analyzeFile(request);
+			const result = await analysisEngine.analyzeFile(loopFile, config);
 
 			// Should complete without hanging
 			expect(result).toBeDefined();
@@ -382,20 +367,19 @@ export default {};
 
 			await fs.promises.writeFile(memoryFile, content);
 
-			const request: FileAnalysisRequest = {
-				filePath: memoryFile,
-				options: { format: "json" },
+			const config: AnalysisConfig = {
+				extractors: ['dependency']
 			};
 
-			const result = await fileAnalyzer.analyzeFile(request);
+			const result = await analysisEngine.analyzeFile(memoryFile, config);
 
 			// Should not crash due to memory issues
 			expect(result).toBeDefined();
 
-			if (result.success) {
-				expect(result.exports).toHaveLength(2); // data + default
-			} else if (result.error) {
-				expect(result.error.code).toMatch(/PARSE_ERROR|TIMEOUT|MEMORY_ERROR/);
+			if (result.errors.length === 0) {
+				expect(result.extractedData.dependency.exports).toHaveLength(2); // data + default
+			} else if (result.errors[0]) {
+				expect(result.errors[0].type).toMatch(/ParseError|TimeoutError|MemoryError/);
 			}
 		});
 	});
@@ -405,25 +389,21 @@ export default {};
 			const validFile = path.join(testFilesDir, "valid.ts");
 			await fs.promises.writeFile(validFile, 'export const test = "valid";');
 
-			const request: FileAnalysisRequest = {
-				filePath: validFile,
-				options: {
-					format: "invalid" as any, // Invalid format
-					parseTimeout: -1, // Invalid timeout
-					includeSources: "maybe" as any, // Invalid boolean
-				},
+			const config: AnalysisConfig = {
+				extractors: ['dependency'],
+				timeout: -1 // Invalid timeout
 			};
 
 			// Should handle invalid options gracefully
-			const result = await fileAnalyzer.analyzeFile(request);
+			const result = await analysisEngine.analyzeFile(validFile, config);
 
 			expect(result).toBeDefined();
 
-			if (result.success === false) {
-				expect(result.error?.code).toMatch(/INVALID_OPTIONS|PARSE_ERROR/);
+			if (result.errors.length === 0 === false) {
+				expect(result.errors[0]?.type).toMatch(/InvalidOptions|ParseError/);
 			} else {
 				// Should use default values for invalid options
-				expect(result.success).toBe(true);
+				expect(result.errors.length === 0).toBe(true);
 			}
 		});
 	});
@@ -454,20 +434,19 @@ export default validFunction;
 `,
 			);
 
-			const request: FileAnalysisRequest = {
-				filePath: partialFile,
-				options: { format: "json" },
+			const config: AnalysisConfig = {
+				extractors: ['dependency']
 			};
 
-			const result = await fileAnalyzer.analyzeFile(request);
+			const result = await analysisEngine.analyzeFile(partialFile, config);
 
 			// Even if parsing partially fails, should extract what it can
 			expect(result).toBeDefined();
-			expect(result.imports.length).toBeGreaterThan(0); // Should find React imports
-			expect(result.exports.length).toBeGreaterThan(0); // Should find exports
+			expect(result.extractedData.dependency.imports.length).toBeGreaterThan(0); // Should find React imports
+			expect(result.extractedData.dependency.exports.length).toBeGreaterThan(0); // Should find exports
 
-			if (result.success === false) {
-				expect(result.error).toBeDefined();
+			if (result.errors.length === 0 === false) {
+				expect(result.errors[0]).toBeDefined();
 			}
 		});
 	});

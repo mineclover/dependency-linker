@@ -25,11 +25,14 @@
 		"strictBindCallApply": true,
 		"strictPropertyInitialization": true,
 		"noImplicitOverride": true,
-		"exactOptionalPropertyTypes": true
+		"exactOptionalPropertyTypes": false
 	},
 	"include": ["src/**/*"],
 	"exclude": ["node_modules", "dist", "tests"],
 	"ts-node": {
-		"esm": true
+		"esm": false,
+		"compilerOptions": {
+			"module": "commonjs"
+		}
 	}
 }

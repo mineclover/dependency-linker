@@ -1,108 +1,253 @@
 /**
- * Dependency Analyzer Service
- * Analyzes and classifies dependencies from parsed TypeScript files
+ * DependencyAnalyzer service
+ * High-level service for analyzing dependencies in files using the new plugin architecture
  */
 
-import {
-	classifyDependencyType,
-	type DependencyInfo,
-	getPackageName,
-	isNodeBuiltin,
-	isScopedPackage,
-} from "../models/DependencyInfo";
+import * as path from "path";
+import { DependencyExtractor } from "../extractors/DependencyExtractor";
+import { DependencyAnalysisInterpreter } from "../interpreters/DependencyAnalysisInterpreter";
+import type { AnalysisConfig } from "../models/AnalysisConfig";
+import type { AnalysisResult } from "../models/AnalysisResult";
+import type { DependencyInfo } from "../models/DependencyInfo";
+import { AnalysisEngine } from "./AnalysisEngine";
 
 export interface ClassifiedDependency extends DependencyInfo {
-	/** Whether this is a Node.js built-in module */
 	isNodeBuiltin: boolean;
-	/** Whether this is a scoped package */
 	isScopedPackage: boolean;
-	/** The package name (without sub-paths) */
 	packageName: string;
-	/** File extension if applicable */
 	extension?: string;
 }
 
 export interface DependencyStats {
 	total: number;
 	external: number;
-	internal: number;
 	relative: number;
+	internal: number;
 	nodeBuiltins: number;
 	scopedPackages: number;
-	uniquePackages: number;
 }
 
+export interface PackageUsage {
+	packageName: string;
+	count: number;
+	sources: string[];
+}
+
+export interface DependencyOptimization {
+	type: "combine_imports" | "barrel_export" | "deep_import_warning";
+	message: string;
+	packageName?: string;
+	sources?: string[];
+}
+
+export interface DependencyValidation {
+	warnings: DependencyWarning[];
+	errors: DependencyError[];
+}
+
+export interface DependencyWarning {
+	type:
+		| "node_builtin"
+		| "missing_extension"
+		| "deep_relative"
+		| "circular_potential";
+	message: string;
+	source: string;
+}
+
+export interface DependencyError {
+	type: "invalid_path" | "missing_dependency";
+	message: string;
+	source: string;
+}
+
+const NODE_BUILTINS = new Set([
+	"assert",
+	"buffer",
+	"child_process",
+	"cluster",
+	"console",
+	"constants",
+	"crypto",
+	"dgram",
+	"dns",
+	"domain",
+	"events",
+	"fs",
+	"http",
+	"https",
+	"module",
+	"net",
+	"os",
+	"path",
+	"punycode",
+	"querystring",
+	"readline",
+	"repl",
+	"stream",
+	"string_decoder",
+	"sys",
+	"timers",
+	"tls",
+	"tty",
+	"url",
+	"util",
+	"vm",
+	"zlib",
+]);
+
 export class DependencyAnalyzer {
+	private analysisEngine: AnalysisEngine;
+
+	constructor() {
+		this.analysisEngine = new AnalysisEngine();
+
+		// Register dependency-specific extractors and interpreters
+		this.analysisEngine.registerExtractor(
+			"dependency",
+			new DependencyExtractor(),
+		);
+		this.analysisEngine.registerInterpreter(
+			"dependency-analysis",
+			new DependencyAnalysisInterpreter(),
+		);
+	}
+
 	/**
-	 * Classifies an array of dependencies with additional metadata
-	 * @param dependencies Raw dependencies from parser
-	 * @param filePath Context file path for relative resolution
-	 * @returns Promise<ClassifiedDependency[]>
+	 * Analyze dependencies in a file
+	 */
+	async analyze(
+		filePath: string,
+		config?: Partial<AnalysisConfig>,
+	): Promise<AnalysisResult> {
+		const analysisConfig: AnalysisConfig = {
+			useCache: true,
+			cacheTtl: 300000, // 5 minutes
+			extractors: ["dependency"],
+			interpreters: ["dependency-analysis"],
+			...config,
+		};
+
+		return this.analysisEngine.analyzeFile(filePath, analysisConfig);
+	}
+
+	/**
+	 * Analyze dependencies in multiple files
+	 */
+	async analyzeBatch(
+		filePaths: string[],
+		config?: Partial<AnalysisConfig>,
+	): Promise<AnalysisResult[]> {
+		const results = await Promise.all(
+			filePaths.map((filePath) => this.analyze(filePath, config)),
+		);
+		return results;
+	}
+
+	/**
+	 * Get dependency statistics for a file
+	 */
+	async getStats(filePath: string): Promise<{
+		totalDependencies: number;
+		externalDependencies: number;
+		relativeDependencies: number;
+		internalDependencies: number;
+		uniqueModules: number;
+	}> {
+		const result = await this.analyze(filePath);
+		const dependencies = result.extractedData?.dependencies || [];
+
+		const external = dependencies.filter(
+			(d: DependencyInfo) => d.type === "external",
+		).length;
+		const relative = dependencies.filter(
+			(d: DependencyInfo) => d.type === "relative",
+		).length;
+		const internal = dependencies.filter(
+			(d: DependencyInfo) => d.type === "internal",
+		).length;
+		const uniqueModules = new Set(
+			dependencies.map((d: DependencyInfo) => d.source),
+		).size;
+
+		return {
+			totalDependencies: dependencies.length,
+			externalDependencies: external,
+			relativeDependencies: relative,
+			internalDependencies: internal,
+			uniqueModules,
+		};
+	}
+
+	/**
+	 * Classify a single dependency
+	 */
+	classifyDependency(dependency: DependencyInfo): ClassifiedDependency {
+		const { source } = dependency;
+		const isNodeBuiltin = NODE_BUILTINS.has(source.split("/")[0]);
+		const isScopedPackage = source.startsWith("@");
+		const packageName = this.getPackageName(source);
+		const extension = this.getFileExtension(source);
+
+		return {
+			...dependency,
+			isNodeBuiltin,
+			isScopedPackage,
+			packageName,
+			extension,
+		};
+	}
+
+	/**
+	 * Classify multiple dependencies
 	 */
 	async classifyDependencies(
 		dependencies: DependencyInfo[],
-		filePath?: string,
 	): Promise<ClassifiedDependency[]> {
-		return dependencies.map((dep) => this.classifyDependency(dep, filePath));
+		return dependencies.map((dep) => this.classifyDependency(dep));
 	}
 
 	/**
-	 * Classifies a single dependency with additional metadata
-	 * @param dependency Raw dependency from parser
-	 * @param filePath Context file path for relative resolution
-	 * @returns ClassifiedDependency
-	 */
-	classifyDependency(
-		dependency: DependencyInfo,
-		_filePath?: string,
-	): ClassifiedDependency {
-		const packageName = getPackageName(dependency.source);
-		const extension = this.extractExtension(dependency.source);
-
-		const result: ClassifiedDependency = {
-			...dependency,
-			type: classifyDependencyType(dependency.source), // Re-classify to ensure consistency
-			isNodeBuiltin: isNodeBuiltin(dependency.source),
-			isScopedPackage: isScopedPackage(dependency.source),
-			packageName,
-		};
-
-		if (extension) {
-			result.extension = extension;
-		}
-
-		return result;
-	}
-
-	/**
-	 * Generates statistics for classified dependencies
-	 * @param dependencies Array of classified dependencies
-	 * @returns DependencyStats
+	 * Get classification statistics
 	 */
 	getClassificationStats(
 		dependencies: ClassifiedDependency[],
 	): DependencyStats {
-		const uniquePackages = new Set(
-			dependencies
-				.filter((dep) => dep.type === "external")
-				.map((dep) => dep.packageName),
-		);
-
-		return {
+		const stats: DependencyStats = {
 			total: dependencies.length,
-			external: dependencies.filter((dep) => dep.type === "external").length,
-			internal: dependencies.filter((dep) => dep.type === "internal").length,
-			relative: dependencies.filter((dep) => dep.type === "relative").length,
-			nodeBuiltins: dependencies.filter((dep) => dep.isNodeBuiltin).length,
-			scopedPackages: dependencies.filter((dep) => dep.isScopedPackage).length,
-			uniquePackages: uniquePackages.size,
+			external: 0,
+			relative: 0,
+			internal: 0,
+			nodeBuiltins: 0,
+			scopedPackages: 0,
 		};
+
+		for (const dep of dependencies) {
+			switch (dep.type) {
+				case "external":
+					stats.external++;
+					break;
+				case "relative":
+					stats.relative++;
+					break;
+				case "internal":
+					stats.internal++;
+					break;
+			}
+
+			if (dep.isNodeBuiltin) {
+				stats.nodeBuiltins++;
+			}
+			if (dep.isScopedPackage) {
+				stats.scopedPackages++;
+			}
+		}
+
+		return stats;
 	}
 
 	/**
-	 * Groups dependencies by package name
-	 * @param dependencies Array of classified dependencies
-	 * @returns Map of package name to dependencies
+	 * Group dependencies by package
 	 */
 	groupByPackage(
 		dependencies: ClassifiedDependency[],
@@ -110,232 +255,216 @@ export class DependencyAnalyzer {
 		const groups = new Map<string, ClassifiedDependency[]>();
 
 		for (const dep of dependencies) {
-			const key = dep.packageName || dep.source;
-			const existing = groups.get(key) || [];
-			existing.push(dep);
-			groups.set(key, existing);
+			const packageName = dep.packageName;
+			if (!groups.has(packageName)) {
+				groups.set(packageName, []);
+			}
+			groups.get(packageName)!.push(dep);
 		}
 
 		return groups;
 	}
 
 	/**
-	 * Gets the most frequently used external packages
-	 * @param dependencies Array of classified dependencies
-	 * @param limit Maximum number of results
-	 * @returns Array of packages with usage count
+	 * Get top packages by usage
 	 */
 	getTopPackages(
 		dependencies: ClassifiedDependency[],
 		limit: number = 10,
-	): Array<{
-		package: string;
-		count: number;
-		isScoped: boolean;
-		isNodeBuiltin: boolean;
-	}> {
+	): PackageUsage[] {
+		const externalDeps = dependencies.filter((dep) => dep.type === "external");
 		const packageCounts = new Map<
 			string,
-			{
-				count: number;
-				isScoped: boolean;
-				isNodeBuiltin: boolean;
-			}
+			{ count: number; sources: string[] }
 		>();
 
-		for (const dep of dependencies) {
-			if (dep.type === "external") {
-				const existing = packageCounts.get(dep.packageName) || {
-					count: 0,
-					isScoped: dep.isScopedPackage,
-					isNodeBuiltin: dep.isNodeBuiltin,
-				};
-				existing.count++;
-				packageCounts.set(dep.packageName, existing);
+		for (const dep of externalDeps) {
+			const packageName = dep.packageName;
+			if (!packageCounts.has(packageName)) {
+				packageCounts.set(packageName, { count: 0, sources: [] });
 			}
+			const info = packageCounts.get(packageName)!;
+			info.count++;
+			info.sources.push(dep.source);
 		}
 
 		return Array.from(packageCounts.entries())
 			.map(([packageName, info]) => ({
-				package: packageName,
-				...info,
+				packageName,
+				count: info.count,
+				sources: info.sources,
 			}))
 			.sort((a, b) => b.count - a.count)
 			.slice(0, limit);
 	}
 
 	/**
-	 * Detects potential circular dependencies
-	 * @param dependencies Array of classified dependencies
-	 * @param currentFilePath Path of the current file
-	 * @returns Array of potential circular dependency sources
+	 * Detect potential circular dependencies
 	 */
 	detectPotentialCircularDependencies(
 		dependencies: ClassifiedDependency[],
-		_currentFilePath?: string,
-	): string[] {
-		// This is a simplified implementation
-		// In a full implementation, this would require analyzing multiple files
-		const relativeDeps = dependencies.filter((dep) => dep.type === "relative");
-
-		// For now, just return relative dependencies that might be circular
-		// (This would need more sophisticated analysis with actual file system traversal)
-		return relativeDeps.map((dep) => dep.source);
+	): ClassifiedDependency[] {
+		return dependencies.filter((dep) => dep.type === "relative");
 	}
 
 	/**
-	 * Analyzes import patterns and suggests optimizations
-	 * @param dependencies Array of classified dependencies
-	 * @returns Array of optimization suggestions
+	 * Suggest optimizations
 	 */
-	suggestOptimizations(dependencies: ClassifiedDependency[]): string[] {
-		const suggestions: string[] = [];
+	suggestOptimizations(
+		dependencies: ClassifiedDependency[],
+	): DependencyOptimization[] {
+		const optimizations: DependencyOptimization[] = [];
 		const packageGroups = this.groupByPackage(dependencies);
 
-		// Suggest combining multiple imports from same package
+		// Suggest combining imports from the same package
 		for (const [packageName, deps] of packageGroups) {
-			if (deps.length > 3 && deps[0].type === "external") {
-				suggestions.push(
-					`Consider combining ${deps.length} imports from '${packageName}' into fewer import statements`,
-				);
+			if (deps.length >= 3 && deps[0].type === "external") {
+				optimizations.push({
+					type: "combine_imports",
+					message: `Consider combining multiple imports from ${packageName} into a single import statement`,
+					packageName,
+					sources: deps.map((d) => d.source),
+				});
 			}
 		}
 
-		// Suggest using barrel exports for internal modules
-		const internalDeps = dependencies.filter((dep) => dep.type === "internal");
-		const internalPackages = new Set(
-			internalDeps.map((dep) => dep.packageName),
-		);
-
-		if (internalPackages.size > 5) {
-			suggestions.push(
-				`Consider creating barrel exports (index.ts files) to simplify ${internalPackages.size} internal imports`,
-			);
+		// Suggest barrel exports for many internal imports
+		const internalDeps = dependencies.filter((d) => d.type === "internal");
+		if (internalDeps.length >= 5) {
+			optimizations.push({
+				type: "barrel_export",
+				message:
+					"Consider using barrel exports (index.ts files) to simplify internal imports",
+				sources: internalDeps.map((d) => d.source),
+			});
 		}
 
 		// Warn about deep relative imports
-		const deepRelativeDeps = dependencies.filter(
-			(dep) => dep.type === "relative" && dep.source.split("/").length > 3,
+		const deepRelative = dependencies.filter(
+			(d) =>
+				d.type === "relative" && (d.source.match(/\.\.\//g) || []).length >= 3,
 		);
-
-		if (deepRelativeDeps.length > 0) {
-			suggestions.push(
-				`${deepRelativeDeps.length} imports use deep relative paths - consider flattening the structure`,
-			);
+		for (const dep of deepRelative) {
+			optimizations.push({
+				type: "deep_import_warning",
+				message: `Deep relative import detected: ${dep.source}. Consider restructuring or using absolute imports`,
+				sources: [dep.source],
+			});
 		}
 
-		return suggestions;
+		return optimizations;
 	}
 
 	/**
-	 * Validates dependencies for potential issues
-	 * @param dependencies Array of classified dependencies
-	 * @returns Array of validation warnings
+	 * Validate dependencies
 	 */
-	validateDependencies(dependencies: ClassifiedDependency[]): string[] {
-		const warnings: string[] = [];
+	validateDependencies(
+		dependencies: ClassifiedDependency[],
+	): DependencyValidation {
+		const warnings: DependencyWarning[] = [];
+		const errors: DependencyError[] = [];
 
-		// Check for unused Node.js built-ins that might need polyfills in browser
-		const nodeBuiltins = dependencies.filter((dep) => dep.isNodeBuiltin);
-		if (nodeBuiltins.length > 0) {
-			warnings.push(
-				`Using ${nodeBuiltins.length} Node.js built-in modules - ensure compatibility with target environment`,
-			);
-		}
+		for (const dep of dependencies) {
+			// Warn about Node.js built-ins
+			if (dep.isNodeBuiltin) {
+				warnings.push({
+					type: "node_builtin",
+					message: `Using Node.js built-in module: ${dep.source}`,
+					source: dep.source,
+				});
+			}
 
-		// Check for relative imports without file extensions
-		const relativeWithoutExt = dependencies.filter(
-			(dep) =>
-				dep.type === "relative" && !dep.extension && !dep.source.includes("."),
-		);
+			// Warn about relative imports without extensions
+			if (
+				dep.type === "relative" &&
+				!dep.extension &&
+				!dep.source.startsWith("./") &&
+				!dep.source.startsWith("../")
+			) {
+				warnings.push({
+					type: "missing_extension",
+					message: `Import may be ambiguous: ${dep.source}`,
+					source: dep.source,
+				});
+			}
 
-		if (relativeWithoutExt.length > 0) {
-			warnings.push(
-				`${relativeWithoutExt.length} relative imports missing file extensions`,
-			);
-		}
+			// Warn about deep relative imports
+			const upLevels = (dep.source.match(/\.\.\//g) || []).length;
+			if (upLevels >= 3) {
+				warnings.push({
+					type: "deep_relative",
+					message: `Deep relative import: ${dep.source} (${upLevels} levels up)`,
+					source: dep.source,
+				});
+			}
 
-		// Check for mixed import styles (ES6 vs CommonJS would need more analysis)
-		const packageGroups = this.groupByPackage(dependencies);
-		for (const [_packageName, deps] of packageGroups) {
-			if (deps.length > 1) {
-				// This would require more sophisticated analysis to detect mixed import styles
+			// Potential circular dependency warning
+			if (dep.type === "relative") {
+				warnings.push({
+					type: "circular_potential",
+					message: `Potential circular dependency: ${dep.source}`,
+					source: dep.source,
+				});
 			}
 		}
 
-		return warnings;
+		return { warnings, errors };
 	}
 
 	/**
-	 * Extracts file extension from a dependency source
-	 * @param source Dependency source string
-	 * @returns File extension or undefined
+	 * Generate comprehensive dependency report
 	 */
-	private extractExtension(source: string): string | undefined {
-		const lastDot = source.lastIndexOf(".");
-		const lastSlash = source.lastIndexOf("/");
-
-		if (lastDot > lastSlash && lastDot !== -1) {
-			return source.substring(lastDot);
-		}
-
-		return undefined;
-	}
-
-	/**
-	 * Creates a dependency report
-	 * @param dependencies Array of classified dependencies
-	 * @returns Formatted dependency report
-	 */
-	generateReport(dependencies: ClassifiedDependency[]): string {
+	generateReport(dependencies: ClassifiedDependency[]): {
+		stats: DependencyStats;
+		topPackages: PackageUsage[];
+		optimizations: DependencyOptimization[];
+		validation: DependencyValidation;
+		circularRisks: ClassifiedDependency[];
+	} {
 		const stats = this.getClassificationStats(dependencies);
-		const topPackages = this.getTopPackages(dependencies, 5);
-		const suggestions = this.suggestOptimizations(dependencies);
-		const warnings = this.validateDependencies(dependencies);
+		const topPackages = this.getTopPackages(dependencies);
+		const optimizations = this.suggestOptimizations(dependencies);
+		const validation = this.validateDependencies(dependencies);
+		const circularRisks =
+			this.detectPotentialCircularDependencies(dependencies);
 
-		let report = "# Dependency Analysis Report\n\n";
+		return {
+			stats,
+			topPackages,
+			optimizations,
+			validation,
+			circularRisks,
+		};
+	}
 
-		// Statistics
-		report += "## Statistics\n";
-		report += `- Total Dependencies: ${stats.total}\n`;
-		report += `- External Packages: ${stats.external}\n`;
-		report += `- Internal Modules: ${stats.internal}\n`;
-		report += `- Relative Imports: ${stats.relative}\n`;
-		report += `- Node.js Built-ins: ${stats.nodeBuiltins}\n`;
-		report += `- Scoped Packages: ${stats.scopedPackages}\n`;
-		report += `- Unique Packages: ${stats.uniquePackages}\n\n`;
-
-		// Top packages
-		if (topPackages.length > 0) {
-			report += "## Most Used Packages\n";
-			for (const pkg of topPackages) {
-				const flags = [];
-				if (pkg.isNodeBuiltin) flags.push("Node.js");
-				if (pkg.isScoped) flags.push("Scoped");
-				const flagStr = flags.length > 0 ? ` (${flags.join(", ")})` : "";
-				report += `- ${pkg.package}: ${pkg.count} imports${flagStr}\n`;
-			}
-			report += "\n";
+	/**
+	 * Extract package name from source
+	 */
+	private getPackageName(source: string): string {
+		if (source.startsWith("./") || source.startsWith("../")) {
+			return source.split("/")[0] || ".";
 		}
-
-		// Suggestions
-		if (suggestions.length > 0) {
-			report += "## Optimization Suggestions\n";
-			for (const suggestion of suggestions) {
-				report += `- ${suggestion}\n`;
-			}
-			report += "\n";
+		if (source.startsWith("@")) {
+			// Scoped package
+			const parts = source.split("/");
+			return parts.length >= 2 ? `${parts[0]}/${parts[1]}` : source;
 		}
+		// Regular package
+		return source.split("/")[0];
+	}
 
-		// Warnings
-		if (warnings.length > 0) {
-			report += "## Warnings\n";
-			for (const warning of warnings) {
-				report += `- ⚠️ ${warning}\n`;
-			}
-			report += "\n";
-		}
+	/**
+	 * Extract file extension from source
+	 */
+	private getFileExtension(source: string): string | undefined {
+		const ext = path.extname(source);
+		return ext || undefined;
+	}
 
-		return report;
+	/**
+	 * Clear cache for dependency analysis
+	 */
+	async clearCache(): Promise<void> {
+		this.analysisEngine.clearCache();
 	}
 }

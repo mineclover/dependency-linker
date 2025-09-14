@@ -3,6 +3,12 @@
  * High-performance batch processing with concurrency control and intelligent resource management
  */
 
+import {
+	getDependencies,
+	getExports,
+	getImports,
+	isSuccessful,
+} from "../lib/AnalysisResultHelper";
 import type { AnalysisResult } from "../models/AnalysisResult";
 import { createLogger } from "../utils/logger";
 import { ErrorUtils, OperationCancelledError, ResourceError } from "./errors";
@@ -403,7 +409,9 @@ export class BatchAnalyzer {
 			return this.options.maxConcurrency;
 		}
 
-		return this.adjustConcurrency(this.resourceMetrics.memoryUsage / this.options.memoryLimit);
+		return this.adjustConcurrency(
+			this.resourceMetrics.memoryUsage / this.options.memoryLimit,
+		);
 	}
 
 	/**
@@ -414,21 +422,21 @@ export class BatchAnalyzer {
 	 */
 	adjustConcurrency(memoryUsageRatio: number): number {
 		const maxConcurrency = this.options.maxConcurrency;
-		
+
 		// Fine-grained adaptive concurrency based on memory pressure
 		if (memoryUsageRatio >= 0.95) {
 			// Emergency: single-threaded operation
 			return 1;
-		} else if (memoryUsageRatio >= 0.90) {
+		} else if (memoryUsageRatio >= 0.9) {
 			// Critical: 25% of max concurrency
 			return Math.max(1, Math.floor(maxConcurrency * 0.25));
-		} else if (memoryUsageRatio >= 0.80) {
+		} else if (memoryUsageRatio >= 0.8) {
 			// High pressure: 50% of max concurrency
 			return Math.max(1, Math.floor(maxConcurrency * 0.5));
-		} else if (memoryUsageRatio >= 0.70) {
+		} else if (memoryUsageRatio >= 0.7) {
 			// Moderate pressure: 70% of max concurrency
 			return Math.max(2, Math.floor(maxConcurrency * 0.7));
-		} else if (memoryUsageRatio >= 0.60) {
+		} else if (memoryUsageRatio >= 0.6) {
 			// Low pressure: 85% of max concurrency
 			return Math.max(2, Math.floor(maxConcurrency * 0.85));
 		} else {
@@ -448,7 +456,7 @@ export class BatchAnalyzer {
 
 		const thresholdStatus = this.checkMemoryThreshold(
 			this.resourceMetrics.memoryUsage,
-			this.options.memoryLimit
+			this.options.memoryLimit,
 		);
 
 		if (thresholdStatus.exceeded) {
@@ -457,16 +465,16 @@ export class BatchAnalyzer {
 			);
 
 			switch (thresholdStatus.actionRequired.type) {
-				case 'gc_trigger':
+				case "gc_trigger":
 					await this.triggerGarbageCollection(false);
 					break;
-				case 'emergency_stop':
+				case "emergency_stop":
 					await this.triggerGarbageCollection(true);
 					throw new ResourceError("memory", {
 						currentUsage: this.resourceMetrics.memoryUsage,
 						limit: this.options.memoryLimit,
 					});
-				case 'throttle':
+				case "throttle":
 					// Already handled by adaptive concurrency
 					await this.triggerGarbageCollection(false);
 					break;
@@ -480,73 +488,76 @@ export class BatchAnalyzer {
 	 * @param limit Memory limit in MB
 	 * @returns Threshold status with action required
 	 */
-	checkMemoryThreshold(currentUsage: number, limit: number): {
-		threshold: '60%' | '80%' | '90%' | '95%';
+	checkMemoryThreshold(
+		currentUsage: number,
+		limit: number,
+	): {
+		threshold: "60%" | "80%" | "90%" | "95%";
 		exceeded: boolean;
 		actionRequired: {
-			type: 'monitor' | 'throttle' | 'gc_trigger' | 'emergency_stop';
+			type: "monitor" | "throttle" | "gc_trigger" | "emergency_stop";
 			parameters: Record<string, any>;
 			priority: number;
 		};
-		severity: 'info' | 'warning' | 'critical' | 'emergency';
+		severity: "info" | "warning" | "critical" | "emergency";
 	} {
 		const ratio = currentUsage / limit;
 
 		if (ratio >= 0.95) {
 			return {
-				threshold: '95%',
+				threshold: "95%",
 				exceeded: true,
 				actionRequired: {
-					type: 'emergency_stop',
+					type: "emergency_stop",
 					parameters: { force: true, immediate: true },
 					priority: 1,
 				},
-				severity: 'emergency',
+				severity: "emergency",
 			};
-		} else if (ratio >= 0.90) {
+		} else if (ratio >= 0.9) {
 			return {
-				threshold: '90%',
+				threshold: "90%",
 				exceeded: true,
 				actionRequired: {
-					type: 'gc_trigger',
+					type: "gc_trigger",
 					parameters: { force: true, wait: 100 },
 					priority: 2,
 				},
-				severity: 'critical',
+				severity: "critical",
 			};
-		} else if (ratio >= 0.80) {
+		} else if (ratio >= 0.8) {
 			return {
-				threshold: '80%',
+				threshold: "80%",
 				exceeded: true,
 				actionRequired: {
-					type: 'throttle',
+					type: "throttle",
 					parameters: { concurrencyReduction: 0.5 },
 					priority: 3,
 				},
-				severity: 'warning',
+				severity: "warning",
 			};
-		} else if (ratio >= 0.60) {
+		} else if (ratio >= 0.6) {
 			return {
-				threshold: '60%',
+				threshold: "60%",
 				exceeded: true,
 				actionRequired: {
-					type: 'monitor',
+					type: "monitor",
 					parameters: { increaseFrequency: true },
 					priority: 4,
 				},
-				severity: 'info',
+				severity: "info",
 			};
 		}
 
 		return {
-			threshold: '60%',
+			threshold: "60%",
 			exceeded: false,
 			actionRequired: {
-				type: 'monitor',
+				type: "monitor",
 				parameters: {},
 				priority: 5,
 			},
-			severity: 'info',
+			severity: "info",
 		};
 	}
 
@@ -563,28 +574,30 @@ export class BatchAnalyzer {
 				if (force) {
 					// Force multiple GC cycles for emergency situations
 					global.gc();
-					await new Promise(resolve => setTimeout(resolve, 50));
+					await new Promise((resolve) => setTimeout(resolve, 50));
 					global.gc();
-					await new Promise(resolve => setTimeout(resolve, 50));
+					await new Promise((resolve) => setTimeout(resolve, 50));
 				} else {
 					global.gc();
 				}
 
 				// Wait for GC to complete
 				await new Promise((resolve) => setTimeout(resolve, force ? 200 : 100));
-				
+
 				// Update metrics after GC
 				this.updateResourceMetrics();
-				
+
 				const afterMemory = this.resourceMetrics.memoryUsage;
 				const memoryFreed = beforeMemory - afterMemory;
 				const gcTime = Date.now() - startTime;
 
 				this.logger.info(
-					`Garbage collection completed: freed ${memoryFreed}MB in ${gcTime}ms (force: ${force})`
+					`Garbage collection completed: freed ${memoryFreed}MB in ${gcTime}ms (force: ${force})`,
 				);
 			} else {
-				this.logger.warn("Garbage collection requested but global.gc() not available");
+				this.logger.warn(
+					"Garbage collection requested but global.gc() not available",
+				);
 			}
 		} catch (error) {
 			this.logger.error("Garbage collection failed", error);
@@ -645,8 +658,9 @@ export class BatchAnalyzer {
 		timestamp: Date;
 	} {
 		this.updateResourceMetrics();
-		
-		const memoryRatio = this.resourceMetrics.memoryUsage / this.options.memoryLimit;
+
+		const memoryRatio =
+			this.resourceMetrics.memoryUsage / this.options.memoryLimit;
 		const currentConcurrency = this.activeOperations.size;
 		const recommendedConcurrency = this.adjustConcurrency(memoryRatio);
 
@@ -676,7 +690,8 @@ export class BatchAnalyzer {
 	private getCpuUsage(): number {
 		// Simple CPU usage approximation based on active operations
 		// In a production system, you'd use a more sophisticated CPU monitoring approach
-		const operationRatio = this.activeOperations.size / this.options.maxConcurrency;
+		const operationRatio =
+			this.activeOperations.size / this.options.maxConcurrency;
 		return Math.min(100, operationRatio * 100);
 	}
 
@@ -697,13 +712,19 @@ export class BatchAnalyzer {
 		errors: BatchErrorInfo[],
 		totalTime: number,
 	): BatchSummary {
-		const successfulFiles = results.filter((r) => r.success).length;
+		const successfulFiles = results.filter((r) => isSuccessful(r)).length;
 		const totalDependencies = results.reduce(
-			(sum, r) => sum + r.dependencies.length,
+			(sum, r) => sum + getDependencies(r).length,
 			0,
 		);
-		const totalImports = results.reduce((sum, r) => sum + r.imports.length, 0);
-		const totalExports = results.reduce((sum, r) => sum + r.exports.length, 0);
+		const totalImports = results.reduce(
+			(sum, r) => sum + getImports(r).length,
+			0,
+		);
+		const totalExports = results.reduce(
+			(sum, r) => sum + getExports(r).length,
+			0,
+		);
 
 		return {
 			totalFiles: results.length + errors.length,

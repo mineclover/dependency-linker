@@ -1,335 +1,150 @@
-import { ITypeScriptParser } from "../../../../src/core/interfaces/ITypeScriptParser";
-import {
-	ParseOptions,
-	ParseResult,
-} from "../../../../src/core/types/ParseTypes";
+import { TypeScriptParser } from "../../../../src/parsers/TypeScriptParser";
 
-describe("ITypeScriptParser Interface Contract", () => {
-	// Mock implementation for testing the interface contract
-	class MockTypeScriptParser implements ITypeScriptParser {
-		async parseSource(
-			source: string,
-			options?: ParseOptions,
-		): Promise<ParseResult> {
-			return {
-				imports: [],
-				exports: [],
-				dependencies: [],
-				hasParseErrors: false,
-			};
-		}
-
-		async parseFile(
-			filePath: string,
-			options?: ParseOptions,
-		): Promise<ParseResult> {
-			return {
-				imports: [],
-				exports: [],
-				dependencies: [],
-				hasParseErrors: false,
-			};
-		}
-	}
-
-	let parser: ITypeScriptParser;
+// Test actual TypeScript parser instead of old interface
+describe("TypeScriptParser Integration Contract", () => {
+	let parser: TypeScriptParser;
 
 	beforeEach(() => {
-		parser = new MockTypeScriptParser();
+		parser = new TypeScriptParser();
 	});
 
-	describe("parseSource method contract", () => {
-		it("should accept string source parameter", async () => {
-			const source = 'export const test = "hello";';
-
-			const result = await parser.parseSource(source);
-			expect(result).toBeDefined();
-			expect(typeof result).toBe("object");
+	describe("Parser Interface", () => {
+		test("should have required parser methods", () => {
+			expect(typeof parser.parse).toBe("function");
+			expect(typeof parser.supports).toBe("function");
+			expect(typeof parser.detectLanguage).toBe("function");
+			expect(typeof parser.validateSyntax).toBe("function");
+			expect(typeof parser.getGrammar).toBe("function");
 		});
 
-		it("should accept optional ParseOptions parameter", async () => {
-			const source = 'import React from "react";';
-			const options: ParseOptions = {
-				timeout: 1000,
-				includeSourceLocations: true,
-				includeTypeImports: false,
-			};
-
-			const result = await parser.parseSource(source, options);
-			expect(result).toBeDefined();
-		});
-
-		it("should return Promise<ParseResult>", async () => {
-			const source = "const x = 1;";
-
-			const result = await parser.parseSource(source);
-
-			// Validate ParseResult structure
-			expect(result).toHaveProperty("imports");
-			expect(result).toHaveProperty("exports");
-			expect(result).toHaveProperty("dependencies");
-			expect(result).toHaveProperty("hasParseErrors");
-
-			expect(Array.isArray(result.imports)).toBe(true);
-			expect(Array.isArray(result.exports)).toBe(true);
-			expect(Array.isArray(result.dependencies)).toBe(true);
-			expect(typeof result.hasParseErrors).toBe("boolean");
-		});
-
-		it("should handle empty source code", async () => {
-			const result = await parser.parseSource("");
-			expect(result).toBeDefined();
-			expect(result.hasParseErrors).toBe(false);
-		});
-
-		it("should handle complex TypeScript source", async () => {
-			const complexSource = `
-        import React, { useState, useEffect } from 'react';
-        import { ApiClient } from '../api/client';
-        
-        interface Props {
-          id: number;
-          name?: string;
-        }
-        
-        export const Component: React.FC<Props> = ({ id, name }) => {
-          const [data, setData] = useState<string[]>([]);
-          
-          useEffect(() => {
-            ApiClient.fetch(id).then(setData);
-          }, [id]);
-          
-          return <div>{name || 'Default'}</div>;
-        };
-        
-        export default Component;
-      `;
-
-			const result = await parser.parseSource(complexSource);
-			expect(result).toBeDefined();
-			expect(result.hasParseErrors).toBe(false);
+		test("should have metadata properties", () => {
+			const metadata = parser.getMetadata();
+			expect(metadata.name).toBeDefined();
+			expect(metadata.version).toBeDefined();
+			expect(metadata.supportedLanguages).toBeDefined();
+			expect(Array.isArray(metadata.supportedLanguages)).toBe(true);
 		});
 	});
 
-	describe("parseFile method contract", () => {
-		it("should accept string filePath parameter", async () => {
-			const filePath = "/path/to/test.ts";
-
-			const result = await parser.parseFile(filePath);
-			expect(result).toBeDefined();
-			expect(typeof result).toBe("object");
+	describe("Language Support", () => {
+		test("should support TypeScript files", () => {
+			expect(parser.supports("typescript")).toBe(true);
+			expect(parser.supports("ts")).toBe(true);
+			expect(parser.supports(".ts")).toBe(true);
+			expect(parser.supports(".tsx")).toBe(true);
 		});
 
-		it("should accept optional ParseOptions parameter", async () => {
-			const filePath = "/path/to/test.tsx";
-			const options: ParseOptions = {
-				timeout: 10000,
-				includeSourceLocations: false,
-				includeTypeImports: true,
-			};
-
-			const result = await parser.parseFile(filePath, options);
-			expect(result).toBeDefined();
+		test("should support JavaScript files", () => {
+			expect(parser.supports("javascript")).toBe(true);
+			expect(parser.supports("js")).toBe(true);
+			expect(parser.supports(".js")).toBe(true);
+			expect(parser.supports(".jsx")).toBe(true);
 		});
 
-		it("should return Promise<ParseResult>", async () => {
-			const filePath = "/path/to/component.ts";
-
-			const result = await parser.parseFile(filePath);
-
-			// Validate ParseResult structure (same as parseSource)
-			expect(result).toHaveProperty("imports");
-			expect(result).toHaveProperty("exports");
-			expect(result).toHaveProperty("dependencies");
-			expect(result).toHaveProperty("hasParseErrors");
-		});
-
-		it("should handle various TypeScript file extensions", async () => {
-			const extensions = [".ts", ".tsx", ".d.ts"];
-
-			for (const ext of extensions) {
-				const filePath = `/test/file${ext}`;
-				const result = await parser.parseFile(filePath);
-				expect(result).toBeDefined();
-			}
+		test("should not support other languages", () => {
+			expect(parser.supports("python")).toBe(false);
+			expect(parser.supports("java")).toBe(false);
+			expect(parser.supports(".py")).toBe(false);
 		});
 	});
 
-	describe("ParseOptions contract", () => {
-		it("should handle timeout option", async () => {
-			const options: ParseOptions = { timeout: 1000 };
-
-			const result = await parser.parseSource("const x = 1;", options);
-			expect(result).toBeDefined();
+	describe("Language Detection", () => {
+		test("should detect TypeScript from file extension", () => {
+			expect(parser.detectLanguage("test.ts")).toBe("typescript");
+			expect(parser.detectLanguage("test.tsx")).toBe("tsx");
 		});
 
-		it("should handle includeSourceLocations option", async () => {
-			const options: ParseOptions = { includeSourceLocations: true };
-
-			const source = "// Comment\nconst x = 1; /* Block comment */";
-			const result = await parser.parseSource(source, options);
-			expect(result).toBeDefined();
+		test("should detect JavaScript from file extension", () => {
+			expect(parser.detectLanguage("test.js")).toBe("javascript");
+			expect(parser.detectLanguage("test.jsx")).toBe("jsx");
 		});
 
-		it("should handle includeTypeImports option", async () => {
-			const options: ParseOptions = { includeTypeImports: false };
-
-			const result = await parser.parseSource("const   x   =   1  ;", options);
-			expect(result).toBeDefined();
-		});
-
-		it("should handle all options together", async () => {
-			const options: ParseOptions = {
-				timeout: 5000,
-				includeSourceLocations: true,
-				includeTypeImports: false,
-			};
-
-			const result = await parser.parseSource("const x = 1;", options);
-			expect(result).toBeDefined();
+		test("should handle content-based detection", () => {
+			const tsContent = "interface Test { x: number; }";
+			expect(parser.detectLanguage("unknown.txt", tsContent)).toBe("typescript");
 		});
 	});
 
-	describe("error handling contract expectations", () => {
-		// Mock implementation that throws specific errors for testing
-		class ErrorThrowingParser implements ITypeScriptParser {
-			private errorType: string;
+	describe("Parsing Functionality", () => {
+		test("should parse valid TypeScript code", async () => {
+			const code = 'import fs from "fs";\nconst x: number = 1;';
+			const result = await parser.parse("test.ts", code);
 
-			constructor(errorType: string) {
-				this.errorType = errorType;
-			}
-
-			async parseSource(
-				source: string,
-				options?: ParseOptions,
-			): Promise<ParseResult> {
-				switch (this.errorType) {
-					case "ParseTimeoutError":
-						throw new Error("ParseTimeoutError: Parsing exceeded timeout");
-					case "SyntaxError":
-						throw new Error("SyntaxError: Invalid TypeScript syntax");
-					default:
-						throw new Error("Unknown parse error");
-				}
-			}
-
-			async parseFile(
-				filePath: string,
-				options?: ParseOptions,
-			): Promise<ParseResult> {
-				switch (this.errorType) {
-					case "FileNotFoundError":
-						throw new Error("FileNotFoundError: File does not exist");
-					case "ParseTimeoutError":
-						throw new Error("ParseTimeoutError: Parsing exceeded timeout");
-					default:
-						throw new Error("Unknown file parse error");
-				}
-			}
-		}
-
-		it("should handle ParseTimeoutError in parseSource", async () => {
-			const errorParser = new ErrorThrowingParser("ParseTimeoutError");
-
-			await expect(
-				errorParser.parseSource("const x = 1;", { timeout: 100 }),
-			).rejects.toThrow("ParseTimeoutError");
+			expect(result).toBeDefined();
+			expect(result.language).toBe("typescript");
+			expect(result.ast).toBeDefined();
+			expect(result.parseTime).toBeGreaterThan(0);
+			expect(result.errors).toBeDefined();
+			expect(Array.isArray(result.errors)).toBe(true);
 		});
 
-		it("should handle SyntaxError in parseSource", async () => {
-			const errorParser = new ErrorThrowingParser("SyntaxError");
+		test("should handle malformed syntax gracefully", async () => {
+			const invalidCode = "import from ;;; invalid";
+			const result = await parser.parse("test.ts", invalidCode);
 
-			await expect(errorParser.parseSource("const x = ;")).rejects.toThrow(
-				"SyntaxError",
-			);
-		});
-
-		it("should handle FileNotFoundError in parseFile", async () => {
-			const errorParser = new ErrorThrowingParser("FileNotFoundError");
-
-			await expect(
-				errorParser.parseFile("/nonexistent/file.ts"),
-			).rejects.toThrow("FileNotFoundError");
-		});
-
-		it("should handle ParseTimeoutError in parseFile", async () => {
-			const errorParser = new ErrorThrowingParser("ParseTimeoutError");
-
-			await expect(
-				errorParser.parseFile("/large/file.ts", { timeout: 100 }),
-			).rejects.toThrow("ParseTimeoutError");
+			expect(result).toBeDefined();
+			expect(result.language).toBe("typescript");
+			// Should still return AST even with errors
+			expect(result.ast).toBeDefined();
 		});
 	});
 
-	describe("async operation patterns", () => {
-		it("should support concurrent parseSource calls", async () => {
-			const sources = ["const a = 1;", "const b = 2;", "const c = 3;"];
+	describe("Syntax Validation", () => {
+		test("should validate correct syntax", () => {
+			const validCode = "const x = 1;";
+			const result = parser.validateSyntax(validCode);
 
-			const promises = sources.map((source) => parser.parseSource(source));
-			const results = await Promise.all(promises);
-
-			expect(results).toHaveLength(3);
-			results.forEach((result, index) => {
-				expect(result).toBeDefined();
-				expect(result.hasParseErrors).toBe(false);
-			});
+			expect(result.isValid).toBe(true);
+			expect(result.errors).toHaveLength(0);
 		});
 
-		it("should support concurrent parseFile calls", async () => {
-			const filePaths = ["/test1.ts", "/test2.ts", "/test3.ts"];
+		test("should detect syntax errors", () => {
+			const invalidCode = "const x = ;";
+			const result = parser.validateSyntax(invalidCode);
 
-			const promises = filePaths.map((filePath) => parser.parseFile(filePath));
-			const results = await Promise.all(promises);
-
-			expect(results).toHaveLength(3);
-			results.forEach((result, index) => {
-				expect(result).toBeDefined();
-				expect(result.hasParseErrors).toBe(false);
-			});
-		});
-
-		it("should support mixed parseSource and parseFile calls", async () => {
-			const parseSourcePromise = parser.parseSource("const x = 1;");
-			const parseFilePromise = parser.parseFile("/test.ts");
-
-			const [sourceResult, fileResult] = await Promise.all([
-				parseSourcePromise,
-				parseFilePromise,
-			]);
-
-			expect(sourceResult).toBeDefined();
-			expect(fileResult).toBeDefined();
+			expect(typeof result.isValid).toBe("boolean");
+			expect(Array.isArray(result.errors)).toBe(true);
 		});
 	});
 
-	describe("method signature validation", () => {
-		it("should have correct parseSource method signature", () => {
-			expect(typeof parser.parseSource).toBe("function");
-			expect(parser.parseSource.length).toBe(2); // Should accept 2 parameters (source, options?)
-		});
-
-		it("should have correct parseFile method signature", () => {
-			expect(typeof parser.parseFile).toBe("function");
-			expect(parser.parseFile.length).toBe(2); // Should accept 2 parameters (filePath, options?)
+	describe("Grammar Access", () => {
+		test("should provide grammar object", () => {
+			const grammar = parser.getGrammar();
+			expect(grammar).toBeDefined();
+			expect(typeof grammar).toBe("object");
 		});
 	});
 
-	describe("performance characteristics", () => {
-		it("should handle parsing without errors", async () => {
-			const result = await parser.parseSource("const x = 1;");
+	describe("Performance Requirements", () => {
+		test("should parse small files quickly", async () => {
+			const code = 'import fs from "fs";\nconst x = 1;';
 
-			expect(result.hasParseErrors).toBe(false);
-		});
-
-		it("should handle timeout option appropriately", async () => {
 			const startTime = Date.now();
-			const result = await parser.parseSource("const x = 1;", {
-				timeout: 10000,
-			});
+			const result = await parser.parse("test.ts", code);
 			const endTime = Date.now();
 
-			expect(result).toBeDefined();
-			expect(endTime - startTime).toBeLessThan(10000);
+			expect(endTime - startTime).toBeLessThan(1000); // 1 second max
+			expect(result.parseTime).toBeLessThan(500); // 500ms internal time
+		});
+
+		test("should have fast language detection", () => {
+			const startTime = Date.now();
+			parser.supports("typescript");
+			const endTime = Date.now();
+
+			expect(endTime - startTime).toBeLessThan(10); // Very fast
+		});
+	});
+
+	describe("Caching Behavior", () => {
+		test("should indicate cache status", async () => {
+			const code = "const x = 1;";
+			const result1 = await parser.parse("test.ts", code);
+			const result2 = await parser.parse("test.ts", code);
+
+			// Both results should have cache metadata
+			expect(typeof result1.cacheHit).toBe("boolean");
+			expect(typeof result2.cacheHit).toBe("boolean");
 		});
 	});
 });

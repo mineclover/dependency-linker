@@ -74,7 +74,7 @@ export abstract class AnalysisError extends Error {
 		return [
 			"Check the error details for specific information about what went wrong",
 			"Review the file path and ensure it exists and is accessible",
-			"Verify your TypeScript configuration is correct"
+			"Verify your TypeScript configuration is correct",
 		];
 	}
 
@@ -85,7 +85,7 @@ export abstract class AnalysisError extends Error {
 		return [
 			"Validate input parameters before calling API methods",
 			"Use proper error handling with try-catch blocks",
-			"Monitor system resources during batch operations"
+			"Monitor system resources during batch operations",
 		];
 	}
 }
@@ -111,7 +111,7 @@ export class FileNotFoundError extends AnalysisError {
 			"Ensure the file hasn't been moved, renamed, or deleted",
 			"Use an absolute path instead of a relative path if applicable",
 			"Check if you have read permissions for the file and its directory",
-			"Verify the current working directory is what you expect"
+			"Verify the current working directory is what you expect",
 		];
 	}
 
@@ -121,7 +121,7 @@ export class FileNotFoundError extends AnalysisError {
 			"Validate file paths using path.resolve() or path.isAbsolute()",
 			"Implement proper file discovery with glob patterns or directory scanning",
 			"Set up file watchers to detect when files are moved or deleted",
-			"Use TypeScript project configuration (tsconfig.json) to define file inclusion patterns"
+			"Use TypeScript project configuration (tsconfig.json) to define file inclusion patterns",
 		];
 	}
 }
@@ -146,7 +146,7 @@ export class FileAccessError extends AnalysisError {
 
 	override getSolutions(): string[] {
 		const { filePath, operation } = this.details;
-		const isWindows = process.platform === 'win32';
+		const isWindows = process.platform === "win32";
 		return [
 			`Grant read permissions to the file "${filePath}"`,
 			isWindows
@@ -157,7 +157,7 @@ export class FileAccessError extends AnalysisError {
 			isWindows
 				? "Check Windows file security settings and ensure your user has access"
 				: "Use 'sudo' if you need elevated permissions (be careful with this)",
-			"Verify the file isn't in a system-protected directory"
+			"Verify the file isn't in a system-protected directory",
 		];
 	}
 
@@ -168,7 +168,7 @@ export class FileAccessError extends AnalysisError {
 			"Avoid analyzing files in system-protected directories",
 			"Use proper file access checks (fs.access()) before operations",
 			"Set up proper file ownership and permissions in your deployment environment",
-			"Consider using a dedicated directory with known permissions for temporary files"
+			"Consider using a dedicated directory with known permissions for temporary files",
 		];
 	}
 }
@@ -195,7 +195,7 @@ export class InvalidFileTypeError extends AnalysisError {
 
 	override getSolutions(): string[] {
 		const { filePath, supportedTypes } = this.details;
-		const ext = filePath.split('.').pop() || '';
+		const ext = filePath.split(".").pop() || "";
 		return [
 			`Rename the file to use a supported TypeScript extension (.ts, .tsx, .d.ts)`,
 			supportedTypes.length > 0
@@ -204,7 +204,7 @@ export class InvalidFileTypeError extends AnalysisError {
 			`Change the file extension from ".${ext}" to ".ts" or ".tsx"`,
 			"If this is a JavaScript file, consider converting it to TypeScript",
 			"Use a different analyzer or tool for non-TypeScript files",
-			"Check if the file extension is correct and not missing"
+			"Check if the file extension is correct and not missing",
 		];
 	}
 
@@ -215,7 +215,7 @@ export class InvalidFileTypeError extends AnalysisError {
 			"Set up proper file discovery patterns that exclude unsupported files",
 			"Configure your build tools to use consistent file extensions",
 			"Document the supported file types for your team",
-			"Use TypeScript's 'include' and 'exclude' patterns in tsconfig.json"
+			"Use TypeScript's 'include' and 'exclude' patterns in tsconfig.json",
 		];
 	}
 }
@@ -248,7 +248,7 @@ export class ParseTimeoutError extends AnalysisError {
 			"Use a more powerful machine with better CPU performance",
 			"Consider processing the file in smaller chunks if possible",
 			`Current timeout: ${timeoutSeconds}s - try doubling it to ${timeoutSeconds * 2}s`,
-			"Check if the file has extremely deep nesting or complex type definitions"
+			"Check if the file has extremely deep nesting or complex type definitions",
 		];
 	}
 
@@ -260,7 +260,7 @@ export class ParseTimeoutError extends AnalysisError {
 			"Monitor parsing performance and adjust timeouts accordingly",
 			"Set up performance budgets for file complexity",
 			"Use streaming or incremental parsing for very large files",
-			"Consider using TypeScript compiler options to optimize parsing"
+			"Consider using TypeScript compiler options to optimize parsing",
 		];
 	}
 }
@@ -293,9 +293,9 @@ export class ParseError extends AnalysisError {
 			"Verify that all imports and exports are properly formatted",
 			"Use 'prettier' or similar formatter to fix formatting issues",
 			"Check if the file uses unsupported TypeScript features for your target version",
-			parseDetails.includes('Unexpected token')
+			parseDetails.includes("Unexpected token")
 				? "Look for unexpected characters or malformed syntax near the error location"
-				: "Review the specific parse error details for guidance"
+				: "Review the specific parse error details for guidance",
 		];
 	}
 
@@ -307,7 +307,7 @@ export class ParseError extends AnalysisError {
 			"Set up pre-commit hooks to validate TypeScript syntax",
 			"Use proper IDE configuration with TypeScript support",
 			"Implement automated testing that includes TypeScript compilation",
-			"Set up continuous integration to validate all TypeScript files"
+			"Set up continuous integration to validate all TypeScript files",
 		];
 	}
 }
@@ -347,20 +347,29 @@ export class ConfigurationError extends AnalysisError {
 		];
 
 		// Specific solutions based on common configuration issues
-		if (typeof value === 'string' && expectedType === 'number') {
-			solutions.push(`Convert the string "${value}" to a number, e.g., ${parameter}: ${parseInt(value) || 0}`);
+		if (typeof value === "string" && expectedType === "number") {
+			solutions.push(
+				`Convert the string "${value}" to a number, e.g., ${parameter}: ${parseInt(value) || 0}`,
+			);
 		}
 
-		if (parameter.toLowerCase().includes('timeout')) {
-			solutions.push("Timeout values should be positive numbers in milliseconds (e.g., 30000 for 30 seconds)");
+		if (parameter.toLowerCase().includes("timeout")) {
+			solutions.push(
+				"Timeout values should be positive numbers in milliseconds (e.g., 30000 for 30 seconds)",
+			);
 		}
 
-		if (parameter.toLowerCase().includes('cache')) {
-			solutions.push("Cache size should be a positive integer", "Enable cache with 'enableCache: true'");
+		if (parameter.toLowerCase().includes("cache")) {
+			solutions.push(
+				"Cache size should be a positive integer",
+				"Enable cache with 'enableCache: true'",
+			);
 		}
 
-		if (parameter.toLowerCase().includes('concurrency')) {
-			solutions.push("Concurrency should be a positive integer between 1 and your CPU core count");
+		if (parameter.toLowerCase().includes("concurrency")) {
+			solutions.push(
+				"Concurrency should be a positive integer between 1 and your CPU core count",
+			);
 		}
 
 		return solutions;
@@ -375,7 +384,7 @@ export class ConfigurationError extends AnalysisError {
 			"Document all configuration options with their expected types and ranges",
 			"Use configuration validation libraries like Joi or Yup",
 			"Set up unit tests for configuration validation",
-			`Review the documentation for "${parameter}" to understand its valid values`
+			`Review the documentation for "${parameter}" to understand its valid values`,
 		];
 	}
 }
@@ -420,7 +429,10 @@ export class BatchError extends AnalysisError {
 	override getSolutions(): string[] {
 		const failedCount = this.failedFiles.length;
 		const totalFiles = this.details.totalFiles || failedCount;
-		const successRate = totalFiles > 0 ? ((totalFiles - failedCount) / totalFiles * 100).toFixed(1) : 0;
+		const successRate =
+			totalFiles > 0
+				? (((totalFiles - failedCount) / totalFiles) * 100).toFixed(1)
+				: 0;
 
 		const solutions = [
 			"Review the failed files individually to identify specific issues",
@@ -429,23 +441,27 @@ export class BatchError extends AnalysisError {
 		];
 
 		if (failedCount === 1) {
-			solutions.push(`Focus on fixing the single failed file: ${this.failedFiles[0]}`);
+			solutions.push(
+				`Focus on fixing the single failed file: ${this.failedFiles[0]}`,
+			);
 		} else if (failedCount > 1) {
 			solutions.push(
 				`Start by fixing the first failed file: ${this.failedFiles[0]}`,
 				"Process files in smaller batches to isolate problematic files",
-				"Implement retry logic for transient failures"
+				"Implement retry logic for transient failures",
 			);
 		}
 
-		if (successRate !== '0') {
-			solutions.push(`Success rate: ${successRate}% - review patterns in failed vs successful files`);
+		if (successRate !== "0") {
+			solutions.push(
+				`Success rate: ${successRate}% - review patterns in failed vs successful files`,
+			);
 		}
 
 		solutions.push(
 			"Reduce batch size or concurrency if system resources are limited",
 			"Enable detailed logging to understand failure patterns",
-			"Consider preprocessing files to validate they're ready for analysis"
+			"Consider preprocessing files to validate they're ready for analysis",
 		);
 
 		return solutions;
@@ -460,7 +476,7 @@ export class BatchError extends AnalysisError {
 			"Monitor system resources during batch processing",
 			"Implement circuit breaker patterns for failing operations",
 			"Use staged processing: validate → analyze → report",
-			"Set up file filtering to exclude known problematic files"
+			"Set up file filtering to exclude known problematic files",
 		];
 	}
 
@@ -501,9 +517,11 @@ export class OperationCancelledError extends AnalysisError {
 			"If this was unintentional, restart the operation",
 			"Check if the operation was cancelled due to timeout or resource constraints",
 			"Review the cancellation reason if provided",
-			reason ? `Cancellation reason: ${reason}` : "No specific cancellation reason provided",
+			reason
+				? `Cancellation reason: ${reason}`
+				: "No specific cancellation reason provided",
 			"Consider breaking large operations into smaller, resumable chunks",
-			"Implement proper cancellation handling to save partial progress"
+			"Implement proper cancellation handling to save partial progress",
 		];
 	}
 
@@ -514,7 +532,7 @@ export class OperationCancelledError extends AnalysisError {
 			"Set appropriate timeouts to prevent hanging operations",
 			"Allow operations to be paused and resumed instead of only cancelled",
 			"Use progress indicators to show users that work is being done",
-			"Implement auto-save functionality for long-running operations"
+			"Implement auto-save functionality for long-running operations",
 		];
 	}
 }
@@ -549,22 +567,22 @@ export class ResourceError extends AnalysisError {
 			"Increase system resources (RAM, CPU) if possible",
 		];
 
-		if (resource === 'memory') {
+		if (resource === "memory") {
 			solutions.push(
 				"Enable garbage collection more frequently",
 				"Use memory-efficient processing options",
 				"Process files in smaller chunks",
 				currentUsage && limit
 					? `Current usage: ${currentUsage}MB, Limit: ${limit}MB - consider increasing the limit`
-					: "Check current memory usage and set appropriate limits"
+					: "Check current memory usage and set appropriate limits",
 			);
 		}
 
-		if (resource === 'CPU') {
+		if (resource === "CPU") {
 			solutions.push(
 				"Reduce concurrency to lower CPU usage",
 				"Use CPU-efficient algorithms if available",
-				"Process during off-peak hours when CPU is less busy"
+				"Process during off-peak hours when CPU is less busy",
 			);
 		}
 
@@ -580,7 +598,7 @@ export class ResourceError extends AnalysisError {
 			"Use resource quotas and limits to prevent system overload",
 			"Plan processing schedules around available system resources",
 			"Implement efficient resource cleanup and garbage collection",
-			`Configure ${resource} limits based on your system specifications`
+			`Configure ${resource} limits based on your system specifications`,
 		];
 	}
 }

@@ -11,7 +11,13 @@ export interface DependencyInfo {
 	/** Type of dependency */
 	type: "external" | "internal" | "relative";
 	/** Where in the file this dependency appears */
-	location: SourceLocation;
+	location?: SourceLocation;
+	/** Whether this is a type-only import */
+	isTypeOnly?: boolean;
+	/** Line number (backward compatibility) */
+	line?: number;
+	/** Column number (backward compatibility) */
+	column?: number;
 }
 
 /**
