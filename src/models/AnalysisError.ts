@@ -101,6 +101,9 @@ export interface ErrorContext {
 
 	/** Additional metadata */
 	metadata?: Record<string, any>;
+
+	/** Legacy details property for backward compatibility */
+	details?: Record<string, any>;
 }
 
 export interface SourceLocation {

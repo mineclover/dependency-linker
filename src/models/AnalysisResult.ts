@@ -258,7 +258,9 @@ export function createFileNotFoundError(filePath: string, message?: string): Ana
 		context: {
 			operation: "file_access",
 			details: { filePath }
-		}
+		},
+		timestamp: new Date(),
+		id: `fnf-${Date.now()}-${Math.random().toString(36).substr(2, 9)}`
 	};
 	return createErrorResult(filePath, error);
 }
@@ -272,7 +274,9 @@ export function createInvalidFileTypeError(filePath: string, message?: string): 
 		context: {
 			operation: "file_validation",
 			details: { filePath }
-		}
+		},
+		timestamp: new Date(),
+		id: `ift-${Date.now()}-${Math.random().toString(36).substr(2, 9)}`
 	};
 	return createErrorResult(filePath, error);
 }
@@ -286,7 +290,9 @@ export function createPermissionDeniedError(filePath: string, message?: string):
 		context: {
 			operation: "file_access",
 			details: { filePath }
-		}
+		},
+		timestamp: new Date(),
+		id: `pad-${Date.now()}-${Math.random().toString(36).substr(2, 9)}`
 	};
 	return createErrorResult(filePath, error);
 }
@@ -300,7 +306,9 @@ export function createParseError(filePath: string, message?: string): AnalysisRe
 		context: {
 			operation: "parsing",
 			details: { filePath }
-		}
+		},
+		timestamp: new Date(),
+		id: `pe-${Date.now()}-${Math.random().toString(36).substr(2, 9)}`
 	};
 	return createErrorResult(filePath, error);
 }
@@ -314,7 +322,9 @@ export function createTimeoutError(filePath: string, message?: string): Analysis
 		context: {
 			operation: "parsing",
 			details: { filePath }
-		}
+		},
+		timestamp: new Date(),
+		id: `to-${Date.now()}-${Math.random().toString(36).substr(2, 9)}`
 	};
 	return createErrorResult(filePath, error);
 }
