@@ -695,104 +695,113 @@ export class UnsupportedFormatError extends AnalysisError {
 /**
  * Utility functions for error handling
  */
-export class ErrorUtils {
-	/**
-	 * Check if error is of specific type
-	 */
-	static isErrorOfType<T extends AnalysisError>(
-		error: any,
-		errorClass: new (...args: any[]) => T,
-	): error is T {
-		return error instanceof errorClass;
+/**
+ * Check if error is of specific type
+ */
+export function isErrorOfType<T extends AnalysisError>(
+	error: any,
+	errorClass: new (...args: any[]) => T,
+): error is T {
+	return error instanceof errorClass;
+}
+
+/**
+ * Extract error code from any error
+ */
+export function getErrorCode(error: any): string {
+	if (error instanceof AnalysisError) {
+		return error.code;
 	}
 
-	/**
-	 * Extract error code from any error
-	 */
-	static getErrorCode(error: any): string {
-		if (error instanceof AnalysisError) {
-			return error.code;
-		}
-
-		if (error && typeof error.code === "string") {
-			return error.code;
-		}
-
-		return "UNKNOWN_ERROR";
+	if (error && typeof error.code === "string") {
+		return error.code;
 	}
 
-	/**
-	 * Get user-friendly message from any error
-	 */
-	static getUserMessage(error: any): string {
-		if (error instanceof AnalysisError) {
-			return error.getUserMessage();
-		}
+	return "UNKNOWN_ERROR";
+}
 
-		if (error instanceof Error) {
-			return error.message;
-		}
-
-		return String(error);
+/**
+ * Get user-friendly message from any error
+ */
+export function getUserMessage(error: any): string {
+	if (error instanceof AnalysisError) {
+		return error.getUserMessage();
 	}
 
-	/**
-	 * Create error from unknown value
-	 */
-	static fromUnknown(value: unknown, context: string): AnalysisError {
-		if (value instanceof AnalysisError) {
-			return value;
-		}
-
-		if (value instanceof Error) {
-			return new InternalError(
-				context,
-				{ originalError: value.message },
-				value,
-			);
-		}
-
-		return new InternalError(context, { originalValue: value });
+	if (error instanceof Error) {
+		return error.message;
 	}
 
-	/**
-	 * Convert error to structured format for logging
-	 */
-	static toLogFormat(error: any): Record<string, any> {
-		if (error instanceof AnalysisError) {
-			return error.toJSON();
-		}
+	return String(error);
+}
 
-		if (error instanceof Error) {
-			return {
-				name: error.name,
-				message: error.message,
-				stack: error.stack,
-			};
-		}
-
-		return { value: error };
+/**
+ * Create error from unknown value
+ */
+export function createErrorFromUnknown(value: unknown, context: string): AnalysisError {
+	if (value instanceof AnalysisError) {
+		return value;
 	}
 
-	/**
-	 * Aggregate multiple errors into a batch error
-	 */
-	static createBatchError(
-		errors: Array<{ filePath: string; error: Error }>,
-		partialResults: any[] = [],
-	): BatchError {
-		const failedFiles = errors.map((e) => e.filePath);
-		const errorDetails = errors.map((e) => ({
-			filePath: e.filePath,
-			error: ErrorUtils.getErrorCode(e.error),
-			message: ErrorUtils.getUserMessage(e.error),
-		}));
-
-		return new BatchError(
-			`Batch processing failed for ${failedFiles.length} file(s)`,
-			failedFiles,
-			partialResults,
-			{ errorDetails },
+	if (value instanceof Error) {
+		return new InternalError(
+			context,
+			{ originalError: value.message },
+			value,
 		);
 	}
+
+	return new InternalError(context, { originalValue: value });
+}
+
+/**
+ * Convert error to structured format for logging
+ */
+export function errorToLogFormat(error: any): Record<string, any> {
+	if (error instanceof AnalysisError) {
+		return error.toJSON();
+	}
+
+	if (error instanceof Error) {
+		return {
+			name: error.name,
+			message: error.message,
+			stack: error.stack,
+		};
+	}
+
+	return { value: error };
+}
+
+/**
+ * Aggregate multiple errors into a batch error
+ */
+export function createBatchError(
+	errors: Array<{ filePath: string; error: Error }>,
+	partialResults: any[] = [],
+): BatchError {
+	const failedFiles = errors.map((e) => e.filePath);
+	const errorDetails = errors.map((e) => ({
+		filePath: e.filePath,
+		error: getErrorCode(e.error),
+		message: getUserMessage(e.error),
+	}));
+
+	return new BatchError(
+		`Batch processing failed for ${failedFiles.length} file(s)`,
+		failedFiles,
+		partialResults,
+		{ errorDetails },
+	);
+}
+
+// Legacy class export for backward compatibility - will be deprecated
+/** @deprecated Use individual functions instead of ErrorUtils class */
+export class ErrorUtils {
+	static isErrorOfType = isErrorOfType;
+	static getErrorCode = getErrorCode;
+	static getUserMessage = getUserMessage;
+	static fromUnknown = createErrorFromUnknown;
+	static toLogFormat = errorToLogFormat;
+	static createBatchError = createBatchError;
 }

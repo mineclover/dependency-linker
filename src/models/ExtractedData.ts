@@ -223,75 +223,74 @@ export interface SourceLocation {
 /**
  * Utility functions for working with ExtractedData
  */
-export class ExtractedDataUtils {
-	/**
-	 * Validates extracted data structure
-	 */
-	static validate(data: any): data is ExtractedData {
-		if (!data || typeof data !== "object") {
+/**
+ * Validates extracted data structure
+ */
+export function validateExtractedData(data: any): data is ExtractedData {
+	if (!data || typeof data !== "object") {
+		return false;
+	}
+
+	const required = [
+		"type",
+		"data",
+		"extractorName",
+		"extractorVersion",
+		"sourceLanguage",
+		"sourceFile",
+		"extractedAt",
+		"metadata",
+	];
+
+	for (const field of required) {
+		if (!(field in data)) {
 			return false;
 		}
-
-		const required = [
-			"type",
-			"data",
-			"extractorName",
-			"extractorVersion",
-			"sourceLanguage",
-			"sourceFile",
-			"extractedAt",
-			"metadata",
-		];
-
-		for (const field of required) {
-			if (!(field in data)) {
-				return false;
-			}
-		}
-
-		return (
-			typeof data.type === "string" &&
-			typeof data.extractorName === "string" &&
-			typeof data.extractorVersion === "string" &&
-			typeof data.sourceLanguage === "string" &&
-			typeof data.sourceFile === "string" &&
-			data.extractedAt instanceof Date &&
-			typeof data.metadata === "object"
-		);
 	}
 
-	/**
-	 * Creates a template for extracted data
-	 */
-	static createTemplate(
-		type: string,
-		extractorName: string,
-		extractorVersion: string,
-		sourceLanguage: string,
-		sourceFile: string,
-	): Omit<ExtractedData, "data"> {
-		return {
-			type,
-			extractorName,
-			extractorVersion,
-			sourceLanguage,
-			sourceFile,
-			extractedAt: new Date(),
-			metadata: {
-				itemCount: 0,
-				confidence: 1.0,
-				isComplete: true,
-				warnings: [],
-				performance: {
-					extractionTime: 0,
-					memoryUsed: 0,
-					astNodesProcessed: 0,
-				},
-				schemaVersion: "1.0.0",
-				context: {},
+	return (
+		typeof data.type === "string" &&
+		typeof data.extractorName === "string" &&
+		typeof data.extractorVersion === "string" &&
+		typeof data.sourceLanguage === "string" &&
+		typeof data.sourceFile === "string" &&
+		data.extractedAt instanceof Date &&
+		typeof data.metadata === "object"
+	);
+}
+
+/**
+ * Creates a template for extracted data
+ */
+export function createExtractedDataTemplate(
+	type: string,
+	extractorName: string,
+	extractorVersion: string,
+	sourceLanguage: string,
+	sourceFile: string,
+): Omit<ExtractedData, "data"> {
+	return {
+		type,
+		extractorName,
+		extractorVersion,
+		sourceLanguage,
+		sourceFile,
+		extractedAt: new Date(),
+		metadata: {
+			itemCount: 0,
+			confidence: 1.0,
+			isComplete: true,
+			warnings: [],
+			performance: {
+				extractionTime: 0,
+				memoryUsed: 0,
+				astNodesProcessed: 0,
 			},
-		};
-	}
+			schemaVersion: "1.0.0",
+			context: {},
+		},
+	};
+}
 
 	/**
 	 * Merges multiple extracted data objects of the same type

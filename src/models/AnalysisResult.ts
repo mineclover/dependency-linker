@@ -98,131 +98,137 @@ export interface AnalysisConfiguration {
 }
 
 /**
- * Factory class for creating AnalysisResult instances
+ * Creates a new AnalysisResult with default values
  */
-export class AnalysisResultFactory {
-	/**
-	 * Creates a new AnalysisResult with default values
-	 */
-	static create(filePath: string, language: string): AnalysisResult {
-		return {
-			filePath,
-			language,
-			extractedData: {},
-			interpretedData: {},
-			performanceMetrics: {
-				parseTime: 0,
-				extractionTime: 0,
-				interpretationTime: 0,
-				totalTime: 0,
-				memoryUsage: 0,
-			},
-			errors: [],
-			metadata: {
-				timestamp: new Date(),
-				version: "2.0.0",
-				config: {},
-				extractorsUsed: [],
-				interpretersUsed: [],
-				fromCache: false,
-				fileSize: 0,
-				lastModified: new Date(),
-			},
-		};
-	}
-
-	/**
-	 * Creates an AnalysisResult representing a failed analysis
-	 */
-	static createError(filePath: string, error: AnalysisError): AnalysisResult {
-		const result = AnalysisResultFactory.create(filePath, "unknown");
-		result.errors.push(error);
-		return result;
-	}
+export function createAnalysisResult(filePath: string, language: string): AnalysisResult {
+	return {
+		filePath,
+		language,
+		extractedData: {},
+		interpretedData: {},
+		performanceMetrics: {
+			parseTime: 0,
+			extractionTime: 0,
+			interpretationTime: 0,
+			totalTime: 0,
+			memoryUsage: 0,
+		},
+		errors: [],
+		metadata: {
+			timestamp: new Date(),
+			version: "2.0.0",
+			config: {},
+			extractorsUsed: [],
+			interpretersUsed: [],
+			fromCache: false,
+			fileSize: 0,
+			lastModified: new Date(),
+		},
+	};
 }
 
 /**
- * Utility functions for working with AnalysisResult
+ * Creates an AnalysisResult representing a failed analysis
  */
-export class AnalysisResultUtils {
-	/**
-	 * Checks if an analysis was successful (no errors)
-	 */
-	static isSuccessful(result: AnalysisResult): boolean {
-		return result.errors.length === 0;
-	}
+export function createErrorAnalysisResult(filePath: string, error: AnalysisError): AnalysisResult {
+	const result = createAnalysisResult(filePath, "unknown");
+	result.errors.push(error);
+	return result;
+}
 
-	/**
-	 * Gets all errors of a specific type
-	 */
-	static getErrorsByType(
-		result: AnalysisResult,
-		errorType: string,
-	): AnalysisError[] {
-		return result.errors.filter((error) => error.type === errorType);
-	}
+// Legacy class export for backward compatibility - will be deprecated
+/** @deprecated Use individual functions instead of AnalysisResultFactory class */
+export class AnalysisResultFactory {
+	static create = createAnalysisResult;
+	static createError = createErrorAnalysisResult;
+}
 
-	/**
-	 * Formats the result for display
-	 */
-	static format(
-		result: AnalysisResult,
-		format: "json" | "summary" | "detailed" = "summary",
-	): string {
-		switch (format) {
-			case "json":
-				return JSON.stringify(result, null, 2);
-			case "summary":
-				return `Analysis of ${result.filePath}:
+/**
+ * Checks if an analysis was successful (no errors)
+ */
+export function isSuccessful(result: AnalysisResult): boolean {
+	return result.errors.length === 0;
+}
+
+/**
+ * Gets all errors of a specific type
+ */
+export function getErrorsByType(
+	result: AnalysisResult,
+	errorType: string,
+): AnalysisError[] {
+	return result.errors.filter((error) => error.type === errorType);
+}
+
+/**
+ * Formats the result for display
+ */
+export function formatAnalysisResult(
+	result: AnalysisResult,
+	format: "json" | "summary" | "detailed" = "summary",
+): string {
+	switch (format) {
+		case "json":
+			return JSON.stringify(result, null, 2);
+		case "summary":
+			return `Analysis of ${result.filePath}:
 Language: ${result.language}
 Time: ${result.performanceMetrics.totalTime}ms
 Errors: ${result.errors.length}
 From Cache: ${result.metadata.fromCache}`;
-			case "detailed":
-				return `=== Analysis Result ===
+		case "detailed":
+			return `=== Analysis Result ===
 File: ${result.filePath}
 Language: ${result.language}
 Total Time: ${result.performanceMetrics.totalTime}ms
 Extractors: ${result.metadata.extractorsUsed?.join(", ") || "none"}
 Interpreters: ${result.metadata.interpretersUsed?.join(", ") || "none"}
 Errors: ${result.errors.length}`;
-			default:
-				return AnalysisResultUtils.format(result, "summary");
-		}
+		default:
+			return formatAnalysisResult(result, "summary");
+	}
+}
+
+/**
+ * Validates that an AnalysisResult has the required structure
+ */
+export function validateAnalysisResult(result: any): result is AnalysisResult {
+	if (!result || typeof result !== "object") {
+		return false;
 	}
 
-	/**
-	 * Validates that an AnalysisResult has the required structure
-	 */
-	static validate(result: any): result is AnalysisResult {
-		if (!result || typeof result !== "object") {
+	const requiredFields = [
+		"filePath",
+		"language",
+		"extractedData",
+		"interpretedData",
+		"performanceMetrics",
+		"errors",
+		"metadata",
+	];
+
+	for (const field of requiredFields) {
+		if (!(field in result)) {
 			return false;
 		}
-
-		const requiredFields = [
-			"filePath",
-			"language",
-			"extractedData",
-			"interpretedData",
-			"performanceMetrics",
-			"errors",
-			"metadata",
-		];
-
-		for (const field of requiredFields) {
-			if (!(field in result)) {
-				return false;
-			}
-		}
-
-		return (
-			typeof result.filePath === "string" &&
-			typeof result.language === "string" &&
-			typeof result.extractedData === "object" &&
-			typeof result.interpretedData === "object" &&
-			Array.isArray(result.errors)
-		);
 	}
+
+	return (
+		typeof result.filePath === "string" &&
+		typeof result.language === "string" &&
+		typeof result.extractedData === "object" &&
+		typeof result.interpretedData === "object" &&
+		Array.isArray(result.errors)
+	);
+}
+
+// Legacy class export for backward compatibility - will be deprecated
+/** @deprecated Use individual functions instead of AnalysisResultUtils class */
+export class AnalysisResultUtils {
+	static isSuccessful = isSuccessful;
+	static getErrorsByType = getErrorsByType;
+	static format = formatAnalysisResult;
+	static validate = validateAnalysisResult;
 }
 
 /**
@@ -242,11 +248,11 @@ export class AnalysisException extends Error {
 
 // Convenience functions expected by tests
 export function createSuccessResult(filePath: string, language: string): AnalysisResult {
-	return AnalysisResultFactory.create(filePath, language);
+	return createAnalysisResult(filePath, language);
 }
 
 export function createErrorResult(filePath: string, error: AnalysisError): AnalysisResult {
-	return AnalysisResultFactory.createError(filePath, error);
+	return createErrorAnalysisResult(filePath, error);
 }
 
 export function createFileNotFoundError(filePath: string, message?: string): AnalysisResult {
@@ -330,5 +336,5 @@ export function createTimeoutError(filePath: string, message?: string): Analysis
 }
 
 export function isValidAnalysisResult(result: any): result is AnalysisResult {
-	return AnalysisResultUtils.validate(result);
+	return validateAnalysisResult(result);
 }
