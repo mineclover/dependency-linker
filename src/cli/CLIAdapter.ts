@@ -5,14 +5,27 @@
 
 import type { AnalysisConfig } from "../models/AnalysisConfig";
 import type { AnalysisResult } from "../models/AnalysisResult";
+import type { IntegratedAnalysisData, DataIntegrationConfig } from "../models/IntegratedData";
 import { AnalysisEngine } from "../services/AnalysisEngine";
 import { EnhancedOutputFormatter } from "./formatters/EnhancedOutputFormatter";
+import { UniversalFormatter } from "./formatters/UniversalFormatter";
+import { IntegrationConfigManager } from "../config/IntegrationConfig";
+import { DataIntegrator } from "../services/integration/DataIntegrator";
 
 export interface CLIOptions {
 	file: string;
 	format: string;
 	includeSources?: boolean;
 	parseTimeout?: number;
+	useIntegrated?: boolean;
+	optimizeOutput?: boolean;
+	preset?: string;
+	detailLevel?: "minimal" | "standard" | "comprehensive";
+	optimizationMode?: "speed" | "balanced" | "accuracy";
+	enabledViews?: string[];
+	maxStringLength?: number;
+	maxArrayLength?: number;
+	maxDepth?: number;
 }
 
 export interface CLIValidationResult {
@@ -27,6 +40,9 @@ export interface CLIValidationResult {
 export class CLIAdapter {
 	private analysisEngine: AnalysisEngine;
 	private formatter: EnhancedOutputFormatter;
+	private universalFormatter: UniversalFormatter;
+	private configManager: IntegrationConfigManager;
+	private dataIntegrator: DataIntegrator;
 
 	constructor() {
 		// Initialize analysis engine with CLI-optimized settings
@@ -38,6 +54,9 @@ export class CLIAdapter {
 		});
 
 		this.formatter = new EnhancedOutputFormatter();
+		this.universalFormatter = new UniversalFormatter();
+		this.configManager = new IntegrationConfigManager();
+		this.dataIntegrator = new DataIntegrator();
 	}
 
 	/**
@@ -63,6 +82,8 @@ export class CLIAdapter {
 			"csv",
 			"deps-only",
 			"tree",
+			"minimal",
+			"report",
 		];
 		if (!supportedFormats.includes(options.format)) {
 			errors.push(
@@ -116,6 +137,47 @@ export class CLIAdapter {
 	}
 
 	/**
+	 * Analyze file using integrated data flow for enhanced output
+	 * @param options CLI options
+	 * @returns Integrated analysis data
+	 */
+	async analyzeFileIntegrated(options: CLIOptions): Promise<IntegratedAnalysisData> {
+		// Convert CLI options to analysis config
+		const analysisConfig: AnalysisConfig = {
+			useCache: false,
+			timeout: options.parseTimeout || 30000,
+			extractors: ["dependency", "identifier", "complexity"],
+			interpreters: ["dependency-analysis", "identifier-analysis"],
+		};
+
+		// Create integration config using configuration manager
+		const integrationConfig: DataIntegrationConfig = this.configManager.getConfigForCLI({
+			preset: options.preset,
+			detailLevel: options.detailLevel,
+			optimizationMode: options.optimizationMode,
+			enabledViews: options.enabledViews,
+			maxStringLength: options.maxStringLength,
+			maxArrayLength: options.maxArrayLength,
+			maxDepth: options.maxDepth
+		});
+
+		// Validate the generated configuration
+		const validation = this.configManager.validateConfig(integrationConfig);
+		if (!validation.isValid) {
+			throw new Error(`Invalid configuration: ${validation.errors.join(", ")}`);
+		}
+
+		// Show warnings if any
+		if (validation.warnings.length > 0) {
+			console.warn("Configuration warnings:", validation.warnings.join(", "));
+		}
+
+		// Perform analysis and integration
+		const result = await this.analysisEngine.analyzeFile(options.file, analysisConfig);
+		return this.dataIntegrator.integrate(result, integrationConfig);
+	}
+
+	/**
 	 * Format analysis result for CLI output
 	 * @param result Analysis result
 	 * @param format Output format
@@ -135,9 +197,23 @@ export class CLIAdapter {
 				return this.formatter.formatAsCSV([result], true);
 			case "summary":
 				return this.formatter.formatAsSummary(result);
+			case "minimal":
+				return this.universalFormatter.format(result, { format: "minimal" });
+			case "report":
+				return this.universalFormatter.format(result, { format: "report" });
 			default:
 				return this.formatter.formatAsReport(result);
 		}
+	}
+
+	/**
+	 * Format integrated analysis data for CLI output
+	 * @param data Integrated analysis data
+	 * @param format Output format
+	 * @returns Formatted string
+	 */
+	formatIntegratedResult(data: IntegratedAnalysisData, format: string): string {
+		return this.universalFormatter.format(data, { format: format as any });
 	}
 
 	/**
@@ -190,6 +266,103 @@ export class CLIAdapter {
 	 */
 	getSupportedExtensions(): string[] {
 		return [".ts", ".tsx", ".js", ".jsx", ".go", ".java"];
+	}
+
+	/**
+	 * Configuration management methods
+	 */
+
+	/**
+	 * List available configuration presets
+	 */
+	listPresets(format: string = "text"): string {
+		const presets = this.configManager.getPresets();
+
+		if (format === "json") {
+			return JSON.stringify(presets, null, 2);
+		}
+
+		let output = "Available Configuration Presets\n";
+		output += "================================\n\n";
+
+		for (const [name, preset] of Object.entries(presets)) {
+			output += `${name.toUpperCase()}\n`;
+			output += `  Description: ${preset.description}\n`;
+			output += `  Detail Level: ${preset.config.detailLevel}\n`;
+			output += `  Optimization: ${preset.config.optimizationMode}\n`;
+			output += `  Views: ${preset.config.enabledViews.join(", ")}\n`;
+			output += `  Max Concurrency: ${preset.optimization.maxConcurrency}\n`;
+			output += `  Batch Size: ${preset.optimization.batchSize}\n\n`;
+		}
+
+		return output;
+	}
+
+	/**
+	 * Validate configuration options
+	 */
+	validateConfiguration(options: CLIOptions): { isValid: boolean; errors: string[]; warnings: string[] } {
+		try {
+			const config = this.configManager.getConfigForCLI({
+				preset: options.preset,
+				detailLevel: options.detailLevel,
+				optimizationMode: options.optimizationMode,
+				enabledViews: options.enabledViews,
+				maxStringLength: options.maxStringLength,
+				maxArrayLength: options.maxArrayLength,
+				maxDepth: options.maxDepth
+			});
+
+			return this.configManager.validateConfig(config);
+		} catch (error) {
+			return {
+				isValid: false,
+				errors: [error instanceof Error ? error.message : String(error)],
+				warnings: []
+			};
+		}
+	}
+
+	/**
+	 * Get effective configuration for given options
+	 */
+	getEffectiveConfiguration(options: CLIOptions, format: string = "text"): string {
+		try {
+			const config = this.configManager.getConfigForCLI({
+				preset: options.preset,
+				detailLevel: options.detailLevel,
+				optimizationMode: options.optimizationMode,
+				enabledViews: options.enabledViews,
+				maxStringLength: options.maxStringLength,
+				maxArrayLength: options.maxArrayLength,
+				maxDepth: options.maxDepth
+			});
+
+			if (format === "json") {
+				return JSON.stringify(config, null, 2);
+			}
+
+			let output = "Effective Configuration\n";
+			output += "======================\n\n";
+			output += `Detail Level: ${config.detailLevel}\n`;
+			output += `Optimization Mode: ${config.optimizationMode}\n`;
+			output += `Enabled Views: ${config.enabledViews.join(", ")}\n`;
+			output += `Size Limits:\n`;
+			output += `  Max String Length: ${config.sizeLimits.maxStringLength}\n`;
+			output += `  Max Array Length: ${config.sizeLimits.maxArrayLength}\n`;
+			output += `  Max Depth: ${config.sizeLimits.maxDepth}\n`;
+
+			if (options.preset) {
+				output += `\nBased on preset: ${options.preset}\n`;
+			}
+
+			return output;
+		} catch (error) {
+			const errorMessage = error instanceof Error ? error.message : String(error);
+			return format === "json"
+				? JSON.stringify({ error: errorMessage }, null, 2)
+				: `Error: ${errorMessage}`;
+		}
 	}
 
 	/**

@@ -10,6 +10,15 @@ export interface CliOptions {
 	format: OutputFormat;
 	includeSources: boolean;
 	parseTimeout: number;
+	useIntegrated: boolean;
+	optimizeOutput: boolean;
+	preset?: string;
+	detailLevel?: "minimal" | "standard" | "comprehensive";
+	optimizationMode?: "speed" | "balanced" | "accuracy";
+	enabledViews?: string[];
+	maxStringLength?: number;
+	maxArrayLength?: number;
+	maxDepth?: number;
 	help: boolean;
 	version: boolean;
 }
@@ -24,6 +33,8 @@ export class CommandParser {
 		format: "json",
 		includeSources: false,
 		parseTimeout: 5000,
+		useIntegrated: false,
+		optimizeOutput: false,
 		help: false,
 		version: false,
 	};
@@ -36,6 +47,9 @@ export class CommandParser {
 		"csv",
 		"deps-only",
 		"table",
+		"tree",
+		"minimal",
+		"report",
 	];
 
 	/**
@@ -89,6 +103,162 @@ export class CommandParser {
 					case "--include-sources":
 						options.includeSources = true;
 						break;
+
+					case "--use-integrated":
+						options.useIntegrated = true;
+						break;
+
+					case "--optimize-output":
+						options.optimizeOutput = true;
+						break;
+
+					case "--preset": {
+						if (i + 1 >= args.length) {
+							return {
+								error: {
+									message: "Option --preset requires a value",
+									exitCode: 1,
+								},
+							};
+						}
+						options.preset = args[++i];
+						break;
+					}
+
+					case "--detail-level": {
+						if (i + 1 >= args.length) {
+							return {
+								error: {
+									message: "Option --detail-level requires a value",
+									exitCode: 1,
+								},
+							};
+						}
+						const level = args[++i] as "minimal" | "standard" | "comprehensive";
+						if (!["minimal", "standard", "comprehensive"].includes(level)) {
+							return {
+								error: {
+									message: "Detail level must be one of: minimal, standard, comprehensive",
+									exitCode: 1,
+								},
+							};
+						}
+						options.detailLevel = level;
+						break;
+					}
+
+					case "--optimization-mode": {
+						if (i + 1 >= args.length) {
+							return {
+								error: {
+									message: "Option --optimization-mode requires a value",
+									exitCode: 1,
+								},
+							};
+						}
+						const mode = args[++i] as "speed" | "balanced" | "accuracy";
+						if (!["speed", "balanced", "accuracy"].includes(mode)) {
+							return {
+								error: {
+									message: "Optimization mode must be one of: speed, balanced, accuracy",
+									exitCode: 1,
+								},
+							};
+						}
+						options.optimizationMode = mode;
+						break;
+					}
+
+					case "--enabled-views": {
+						if (i + 1 >= args.length) {
+							return {
+								error: {
+									message: "Option --enabled-views requires a value",
+									exitCode: 1,
+								},
+							};
+						}
+						const views = args[++i].split(",").map(v => v.trim());
+						const validViews = ["summary", "table", "tree", "csv", "minimal"];
+						for (const view of views) {
+							if (!validViews.includes(view)) {
+								return {
+									error: {
+										message: `Invalid view: ${view}. Valid views: ${validViews.join(", ")}`,
+										exitCode: 1,
+									},
+								};
+							}
+						}
+						options.enabledViews = views;
+						break;
+					}
+
+					case "--max-string-length": {
+						if (i + 1 >= args.length) {
+							return {
+								error: {
+									message: "Option --max-string-length requires a value",
+									exitCode: 1,
+								},
+							};
+						}
+						const length = parseInt(args[++i], 10);
+						if (Number.isNaN(length) || length <= 0) {
+							return {
+								error: {
+									message: "Max string length must be a positive number",
+									exitCode: 1,
+								},
+							};
+						}
+						options.maxStringLength = length;
+						break;
+					}
+
+					case "--max-array-length": {
+						if (i + 1 >= args.length) {
+							return {
+								error: {
+									message: "Option --max-array-length requires a value",
+									exitCode: 1,
+								},
+							};
+						}
+						const length = parseInt(args[++i], 10);
+						if (Number.isNaN(length) || length <= 0) {
+							return {
+								error: {
+									message: "Max array length must be a positive number",
+									exitCode: 1,
+								},
+							};
+						}
+						options.maxArrayLength = length;
+						break;
+					}
+
+					case "--max-depth": {
+						if (i + 1 >= args.length) {
+							return {
+								error: {
+									message: "Option --max-depth requires a value",
+									exitCode: 1,
+								},
+							};
+						}
+						const depth = parseInt(args[++i], 10);
+						if (Number.isNaN(depth) || depth <= 0) {
+							return {
+								error: {
+									message: "Max depth must be a positive number",
+									exitCode: 1,
+								},
+							};
+						}
+						options.maxDepth = depth;
+						break;
+					}
 
 					case "--parse-timeout": {
 						if (i + 1 >= args.length) {
@@ -181,24 +351,43 @@ USAGE:
   analyze-file --file <file> [OPTIONS]
 
 ARGUMENTS:
-  <file>                    TypeScript file to analyze (.ts or .tsx)
+  <file>                    File to analyze (.ts, .tsx, .js, .jsx, .go, .java)
 
 OPTIONS:
-  -f, --file <path>         TypeScript file to analyze
-      --format <format>     Output format: json, text, compact, summary, csv, deps-only, table (default: json)
+  -f, --file <path>         File to analyze
+      --format <format>     Output format: json, text, compact, summary, csv, deps-only, table, tree, minimal, report (default: json)
       --include-sources     Include source location information
+      --use-integrated      Use enhanced integrated analysis (recommended)
+      --optimize-output     Optimize output for better performance
       --parse-timeout <ms>  Maximum parsing time in milliseconds (default: 5000)
   -h, --help               Show this help message
   -v, --version            Show version information
+
+CONFIGURATION OPTIONS (for --use-integrated):
+      --preset <name>              Use predefined configuration preset: fast, balanced, comprehensive, lightweight, debug
+      --detail-level <level>       Analysis detail level: minimal, standard, comprehensive (default: standard)
+      --optimization-mode <mode>   Processing mode: speed, balanced, accuracy (default: balanced)
+      --enabled-views <views>      Comma-separated list of views: summary,table,tree,csv,minimal
+      --max-string-length <num>    Maximum string length in output (default: 1000)
+      --max-array-length <num>     Maximum array length in output (default: 100)
+      --max-depth <num>            Maximum nesting depth in output (default: 10)
 
 EXAMPLES:
   analyze-file src/component.tsx
   analyze-file --file src/utils.ts --format text
   analyze-file --file src/api.ts --include-sources --format json
-  analyze-file --file src/components.tsx --format summary
-  analyze-file --file src/index.ts --format csv
+  analyze-file --file src/components.tsx --format summary --use-integrated
+  analyze-file --file src/index.ts --format csv --optimize-output
   analyze-file --file src/types.ts --format deps-only
   analyze-file src/large-file.ts --parse-timeout 10000
+  analyze-file --file main.go --format tree --use-integrated
+  analyze-file --file App.java --format minimal --optimize-output
+
+CONFIGURATION EXAMPLES:
+  analyze-file --file src/app.ts --use-integrated --preset fast
+  analyze-file --file src/app.ts --use-integrated --detail-level comprehensive --optimization-mode accuracy
+  analyze-file --file src/app.ts --use-integrated --enabled-views summary,table --max-string-length 500
+  analyze-file --file src/app.ts --use-integrated --preset debug --max-depth 20
 
 OUTPUT FORMATS:
   json        - Full JSON output with all details (default)
@@ -208,6 +397,13 @@ OUTPUT FORMATS:
   csv         - CSV format for spreadsheet analysis
   deps-only   - Dependencies only (external packages)
   table       - Formatted table view of dependencies
+  tree        - Tree structure visualization
+  minimal     - Compact one-line format for batch processing
+  report      - Comprehensive analysis report with recommendations
+
+ENHANCED FEATURES:
+  --use-integrated        Enables advanced analysis with insights and recommendations
+  --optimize-output       Reduces output size for better performance with large files
 `.trim();
 	}
 

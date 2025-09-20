@@ -20,9 +20,12 @@ export class ParserRegistry implements IParserRegistry {
 		// Register parser for each supported language
 		for (const language of metadata.supportedLanguages) {
 			if (this.parsers.has(language)) {
-				console.warn(
-					`Parser for language '${language}' is already registered. Overwriting.`,
-				);
+				// Only warn in development/debug mode to reduce noise in tests
+				if (process.env.NODE_ENV !== 'test' && process.env.DEBUG) {
+					console.warn(
+						`Parser for language '${language}' is already registered. Overwriting.`,
+					);
+				}
 			}
 			this.parsers.set(language, parser);
 		}

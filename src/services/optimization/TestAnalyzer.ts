@@ -14,10 +14,6 @@ import { glob } from 'glob';
 import {
   TestSuite,
   TestCase,
-  TestCategory,
-  TestType,
-  Priority,
-  ComplexityLevel,
   TestSuiteBuilder,
   TestCaseBuilder
 } from '../../models/optimization/TestSuite';
@@ -28,6 +24,20 @@ import {
   RiskLevel,
   EffortLevel
 } from '../../models/optimization/OptimizationOpportunity';
+
+import {
+  TestCategory,
+  TestType,
+  Priority,
+  ComplexityLevel
+} from '../../models/optimization/types';
+
+import {
+  TestAnalysisError,
+  FileOperationError,
+  ValidationError,
+  ErrorUtils
+} from '../../models/optimization/errors';
 
 export interface TestFileInfo {
   filePath: string;

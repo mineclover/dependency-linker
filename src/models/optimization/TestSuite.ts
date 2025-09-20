@@ -5,17 +5,13 @@
  * Source: Data model specification, FR-001 (test suite analysis)
  */
 
-export enum TestCategory {
-  Critical = "critical",  // Must keep - API contracts, core logic
-  Optimize = "optimize",  // Can simplify - implementation details
-  Remove = "remove"       // Redundant - duplicates, deprecated
-}
-
-export enum ComplexityLevel {
-  Low = "low",
-  Medium = "medium",
-  High = "high"
-}
+import {
+  TestCategory,
+  ComplexityLevel,
+  TestType,
+  Priority,
+  TestCharacteristics
+} from './types';
 
 export interface TestCase {
   id: string;                    // Unique identifier within suite
@@ -27,21 +23,59 @@ export interface TestCase {
   coverageAreas: string[];      // Code areas this test covers
   lastFailure?: Date;           // Most recent failure timestamp
   priority: Priority;           // Importance level
+  filePath?: string;            // File path for the test
+  estimatedDuration: number;    // Estimated duration (alias for executionTime) - make required
+  lineStart?: number;           // Line number where test starts
+  lineEnd?: number;             // Line number where test ends
+  category?: string;            // Test category for optimization
+  constraints?: string[];       // Optimization constraints
+  characteristics?: TestCharacteristics; // Test characteristics for optimization
+  setupCode?: string;           // Setup code for the test
+  dependsOn?: string[];         // Dependencies on other tests
 }
 
-export enum TestType {
-  Unit = "unit",
-  Integration = "integration",
-  Contract = "contract",
-  E2E = "e2e"
+export class TestCase implements TestCase {
+  id: string;
+  name: string;
+  type: TestType;
+  executionTime: number;
+  isFlaky: boolean;
+  duplicateOf?: string;
+  coverageAreas: string[];
+  lastFailure?: Date;
+  priority: Priority;
+  filePath?: string;
+  estimatedDuration: number;
+  lineStart?: number;
+  lineEnd?: number;
+  category?: string;
+  constraints?: string[];
+  characteristics?: TestCharacteristics;
+  setupCode?: string;
+  dependsOn?: string[];
+
+  constructor(data: Partial<TestCase> & { id: string; name: string }) {
+    this.id = data.id;
+    this.name = data.name;
+    this.type = data.type || TestType.Unit;
+    this.executionTime = data.executionTime || 50;
+    this.isFlaky = data.isFlaky || false;
+    this.duplicateOf = data.duplicateOf;
+    this.coverageAreas = data.coverageAreas || [];
+    this.lastFailure = data.lastFailure;
+    this.priority = data.priority || Priority.Medium;
+    this.filePath = data.filePath;
+    this.estimatedDuration = data.estimatedDuration || this.executionTime;
+    this.lineStart = data.lineStart;
+    this.lineEnd = data.lineEnd;
+    this.category = data.category;
+    this.constraints = data.constraints;
+    this.characteristics = data.characteristics;
+    this.setupCode = data.setupCode;
+    this.dependsOn = data.dependsOn;
+  }
 }
 
-export enum Priority {
-  Critical = "critical",
-  High = "high",
-  Medium = "medium",
-  Low = "low"
-}
 
 export interface TestSuite {
   id: string;                    // Unique identifier for the suite
@@ -53,6 +87,30 @@ export interface TestSuite {
   lastModified: Date;            // Last modification timestamp
   dependencies: string[];        // External dependencies required
   setupComplexity: ComplexityLevel;  // Setup/teardown complexity rating
+}
+
+export class TestSuite implements TestSuite {
+  id: string;
+  name: string;
+  filePath: string;
+  category: TestCategory;
+  testCases: TestCase[];
+  executionTime: number;
+  lastModified: Date;
+  dependencies: string[];
+  setupComplexity: ComplexityLevel;
+
+  constructor(data: Partial<TestSuite> & { id: string; name: string }) {
+    this.id = data.id;
+    this.name = data.name;
+    this.filePath = data.filePath || '';
+    this.category = data.category || TestCategory.Optimize;
+    this.testCases = data.testCases || [];
+    this.executionTime = data.executionTime || 0;
+    this.lastModified = data.lastModified || new Date();
+    this.dependencies = data.dependencies || [];
+    this.setupComplexity = data.setupComplexity || ComplexityLevel.Medium;
+  }
 }
 
 export class TestSuiteBuilder {
@@ -187,16 +245,26 @@ export class TestCaseBuilder {
   build(): TestCase {
     this.validateTestCase();
 
+    const executionTime = this.testCase.executionTime || 50;
     return {
       id: this.testCase.id!,
       name: this.testCase.name!,
       type: this.testCase.type || TestType.Unit,
-      executionTime: this.testCase.executionTime || 50,
+      executionTime,
       isFlaky: this.testCase.isFlaky || false,
       duplicateOf: this.testCase.duplicateOf,
       coverageAreas: this.testCase.coverageAreas!,
       lastFailure: this.testCase.lastFailure,
-      priority: this.testCase.priority || Priority.Medium
+      priority: this.testCase.priority || Priority.Medium,
+      estimatedDuration: this.testCase.estimatedDuration || executionTime,
+      filePath: this.testCase.filePath,
+      lineStart: this.testCase.lineStart,
+      lineEnd: this.testCase.lineEnd,
+      category: this.testCase.category,
+      constraints: this.testCase.constraints,
+      characteristics: this.testCase.characteristics,
+      setupCode: this.testCase.setupCode,
+      dependsOn: this.testCase.dependsOn
     };
   }
 

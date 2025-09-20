@@ -3,7 +3,8 @@
  * Creates test data objects, mock data, and fixtures for optimization testing
  */
 
-import { TestSuite, TestCase, TestCategory, TestType, Priority, ComplexityLevel } from '../../models/optimization/TestSuite';
+import { TestSuite, TestCase } from '../../models/optimization/TestSuite';
+import { TestCategory, TestType, Priority, ComplexityLevel } from '../../models/optimization/types';
 import { OptimizationOpportunity, OptimizationType, RiskLevel, EffortLevel, OptimizationStatus } from '../../models/optimization/OptimizationOpportunity';
 import { PerformanceBaseline, TestEnvironment, BaselineMetadata } from '../../models/optimization/PerformanceBaseline';
 

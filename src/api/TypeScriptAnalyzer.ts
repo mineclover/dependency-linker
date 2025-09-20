@@ -158,8 +158,8 @@ export class TypeScriptAnalyzer {
 
 				// Check cache first
 				if (this.config.enableCache && this.cache.has(cacheKey)) {
-					const cached = this.cache.get(cacheKey)!;
-					if (!this.isCacheEntryExpired(cached)) {
+					const cached = this.cache.get(cacheKey);
+					if (cached && !this.isCacheEntryExpired(cached)) {
 						this.emitEvent(AnalyzerEvent.CACHE_HIT, { filePath, cacheKey });
 						this.logger.debug(`Cache hit for file: ${filePath}`);
 						return cached.result;

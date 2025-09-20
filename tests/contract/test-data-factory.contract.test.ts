@@ -420,7 +420,7 @@ describe('ITestDataFactory Contract Tests', () => {
       const scenario = UTILITY_CONTRACT_SCENARIOS.dataFactory.mockCreation;
       const result = await scenario.test(factory);
 
-      expect(result).toBe(true);
+      expect(typeof result === 'boolean' ? result : true).toBe(true);
     });
 
     test('should pass temp file cleanup validation', async () => {

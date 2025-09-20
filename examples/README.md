@@ -60,6 +60,21 @@ VS Code extension development example:
 node examples/vscode-extension.js
 ```
 
+### 5. Configuration Examples (`configuration-examples.js`) 🆕
+Comprehensive configuration and preset usage examples:
+- All built-in presets (fast, balanced, comprehensive, lightweight, debug)
+- Custom configuration options
+- Performance comparisons
+- Output format demonstrations
+- Configuration validation
+- Batch processing with different configs
+- Error handling patterns
+
+**Run the example:**
+```bash
+node examples/configuration-examples.js
+```
+
 ## 🚀 Getting Started
 
 1. **Build the project first:**
@@ -83,9 +98,16 @@ node examples/vscode-extension.js
 ```javascript
 const { analyzeTypeScriptFile, extractDependencies } = require('tree-sitter-analyzer');
 
-// Analyze a single file
+// Standard analysis
 const result = await analyzeTypeScriptFile('./src/index.ts');
 console.log(result.dependencies);
+
+// Enhanced integrated analysis (recommended)
+const integratedResult = await analyzeTypeScriptFile('./src/index.ts', {
+  useIntegrated: true,
+  preset: 'balanced',
+  format: 'report'
+});
 
 // Extract dependencies only
 const deps = await extractDependencies('./src/index.ts');
@@ -101,21 +123,73 @@ const analyzer = new TypeScriptAnalyzer({
   defaultTimeout: 30000
 });
 
+// Standard analysis
 const result = await analyzer.analyzeFile('./src/index.ts', {
   format: 'json',
   includeSources: true
 });
+
+// Integrated analysis with configuration
+const integratedResult = await analyzer.analyzeFile('./src/index.ts', {
+  useIntegrated: true,
+  preset: 'comprehensive',
+  detailLevel: 'comprehensive',
+  enabledViews: ['summary', 'table', 'tree']
+});
+```
+
+### Enhanced Configuration API 🆕
+```javascript
+const { IntegrationConfigManager } = require('tree-sitter-analyzer');
+
+// Configuration management
+const configManager = new IntegrationConfigManager();
+
+// Get built-in presets
+const presets = configManager.getPresets();
+console.log(Object.keys(presets)); // ['fast', 'balanced', 'comprehensive', 'lightweight', 'debug']
+
+// Get specific preset configuration
+const fastConfig = configManager.getPresetConfig('fast');
+
+// Create custom configuration
+const customConfig = configManager.getConfigForCLI({
+  preset: 'balanced',
+  detailLevel: 'comprehensive',
+  enabledViews: ['summary', 'table'],
+  maxStringLength: 1500
+});
+
+// Validate configuration
+const validation = configManager.validateConfig(customConfig);
+if (!validation.isValid) {
+  console.error('Errors:', validation.errors);
+}
 ```
 
 ### Batch Processing
 ```javascript
 const { getBatchAnalysis } = require('tree-sitter-analyzer');
 
+// Standard batch processing
 const results = await getBatchAnalysis([
   './src/index.ts',
   './src/utils.ts'
 ], {
   concurrency: 3,
+  onProgress: (completed, total) => {
+    console.log(`Progress: ${completed}/${total}`);
+  }
+});
+
+// Batch processing with integrated analysis and presets
+const integratedResults = await getBatchAnalysis([
+  './src/index.ts',
+  './src/utils.ts'
+], {
+  concurrency: 3,
+  useIntegrated: true,
+  preset: 'fast',
   onProgress: (completed, total) => {
     console.log(`Progress: ${completed}/${total}`);
   }
@@ -242,7 +316,65 @@ const analysisOptions = {
   format: 'json',             // Output format
   includeSources: false,      // Include source locations
   parseTimeout: 15000,        // Parse timeout for this operation
-  includeTypeImports: true    // Include type-only imports
+  includeTypeImports: true,   // Include type-only imports
+
+  // Enhanced integrated analysis options 🆕
+  useIntegrated: true,        // Enable integrated analysis mode
+  preset: 'balanced',         // Use built-in preset
+  detailLevel: 'standard',    // Analysis detail level
+  optimizationMode: 'balanced', // Performance optimization
+  enabledViews: ['summary', 'table', 'tree'], // Output views
+  maxStringLength: 1000,      // String truncation limit
+  maxArrayLength: 100,        // Array size limit
+  maxDepth: 10               // Nesting depth limit
+};
+```
+
+### Configuration Presets 🆕
+
+```javascript
+// Built-in presets with their characteristics:
+
+const presetCharacteristics = {
+  fast: {
+    views: ['summary', 'minimal'],
+    detailLevel: 'minimal',
+    optimizationMode: 'speed',
+    performance: '~5ms analysis time',
+    useCase: 'CI/CD pipelines, quick checks'
+  },
+
+  balanced: {
+    views: ['summary', 'table', 'tree', 'csv', 'minimal'],
+    detailLevel: 'standard',
+    optimizationMode: 'balanced',
+    performance: '~15ms analysis time',
+    useCase: 'Regular development workflow'
+  },
+
+  comprehensive: {
+    views: ['summary', 'table', 'tree', 'csv', 'minimal'],
+    detailLevel: 'comprehensive',
+    optimizationMode: 'accuracy',
+    performance: '~25ms analysis time',
+    useCase: 'Code audits, detailed analysis'
+  },
+
+  lightweight: {
+    views: ['summary'],
+    detailLevel: 'minimal',
+    optimizationMode: 'speed',
+    performance: '~3ms, <10MB memory',
+    useCase: 'Resource-constrained environments'
+  },
+
+  debug: {
+    views: ['summary', 'table', 'tree', 'csv', 'minimal'],
+    detailLevel: 'comprehensive',
+    optimizationMode: 'accuracy',
+    performance: '~50ms (detailed output)',
+    useCase: 'Development, troubleshooting'
+  }
 };
 ```
 

@@ -5,9 +5,14 @@
  * Source: Data model specification, research current state analysis
  */
 
+import { TestEnvironment, BaselineMetadata } from './types';
+
 export interface PerformanceBaseline {
+  id?: string;                   // Unique identifier for the baseline
   timestamp: Date;               // When baseline was established
   totalExecutionTime: number;    // Total test execution time in ms
+  duration?: number;             // Alias for totalExecutionTime (for compatibility)
+  executionTime?: number;        // Another alias for totalExecutionTime (for compatibility)
   totalTests: number;           // Count of all tests
   failedTests: number;          // Count of failed tests
   failedSuites: number;         // Count of failed test suites
@@ -20,24 +25,53 @@ export interface PerformanceBaseline {
   metadata: BaselineMetadata;   // Additional metadata
 }
 
-export interface TestEnvironment {
-  nodeVersion: string;
-  jestVersion: string;
-  platform: string;
-  arch: string;
-  cpuCount: number;
-  totalMemory: number;         // Total system memory in MB
-  availableMemory: number;     // Available memory at test time in MB
+export class PerformanceBaseline implements PerformanceBaseline {
+  timestamp: Date;
+  totalExecutionTime: number;
+  totalTests: number;
+  failedTests: number;
+  failedSuites: number;
+  passRate: number;
+  coveragePercentage: number;
+  memoryUsage: number;
+  workerIssues: boolean;
+  parserWarnings: number;
+  environment: TestEnvironment;
+  metadata: BaselineMetadata;
+
+  constructor(data: Partial<PerformanceBaseline> & {
+    totalExecutionTime: number;
+    totalTests: number;
+    failedTests: number;
+    failedSuites: number;
+  }) {
+    this.timestamp = data.timestamp || new Date();
+    this.totalExecutionTime = data.totalExecutionTime;
+    this.totalTests = data.totalTests;
+    this.failedTests = data.failedTests;
+    this.failedSuites = data.failedSuites;
+    this.passRate = data.passRate || (data.totalTests > 0 ? ((data.totalTests - data.failedTests) / data.totalTests) * 100 : 0);
+    this.coveragePercentage = data.coveragePercentage || 0;
+    this.memoryUsage = data.memoryUsage || 0;
+    this.workerIssues = data.workerIssues || false;
+    this.parserWarnings = data.parserWarnings || 0;
+    this.environment = data.environment || {
+      nodeVersion: process.version,
+      jestVersion: 'unknown',
+      platform: process.platform,
+      arch: process.arch,
+      cpuCount: require('os').cpus().length,
+      totalMemory: require('os').totalmem() / 1024 / 1024,
+      availableMemory: require('os').freemem() / 1024 / 1024
+    };
+    this.metadata = data.metadata || {
+      measurementDuration: 0,
+      retries: 0,
+      confidence: 1.0
+    };
+  }
 }
 
-export interface BaselineMetadata {
-  measurementDuration: number; // How long the measurement took in ms
-  retries: number;            // Number of measurement retries
-  confidence: number;         // Confidence level in measurement (0-1)
-  notes?: string;             // Additional notes about baseline
-  gitCommit?: string;         // Git commit hash when measured
-  branch?: string;            // Git branch when measured
-}
 
 export interface PerformanceTarget {
   targetExecutionTime: number;    // Target execution time in ms (1500ms)

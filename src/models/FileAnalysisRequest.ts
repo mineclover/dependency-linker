@@ -10,7 +10,10 @@ export type OutputFormat =
 	| "summary"
 	| "csv"
 	| "deps-only"
-	| "table";
+	| "table"
+	| "tree"
+	| "minimal"
+	| "report";
 
 export interface AnalysisOptions {
 	/** Output format */

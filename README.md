@@ -113,11 +113,68 @@ console.log(deps); // ['react', 'lodash', './utils']
 # Include source locations
 ./analyze-file src/component.tsx --include-sources
 
+# Enhanced integrated analysis (recommended)
+./analyze-file src/component.tsx --use-integrated --preset fast
+
+# Configuration management
+./analyze-file config list
+./analyze-file config show --preset comprehensive
+
 # Help
 ./analyze-file --help
 ```
 
+### 🔧 Configuration Options
+
+The CLI now supports advanced configuration options for optimized analysis:
+
+```bash
+# Use predefined presets
+./analyze-file src/app.tsx --use-integrated --preset fast          # Fast processing
+./analyze-file src/app.tsx --use-integrated --preset balanced      # Balanced (default)
+./analyze-file src/app.tsx --use-integrated --preset comprehensive # Maximum detail
+./analyze-file src/app.tsx --use-integrated --preset lightweight   # Minimal memory
+./analyze-file src/app.tsx --use-integrated --preset debug         # Development/debugging
+
+# Custom configuration options
+./analyze-file src/app.tsx --use-integrated \
+  --detail-level comprehensive \
+  --optimization-mode accuracy \
+  --enabled-views summary,table,tree \
+  --max-string-length 2000 \
+  --max-array-length 200 \
+  --max-depth 15
+
+# Configuration management
+./analyze-file config list                              # List all presets
+./analyze-file config show --preset fast               # Show preset details
+./analyze-file config validate --preset comprehensive  # Validate preset
+./analyze-file config list --format json               # JSON output
+```
+
+### 📊 Output Formats
+
+The tool supports multiple output formats optimized for different use cases:
+
+```bash
+# Standard formats
+./analyze-file src/app.tsx --format json         # Full JSON (default)
+./analyze-file src/app.tsx --format text         # Human-readable
+./analyze-file src/app.tsx --format compact      # Minified JSON
+./analyze-file src/app.tsx --format summary      # Key metrics summary
+./analyze-file src/app.tsx --format table        # Formatted table
+./analyze-file src/app.tsx --format tree         # Tree visualization
+./analyze-file src/app.tsx --format csv          # CSV for spreadsheets
+./analyze-file src/app.tsx --format deps-only    # Dependencies only
+
+# Enhanced integrated formats (--use-integrated)
+./analyze-file src/app.tsx --use-integrated --format minimal  # Compact one-line
+./analyze-file src/app.tsx --use-integrated --format report   # Comprehensive report
+```
+
 ### 📊 Analysis Result Example
+
+#### Standard Analysis Output
 ```json
 {
   "filePath": "example.tsx",
@@ -135,38 +192,185 @@ console.log(deps); // ['react', 'lodash', './utils']
 }
 ```
 
+#### Enhanced Integrated Analysis Output (--use-integrated)
+```json
+{
+  "core": {
+    "filePath": "example.tsx",
+    "success": true,
+    "dependencies": [...],
+    "performanceMetrics": {
+      "parseTime": 8,
+      "totalTime": 15,
+      "memoryUsage": 2.5
+    }
+  },
+  "views": {
+    "summary": {
+      "fileName": "example.tsx",
+      "totalDependencies": 5,
+      "externalDependencies": 3,
+      "internalDependencies": 2,
+      "analysisTime": "15ms"
+    },
+    "table": {
+      "headers": ["Dependency", "Type", "Location"],
+      "rows": [
+        ["react", "external", "line 1"],
+        ["./utils", "internal", "line 3"]
+      ]
+    },
+    "tree": {
+      "name": "example.tsx",
+      "children": [
+        {"name": "react", "type": "external"},
+        {"name": "./utils", "type": "internal"}
+      ]
+    }
+  },
+  "metadata": {
+    "generatedAt": "2024-01-15T10:30:00Z",
+    "analysisVersion": "2.0.0",
+    "configuration": {
+      "preset": "balanced",
+      "detailLevel": "standard"
+    }
+  }
+}
+```
+
+## ⚙️ Configuration Presets
+
+The tool provides five built-in configuration presets optimized for different use cases:
+
+### 🚀 **Fast** - Quick Analysis
+- **Use case**: Rapid development, CI/CD pipelines
+- **Views**: Summary, Minimal only
+- **Detail level**: Minimal
+- **Optimization**: Speed-focused
+- **Performance**: ~5ms analysis time
+
+```bash
+./analyze-file src/app.tsx --use-integrated --preset fast
+```
+
+### ⚖️ **Balanced** - General Purpose (Default)
+- **Use case**: Regular development workflow
+- **Views**: All views (summary, table, tree, csv, minimal)
+- **Detail level**: Standard
+- **Optimization**: Balanced speed and accuracy
+- **Performance**: ~15ms analysis time
+
+```bash
+./analyze-file src/app.tsx --use-integrated --preset balanced
+```
+
+### 🔍 **Comprehensive** - Maximum Detail
+- **Use case**: Code audits, detailed analysis
+- **Views**: All views with maximum detail
+- **Detail level**: Comprehensive
+- **Optimization**: Accuracy-focused
+- **Performance**: ~25ms analysis time
+
+```bash
+./analyze-file src/app.tsx --use-integrated --preset comprehensive
+```
+
+### 🪶 **Lightweight** - Minimal Memory
+- **Use case**: Resource-constrained environments
+- **Views**: Summary only
+- **Detail level**: Minimal
+- **Optimization**: Memory-efficient
+- **Performance**: ~3ms analysis time, <10MB memory
+
+```bash
+./analyze-file src/app.tsx --use-integrated --preset lightweight
+```
+
+### 🐛 **Debug** - Development/Debugging
+- **Use case**: Development, troubleshooting
+- **Views**: All views with maximum limits
+- **Detail level**: Comprehensive
+- **Optimization**: No caching, single-threaded
+- **Performance**: ~50ms analysis time (detailed output)
+
+```bash
+./analyze-file src/app.tsx --use-integrated --preset debug
+```
+
+### 🎛️ Custom Configuration
+
+Override any preset with custom options:
+
+```bash
+./analyze-file src/app.tsx --use-integrated \
+  --preset balanced \
+  --detail-level comprehensive \
+  --enabled-views summary,table \
+  --max-string-length 1500 \
+  --optimization-mode accuracy
+```
+
+**Available options:**
+- `--detail-level`: `minimal` | `standard` | `comprehensive`
+- `--optimization-mode`: `speed` | `balanced` | `accuracy`
+- `--enabled-views`: Comma-separated list of `summary,table,tree,csv,minimal`
+- `--max-string-length`: Maximum string length in output (default: 1000)
+- `--max-array-length`: Maximum array length in output (default: 100)
+- `--max-depth`: Maximum nesting depth in output (default: 10)
+
 ## 🔧 API Reference
 
 ### Simple Function API
 
 ```javascript
-const { 
-  analyzeTypeScriptFile, 
-  extractDependencies, 
-  getBatchAnalysis, 
-  analyzeDirectory 
+const {
+  analyzeTypeScriptFile,
+  extractDependencies,
+  getBatchAnalysis,
+  analyzeDirectory
 } = require('@context-action/dependency-linker');
 
-// Single file analysis
+// Standard analysis
 const result = await analyzeTypeScriptFile('./src/index.ts', {
   format: 'json',
   includeSources: true,
   parseTimeout: 10000
 });
 
-// Batch processing
+// Enhanced integrated analysis (recommended)
+const integratedResult = await analyzeTypeScriptFile('./src/index.ts', {
+  useIntegrated: true,
+  preset: 'balanced',
+  format: 'report'
+});
+
+// Custom integrated configuration
+const customResult = await analyzeTypeScriptFile('./src/index.ts', {
+  useIntegrated: true,
+  detailLevel: 'comprehensive',
+  optimizationMode: 'accuracy',
+  enabledViews: ['summary', 'table', 'tree'],
+  maxStringLength: 2000
+});
+
+// Batch processing with presets
 const results = await getBatchAnalysis([
   './src/index.ts',
   './src/utils.ts'
 ], {
   concurrency: 3,
+  useIntegrated: true,
+  preset: 'fast',
   onProgress: (completed, total) => console.log(`${completed}/${total}`)
 });
 
-// Directory analysis
+// Directory analysis with configuration
 const dirResults = await analyzeDirectory('./src', {
   extensions: ['.ts', '.tsx'],
-  ignorePatterns: ['**/*.test.ts', '**/node_modules/**']
+  ignorePatterns: ['**/*.test.ts', '**/node_modules/**'],
+  useIntegrated: true,
+  preset: 'balanced'
 });
 ```
 

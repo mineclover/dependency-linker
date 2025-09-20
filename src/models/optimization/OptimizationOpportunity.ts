@@ -5,27 +5,11 @@
  * Source: Data model specification, FR-010 (identify flaky tests), research risk assessment
  */
 
-export enum OptimizationType {
-  RemoveDuplicate = "remove_duplicate",
-  SimplifySetup = "simplify_setup",
-  ConsolidateScenarios = "consolidate_scenarios",
-  FixFlaky = "fix_flaky",
-  BehaviorFocus = "behavior_focus",
-  SharedUtilities = "shared_utilities"
-}
-
-export enum RiskLevel {
-  Low = "low",          // Minimal chance of regression
-  Medium = "medium",    // Some validation required
-  High = "high"         // Extensive testing needed
-}
-
-export enum EffortLevel {
-  Minimal = "minimal",  // <1 hour
-  Low = "low",         // 1-4 hours
-  Medium = "medium",    // 1-2 days
-  High = "high"        // >2 days
-}
+import {
+  OptimizationType,
+  RiskLevel,
+  EffortLevel
+} from './types';
 
 export enum OptimizationStatus {
   Identified = "identified",
@@ -42,7 +26,12 @@ export interface OptimizationOpportunity {
   targetSuite: string;           // TestSuite.id this applies to
   targetCases?: string[];        // Specific TestCase.ids if applicable
   description: string;           // What needs optimization
-  estimatedTimeSaving: number;   // Expected execution time reduction (ms)
+  impact: {
+    timeReduction: number;       // Expected time reduction (ms)
+    complexityReduction: number; // Complexity reduction score
+    maintainabilityImprovement: number; // Maintainability improvement score
+  };
+  estimatedTimeSaving: number;   // Expected execution time reduction (ms) - for compatibility
   riskLevel: RiskLevel;          // Risk assessment for this change
   implementationEffort: EffortLevel; // Required work level
   prerequisites: string[];       // What must be done first
@@ -52,6 +41,82 @@ export interface OptimizationOpportunity {
   completedAt?: Date;           // When optimization was completed
   validationRequired: boolean;   // Whether this needs validation
   rollbackPlan?: string;        // How to undo if something goes wrong
+  strategy?: string;            // Strategy name for optimization
+  constraints?: string[];       // Optimization constraints
+  implementation?: {
+    approach: string;
+    steps: string[];
+    codeChanges?: string[];
+    rollbackPlan?: string;
+  };
+  validation?: {
+    criteria: string[];
+    testPlan: string;
+    successMetrics: string[];
+  };
+}
+
+export class OptimizationOpportunity implements OptimizationOpportunity {
+  id: string;
+  type: OptimizationType;
+  targetSuite: string;
+  targetCases?: string[];
+  description: string;
+  impact: {
+    timeReduction: number;
+    complexityReduction: number;
+    maintainabilityImprovement: number;
+  };
+  estimatedTimeSaving: number;
+  riskLevel: RiskLevel;
+  implementationEffort: EffortLevel;
+  prerequisites: string[];
+  status: OptimizationStatus;
+  createdAt: Date;
+  updatedAt: Date;
+  completedAt?: Date;
+  validationRequired: boolean;
+  rollbackPlan?: string;
+  strategy?: string;
+  constraints?: string[];
+  implementation?: {
+    approach: string;
+    steps: string[];
+    codeChanges?: string[];
+    rollbackPlan?: string;
+  };
+  validation?: {
+    criteria: string[];
+    testPlan: string;
+    successMetrics: string[];
+  };
+
+  constructor(data: Partial<OptimizationOpportunity> & { id: string; type: OptimizationType; targetSuite: string }) {
+    this.id = data.id;
+    this.type = data.type;
+    this.targetSuite = data.targetSuite;
+    this.targetCases = data.targetCases;
+    this.description = data.description || `${data.type} optimization`;
+    this.impact = data.impact || {
+      timeReduction: data.estimatedTimeSaving || 100,
+      complexityReduction: 0.5,
+      maintainabilityImprovement: 0.3
+    };
+    this.estimatedTimeSaving = data.estimatedTimeSaving || this.impact.timeReduction || 100;
+    this.riskLevel = data.riskLevel || RiskLevel.Medium;
+    this.implementationEffort = data.implementationEffort || EffortLevel.Medium;
+    this.prerequisites = data.prerequisites || [];
+    this.status = data.status || OptimizationStatus.Identified;
+    this.createdAt = data.createdAt || new Date();
+    this.updatedAt = data.updatedAt || new Date();
+    this.completedAt = data.completedAt;
+    this.validationRequired = data.validationRequired || false;
+    this.rollbackPlan = data.rollbackPlan;
+    this.strategy = data.strategy;
+    this.constraints = data.constraints;
+    this.implementation = data.implementation;
+    this.validation = data.validation;
+  }
 }
 
 export interface OptimizationImpact {
@@ -135,13 +200,19 @@ export class OptimizationOpportunityBuilder {
   build(): OptimizationOpportunity {
     this.validateOpportunity();
 
+    const timeSaving = this.opportunity.estimatedTimeSaving || 100;
     return {
       id: this.opportunity.id!,
       type: this.opportunity.type!,
       targetSuite: this.opportunity.targetSuite!,
       targetCases: this.opportunity.targetCases,
       description: this.opportunity.description || `${this.opportunity.type} optimization`,
-      estimatedTimeSaving: this.opportunity.estimatedTimeSaving || 100,
+      impact: {
+        timeReduction: timeSaving,
+        complexityReduction: 0.5,
+        maintainabilityImprovement: 0.3
+      },
+      estimatedTimeSaving: timeSaving,
       riskLevel: this.opportunity.riskLevel || RiskLevel.Medium,
       implementationEffort: this.opportunity.implementationEffort || EffortLevel.Medium,
       prerequisites: this.opportunity.prerequisites!,

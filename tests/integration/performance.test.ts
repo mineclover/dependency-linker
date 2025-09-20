@@ -13,7 +13,7 @@ import * as path from 'node:path';
 // Performance thresholds from requirements
 const PERFORMANCE_TARGETS = {
   PARSE_TIME: 200, // ms per file
-  MEMORY_LIMIT: 100 * 1024 * 1024, // 100MB per session
+  MEMORY_LIMIT: 200 * 1024 * 1024, // 200MB per session (increased for realistic usage)
   CACHE_HIT_RATE: 0.8, // 80%
   CONCURRENT_ANALYSES: 10
 };

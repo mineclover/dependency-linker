@@ -5,9 +5,9 @@
  * Source: Data model specification, FR-006 (consolidate duplicate scenarios)
  */
 
-export { TestCase, TestType, Priority, TestCaseBuilder } from './TestSuite';
-
-import { TestCase, TestType, Priority } from './TestSuite';
+export { TestCase, TestCaseBuilder } from './TestSuite';
+import { TestCase } from './TestSuite';
+import { TestType, Priority } from './types';
 
 // Additional TestCase-specific interfaces and utilities
 export interface TestCaseMetrics {

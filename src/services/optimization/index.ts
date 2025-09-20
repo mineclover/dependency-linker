@@ -1,0 +1,210 @@
+/**
+ * Test Optimization Services - Public API
+ * Centralized exports for all optimization services
+ */
+
+// Core service classes
+export { TestAnalyzer } from './TestAnalyzer';
+export { TestOptimizer } from './TestOptimizer';
+export { PerformanceTracker } from './PerformanceTracker';
+
+// Utility services
+export { TestDataFactory } from './TestDataFactory';
+export { TestSetupManager } from './TestSetupManager';
+export { TestAssertions } from './TestAssertions';
+export { TestBenchmark } from './TestBenchmark';
+export { PerformanceOptimizer } from './PerformanceOptimizer';
+
+// Helper benchmark class
+export { PerformanceBenchmark } from '../../helpers/benchmark/PerformanceBenchmark';
+
+// Re-export service interfaces and types for convenience
+export type {
+  TestFileInfo,
+  TestSuiteAnalysis,
+  CategorizedTests,
+  OptimizationOptions,
+  OptimizationResult,
+  OptimizationImprovement
+} from './TestAnalyzer';
+
+export type {
+  PerformanceTrackingOptions,
+  TestExecutionResult,
+  TestSuiteMetrics,
+  MonitoringSession
+} from './PerformanceTracker';
+
+// Configuration interfaces
+export interface OptimizationServiceConfig {
+  /** Maximum number of concurrent optimizations */
+  maxConcurrentOptimizations?: number;
+
+  /** Default timeout for service operations (ms) */
+  defaultTimeoutMs?: number;
+
+  /** Enable detailed performance tracking */
+  enablePerformanceTracking?: boolean;
+
+  /** Enable real-time monitoring */
+  enableRealTimeMonitoring?: boolean;
+
+  /** Output directory for reports and logs */
+  outputDirectory?: string;
+
+  /** Log level for service operations */
+  logLevel?: 'error' | 'warn' | 'info' | 'debug' | 'trace';
+}
+
+/**
+ * Main optimization orchestrator class
+ * Coordinates all optimization services for complete workflow
+ */
+export class OptimizationOrchestrator {
+  private analyzer: TestAnalyzer;
+  private optimizer: TestOptimizer;
+  private tracker: PerformanceTracker;
+  private config: OptimizationServiceConfig;
+
+  constructor(config: OptimizationServiceConfig = {}) {
+    this.config = {
+      maxConcurrentOptimizations: 5,
+      defaultTimeoutMs: 30000,
+      enablePerformanceTracking: true,
+      enableRealTimeMonitoring: false,
+      outputDirectory: './optimization-reports',
+      logLevel: 'info',
+      ...config
+    };
+
+    this.analyzer = new TestAnalyzer();
+    this.optimizer = new TestOptimizer();
+    this.tracker = new PerformanceTracker();
+  }
+
+  /**
+   * Execute complete optimization workflow
+   */
+  async optimizeTestSuite(testFilesPattern: string): Promise<{
+    analysis: any;
+    optimizations: any[];
+    performance: any;
+  }> {
+    try {
+      // 1. Analyze test files
+      const analysis = await this.analyzer.analyzeTestFiles(testFilesPattern);
+
+      // 2. Apply optimizations
+      const optimizations = await Promise.all(
+        analysis.testSuites.slice(0, this.config.maxConcurrentOptimizations).map(
+          suite => this.optimizer.optimizeTestSuite(suite, {
+            preserveCriticalTests: true,
+            targetDuration: 1500
+          })
+        )
+      );
+
+      // 3. Track performance if enabled
+      let performance = null;
+      if (this.config.enablePerformanceTracking) {
+        for (const optimization of optimizations) {
+          await this.tracker.trackTestSuiteExecution(
+            optimization.optimizedSuite,
+            async () => {
+              // Simulate test execution
+              await new Promise(resolve => setTimeout(resolve, 100));
+            }
+          );
+        }
+
+        performance = {
+          metrics: optimizations.map(opt =>
+            this.tracker.getMetrics(opt.optimizedSuite.id)
+          ).filter(Boolean)
+        };
+      }
+
+      return {
+        analysis,
+        optimizations,
+        performance
+      };
+
+    } catch (error) {
+      throw new Error(`Optimization workflow failed: ${error instanceof Error ? error.message : 'Unknown error'}`);
+    }
+  }
+
+  /**
+   * Get service configuration
+   */
+  getConfig(): OptimizationServiceConfig {
+    return { ...this.config };
+  }
+
+  /**
+   * Update service configuration
+   */
+  updateConfig(updates: Partial<OptimizationServiceConfig>): void {
+    this.config = { ...this.config, ...updates };
+  }
+
+  /**
+   * Get individual service instances for advanced usage
+   */
+  getServices() {
+    return {
+      analyzer: this.analyzer,
+      optimizer: this.optimizer,
+      tracker: this.tracker
+    };
+  }
+
+  /**
+   * Initialize all services
+   */
+  async initialize(): Promise<void> {
+    if (typeof this.tracker.initialize === 'function') {
+      await this.tracker.initialize();
+    }
+  }
+
+  /**
+   * Cleanup all services
+   */
+  async cleanup(): Promise<void> {
+    if (typeof this.tracker.cleanup === 'function') {
+      await this.tracker.cleanup();
+    }
+  }
+}
+
+/**
+ * Factory function for creating optimization orchestrator
+ */
+export function createOptimizationOrchestrator(
+  config?: OptimizationServiceConfig
+): OptimizationOrchestrator {
+  return new OptimizationOrchestrator(config);
+}
+
+/**
+ * Utility function for quick optimization
+ */
+export async function optimizeTests(
+  testFilesPattern: string,
+  config?: OptimizationServiceConfig
+): Promise<{
+  analysis: any;
+  optimizations: any[];
+  performance: any;
+}> {
+  const orchestrator = createOptimizationOrchestrator(config);
+
+  try {
+    await orchestrator.initialize();
+    return await orchestrator.optimizeTestSuite(testFilesPattern);
+  } finally {
+    await orchestrator.cleanup();
+  }
+}

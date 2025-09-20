@@ -41,12 +41,15 @@ import {
 	InterpreterRegistry,
 } from "./InterpreterRegistry";
 import { ParserRegistry } from "./ParserRegistry";
+import { DataIntegrator, type IDataIntegrator } from "./integration/DataIntegrator";
+import type { IntegratedAnalysisData, DataIntegrationConfig } from "../models/IntegratedData";
 
 export class AnalysisEngine implements IAnalysisEngine {
 	private parserRegistry: ParserRegistry;
 	private extractorRegistry: IExtractorRegistry;
 	private interpreterRegistry: IInterpreterRegistry;
 	private cacheManager: ICacheManager;
+	private dataIntegrator: IDataIntegrator;
 	private defaultConfig: AnalysisConfig;
 	private enabled: boolean = true;
 	private performanceMetrics: EnginePerformanceMetrics;
@@ -58,6 +61,7 @@ export class AnalysisEngine implements IAnalysisEngine {
 		this.extractorRegistry = new ExtractorRegistry();
 		this.interpreterRegistry = new InterpreterRegistry();
 		this.cacheManager = new CacheManager();
+		this.dataIntegrator = new DataIntegrator();
 		this.defaultConfig = config || AnalysisConfigUtils.default();
 		this.startTime = Date.now();
 		this.performanceMonitor = new PerformanceMonitor();
@@ -347,6 +351,43 @@ export class AnalysisEngine implements IAnalysisEngine {
 		}
 
 		return results;
+	}
+
+	/**
+	 * Analyzes a file and returns integrated data optimized for output
+	 */
+	async analyzeFileIntegrated(
+		filePath: string,
+		config?: AnalysisConfig,
+		integrationConfig?: DataIntegrationConfig,
+	): Promise<IntegratedAnalysisData> {
+		const result = await this.analyzeFile(filePath, config);
+		return await this.dataIntegrator.integrate(result, integrationConfig);
+	}
+
+	/**
+	 * Analyzes multiple files and returns integrated data batch
+	 */
+	async analyzeBatchIntegrated(
+		filePaths: string[],
+		config?: AnalysisConfig,
+		integrationConfig?: DataIntegrationConfig,
+	): Promise<IntegratedAnalysisData[]> {
+		const results = await this.analyzeBatch(filePaths, config);
+		return await this.dataIntegrator.integrateBatch(results, integrationConfig);
+	}
+
+	/**
+	 * Analyzes content and returns integrated data
+	 */
+	async analyzeContentIntegrated(
+		content: string,
+		filePath: string,
+		config?: AnalysisConfig,
+		integrationConfig?: DataIntegrationConfig,
+	): Promise<IntegratedAnalysisData> {
+		const result = await this.analyzeContent(content, filePath, config);
+		return await this.dataIntegrator.integrate(result, integrationConfig);
 	}
 
 	/**

@@ -18,7 +18,7 @@ describe('Optimization Execution Integration', () => {
   beforeEach(() => {
     testAnalyzer = new TestAnalyzer();
     performanceTracker = new PerformanceTracker();
-    testOptimizer = new TestOptimizer(testAnalyzer, performanceTracker);
+    testOptimizer = new TestOptimizer();
   });
 
   afterEach(async () => {

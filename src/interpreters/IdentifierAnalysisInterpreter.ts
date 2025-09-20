@@ -124,7 +124,7 @@ export class IdentifierAnalysisInterpreter
 		input: IdentifierExtractionResult,
 		_context?: any,
 	): IdentifierAnalysisResult {
-		const identifiers = input.identifiers;
+		const identifiers = input?.identifiers || [];
 
 		// Analyze codebase structure
 		const codebaseStructure = this.analyzeCodebaseStructure(input, identifiers);
@@ -198,13 +198,16 @@ export class IdentifierAnalysisInterpreter
 		// Count large classes (simplified - would need method analysis)
 		const classes = identifiers.filter((i) => i.type === "class");
 		const largeClasses = classes.filter(
-			(c) =>
+			(c) => {
+				// Check if endLine exists, otherwise use a reasonable default
+				const endLine = c.location?.endLine || c.location?.line + 50;
 				// This is a simplified heuristic - would need more sophisticated analysis
-				identifiers.filter(
+				return identifiers.filter(
 					(i) =>
-						i.location.line > c.location.line &&
-						i.location.line < c.location.endLine,
-				).length > 10,
+						i.location?.line > c.location?.line &&
+						i.location?.line < endLine,
+				).length > 10;
+			},
 		).length;
 
 		return {

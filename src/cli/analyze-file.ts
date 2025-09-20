@@ -28,15 +28,38 @@ async function main(): Promise<void> {
 	const cliAdapter = new CLIAdapter();
 
 	try {
+		// Check for config command first
+		const args = process.argv.slice(2);
+		if (args.length > 0 && args[0] === 'config') {
+			// Route to config command
+			const { execSync } = require('node:child_process');
+			const path = require('node:path');
+			const configScript = path.join(__dirname, 'commands', 'config.js');
+
+			try {
+				execSync(`node "${configScript}" ${args.slice(1).join(' ')}`, {
+					stdio: 'inherit',
+					encoding: 'utf8'
+				});
+				process.exit(0);
+			} catch (error) {
+				process.exit(1);
+			}
+		}
+
 		// Parse command line arguments
-		const parseResult = parser.parse(process.argv.slice(2));
+		const parseResult = parser.parse(args);
 
 		if (parseResult.error) {
 			console.error(parser.formatError(parseResult.error));
 			process.exit(parseResult.error.exitCode);
 		}
 
-		const options = parseResult.options!;
+		const options = parseResult.options;
+		if (!options) {
+			console.error("Failed to parse command options");
+			process.exit(1);
+		}
 
 		// Handle help and version flags
 		if (options.help) {
@@ -79,6 +102,8 @@ async function main(): Promise<void> {
 			format: mergedOptions.format,
 			includeSources: mergedOptions.includeSources,
 			parseTimeout: mergedOptions.parseTimeout,
+			useIntegrated: mergedOptions.useIntegrated,
+			optimizeOutput: mergedOptions.optimizeOutput,
 		};
 
 		// Validate using adapter
@@ -111,21 +136,39 @@ async function main(): Promise<void> {
 			process.exit(1);
 		}
 
-		// Perform analysis using adapter
-		const result = await cliAdapter.analyzeFile(cliOptions);
+		// Perform analysis using adapter (integrated or traditional)
+		if (cliOptions.useIntegrated) {
+			// Use integrated analysis flow
+			const integratedData = await cliAdapter.analyzeFileIntegrated(cliOptions);
 
-		// Format and output result using adapter
-		const header = cliAdapter.getFormatHeader(mergedOptions.format);
-		if (header) {
-			console.log(header);
+			// Format and output result using integrated formatter
+			const header = cliAdapter.getFormatHeader(mergedOptions.format);
+			if (header) {
+				console.log(header);
+			}
+
+			const output = cliAdapter.formatIntegratedResult(integratedData, mergedOptions.format);
+			console.log(output);
+
+			// Exit with appropriate code based on overall status
+			const hasErrors = integratedData.core.status.overall === "error";
+			process.exit(hasErrors ? 1 : 0);
+		} else {
+			// Use traditional analysis flow
+			const result = await cliAdapter.analyzeFile(cliOptions);
+
+			// Format and output result using adapter
+			const header = cliAdapter.getFormatHeader(mergedOptions.format);
+			if (header) {
+				console.log(header);
+			}
+
+			const output = cliAdapter.formatResult(result, mergedOptions.format);
+			console.log(output);
+
+			// Exit with appropriate code
+			process.exit(AnalysisResultUtils.isSuccessful(result) ? 0 : 1);
 		}
-
-		const output = cliAdapter.formatResult(result, mergedOptions.format);
-
-		console.log(output);
-
-		// Exit with appropriate code
-		process.exit(AnalysisResultUtils.isSuccessful(result) ? 0 : 1);
 	} catch (error) {
 		console.error(
 			"Unexpected error:",
