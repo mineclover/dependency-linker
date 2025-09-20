@@ -63,4 +63,21 @@ module.exports = {
 	// Jest extensions for better integration test support
 	maxWorkers: "50%", // Optimize for integration tests
 	testSequencer: "@jest/test-sequencer",
+
+	// Fix resource leak issues (T004)
+	forceExit: true,
+	detectOpenHandles: true,
+	detectLeaks: true,
+
+	// Worker management to prevent exit issues
+	workerIdleMemoryLimit: "500MB",
+
+	// Cache management for better performance
+	clearMocks: true,
+	resetMocks: false,
+	restoreMocks: true,
+
+	// Global setup and teardown for optimization
+	globalSetup: "<rootDir>/tests/helpers/optimization/globalSetup.ts",
+	globalTeardown: "<rootDir>/tests/helpers/optimization/globalTeardown.ts"
 };

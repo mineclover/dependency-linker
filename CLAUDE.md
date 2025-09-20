@@ -41,14 +41,20 @@ AnalysisEngine (coordinator)
 - Cache hit rate: >80%
 - Concurrency: 10 parallel analyses
 
-## Recent Changes (004-flowchart-ast-2)
-- Designed plugin architecture for extensibility
-- Created contracts for multi-language support
-- Planned AST reuse across analyzers
-- Maintained API compatibility with existing system
+## Recent Changes (005-test-optimization)
+- **Testing Issues Identified**: 309 tests with 23 failures, 3.17s execution time
+- **Optimization Strategy**: Three-tier categorization (Critical/Optimize/Remove)
+- **Performance Targets**: <1.5s execution, >99% pass rate, ~250 tests
+- **Technical Focus**: Parser registry optimization, shared utilities, behavior-driven testing
+
+## Test Optimization Status
+- **Current State**: 309 tests (23 failed), 3.17s execution, worker exit issues
+- **Target State**: ~250 tests, <1.5s execution, >99% reliability
+- **Key Issues**: Parser registration warnings, flaky tests, complex setup/teardown
+- **Optimization Areas**: Duplicate consolidation, shared utilities, behavior focus
 
 ## Next Phase
-Ready for `/tasks` command to generate implementation tasks from contracts and design.
+Ready for `/tasks` command to generate test optimization implementation tasks.
 
 ---
-*Auto-generated from specs/004-flowchart-ast-2/plan.md*
+*Auto-generated from specs/005-test-optimization/plan.md*
