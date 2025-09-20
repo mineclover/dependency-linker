@@ -11,28 +11,13 @@ import {
   TempFileSpec,
   TempFileContext,
   validateTestDataFactory,
-  UTILITY_CONTRACT_SCENARIOS
+  UTILITY_CONTRACT_SCENARIOS,
+  FileAnalysisRequest,
+  Tree,
+  AnalysisResult
 } from '../../specs/005-test-optimization/contracts/test-utilities.contract';
 
-// Mock interfaces needed (these would be from actual project)
-interface FileAnalysisRequest {
-  filePath: string;
-  content?: string;
-  language?: string;
-}
-
-interface AnalysisResult {
-  filePath: string;
-  dependencies: string[];
-  exports: string[];
-  imports: string[];
-  errors?: string[];
-}
-
-interface Tree {
-  rootNode: any;
-  language: string;
-}
+// Using types from contract interface
 
 // Mock implementation for contract testing
 class MockTestDataFactory implements ITestDataFactory {
@@ -63,7 +48,8 @@ class MockTestDataFactory implements ITestDataFactory {
           }
         ]
       },
-      language
+      language,
+      getLanguage: () => language
     };
   }
 
@@ -72,7 +58,7 @@ class MockTestDataFactory implements ITestDataFactory {
       filePath: '/mock/test.ts',
       dependencies: ['path', 'fs'],
       exports: ['default'],
-      imports: ['util'],
+      parseTime: 150,
       errors: [],
       ...overrides
     };
@@ -190,12 +176,12 @@ describe('ITestDataFactory Contract Tests', () => {
       expect(result).toHaveProperty('filePath');
       expect(result).toHaveProperty('dependencies');
       expect(result).toHaveProperty('exports');
-      expect(result).toHaveProperty('imports');
+      expect(result).toHaveProperty('parseTime');
 
       expect(typeof result.filePath).toBe('string');
       expect(Array.isArray(result.dependencies)).toBe(true);
       expect(Array.isArray(result.exports)).toBe(true);
-      expect(Array.isArray(result.imports)).toBe(true);
+      expect(typeof result.parseTime).toBe('number');
     });
 
     test('createTempFiles should return valid context structure', async () => {
@@ -450,8 +436,9 @@ describe('ITestDataFactory Contract Tests', () => {
         expect(isValid).toBe(true);
       } catch (error) {
         // If validation fails, ensure it's for expected reasons
-        console.warn('Contract validation failed:', error.message);
-        expect(typeof error.message).toBe('string');
+        const errorMessage = error instanceof Error ? error.message : String(error);
+        console.warn('Contract validation failed:', errorMessage);
+        expect(typeof errorMessage).toBe('string');
       }
     });
   });

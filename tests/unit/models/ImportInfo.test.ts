@@ -26,6 +26,12 @@ describe("ImportInfo Model", () => {
 		offset: 0,
 	};
 
+	afterEach(() => {
+		// Clean up any global state or timers
+		jest.clearAllTimers();
+		jest.clearAllMocks();
+	});
+
 	describe("ImportSpecifier interface", () => {
 		test("should create valid import specifier", () => {
 			const specifier = createImportSpecifier(

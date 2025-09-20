@@ -9,9 +9,33 @@ import { TestOptimizationUtils } from '../../helpers/optimization';
 import { BenchmarkSuite } from '../../helpers/benchmark';
 import { TestDataFactory } from '../../helpers/factories';
 
+// Helper function to create temporary test files
+async function createTempFiles(files: Array<{ path: string; content: string }>): Promise<{ cleanup: () => Promise<void>; rootDir: string }> {
+  const os = require('os');
+  const tempDir = fs.mkdtempSync(path.join(os.tmpdir(), 'test-optimization-'));
+
+  for (const file of files) {
+    const filePath = path.join(tempDir, file.path);
+    const dirPath = path.dirname(filePath);
+
+    if (!fs.existsSync(dirPath)) {
+      fs.mkdirSync(dirPath, { recursive: true });
+    }
+
+    fs.writeFileSync(filePath, file.content);
+  }
+
+  return {
+    rootDir: tempDir,
+    cleanup: async () => {
+      fs.rmSync(tempDir, { recursive: true, force: true });
+    }
+  };
+}
+
 describe('Test Suite Analysis Integration', () => {
   let testDir: string;
-  let tempFiles: { cleanup: () => Promise<void> } | null = null;
+  let tempFiles: { cleanup: () => Promise<void>; rootDir: string } | null = null;
   let benchmark: BenchmarkSuite;
 
   beforeAll(async () => {
@@ -24,8 +48,7 @@ describe('Test Suite Analysis Integration', () => {
 
   beforeEach(async () => {
     // Create temporary test directory structure
-    const factory = new (TestDataFactory as any)();
-    tempFiles = await factory.createTempFiles([
+    tempFiles = await createTempFiles([
       // Parser tests with duplicates
       {
         path: 'parser/typescript-parser.test.ts',

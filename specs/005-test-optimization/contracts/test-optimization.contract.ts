@@ -86,6 +86,15 @@ export interface IPerformanceTracker {
   ): PerformanceComparison;
 }
 
+// Import missing types from data models
+import {
+  TestSuite,
+  TestCase,
+  TestCategory,
+  TestType,
+  Priority
+} from '../../../src/models/optimization/TestSuite';
+
 // Data Types (from data-model.md)
 export interface TestSuiteAnalysis {
   totalTests: number;
@@ -94,6 +103,37 @@ export interface TestSuiteAnalysis {
   failureRate: number;
   testSuites: TestSuite[];
   issues: TestIssue[];
+}
+
+export interface TestIssue {
+  id: string;
+  type: string;
+  severity: 'low' | 'medium' | 'high';
+  description: string;
+  targetSuite?: string;
+  targetCase?: string;
+}
+
+export interface DuplicateTest {
+  id: string;
+  originalId: string;
+  similarity: number;
+  testCase: TestCase;
+}
+
+export interface ValidationIssue {
+  id: string;
+  type: string;
+  severity: 'warning' | 'error';
+  description: string;
+  location?: string;
+}
+
+export interface RollbackResult {
+  success: boolean;
+  restoredFiles: string[];
+  errors: string[];
+  timestamp: Date;
 }
 
 export interface CategorizedTests {

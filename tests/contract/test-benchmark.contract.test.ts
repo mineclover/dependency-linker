@@ -516,8 +516,9 @@ describe('ITestBenchmark Contract Tests', () => {
         expect(isValid).toBe(true);
       } catch (error) {
         // If validation fails, ensure it's for expected reasons
-        console.warn('Contract validation failed:', error.message);
-        expect(typeof error.message).toBe('string');
+        const errorMessage = error instanceof Error ? error.message : String(error);
+        console.warn('Contract validation failed:', errorMessage);
+        expect(typeof errorMessage).toBe('string');
       }
     });
   });

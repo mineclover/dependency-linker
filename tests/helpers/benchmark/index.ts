@@ -2,7 +2,7 @@
  * Performance benchmarking utilities for test optimization
  */
 
-export interface BenchmarkResult {
+export interface BenchmarkResult<T = any> {
   name: string;
   iterations: number;
   totalTime: number;
@@ -11,6 +11,7 @@ export interface BenchmarkResult {
   maxTime: number;
   memoryUsage: number;
   timestamp: number;
+  result: T;
 }
 
 export interface BenchmarkConfig {
@@ -34,7 +35,7 @@ export class BenchmarkSuite {
     };
   }
 
-  async benchmark(name: string, fn: () => Promise<void> | void): Promise<BenchmarkResult> {
+  async benchmark<T>(name: string, fn: () => Promise<T> | T): Promise<BenchmarkResult<T>> {
     // Warmup runs
     for (let i = 0; i < this.config.warmupRuns; i++) {
       await fn();
@@ -42,13 +43,14 @@ export class BenchmarkSuite {
 
     const times: number[] = [];
     let totalMemory = 0;
+    let lastResult: T;
 
     // Actual benchmark runs
     for (let i = 0; i < this.config.iterations; i++) {
       const startMemory = this.config.measureMemory ? process.memoryUsage().heapUsed : 0;
       const startTime = performance.now();
 
-      await fn();
+      lastResult = await fn();
 
       const endTime = performance.now();
       const endMemory = this.config.measureMemory ? process.memoryUsage().heapUsed : 0;
@@ -57,7 +59,7 @@ export class BenchmarkSuite {
       totalMemory += (endMemory - startMemory);
     }
 
-    const result: BenchmarkResult = {
+    const result: BenchmarkResult<T> = {
       name,
       iterations: this.config.iterations,
       totalTime: times.reduce((a, b) => a + b, 0),
@@ -65,7 +67,8 @@ export class BenchmarkSuite {
       minTime: Math.min(...times),
       maxTime: Math.max(...times),
       memoryUsage: totalMemory / times.length / 1024 / 1024, // MB
-      timestamp: Date.now()
+      timestamp: Date.now(),
+      result: lastResult!
     };
 
     this.results.push(result);

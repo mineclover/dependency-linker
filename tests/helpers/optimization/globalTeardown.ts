@@ -12,9 +12,13 @@ export default async function globalTeardown(): Promise<void> {
   // Clear any remaining timers
   const clearAllTimers = () => {
     // Clear all timers to prevent hanging
-    const highestTimeoutId = setTimeout(() => {}, 0);
-    for (let i = 0; i <= highestTimeoutId; i++) {
+    const highestTimeoutId = setTimeout(() => {}, 0) as unknown as number;
+    clearTimeout(highestTimeoutId);
+
+    // Clear common timer ranges (safer approach)
+    for (let i = 1; i <= 100; i++) {
       clearTimeout(i);
+      clearInterval(i);
     }
   };
 

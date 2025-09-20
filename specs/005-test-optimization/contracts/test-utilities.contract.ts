@@ -5,6 +5,48 @@
  * Focuses on solving parser registration issues and setup/teardown complexity.
  */
 
+// Type definitions for missing types
+export interface AnalysisEngine {
+  analyze(filePath: string): Promise<AnalysisResult>;
+}
+
+export interface AnalysisEngineOptions {
+  timeout?: number;
+  parseTimeout?: number;
+  cacheEnabled?: boolean;
+}
+
+export interface FileAnalysisRequest {
+  filePath: string;
+  language?: string;
+  content?: string;
+  options?: AnalysisEngineOptions;
+}
+
+export interface Tree {
+  rootNode: any;
+  language: string;
+  getLanguage(): string;
+}
+
+export interface AnalysisResult {
+  filePath: string;
+  dependencies: any[];
+  exports: any[];
+  parseTime: number;
+  errors?: string[];
+}
+
+export interface LanguageParser {
+  supports(language: string): boolean;
+  parse(content: string): Promise<Tree>;
+}
+
+export interface ParserRegistry {
+  register(parser: LanguageParser): void;
+  get(language: string): LanguageParser | undefined;
+}
+
 export interface ITestSetupManager {
   /**
    * Initialize shared test environment
