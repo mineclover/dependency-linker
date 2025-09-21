@@ -145,7 +145,7 @@ export class FileAccessError extends AnalysisError {
 	}
 
 	override getSolutions(): string[] {
-		const { filePath, operation } = this.details;
+		const { filePath } = this.details;
 		const isWindows = process.platform === "win32";
 		return [
 			`Grant read permissions to the file "${filePath}"`,
@@ -239,7 +239,7 @@ export class ParseTimeoutError extends AnalysisError {
 	}
 
 	override getSolutions(): string[] {
-		const { filePath, timeout } = this.details;
+		const { timeout } = this.details;
 		const timeoutSeconds = Math.round(timeout / 1000);
 		return [
 			`Increase the timeout value to more than ${timeout}ms for large files`,
@@ -284,7 +284,7 @@ export class ParseError extends AnalysisError {
 	}
 
 	override getSolutions(): string[] {
-		const { filePath, parseDetails } = this.details;
+		const { parseDetails } = this.details;
 		return [
 			"Fix the syntax errors in the TypeScript file",
 			"Use a TypeScript-aware editor (VS Code, IntelliJ) to identify syntax issues",
@@ -512,7 +512,7 @@ export class OperationCancelledError extends AnalysisError {
 	}
 
 	override getSolutions(): string[] {
-		const { operation, reason } = this.details;
+		const { reason } = this.details;
 		return [
 			"If this was unintentional, restart the operation",
 			"Check if the operation was cancelled due to timeout or resource constraints",
@@ -796,6 +796,7 @@ export function createBatchError(
 
 // Legacy class export for backward compatibility - will be deprecated
 /** @deprecated Use individual functions instead of ErrorUtils class */
+// biome-ignore lint/complexity/noStaticOnlyClass: Legacy compatibility wrapper
 export class ErrorUtils {
 	static isErrorOfType = isErrorOfType;
 	static getErrorCode = getErrorCode;

@@ -237,7 +237,7 @@ export class DiagnosticTool {
 			);
 
 			// Analyze dependencies if successful
-			let dependencyAnalysis;
+			let dependencyAnalysis: any;
 			if (isSuccessful(analysisResult)) {
 				const dependencies = getDependencies(analysisResult);
 				if (dependencies.length > 0) {

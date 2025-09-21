@@ -3,8 +3,6 @@
  * 출력 모듈 최적화를 위한 통합 데이터 구조
  */
 
-import type { AnalysisResult } from "./AnalysisResult";
-
 /**
  * 출력을 위해 통합된 분석 데이터
  */

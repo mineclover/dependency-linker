@@ -42,7 +42,7 @@ async function main(): Promise<void> {
 					encoding: "utf8",
 				});
 				process.exit(0);
-			} catch (error) {
+			} catch {
 				process.exit(1);
 			}
 		}
@@ -97,8 +97,12 @@ async function main(): Promise<void> {
 		}
 
 		// Use CLI adapter for validation and analysis
+		// At this point, validation ensures file is defined
+		if (!mergedOptions.file) {
+			throw new Error("File path is required after validation");
+		}
 		const cliOptions = {
-			file: mergedOptions.file!,
+			file: mergedOptions.file,
 			format: mergedOptions.format,
 			includeSources: mergedOptions.includeSources,
 			parseTimeout: mergedOptions.parseTimeout,

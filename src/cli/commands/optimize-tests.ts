@@ -3,9 +3,9 @@
  * Command-line interface for test optimization functionality
  */
 
+import * as fs from "node:fs";
+import * as path from "node:path";
 import { Command } from "commander";
-import * as fs from "fs";
-import * as path from "path";
 import type { TestSuite } from "../../models/optimization/TestSuite";
 import { PerformanceTracker } from "../../services/optimization/PerformanceTracker";
 import { TestAnalyzer } from "../../services/optimization/TestAnalyzer";
@@ -30,19 +30,9 @@ export interface OptimizeTestsOptions {
 }
 
 export class OptimizeTestsCommand {
-	private testAnalyzer: TestAnalyzer;
-	private testOptimizer: TestOptimizer;
-	private performanceTracker: PerformanceTracker;
-	private testDataFactory: TestDataFactory;
-	private testAssertions: TestAssertions;
 	private testBenchmark: TestBenchmark;
 
 	constructor() {
-		this.testAnalyzer = new TestAnalyzer();
-		this.performanceTracker = new PerformanceTracker();
-		this.testOptimizer = new TestOptimizer();
-		this.testDataFactory = TestDataFactory.getInstance();
-		this.testAssertions = TestAssertions.getInstance();
 		this.testBenchmark = TestBenchmark.getInstance();
 	}
 
@@ -156,18 +146,18 @@ export class OptimizeTestsCommand {
 	 * Validate command options
 	 */
 	private validateOptions(options: OptimizeTestsOptions): void {
-		const targetDuration = parseInt(options.target || "1500");
-		if (isNaN(targetDuration) || targetDuration <= 0) {
+		const targetDuration = parseInt(options.target || "1500", 10);
+		if (Number.isNaN(targetDuration) || targetDuration <= 0) {
 			throw new Error("Target duration must be a positive number");
 		}
 
-		const timeout = parseInt(options.timeout?.toString() || "30000");
-		if (isNaN(timeout) || timeout <= 0) {
+		const timeout = parseInt(options.timeout?.toString() || "30000", 10);
+		if (Number.isNaN(timeout) || timeout <= 0) {
 			throw new Error("Timeout must be a positive number");
 		}
 
 		const threshold = parseFloat(options.threshold?.toString() || "10");
-		if (isNaN(threshold) || threshold < 0 || threshold > 100) {
+		if (Number.isNaN(threshold) || threshold < 0 || threshold > 100) {
 			throw new Error("Threshold must be a number between 0 and 100");
 		}
 
@@ -254,7 +244,7 @@ export class OptimizeTestsCommand {
 		try {
 			const content = fs.readFileSync(filePath, "utf8");
 			const stats = fs.statSync(filePath);
-			const fileInfo = {
+			const _fileInfo = {
 				filePath,
 				content,
 				lastModified: stats.mtime,
@@ -339,7 +329,7 @@ export class OptimizeTestsCommand {
 		testSuite: TestSuite,
 		options: OptimizeTestsOptions,
 	): Promise<any> {
-		const targetDuration = parseInt(options.target || "1500");
+		const targetDuration = parseInt(options.target || "1500", 10);
 
 		const optimizationOptions = {
 			enableParallelization: options.parallel,
@@ -348,7 +338,7 @@ export class OptimizeTestsCommand {
 			targetDuration,
 			strategy: options.strategy || "auto",
 			dryRun: options.dryRun,
-			timeout: parseInt(options.timeout?.toString() || "30000"),
+			timeout: parseInt(options.timeout?.toString() || "30000", 10),
 		};
 
 		// For now, create a mock result since the TestOptimizer interface is different
@@ -363,38 +353,6 @@ export class OptimizeTestsCommand {
 			optimizationResult: result,
 			options: optimizationOptions,
 		};
-	}
-
-	/**
-	 * Validate optimization results
-	 */
-	private validateOptimizationResult(
-		result: any,
-		options: OptimizeTestsOptions,
-	): void {
-		try {
-			const threshold = parseFloat(options.threshold?.toString() || "10") / 100;
-
-			// Assert minimum improvement
-			if (result.performanceGain > 0) {
-				this.testAssertions.assertImprovement(
-					result.originalSuite.executionTime,
-					result.optimizedSuite.testCases.reduce(
-						(sum: number, tc: any) => sum + tc.executionTime,
-						0,
-					),
-					"duration",
-					{ minImprovementPercent: threshold * 100 },
-				);
-			}
-
-			// Assert test suite structure
-			this.testAssertions.assertTestSuite(result.optimizedSuite);
-		} catch (error) {
-			if (options.verbose) {
-				console.warn("⚠️  Optimization validation failed:", error);
-			}
-		}
 	}
 
 	/**
@@ -470,7 +428,7 @@ export class OptimizeTestsCommand {
 
 		const outputFile = options.output
 			? path.join(outputPath, path.basename(result.originalSuite.filePath))
-			: result.originalSuite.filePath + ".optimized";
+			: `${result.originalSuite.filePath}.optimized`;
 
 		fs.writeFileSync(outputFile, optimizedContent);
 		console.log(`📝 Optimized: ${outputFile}`);
@@ -594,7 +552,7 @@ export class OptimizeTestsCommand {
 
 		if (options.target) {
 			const targetMet =
-				summary.totalOptimizedDuration <= parseInt(options.target);
+				summary.totalOptimizedDuration <= parseInt(options.target, 10);
 			console.log(
 				`   Target Met (<${options.target}ms): ${targetMet ? "✅" : "❌"}`,
 			);

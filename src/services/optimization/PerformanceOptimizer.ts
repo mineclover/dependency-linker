@@ -445,8 +445,8 @@ export class PerformanceOptimizer {
 	 * Build metadata efficiently
 	 */
 	private buildMetadata(
-		result: AnalysisResult,
-		config: DataIntegrationConfig,
+		_result: AnalysisResult,
+		_config: DataIntegrationConfig,
 	): any {
 		return {
 			integrationVersion: "2.0.0",
@@ -533,7 +533,7 @@ export class PerformanceOptimizer {
 	}
 
 	private getMemoryUsage(): number {
-		if (typeof process !== "undefined" && process.memoryUsage) {
+		if (process?.memoryUsage) {
 			return process.memoryUsage().heapUsed;
 		}
 		return 0;
@@ -581,7 +581,7 @@ export class PerformanceOptimizer {
 
 	private truncateString(str: string, maxLength: number): string {
 		if (str.length <= maxLength) return str;
-		return str.substring(0, maxLength - 3) + "...";
+		return `${str.substring(0, maxLength - 3)}...`;
 	}
 
 	private formatMemory(bytes: number): string {

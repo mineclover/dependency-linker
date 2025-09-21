@@ -272,7 +272,9 @@ export class ErrorReporter {
 			}
 		});
 
-		toRemove.forEach((id) => this.diagnostics.delete(id));
+		for (const id of toRemove) {
+			this.diagnostics.delete(id);
+		}
 	}
 
 	/**

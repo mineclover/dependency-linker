@@ -3,9 +3,8 @@
  * Command-line interface for test optimization functionality
  */
 
+import * as fs from "node:fs";
 import { Command } from "commander";
-import * as fs from "fs";
-import * as path from "path";
 import { TestBenchmark } from "../../services/optimization/TestBenchmark";
 import { TestDataFactory } from "../../services/optimization/TestDataFactory";
 
@@ -95,8 +94,8 @@ export class OptimizeTestsCommand {
 	 * Validate command options
 	 */
 	private validateOptions(options: OptimizeTestsOptions): void {
-		const targetDuration = parseInt(options.target || "1500");
-		if (isNaN(targetDuration) || targetDuration <= 0) {
+		const targetDuration = parseInt(options.target || "1500", 10);
+		if (Number.isNaN(targetDuration) || targetDuration <= 0) {
 			throw new Error("Target duration must be a positive number");
 		}
 
@@ -185,7 +184,7 @@ export class OptimizeTestsCommand {
 		options: OptimizeTestsOptions,
 	): Promise<any[]> {
 		const results = [];
-		const targetDuration = parseInt(options.target || "1500");
+		const targetDuration = parseInt(options.target || "1500", 10);
 
 		for (let i = 0; i < testSuites.length; i++) {
 			const testSuite = testSuites[i];
@@ -340,7 +339,7 @@ export class OptimizeTestsCommand {
 
 		if (options.target) {
 			const targetMet =
-				summary.totalOptimizedDuration <= parseInt(options.target);
+				summary.totalOptimizedDuration <= parseInt(options.target, 10);
 			console.log(
 				`   Target Met (<${options.target}ms): ${targetMet ? "✅" : "❌"}`,
 			);

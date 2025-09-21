@@ -71,9 +71,9 @@ export class PerformanceBaseline implements PerformanceBaseline {
 			jestVersion: "unknown",
 			platform: process.platform,
 			arch: process.arch,
-			cpuCount: require("os").cpus().length,
-			totalMemory: require("os").totalmem() / 1024 / 1024,
-			availableMemory: require("os").freemem() / 1024 / 1024,
+			cpuCount: require("node:os").cpus().length,
+			totalMemory: require("node:os").totalmem() / 1024 / 1024,
+			availableMemory: require("node:os").freemem() / 1024 / 1024,
 		};
 		this.metadata = data.metadata || {
 			measurementDuration: 0,
@@ -179,11 +179,12 @@ export class PerformanceBaselineBuilder {
 			jestVersion: environment.jestVersion || "unknown",
 			platform: environment.platform || process.platform,
 			arch: environment.arch || process.arch,
-			cpuCount: environment.cpuCount || require("os").cpus().length,
+			cpuCount: environment.cpuCount || require("node:os").cpus().length,
 			totalMemory:
-				environment.totalMemory || require("os").totalmem() / 1024 / 1024,
+				environment.totalMemory || require("node:os").totalmem() / 1024 / 1024,
 			availableMemory:
-				environment.availableMemory || require("os").freemem() / 1024 / 1024,
+				environment.availableMemory ||
+				require("node:os").freemem() / 1024 / 1024,
 		};
 		return this;
 	}

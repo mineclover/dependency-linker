@@ -339,7 +339,7 @@ export class TestDataFactory {
 		}
 	}
 
-	private generateTestSuiteName(options: TestDataOptions): string {
+	private generateTestSuiteName(_options: TestDataOptions): string {
 		const prefixes = [
 			"Unit Tests",
 			"Integration Tests",
@@ -364,7 +364,7 @@ export class TestDataFactory {
 		return `${prefix} - ${domain} ${suffix}`;
 	}
 
-	private generateTestCaseName(options: TestDataOptions): string {
+	private generateTestCaseName(_options: TestDataOptions): string {
 		const actions = [
 			"should create",
 			"should update",
@@ -396,7 +396,7 @@ export class TestDataFactory {
 		return `${action} ${subject} ${condition}`;
 	}
 
-	private generateFilePath(type: string, options: TestDataOptions): string {
+	private generateFilePath(type: string, _options: TestDataOptions): string {
 		const directories = [
 			"tests/unit",
 			"tests/integration",
@@ -445,19 +445,6 @@ export class TestDataFactory {
 		if (duration < 300) return "fast";
 		if (duration < 1000) return "medium";
 		return "slow";
-	}
-
-	private generateCategory(size: string): string {
-		const categories = {
-			small: ["unit", "component"],
-			medium: ["integration", "api"],
-			large: ["e2e", "system"],
-			xlarge: ["performance", "stress"],
-		};
-
-		const options =
-			categories[size as keyof typeof categories] || categories.medium;
-		return this.randomChoice(options);
 	}
 
 	private generateCategoryEnum(size: string): TestCategory {
@@ -516,7 +503,7 @@ export class TestDataFactory {
 		}
 	}
 
-	private generateCoverageAreas(options: TestDataOptions): string[] {
+	private generateCoverageAreas(_options: TestDataOptions): string[] {
 		const areas = [
 			"auth",
 			"api",
@@ -536,19 +523,6 @@ export class TestDataFactory {
 		}
 
 		return coverageAreas;
-	}
-
-	private calculateRiskLevel(effort: string): "low" | "medium" | "high" {
-		switch (effort) {
-			case "low":
-				return "low";
-			case "medium":
-				return "medium";
-			case "high":
-				return "high";
-			default:
-				return "medium";
-		}
 	}
 
 	private generateTestResults(size: string): any {
@@ -603,8 +577,8 @@ export class TestDataFactory {
 		}
 	}
 
-	private generateTestEnvironment(options: TestDataOptions): TestEnvironment {
-		const os = require("os");
+	private generateTestEnvironment(_options: TestDataOptions): TestEnvironment {
+		const os = require("node:os");
 		return {
 			nodeVersion: process.version || "18.17.0",
 			jestVersion: "29.5.0",
@@ -648,59 +622,7 @@ export class TestDataFactory {
 		);
 	}
 
-	private generateSetupCode(
-		category: string,
-		options: TestDataOptions,
-	): string {
-		const setupPatterns = {
-			fast: [
-				"const mockData = createMockData();",
-				"jest.clearAllMocks();",
-				"const component = render(<TestComponent />);",
-			],
-			medium: [
-				"const server = await createTestServer();",
-				"const database = await setupTestDatabase();",
-				"beforeEach(() => { setupEnvironment(); });",
-			],
-			slow: [
-				"const browser = await puppeteer.launch();",
-				"const testEnvironment = await initializeComplexEnvironment();",
-				"await seedDatabaseWithLargeDataset();",
-			],
-		};
-
-		const patterns =
-			setupPatterns[category as keyof typeof setupPatterns] ||
-			setupPatterns.medium;
-		return this.randomChoice(patterns);
-	}
-
-	private generateTeardownCode(
-		category: string,
-		options: TestDataOptions,
-	): string {
-		const teardownPatterns = {
-			fast: ["jest.clearAllMocks();", "cleanup();", "resetTestState();"],
-			medium: [
-				"await server.close();",
-				"await database.cleanup();",
-				"await cleanupTestEnvironment();",
-			],
-			slow: [
-				"await browser.close();",
-				"await teardownComplexEnvironment();",
-				"await cleanupLargeTestData();",
-			],
-		};
-
-		const patterns =
-			teardownPatterns[category as keyof typeof teardownPatterns] ||
-			teardownPatterns.medium;
-		return this.randomChoice(patterns);
-	}
-
-	private generateDependencies(options: TestDataOptions): string[] {
+	private generateDependencies(_options: TestDataOptions): string[] {
 		if (this.randomInt(1, 3) === 1) return []; // 33% chance of no dependencies
 
 		const possibleDeps = ["setup", "auth", "database", "config", "mocks"];
@@ -715,58 +637,6 @@ export class TestDataFactory {
 		}
 
 		return dependencies;
-	}
-
-	private generateCharacteristics(
-		category: string,
-		size: string,
-		options: TestDataOptions,
-	): any {
-		const characteristics: any = {};
-
-		// Add characteristics based on category
-		if (category === "slow") {
-			if (this.randomInt(1, 3) === 1) characteristics.cpuIntensive = true;
-			if (this.randomInt(1, 3) === 1) characteristics.ioHeavy = true;
-			if (this.randomInt(1, 3) === 1) characteristics.memoryIntensive = true;
-		}
-
-		// Add characteristics based on size
-		if (size === "large" || size === "xlarge") {
-			if (this.randomInt(1, 2) === 1) characteristics.requiresDatabase = true;
-			if (this.randomInt(1, 2) === 1) characteristics.requiresNetwork = true;
-		}
-
-		// Random characteristics
-		if (this.randomInt(1, 4) === 1) characteristics.requiresFileSystem = true;
-		if (this.randomInt(1, 5) === 1) characteristics.flaky = true;
-
-		return Object.keys(characteristics).length > 0
-			? characteristics
-			: undefined;
-	}
-
-	private generateConstraints(options: TestDataOptions): string[] {
-		if (this.randomInt(1, 4) !== 1) return []; // 75% chance of no constraints
-
-		const possibleConstraints = [
-			"no-parallel",
-			"sequential",
-			"isolated",
-			"requires-admin",
-			"network-dependent",
-		];
-		const constraintCount = this.randomInt(1, 2);
-		const constraints: string[] = [];
-
-		for (let i = 0; i < constraintCount; i++) {
-			const constraint = this.randomChoice(possibleConstraints);
-			if (!constraints.includes(constraint)) {
-				constraints.push(constraint);
-			}
-		}
-
-		return constraints;
 	}
 
 	private generateOpportunityDescription(type: string, impact: string): string {
@@ -798,97 +668,16 @@ export class TestDataFactory {
 		return reductions[impact as keyof typeof reductions] || reductions.medium;
 	}
 
-	private calculateResourceReduction(impact: string): number {
-		const reductions = {
-			low: this.randomFloat(0.05, 0.15),
-			medium: this.randomFloat(0.15, 0.35),
-			high: this.randomFloat(0.35, 0.6),
-			critical: this.randomFloat(0.6, 0.85),
-		};
-
-		return reductions[impact as keyof typeof reductions] || reductions.medium;
-	}
-
-	private generateAffectedTestIds(options: TestDataOptions): string[] {
+	private generateAffectedTestIds(_options: TestDataOptions): string[] {
 		const count = this.randomInt(1, 5);
 		return Array.from({ length: count }, () => this.generateId("test"));
 	}
 
-	private generateImplementationStrategy(type: string): string {
-		const strategies = {
-			parallelization: "Analyze dependencies and parallelize independent tests",
-			setup_consolidation: "Extract common setup into shared beforeEach blocks",
-			duplicate_elimination: "Merge duplicate tests and remove redundant ones",
-			resource_optimization: "Pool and reuse expensive resources",
-			execution_order: "Reorder tests to minimize setup/teardown overhead",
-			mock_optimization: "Use more efficient mocking strategies",
-			data_reuse: "Cache and reuse test data between test cases",
-			timeout_optimization:
-				"Set optimal timeouts based on test characteristics",
-		};
-
-		return (
-			strategies[type as keyof typeof strategies] ||
-			`Implement ${type} optimization`
-		);
-	}
-
-	private generateImplementationSteps(type: string): string[] {
-		return [
-			"Analyze current implementation",
-			"Identify optimization opportunities",
-			"Implement changes incrementally",
-			"Validate improvements",
-			"Monitor performance impact",
-		];
-	}
-
-	private generateImplementationRisks(type: string, effort: string): string[] {
-		const baseRisks = [
-			"Performance regression",
-			"Test instability",
-			"False positives",
-		];
-
-		if (effort === "high") {
-			baseRisks.push(
-				"High implementation complexity",
-				"Extended development time",
-			);
-		}
-
-		return baseRisks;
-	}
-
-	private generatePrerequisites(type: string): string[] {
+	private generatePrerequisites(_type: string): string[] {
 		return [
 			"Stable test suite",
 			"Performance baseline established",
 			"Test isolation verified",
-		];
-	}
-
-	private generateValidationCriteria(type: string, impact: string): string[] {
-		return [
-			"Performance improvement verified",
-			"No test failures introduced",
-			"Maintenance overhead acceptable",
-		];
-	}
-
-	private generateValidationTests(type: string): string[] {
-		return [
-			"Run full test suite",
-			"Performance benchmark comparison",
-			"Regression testing",
-		];
-	}
-
-	private generateValidationMetrics(type: string): string[] {
-		return [
-			"Execution time reduction",
-			"Resource usage improvement",
-			"Test stability metrics",
 		];
 	}
 
@@ -912,53 +701,5 @@ export class TestDataFactory {
 		};
 
 		return baseMemory[size as keyof typeof baseMemory] || baseMemory.medium;
-	}
-
-	private generateMeasurements(
-		baseTime: number,
-		baseMemory: number,
-		size: string,
-	): any[] {
-		const measurementCount = this.randomInt(5, 15);
-		const measurements = [];
-
-		for (let i = 0; i < measurementCount; i++) {
-			measurements.push({
-				timestamp: new Date(
-					Date.now() - (measurementCount - i) * 24 * 60 * 60 * 1000,
-				),
-				duration: baseTime * (0.8 + Math.random() * 0.4),
-				memoryUsage: baseMemory * (0.8 + Math.random() * 0.4),
-				cpuUsage: this.randomFloat(10, 80),
-				testsPassed: this.randomInt(10, 100),
-				testsFailed: this.randomInt(0, 5),
-			});
-		}
-
-		return measurements;
-	}
-
-	private generateEnvironmentInfo(options: TestDataOptions): any {
-		return {
-			nodeVersion: "18.17.0",
-			platform: "linux",
-			cpu: "Intel Core i7",
-			memory: "16GB",
-			jest: "29.5.0",
-			testEnvironment: "node",
-		};
-	}
-
-	private generateBaselineName(options: TestDataOptions): string {
-		const adjectives = [
-			"Initial",
-			"Updated",
-			"Optimized",
-			"Baseline",
-			"Reference",
-		];
-		const nouns = ["Performance", "Metrics", "Benchmark", "Measurements"];
-
-		return `${this.randomChoice(adjectives)} ${this.randomChoice(nouns)} - ${new Date().toLocaleDateString()}`;
 	}
 }

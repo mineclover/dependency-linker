@@ -5,32 +5,17 @@
  * Implements IPerformanceTracker contract from test-optimization.contract.ts
  */
 
-import { execSync, spawn } from "child_process";
-import * as fs from "fs";
-import * as path from "path";
-import {
-	BaselineError,
-	ErrorUtils,
-	handleErrors,
-	PerformanceTrackingError,
-	TimeoutError,
-	ValidationError,
-} from "../../models/optimization/errors";
+import { execSync } from "node:child_process";
+import * as fs from "node:fs";
+import * as path from "node:path";
 import {
 	PerformanceAnalyzer,
 	type PerformanceBaseline,
 	PerformanceBaselineBuilder,
 	type PerformanceComparison,
 	type PerformanceMetrics,
-	PerformanceTarget,
 	type PerformanceTrend,
 } from "../../models/optimization/PerformanceBaseline";
-import {
-	MemoryUsage,
-	MonitoringOptions,
-	ValidationOptions,
-	ValidationResult,
-} from "../../models/optimization/types";
 
 export interface PerformanceTrackingOptions {
 	maxRetries: number;
@@ -225,7 +210,7 @@ export class PerformanceTracker {
 		} else {
 			// New behavior for test suite with options
 			const suiteId = testCommandOrSuiteId;
-			const suiteOptions = options || {};
+			const _suiteOptions = options || {};
 
 			console.log(`📊 Establishing baseline for test suite: ${suiteId}`);
 
@@ -342,7 +327,7 @@ export class PerformanceTracker {
 
 	// Extended functionality beyond the contract
 	async trackPerformanceTrend(
-		testCommand: string,
+		_testCommand: string,
 		days: number = 7,
 	): Promise<PerformanceTrendData> {
 		console.log(`📈 Tracking performance trend over ${days} days...`);
@@ -421,8 +406,8 @@ export class PerformanceTracker {
 				);
 			}, this.options.timeout);
 
-			const stdout = "";
-			const stderr = "";
+			const _stdout = "";
+			const _stderr = "";
 
 			try {
 				// Use execSync for simpler implementation, but in production you'd want streaming
@@ -488,7 +473,7 @@ export class PerformanceTracker {
 		passRate: number;
 		coveragePercentage: number;
 	} {
-		const output = stdout + "\n" + stderr;
+		const output = `${stdout}\n${stderr}`;
 
 		// Parse Jest output patterns
 		let totalTests = 0;

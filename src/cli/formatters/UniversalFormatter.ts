@@ -70,7 +70,7 @@ export class UniversalFormatter {
 						.map(
 							(r, i) => `\n${i + 1}. ${this.enhancedFormatter.formatAsTree(r)}`,
 						)
-						.join("\n" + "─".repeat(50) + "\n");
+						.join(`\n${"─".repeat(50)}\n`);
 				}
 
 			case "csv":

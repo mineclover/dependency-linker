@@ -5,13 +5,8 @@
 
 import type { AnalysisResult } from "../../models/AnalysisResult";
 import type {
-	CSVView,
 	IntegratedAnalysisData,
-	MinimalView,
-	SummaryView,
-	TableView,
 	TreeNode,
-	TreeView,
 } from "../../models/IntegratedData";
 
 export interface OutputOptions {
@@ -61,7 +56,7 @@ export class IntegratedOutputFormatter {
 	 */
 	private formatSummary(
 		data: IntegratedAnalysisData[],
-		options: OutputOptions,
+		_options: OutputOptions,
 	): string {
 		return data
 			.map((item) => {
@@ -123,7 +118,7 @@ export class IntegratedOutputFormatter {
 	 */
 	private formatTree(
 		data: IntegratedAnalysisData,
-		options: OutputOptions,
+		_options: OutputOptions,
 	): string {
 		return this.renderTreeNode(data.views.tree.root, "", true);
 	}
@@ -139,7 +134,7 @@ export class IntegratedOutputFormatter {
 			.map((item, index) => {
 				let output = `\n${index + 1}. ${this.formatTree(item, options)}`;
 				if (index < data.length - 1) {
-					output += "\n" + "─".repeat(50);
+					output += `\n${"─".repeat(50)}`;
 				}
 				return output;
 			})
@@ -221,7 +216,7 @@ export class IntegratedOutputFormatter {
 	 */
 	private formatMinimal(
 		data: IntegratedAnalysisData[],
-		options: OutputOptions,
+		_options: OutputOptions,
 	): string {
 		return data
 			.map((item) => {
@@ -414,8 +409,9 @@ export class IntegratedOutputFormatter {
 
 		if (node.children && node.children.length > 0) {
 			const newPrefix = prefix + (isLast ? "    " : "│   ");
-			node.children.forEach((child, index) => {
-				const isChildLast = index === node.children!.length - 1;
+			const children = node.children;
+			children.forEach((child, index) => {
+				const isChildLast = index === children.length - 1;
 				output += this.renderTreeNode(child, newPrefix, isChildLast);
 			});
 		}
@@ -428,7 +424,7 @@ export class IntegratedOutputFormatter {
 	 */
 	private truncateString(str: string, maxLength: number): string {
 		if (str.length <= maxLength) return str;
-		return str.substring(0, maxLength - 3) + "...";
+		return `${str.substring(0, maxLength - 3)}...`;
 	}
 
 	private padString(str: string, width: number): string {

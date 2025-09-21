@@ -363,7 +363,7 @@ export class IntegrationConfigManager {
 	 * Load configuration from file or environment
 	 */
 	static async loadFromFile(
-		configPath?: string,
+		_configPath?: string,
 	): Promise<IntegrationConfigManager> {
 		// Implementation for loading from file would go here
 		// For now, return default configuration

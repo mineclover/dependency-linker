@@ -252,7 +252,7 @@ export class TestAssertions {
 	/**
 	 * Assert test case structure and properties
 	 */
-	assertTestCase(testCase: TestCase, options: AssertionOptions = {}): void {
+	assertTestCase(testCase: TestCase, _options: AssertionOptions = {}): void {
 		if (!testCase.id) {
 			throw new AssertionError(
 				"Test case must have an ID",
@@ -375,7 +375,7 @@ export class TestAssertions {
 			minResourceReduction?: number;
 			maxPerformanceDegradation?: number;
 		},
-		options: AssertionOptions = {},
+		_options: AssertionOptions = {},
 	): void {
 		const timeReduction = originalMetrics.duration - optimizedMetrics.duration;
 		const resourceReduction =
@@ -570,7 +570,7 @@ export class TestAssertions {
 
 	private findBestBaselineMeasurement(
 		baseline: PerformanceBaseline,
-		targetTestCount: number,
+		_targetTestCount: number,
 	): any {
 		// Return the baseline directly since it contains the necessary test count data
 		if (!baseline.totalTests) {
@@ -595,7 +595,7 @@ export class AssertionGroup {
 	private assertions: Array<() => void> = [];
 	private errors: AssertionError[] = [];
 
-	constructor(private testAssertions: TestAssertions) {}
+	constructor(_testAssertions: TestAssertions) {}
 
 	/**
 	 * Add assertion to group

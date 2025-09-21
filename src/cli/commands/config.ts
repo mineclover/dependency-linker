@@ -189,14 +189,16 @@ async function main() {
 
 						if (validation.errors.length > 0) {
 							console.log(`Errors:`);
-							validation.errors.forEach((error) => console.log(`  - ${error}`));
+							for (const error of validation.errors) {
+								console.log(`  - ${error}`);
+							}
 						}
 
 						if (validation.warnings.length > 0) {
 							console.log(`Warnings:`);
-							validation.warnings.forEach((warning) =>
-								console.log(`  - ${warning}`),
-							);
+							for (const warning of validation.warnings) {
+								console.log(`  - ${warning}`);
+							}
 						}
 
 						if (validation.isValid && validation.warnings.length === 0) {

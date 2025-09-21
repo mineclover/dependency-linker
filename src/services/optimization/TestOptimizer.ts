@@ -3,20 +3,8 @@
  * Executes test optimizations based on identified opportunities
  */
 
-import * as fs from "fs";
-import * as path from "path";
 import {
-	ConfigurationError,
-	ErrorUtils,
-	handleErrors,
-	TestOptimizationError,
-	ValidationError,
-} from "../../models/optimization/errors";
-
-import {
-	EffortLevel,
 	OptimizationOpportunity,
-	OptimizationStatus,
 	OptimizationType,
 	RiskLevel,
 } from "../../models/optimization/OptimizationOpportunity";
@@ -26,7 +14,6 @@ import {
 	type TestSuite,
 	TestType,
 } from "../../models/optimization/TestSuite";
-import { getOptimizationStrategyName } from "../../models/optimization/types";
 
 // Types for the service
 interface OptimizationOptions {
@@ -92,9 +79,9 @@ interface BackupEntry {
 }
 
 export class TestOptimizer {
-	private context: OptimizationContext;
 	private logs: OptimizationLog[] = [];
-	private backups: BackupEntry[] = [];
+	private context: OptimizationContext;
+	private backups: Map<string, string> = new Map();
 
 	constructor(context?: OptimizationContext) {
 		this.context = context || {
@@ -334,8 +321,8 @@ export class TestOptimizer {
 	}
 
 	private async removeDuplicateTests(
-		opportunity: OptimizationOpportunity,
-		options: OptimizationOptions,
+		_opportunity: OptimizationOpportunity,
+		_options: OptimizationOptions,
 	): Promise<{
 		removedTests: TestCase[];
 		modifiedTests: TestCase[];
@@ -387,8 +374,8 @@ export class TestOptimizer {
 	}
 
 	private async consolidateTestScenarios(
-		opportunity: OptimizationOpportunity,
-		options: OptimizationOptions,
+		_opportunity: OptimizationOpportunity,
+		_options: OptimizationOptions,
 	): Promise<{
 		removedTests: TestCase[];
 		modifiedTests: TestCase[];
@@ -402,8 +389,8 @@ export class TestOptimizer {
 	}
 
 	private async fixFlakyTests(
-		opportunity: OptimizationOpportunity,
-		options: OptimizationOptions,
+		_opportunity: OptimizationOpportunity,
+		_options: OptimizationOptions,
 	): Promise<{
 		removedTests: TestCase[];
 		modifiedTests: TestCase[];
@@ -417,8 +404,8 @@ export class TestOptimizer {
 	}
 
 	private async refocusOnBehavior(
-		opportunity: OptimizationOpportunity,
-		options: OptimizationOptions,
+		_opportunity: OptimizationOpportunity,
+		_options: OptimizationOptions,
 	): Promise<{
 		removedTests: TestCase[];
 		modifiedTests: TestCase[];
@@ -432,8 +419,8 @@ export class TestOptimizer {
 	}
 
 	private async createSharedUtilities(
-		opportunity: OptimizationOpportunity,
-		options: OptimizationOptions,
+		_opportunity: OptimizationOpportunity,
+		_options: OptimizationOptions,
 	): Promise<{
 		removedTests: TestCase[];
 		modifiedTests: TestCase[];
@@ -444,15 +431,6 @@ export class TestOptimizer {
 			modifiedTests: [],
 			newUtilities: ["parallel-test-utility"],
 		};
-	}
-
-	// Helper methods for finding test files
-	private async findTestFiles(targetCases: string[]): Promise<string[]> {
-		return []; // Simplified implementation
-	}
-
-	private async findTestFilesBySuite(targetSuite: string): Promise<string[]> {
-		return []; // Simplified implementation
 	}
 
 	private async measureCurrentPerformance(): Promise<{
@@ -469,17 +447,9 @@ export class TestOptimizer {
 		};
 	}
 
-	private ensureBackupDirectory(): void {
-		// Mock implementation
-	}
-
 	private createBackupLocation(): string {
 		const timestamp = new Date().toISOString().replace(/[:.]/g, "-");
 		return `backup-${timestamp}`;
-	}
-
-	private async backupFile(filePath: string): Promise<void> {
-		// Mock implementation
 	}
 
 	private log(
@@ -699,7 +669,7 @@ export class TestOptimizer {
 
 	resetState(): void {
 		this.logs = [];
-		this.backups = [];
+		this.backups.clear();
 		this.log("info", "Reset state", "Cleared all logs and backups");
 	}
 

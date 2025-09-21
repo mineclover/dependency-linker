@@ -170,7 +170,7 @@ export class TestSetupManager {
 			for (const resourceType of requiredResources) {
 				const existingResource = this.sharedResources.get(resourceType);
 
-				if (existingResource && existingResource.isReusable) {
+				if (existingResource?.isReusable) {
 					// Use existing resource
 					if (
 						existingResource.currentUsers.length <
@@ -456,7 +456,7 @@ export class TestSetupManager {
 				// Ensure parsers are properly registered
 				(global as any).__parserRegistryConfigured = true;
 			}
-		} catch (error) {
+		} catch (_error) {
 			// Ignore configuration errors in test environment
 		}
 	}
@@ -476,7 +476,7 @@ export class TestSetupManager {
 
 			this.setupQueue.push({
 				testId,
-				resolve: (result) => {
+				resolve: (_result) => {
 					clearTimeout(timeoutId);
 					resolve();
 				},
@@ -543,7 +543,7 @@ export class TestSetupManager {
 	 * Cleanup test-specific resources
 	 */
 	private async cleanupTestSpecificResources(
-		testSuite: TestSuite,
+		_testSuite: TestSuite,
 	): Promise<void> {
 		// Cleanup global test state
 		delete (global as any).__testSetupConfigured;

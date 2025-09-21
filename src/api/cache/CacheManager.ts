@@ -159,14 +159,20 @@ export class CacheManager<T> implements CacheProvider<T> {
 	async keys(): Promise<string[]> {
 		const keySet = new Set<string>();
 
+		// Collect memory cache keys
 		if (this.memoryCache) {
 			const memoryKeys = await this.memoryCache.keys();
-			memoryKeys.forEach((key) => keySet.add(key));
+			for (const key of memoryKeys) {
+				keySet.add(key);
+			}
 		}
 
+		// Collect file cache keys
 		if (this.fileCache) {
 			const fileKeys = await this.fileCache.keys();
-			fileKeys.forEach((key) => keySet.add(key));
+			for (const key of fileKeys) {
+				keySet.add(key);
+			}
 		}
 
 		return Array.from(keySet);

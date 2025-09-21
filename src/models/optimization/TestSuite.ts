@@ -138,14 +138,14 @@ export class TestSuiteBuilder {
 	}
 
 	addTestCase(testCase: TestCase): TestSuiteBuilder {
-		this.suite.testCases!.push(testCase);
+		this.suite.testCases?.push(testCase);
 		this.recalculateExecutionTime();
 		return this;
 	}
 
 	addDependency(dependency: string): TestSuiteBuilder {
-		if (!this.suite.dependencies!.includes(dependency)) {
-			this.suite.dependencies!.push(dependency);
+		if (!this.suite.dependencies?.includes(dependency)) {
+			this.suite.dependencies?.push(dependency);
 		}
 		return this;
 	}
@@ -185,7 +185,7 @@ export class TestSuiteBuilder {
 	}
 
 	private recalculateExecutionTime(): void {
-		this.suite.executionTime = this.suite.testCases!.reduce(
+		this.suite.executionTime = this.suite.testCases?.reduce(
 			(sum, testCase) => sum + testCase.executionTime,
 			0,
 		);
@@ -230,8 +230,8 @@ export class TestCaseBuilder {
 	}
 
 	addCoverageArea(area: string): TestCaseBuilder {
-		if (!this.testCase.coverageAreas!.includes(area)) {
-			this.testCase.coverageAreas!.push(area);
+		if (!this.testCase.coverageAreas?.includes(area)) {
+			this.testCase.coverageAreas?.push(area);
 		}
 		return this;
 	}

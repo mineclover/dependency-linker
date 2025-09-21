@@ -5,18 +5,11 @@
  * Implements ITestAnalyzer contract from test-optimization.contract.ts
  */
 
-import * as fs from "fs";
+import * as fs from "node:fs";
+import * as path from "node:path";
 import { glob } from "glob";
-import * as path from "path";
 
 // Import from local models instead of external contract
-
-import {
-	ErrorUtils,
-	FileOperationError,
-	TestAnalysisError,
-	ValidationError,
-} from "../../models/optimization/errors";
 
 import {
 	EffortLevel,
@@ -137,10 +130,10 @@ export class TestAnalyzer {
 					suite.testCases.filter((tc) => tc.isFlaky || tc.lastFailure).length,
 				0,
 			);
-			const failureRate = totalTests > 0 ? failedTests / totalTests : 0;
+			const _failureRate = totalTests > 0 ? failedTests / totalTests : 0;
 
 			// Identify issues
-			const issues = await this.identifyIssues(testSuites);
+			const _issues = await this.identifyIssues(testSuites);
 
 			const analysis: TestSuiteAnalysis = {
 				testSuites,

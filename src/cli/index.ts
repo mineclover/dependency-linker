@@ -85,7 +85,12 @@ export class TypeScriptDependencyLinkerCLI {
 			return parseResult.error.exitCode;
 		}
 
-		const options = parseResult.options!;
+		if (!parseResult.options) {
+			console.error("Failed to parse command line options");
+			return 1;
+		}
+
+		const options = parseResult.options;
 
 		if (!options.file) {
 			console.error("File path is required for analyze command");

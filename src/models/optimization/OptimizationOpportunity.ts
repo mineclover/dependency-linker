@@ -190,8 +190,8 @@ export class OptimizationOpportunityBuilder {
 	}
 
 	addPrerequisite(prerequisite: string): OptimizationOpportunityBuilder {
-		if (!this.opportunity.prerequisites!.includes(prerequisite)) {
-			this.opportunity.prerequisites!.push(prerequisite);
+		if (!this.opportunity.prerequisites?.includes(prerequisite)) {
+			this.opportunity.prerequisites?.push(prerequisite);
 		}
 		return this;
 	}
@@ -451,7 +451,7 @@ export class OptimizationOpportunityManager {
 				candidate.targetSuite === target.targetSuite ||
 				(candidate.targetCases &&
 					target.targetCases &&
-					candidate.targetCases.some((tc) => target.targetCases!.includes(tc)));
+					candidate.targetCases.some((tc) => target.targetCases?.includes(tc)));
 
 			if (!conflicts) {
 				group.push(candidate);

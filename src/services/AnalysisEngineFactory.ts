@@ -178,8 +178,8 @@ export class AnalysisEngineBuilder implements IAnalysisEngineBuilder {
 	private extractors: Map<string, IDataExtractor<any>> = new Map();
 	private interpreters: Map<string, IDataInterpreter<any, any>> = new Map();
 	private events?: IAnalysisEngineEvents;
-	private cacheEnabled?: boolean;
-	private cacheSize?: number;
+	private cacheEnabled: boolean = false;
+	private cacheSize: number = 100;
 
 	/**
 	 * Sets the configuration

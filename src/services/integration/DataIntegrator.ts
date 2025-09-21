@@ -22,7 +22,6 @@ import type {
 	SummaryView,
 	TableView,
 	TreeNode,
-	TreeSummary,
 	TreeView,
 } from "../../models/IntegratedData";
 import {
@@ -64,7 +63,6 @@ export class DataIntegrator implements IDataIntegrator {
 			maxDepth: 10,
 		},
 	};
-
 	private optimizer: PerformanceOptimizer;
 
 	constructor() {
@@ -142,7 +140,7 @@ export class DataIntegrator implements IDataIntegrator {
 				);
 				const chunkResults = await Promise.all(chunkPromises);
 				allResults.push(...chunkResults.filter(Boolean));
-			} catch (error) {
+			} catch (_error) {
 				console.warn(
 					"Chunk processing failed, falling back to sequential processing for this chunk",
 				);
@@ -716,7 +714,7 @@ export class DataIntegrator implements IDataIntegrator {
 			completeness *= 0.5;
 		}
 
-		const overall =
+		const _overall =
 			(completeness + accuracy + consistency + freshness + validity) / 5;
 
 		return {
@@ -761,7 +759,7 @@ export class DataIntegrator implements IDataIntegrator {
 
 	private truncateString(str: string, maxLength: number): string {
 		if (str.length <= maxLength) return str;
-		return str.substring(0, maxLength - 3) + "...";
+		return `${str.substring(0, maxLength - 3)}...`;
 	}
 
 	private formatMemory(bytes: number): string {
@@ -816,7 +814,6 @@ export class DataIntegrator implements IDataIntegrator {
 					maxConcurrency: 2,
 					batchSize: 5,
 				};
-			case "balanced":
 			default:
 				return {
 					enableLazyLoading: true,

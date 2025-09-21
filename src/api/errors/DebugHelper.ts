@@ -54,6 +54,7 @@ export interface PerformanceMetrics {
 	operationsPerSecond: number;
 }
 
+// biome-ignore lint/complexity/noStaticOnlyClass: Maintains internal state and trace history
 export class DebugHelper {
 	private static traces: DebugTrace[] = [];
 	private static maxTraces = 1000;
@@ -101,7 +102,7 @@ export class DebugHelper {
 				encoding: "utf8", // Assuming UTF-8 for TypeScript files
 				lineCount: content.split("\n").length,
 				characterCount: content.length,
-				hasUnicodeChars: /[^\x00-\x7F]/.test(content),
+				hasUnicodeChars: /[^\u0000-\u007F]/.test(content),
 				parseAttempts: 0,
 				memoryUsage: startMemory,
 			};
@@ -609,14 +610,16 @@ export class DebugHelper {
 
 			if (validation.errors.length > 0) {
 				report += "  Error Details:\n";
-				validation.errors.forEach((error) => (report += `    - ${error}\n`));
+				for (const error of validation.errors) {
+					report += `    - ${error}\n`;
+				}
 			}
 
 			if (validation.warnings.length > 0) {
 				report += "  Warning Details:\n";
-				validation.warnings.forEach(
-					(warning) => (report += `    - ${warning}\n`),
-				);
+				for (const warning of validation.warnings) {
+					report += `    - ${warning}\n`;
+				}
 			}
 			report += "\n";
 
@@ -638,11 +641,11 @@ export class DebugHelper {
 		// Recent traces
 		if (DebugHelper.traces.length > 0) {
 			report += "Recent Traces (last 5):\n";
-			DebugHelper.getRecentTraces(5).forEach((trace) => {
+			for (const trace of DebugHelper.getRecentTraces(5)) {
 				report += `  [${new Date(trace.timestamp).toISOString()}] ${trace.operation}:${trace.phase}`;
 				if (trace.duration) report += ` (${trace.duration}ms)`;
 				report += "\n";
-			});
+			}
 			report += "\n";
 		}
 

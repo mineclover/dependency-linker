@@ -217,13 +217,15 @@ export class MemoryCache<T> implements CacheProvider<T> {
 		const now = Date.now();
 		const expiredKeys: string[] = [];
 
-		for (const [key, entry] of this.cache.entries()) {
-			if (entry.expiresAt && now > entry.expiresAt) {
+		for (const [key, item] of this.cache.entries()) {
+			if (item.expiresAt && item.expiresAt <= now) {
 				expiredKeys.push(key);
 			}
 		}
 
-		expiredKeys.forEach((key) => this.cache.delete(key));
+		for (const key of expiredKeys) {
+			this.cache.delete(key);
+		}
 	}
 
 	/**

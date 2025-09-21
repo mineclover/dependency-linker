@@ -369,7 +369,7 @@ export function handleErrors(
 	errorType: new (...args: any[]) => OptimizationError,
 ) {
 	return (
-		target: any,
+		_target: any,
 		propertyName: string,
 		descriptor: PropertyDescriptor,
 	) => {

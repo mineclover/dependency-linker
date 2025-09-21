@@ -3,7 +3,6 @@
  * Provides benchmarking capabilities for test performance measurement and comparison
  */
 
-import { PerformanceBaseline } from "../../models/optimization/PerformanceBaseline";
 import type { TestCase } from "../../models/optimization/TestCase";
 import type { TestSuite } from "../../models/optimization/TestSuite";
 
@@ -262,7 +261,7 @@ export class TestBenchmark {
 		for (let i = 0; i < configuration.warmupIterations; i++) {
 			try {
 				await this.runSingleIteration(testRunner, i, configuration, false);
-			} catch (error) {
+			} catch (_error) {
 				// Ignore warmup failures
 			}
 		}
@@ -422,7 +421,7 @@ export class TestBenchmark {
 		testRunner: () => Promise<any>,
 		iteration: number,
 		config: BenchmarkConfiguration,
-		record: boolean,
+		_record: boolean,
 	): Promise<BenchmarkMeasurement> {
 		const startMemory = process.memoryUsage();
 		const startTime = performance.now();
@@ -510,7 +509,7 @@ export class TestBenchmark {
 	}
 
 	private async captureEnvironmentInfo(): Promise<EnvironmentInfo> {
-		const os = require("os");
+		const os = require("node:os");
 		return {
 			nodeVersion: process.version,
 			platform: process.platform,
@@ -664,8 +663,8 @@ export class TestBenchmark {
 
 	private analyzeComparison(
 		comparison: ComparisonResult,
-		baseline: BenchmarkResult,
-		current: BenchmarkResult,
+		_baseline: BenchmarkResult,
+		_current: BenchmarkResult,
 	): ComparisonAnalysis {
 		const threshold = 0.05; // 5% threshold
 		let verdict: ComparisonAnalysis["verdict"] = "neutral";

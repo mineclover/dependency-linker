@@ -159,7 +159,9 @@ function handleSpecialCharacters(
 		case "win32": {
 			// Windows forbidden characters: < > : " | ? *
 			// Also handle control characters (0-31)
-			processed = processed.replace(/[<>:"|?*\x00-\x1F]/g, "_");
+			processed = processed.replace(/[<>:"|?*]/g, "_");
+			// Replace control characters separately
+			processed = processed.replace(/[\u0000-\u001F]/g, "_");
 
 			// Handle reserved names
 			const windowsReserved = /^(CON|PRN|AUX|NUL|COM[1-9]|LPT[1-9])(\.|$)/i;
@@ -173,7 +175,7 @@ function handleSpecialCharacters(
 
 		default:
 			// POSIX systems - mainly handle null bytes
-			processed = processed.replace(/\x00/g, "_");
+			processed = processed.replace(/\u0000/g, "_");
 			break;
 	}
 
@@ -268,7 +270,8 @@ export function getSafeFilename(
 
 	if (targetPlatform === "win32") {
 		// Windows restrictions
-		safe = safe.replace(/[<>:"|?*\x00-\x1F]/g, "_");
+		safe = safe.replace(/[<>:"|?*]/g, "_");
+		safe = safe.replace(/[\u0000-\u001F]/g, "_");
 		safe = safe.replace(/[\s.]+$/g, ""); // Remove trailing spaces and dots
 
 		// Handle reserved names
@@ -301,7 +304,7 @@ export function getSafeFilename(
 		}
 	} else {
 		// POSIX restrictions
-		safe = safe.replace(/\x00/g, "_"); // No null bytes
+		safe = safe.replace(/\u0000/g, "_"); // No null bytes
 		safe = safe.replace(/\//g, "_"); // No path separators
 	}
 
@@ -358,9 +361,9 @@ export function validatePath(inputPath: string): {
 	}
 
 	// Check for null bytes
-	if (inputPath.includes("\x00")) {
+	if (inputPath.includes("\u0000")) {
 		issues.push("Null byte detected");
-		sanitized = sanitized.replace(/\x00/g, "");
+		sanitized = sanitized.replace(/\u0000/g, "");
 	}
 
 	// Check for excessively long paths
