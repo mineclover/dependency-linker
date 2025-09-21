@@ -584,7 +584,7 @@ export class TestAssertions {
 	 * Create assertion group for batch validation
 	 */
 	createAssertionGroup(): AssertionGroup {
-		return new AssertionGroup(this);
+		return new AssertionGroup();
 	}
 }
 
@@ -594,8 +594,6 @@ export class TestAssertions {
 export class AssertionGroup {
 	private assertions: Array<() => void> = [];
 	private errors: AssertionError[] = [];
-
-	constructor(_testAssertions: TestAssertions) {}
 
 	/**
 	 * Add assertion to group

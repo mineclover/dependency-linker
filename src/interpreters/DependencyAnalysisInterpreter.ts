@@ -133,7 +133,10 @@ export class DependencyAnalysisInterpreter
 				});
 			}
 
-			const node = nodes.get(nodeId)!;
+			const node = nodes.get(nodeId);
+			if (!node) {
+				return;
+			}
 
 			// Update counts based on dependency type
 			if (

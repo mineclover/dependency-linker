@@ -66,11 +66,32 @@ export { ParserRegistry } from "./services/ParserRegistry";
 export { TypeScriptParser } from "./services/TypeScriptParser";
 // Task Management System
 export {
+	addErrorCallback,
+	allValidationsPassed,
+	createBatchFailedError,
+	createCircularDependencyError,
+	createErrorReport,
+	createExecutionFailedError,
+	createInvalidConfigurationError,
+	createInvalidStatusError,
+	createRepositoryError,
+	createResourceLimitExceededError,
 	createTaskAPI,
+	createTaskNotFoundError,
+	createTemplateError,
+	createTimeoutError,
+	createValidationFailedError,
+	formatError,
+	getFailedValidations,
+	getRetryDelay,
+	getValidationSummary,
+	handleError,
 	ITaskExecutor,
 	// Interfaces
 	ITaskManager,
 	ITaskRepository,
+	isRetryableError,
+	removeErrorCallback,
 	// Core types
 	Task,
 	TaskAPI,
@@ -78,7 +99,6 @@ export {
 	TaskComplexity,
 	// Error handling
 	TaskError,
-	TaskErrorFactory,
 	TaskExecutionError,
 	TaskExecutionResult,
 	TaskExecutor,
@@ -94,8 +114,13 @@ export {
 	TaskStatus,
 	TaskStatusError,
 	TaskValidationError,
-	TaskValidator,
 	ValidationResult,
+	validateCircularDependencies,
+	validateExecutionContext,
+	validateStatusTransition,
+	validateTask,
+	validateTaskBatch,
+	validateTaskCreation,
 } from "./task";
 
 // Utility exports

@@ -63,8 +63,8 @@ export class DataIntegrator implements IDataIntegrator {
 			maxDepth: 10,
 		},
 	};
-	private optimizer: PerformanceOptimizer;
 
+	private optimizer: PerformanceOptimizer;
 	constructor() {
 		this.optimizer = new PerformanceOptimizer();
 	}

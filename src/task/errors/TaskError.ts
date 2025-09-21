@@ -330,271 +330,275 @@ export class TaskTemplateError extends TaskError {
 }
 
 /**
- * Error Factory for creating task errors
+ * Error Factory functions for creating task errors
  */
-export class TaskErrorFactory {
-	static taskNotFound(
-		taskId: string,
-		context?: Record<string, any>,
-	): TaskNotFoundError {
-		return new TaskNotFoundError(taskId, context);
-	}
 
-	static circularDependency(
-		taskId: string,
-		dependencyTaskId: string,
-		dependencyChain: string[],
-		context?: Record<string, any>,
-	): CircularDependencyError {
-		return new CircularDependencyError(
-			taskId,
-			dependencyTaskId,
-			dependencyChain,
-			context,
-		);
-	}
+export function createTaskNotFoundError(
+	taskId: string,
+	context?: Record<string, any>,
+): TaskNotFoundError {
+	return new TaskNotFoundError(taskId, context);
+}
 
-	static invalidStatus(
-		taskId: string,
-		currentStatus: TaskStatus,
-		expectedStatus: TaskStatus[],
-		operation: string,
-		context?: Record<string, any>,
-	): TaskStatusError {
-		const expectedStatusStr = expectedStatus.join(", ");
-		return new TaskStatusError(
-			`Cannot ${operation} task ${taskId}: expected status [${expectedStatusStr}], but got ${currentStatus}`,
-			taskId,
-			currentStatus,
-			expectedStatus,
-			context,
-		);
-	}
+export function createCircularDependencyError(
+	taskId: string,
+	dependencyTaskId: string,
+	dependencyChain: string[],
+	context?: Record<string, any>,
+): CircularDependencyError {
+	return new CircularDependencyError(
+		taskId,
+		dependencyTaskId,
+		dependencyChain,
+		context,
+	);
+}
 
-	static executionFailed(
-		taskId: string,
-		executionPhase: string,
-		originalError: Error,
-		context?: Record<string, any>,
-	): TaskExecutionError {
-		return new TaskExecutionError(
-			`Task execution failed in ${executionPhase}: ${originalError.message}`,
-			taskId,
-			executionPhase,
-			originalError,
-			context,
-		);
-	}
+export function createInvalidStatusError(
+	taskId: string,
+	currentStatus: TaskStatus,
+	expectedStatus: TaskStatus[],
+	operation: string,
+	context?: Record<string, any>,
+): TaskStatusError {
+	const expectedStatusStr = expectedStatus.join(", ");
+	return new TaskStatusError(
+		`Cannot ${operation} task ${taskId}: expected status [${expectedStatusStr}], but got ${currentStatus}`,
+		taskId,
+		currentStatus,
+		expectedStatus,
+		context,
+	);
+}
 
-	static validationFailed(
-		taskId: string,
-		validationResults: ValidationResult[],
-		context?: Record<string, any>,
-	): TaskValidationError {
-		const failedCount = validationResults.filter(
-			(result) => !result.passed,
-		).length;
-		return new TaskValidationError(
-			`Task validation failed: ${failedCount} of ${validationResults.length} criteria failed`,
-			taskId,
-			validationResults,
-			context,
-		);
-	}
+export function createExecutionFailedError(
+	taskId: string,
+	executionPhase: string,
+	originalError: Error,
+	context?: Record<string, any>,
+): TaskExecutionError {
+	return new TaskExecutionError(
+		`Task execution failed in ${executionPhase}: ${originalError.message}`,
+		taskId,
+		executionPhase,
+		originalError,
+		context,
+	);
+}
 
-	static resourceLimitExceeded(
-		resourceType: string,
-		resourceLimit: number,
-		currentUsage: number,
-		taskId?: string,
-		context?: Record<string, any>,
-	): TaskResourceError {
-		return new TaskResourceError(
-			`${resourceType} limit exceeded: ${currentUsage} > ${resourceLimit}`,
-			resourceType,
-			resourceLimit,
-			currentUsage,
-			taskId,
-			context,
-		);
-	}
+export function createValidationFailedError(
+	taskId: string,
+	validationResults: ValidationResult[],
+	context?: Record<string, any>,
+): TaskValidationError {
+	const failedCount = validationResults.filter(
+		(result) => !result.passed,
+	).length;
+	return new TaskValidationError(
+		`Task validation failed: ${failedCount} of ${validationResults.length} criteria failed`,
+		taskId,
+		validationResults,
+		context,
+	);
+}
 
-	static timeout(
-		taskId: string,
-		timeout: number,
-		actualDuration: number,
-		context?: Record<string, any>,
-	): TaskTimeoutError {
-		return new TaskTimeoutError(
-			`Task execution timed out after ${actualDuration}ms (limit: ${timeout}ms)`,
-			taskId,
-			timeout,
-			actualDuration,
-			context,
-		);
-	}
+export function createResourceLimitExceededError(
+	resourceType: string,
+	resourceLimit: number,
+	currentUsage: number,
+	taskId?: string,
+	context?: Record<string, any>,
+): TaskResourceError {
+	return new TaskResourceError(
+		`${resourceType} limit exceeded: ${currentUsage} > ${resourceLimit}`,
+		resourceType,
+		resourceLimit,
+		currentUsage,
+		taskId,
+		context,
+	);
+}
 
-	static invalidConfiguration(
-		field: string,
-		value: any,
-		reason: string,
-		taskId?: string,
-		context?: Record<string, any>,
-	): TaskConfigurationError {
-		return new TaskConfigurationError(
-			`Invalid configuration for ${field}: ${reason}`,
-			field,
-			value,
-			taskId,
-			context,
-		);
-	}
+export function createTimeoutError(
+	taskId: string,
+	timeout: number,
+	actualDuration: number,
+	context?: Record<string, any>,
+): TaskTimeoutError {
+	return new TaskTimeoutError(
+		`Task execution timed out after ${actualDuration}ms (limit: ${timeout}ms)`,
+		taskId,
+		timeout,
+		actualDuration,
+		context,
+	);
+}
 
-	static batchFailed(
-		batchId: string,
-		failedTaskIds: string[],
-		errors: TaskError[],
-		context?: Record<string, any>,
-	): TaskBatchError {
-		return new TaskBatchError(
-			`Batch execution failed: ${failedTaskIds.length} tasks failed`,
-			batchId,
-			failedTaskIds,
-			errors,
-			context,
-		);
-	}
+export function createInvalidConfigurationError(
+	field: string,
+	value: any,
+	reason: string,
+	taskId?: string,
+	context?: Record<string, any>,
+): TaskConfigurationError {
+	return new TaskConfigurationError(
+		`Invalid configuration for ${field}: ${reason}`,
+		field,
+		value,
+		taskId,
+		context,
+	);
+}
 
-	static repositoryError(
-		operation: string,
-		originalError: Error,
-		taskId?: string,
-		context?: Record<string, any>,
-	): TaskRepositoryError {
-		return new TaskRepositoryError(
-			`Repository operation '${operation}' failed: ${originalError.message}`,
-			operation,
-			originalError,
-			taskId,
-			context,
-		);
-	}
+export function createBatchFailedError(
+	batchId: string,
+	failedTaskIds: string[],
+	errors: TaskError[],
+	context?: Record<string, any>,
+): TaskBatchError {
+	return new TaskBatchError(
+		`Batch execution failed: ${failedTaskIds.length} tasks failed`,
+		batchId,
+		failedTaskIds,
+		errors,
+		context,
+	);
+}
 
-	static templateError(
-		templateId: string,
-		operation: string,
-		reason: string,
-		context?: Record<string, any>,
-	): TaskTemplateError {
-		return new TaskTemplateError(
-			`Template operation '${operation}' failed for template '${templateId}': ${reason}`,
-			templateId,
-			operation,
-			context,
-		);
-	}
+export function createRepositoryError(
+	operation: string,
+	originalError: Error,
+	taskId?: string,
+	context?: Record<string, any>,
+): TaskRepositoryError {
+	return new TaskRepositoryError(
+		`Repository operation '${operation}' failed: ${originalError.message}`,
+		operation,
+		originalError,
+		taskId,
+		context,
+	);
+}
+
+export function createTemplateError(
+	templateId: string,
+	operation: string,
+	reason: string,
+	context?: Record<string, any>,
+): TaskTemplateError {
+	return new TaskTemplateError(
+		`Template operation '${operation}' failed for template '${templateId}': ${reason}`,
+		templateId,
+		operation,
+		context,
+	);
 }
 
 /**
- * Error Handler utility
+ * Error Handler utility functions
  */
-export class TaskErrorHandler {
-	private static errorCallbacks: Array<(error: TaskError) => void> = [];
 
-	static addErrorCallback(callback: (error: TaskError) => void): void {
-		TaskErrorHandler.errorCallbacks.push(callback);
+// Module-level state for error callbacks
+const errorCallbacks: Array<(error: TaskError) => void> = [];
+
+export function addErrorCallback(callback: (error: TaskError) => void): void {
+	errorCallbacks.push(callback);
+}
+
+export function removeErrorCallback(
+	callback: (error: TaskError) => void,
+): void {
+	const index = errorCallbacks.indexOf(callback);
+	if (index !== -1) {
+		errorCallbacks.splice(index, 1);
 	}
+}
 
-	static removeErrorCallback(callback: (error: TaskError) => void): void {
-		const index = TaskErrorHandler.errorCallbacks.indexOf(callback);
-		if (index !== -1) {
-			TaskErrorHandler.errorCallbacks.splice(index, 1);
+export function handleError(error: TaskError | Error): void {
+	const taskError =
+		error instanceof TaskError
+			? error
+			: new TaskError(error.message, "UNKNOWN_ERROR", undefined, {
+					originalError: error.name,
+				});
+
+	for (const callback of errorCallbacks) {
+		try {
+			callback(taskError);
+		} catch (callbackError) {
+			console.error("Error in task error callback:", callbackError);
 		}
 	}
+}
 
-	static handleError(error: TaskError | Error): void {
-		const taskError =
-			error instanceof TaskError
-				? error
-				: new TaskError(error.message, "UNKNOWN_ERROR", undefined, {
-						originalError: error.name,
-					});
+export function isRetryableError(error: TaskError): boolean {
+	const retryableCodes = [
+		"TASK_RESOURCE_ERROR",
+		"TASK_TIMEOUT_ERROR",
+		"TASK_REPOSITORY_ERROR",
+	];
 
-		TaskErrorHandler.errorCallbacks.forEach((callback) => {
-			try {
-				callback(taskError);
-			} catch (callbackError) {
-				console.error("Error in task error callback:", callbackError);
+	return retryableCodes.includes(error.code);
+}
+
+export function getRetryDelay(
+	_error: TaskError,
+	attemptNumber: number,
+): number {
+	// Exponential backoff with jitter
+	const baseDelay = 1000; // 1 second
+	const maxDelay = 30000; // 30 seconds
+
+	const delay = Math.min(baseDelay * 2 ** attemptNumber, maxDelay);
+	const jitter = delay * 0.1 * Math.random();
+
+	return delay + jitter;
+}
+
+export function formatError(error: TaskError): string {
+	const parts = [`[${error.code}]`, error.message];
+
+	if (error.taskId) {
+		parts.push(`(Task: ${error.taskId})`);
+	}
+
+	if (error.context) {
+		const contextStr = Object.entries(error.context)
+			.map(([key, value]) => `${key}=${JSON.stringify(value)}`)
+			.join(", ");
+		parts.push(`{${contextStr}}`);
+	}
+
+	return parts.join(" ");
+}
+
+export function createErrorReport(errors: TaskError[]): string {
+	const errorsByType = errors.reduce(
+		(acc, error) => {
+			const type = error.name;
+			if (!acc[type]) {
+				acc[type] = [];
 			}
+			acc[type].push(error);
+			return acc;
+		},
+		{} as Record<string, TaskError[]>,
+	);
+
+	let report = `Task Error Report (${errors.length} errors)\n`;
+	report += `Generated: ${new Date().toISOString()}\n\n`;
+
+	for (const [errorType, typeErrors] of Object.entries(errorsByType)) {
+		report += `## ${errorType} (${typeErrors.length})\n\n`;
+
+		typeErrors.forEach((error, index) => {
+			report += `${index + 1}. ${formatError(error)}\n`;
+			if (error.stack) {
+				report += `   Stack: ${error.stack.split("\n")[1]?.trim()}\n`;
+			}
+			report += "\n";
 		});
 	}
 
-	static isRetryableError(error: TaskError): boolean {
-		const retryableCodes = [
-			"TASK_RESOURCE_ERROR",
-			"TASK_TIMEOUT_ERROR",
-			"TASK_REPOSITORY_ERROR",
-		];
-
-		return retryableCodes.includes(error.code);
-	}
-
-	static getRetryDelay(_error: TaskError, attemptNumber: number): number {
-		// Exponential backoff with jitter
-		const baseDelay = 1000; // 1 second
-		const maxDelay = 30000; // 30 seconds
-
-		const delay = Math.min(baseDelay * 2 ** attemptNumber, maxDelay);
-		const jitter = delay * 0.1 * Math.random();
-
-		return delay + jitter;
-	}
-
-	static formatError(error: TaskError): string {
-		const parts = [`[${error.code}]`, error.message];
-
-		if (error.taskId) {
-			parts.push(`(Task: ${error.taskId})`);
-		}
-
-		if (error.context) {
-			const contextStr = Object.entries(error.context)
-				.map(([key, value]) => `${key}=${JSON.stringify(value)}`)
-				.join(", ");
-			parts.push(`{${contextStr}}`);
-		}
-
-		return parts.join(" ");
-	}
-
-	static createErrorReport(errors: TaskError[]): string {
-		const errorsByType = errors.reduce(
-			(acc, error) => {
-				const type = error.name;
-				if (!acc[type]) {
-					acc[type] = [];
-				}
-				acc[type].push(error);
-				return acc;
-			},
-			{} as Record<string, TaskError[]>,
-		);
-
-		let report = `Task Error Report (${errors.length} errors)\n`;
-		report += `Generated: ${new Date().toISOString()}\n\n`;
-
-		for (const [errorType, typeErrors] of Object.entries(errorsByType)) {
-			report += `## ${errorType} (${typeErrors.length})\n\n`;
-
-			typeErrors.forEach((error, index) => {
-				report += `${index + 1}. ${TaskErrorHandler.formatError(error)}\n`;
-				if (error.stack) {
-					report += `   Stack: ${error.stack.split("\n")[1]?.trim()}\n`;
-				}
-				report += "\n";
-			});
-		}
-
-		return report;
-	}
+	return report;
 }

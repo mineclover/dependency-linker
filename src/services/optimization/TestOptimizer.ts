@@ -71,18 +71,19 @@ interface OptimizationContext {
 	dryRun: boolean;
 }
 
-interface BackupEntry {
-	originalPath: string;
-	backupPath: string;
-	content: string;
-	timestamp: Date;
-}
+// Note: BackupEntry interface reserved for future backup functionality
+// interface BackupEntry {
+// 	originalPath: string;
+// 	backupPath: string;
+// 	content: string;
+// 	timestamp: Date;
+// }
 
 export class TestOptimizer {
 	private logs: OptimizationLog[] = [];
-	private context: OptimizationContext;
 	private backups: Map<string, string> = new Map();
 
+	private context: OptimizationContext;
 	constructor(context?: OptimizationContext) {
 		this.context = context || {
 			backupDirectory: "./backups",

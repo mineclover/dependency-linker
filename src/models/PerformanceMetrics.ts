@@ -406,6 +406,31 @@ export class PerformanceMonitor {
 	}
 
 	/**
+	 * Gets current performance metrics without finishing monitoring
+	 */
+	getMetrics(): Partial<PerformanceMetrics> {
+		const currentTime = this.now();
+		const elapsedTime = currentTime - this.startTime;
+
+		return {
+			parseTime: this.metrics.parseTime || 0,
+			extractionTime: this.metrics.extractionTime || 0,
+			interpretationTime: this.metrics.interpretationTime || 0,
+			totalTime: elapsedTime,
+			memoryUsage: this.peakMemoryUsage,
+			breakdown: this.breakdownMetrics as PerformanceBreakdown,
+			cache: this.metrics.cache,
+			resources: {
+				cpuUsage: this.calculateCPUUsage(),
+				memoryUsage: (this.peakMemoryUsage / (1024 * 1024 * 100)) * 100, // Percentage of 100MB
+				fileHandles: this.getOpenFileHandleCount() - this.fileHandleCount, // Delta
+				threadCount: 1, // Single-threaded for now
+				gc: this.calculateGCMetrics(),
+			},
+		};
+	}
+
+	/**
 	 * Takes a memory snapshot at a specific phase
 	 */
 	private takeMemorySnapshot(

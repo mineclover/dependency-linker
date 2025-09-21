@@ -336,10 +336,14 @@ export class TestAnalyzer {
 			.withLastModified(lastModified);
 
 		// Add dependencies
-		dependencies.forEach((dep) => suite.addDependency(dep));
+		for (const dep of dependencies) {
+			suite.addDependency(dep);
+		}
 
 		// Add test cases
-		testCases.forEach((testCase) => suite.addTestCase(testCase));
+		for (const testCase of testCases) {
+			suite.addTestCase(testCase);
+		}
 
 		return suite.build();
 	}
@@ -356,8 +360,9 @@ export class TestAnalyzer {
 		let testIndex = 0;
 
 		for (const pattern of testPatterns) {
-			let match;
-			while ((match = pattern.exec(content)) !== null) {
+			let match: RegExpExecArray | null;
+			match = pattern.exec(content);
+			while (match !== null) {
 				const testName = match[1];
 				const testType = this.determineTestType(testName, content);
 				const priority = this.determinePriority(testName, content);
@@ -374,10 +379,15 @@ export class TestAnalyzer {
 					.withExecutionTime(executionTime)
 					.markAsFlaky(isFlaky);
 
-				coverageAreas.forEach((area) => testCase.addCoverageArea(area));
+				for (const area of coverageAreas) {
+					testCase.addCoverageArea(area);
+				}
 
 				testCases.push(testCase.build());
 				testIndex++;
+
+				// Get next match
+				match = pattern.exec(content);
 			}
 		}
 

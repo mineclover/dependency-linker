@@ -118,7 +118,9 @@ export function identifyConsolidationCandidates(
 		if (similar.length > 0) {
 			const group = [testCase, ...similar];
 			groups.push(group);
-			group.forEach((tc) => processed.add(tc.id));
+			for (const tc of group) {
+				processed.add(tc.id);
+			}
 		}
 	});
 
@@ -275,7 +277,9 @@ function calculateArrayOverlap(arr1: string[], arr2: string[]): number {
 /**
  * Group test cases by type
  */
-export function groupTestCasesByType(testCases: TestCase[]): Record<TestType, TestCase[]> {
+export function groupTestCasesByType(
+	testCases: TestCase[],
+): Record<TestType, TestCase[]> {
 	return testCases.reduce(
 		(groups, testCase) => {
 			if (!groups[testCase.type]) {
@@ -291,7 +295,9 @@ export function groupTestCasesByType(testCases: TestCase[]): Record<TestType, Te
 /**
  * Group test cases by priority
  */
-export function groupTestCasesByPriority(testCases: TestCase[]): Record<Priority, TestCase[]> {
+export function groupTestCasesByPriority(
+	testCases: TestCase[],
+): Record<Priority, TestCase[]> {
 	return testCases.reduce(
 		(groups, testCase) => {
 			if (!groups[testCase.priority]) {
@@ -334,7 +340,10 @@ export function calculateTestCasesFailureRate(testCases: TestCase[]): number {
 /**
  * Find test cases that cover specific areas
  */
-export function findTestCasesByCoverageArea(testCases: TestCase[], area: string): TestCase[] {
+export function findTestCasesByCoverageArea(
+	testCases: TestCase[],
+	area: string,
+): TestCase[] {
 	return testCases.filter((testCase) =>
 		testCase.coverageAreas.some((ca) =>
 			ca.toLowerCase().includes(area.toLowerCase()),

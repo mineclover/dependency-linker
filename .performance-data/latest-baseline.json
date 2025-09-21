@@ -1,6 +1,6 @@
 {
-  "timestamp": "2025-09-21T08:41:32.675Z",
-  "totalExecutionTime": 4.8,
+  "timestamp": "2025-09-21T13:29:05.846Z",
+  "totalExecutionTime": 4,
   "totalTests": 0,
   "failedTests": 0,
   "failedSuites": 0,
@@ -16,17 +16,17 @@
     "arch": "arm64",
     "cpuCount": 12,
     "totalMemory": 18432,
-    "availableMemory": 160.40625
+    "availableMemory": 76.5
   },
   "metadata": {
-    "measurementDuration": 25,
+    "measurementDuration": 21,
     "retries": 0,
-    "confidence": 0.8440976088844191,
+    "confidence": 0.841886116991581,
     "notes": "Baseline established with 5 measurement runs",
-    "gitCommit": "58ee9053d1a120e34e58521f24f9be3e220db3b9",
+    "gitCommit": "c2a2b59bff79130c74bce961720af8880cb3ff13",
     "branch": "005-test-optimization"
   },
-  "duration": 4.8,
-  "executionTime": 4.8,
-  "id": "baseline-1758444092693"
+  "duration": 4,
+  "executionTime": 4,
+  "id": "baseline-1758461345862"
 }

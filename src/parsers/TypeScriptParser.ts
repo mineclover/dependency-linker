@@ -58,9 +58,10 @@ export class TypeScriptParser implements ILanguageParser {
 				(await fs.readFile(filePath, this.options.encoding as BufferEncoding));
 
 			// Check file size limit
-			if (sourceCode.length > this.options.maxFileSize!) {
+			const maxFileSize = this.options.maxFileSize ?? 10 * 1024 * 1024;
+			if (sourceCode.length > maxFileSize) {
 				throw new Error(
-					`File size exceeds limit: ${sourceCode.length} > ${this.options.maxFileSize}`,
+					`File size exceeds limit: ${sourceCode.length} > ${maxFileSize}`,
 				);
 			}
 
@@ -75,10 +76,8 @@ export class TypeScriptParser implements ILanguageParser {
 			}
 
 			// Parse with timeout
-			const ast = await this.parseWithTimeout(
-				sourceCode,
-				this.options.timeout!,
-			);
+			const timeout = this.options.timeout ?? 30000;
+			const ast = await this.parseWithTimeout(sourceCode, timeout);
 
 			if (!ast) {
 				throw new Error("Failed to parse file - AST is null");
@@ -101,7 +100,7 @@ export class TypeScriptParser implements ILanguageParser {
 					nodeCount: this.countNodes(ast),
 					maxDepth: this.calculateMaxDepth(ast),
 					fileSize: sourceCode.length,
-					encoding: this.options.encoding!,
+					encoding: this.options.encoding ?? "utf-8",
 					parserVersion: "1.0.0",
 					grammarVersion: "0.20.3",
 					memoryUsage: process.memoryUsage().heapUsed,
@@ -137,7 +136,7 @@ export class TypeScriptParser implements ILanguageParser {
 					nodeCount: 0,
 					maxDepth: 0,
 					fileSize: 0,
-					encoding: this.options.encoding!,
+					encoding: this.options.encoding ?? "utf-8",
 					parserVersion: "1.0.0",
 					grammarVersion: "0.20.3",
 					memoryUsage: process.memoryUsage().heapUsed,

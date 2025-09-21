@@ -13,7 +13,7 @@ import {
 	TestType,
 } from "./types";
 
-export interface TestCase {
+export interface ITestCase {
 	id: string; // Unique identifier within suite
 	name: string; // Test description/name
 	type: TestType; // Unit, integration, contract, e2e
@@ -34,7 +34,7 @@ export interface TestCase {
 	dependsOn?: string[]; // Dependencies on other tests
 }
 
-export class TestCase implements TestCase {
+export class TestCase implements ITestCase {
 	id: string;
 	name: string;
 	type: TestType;
@@ -54,7 +54,7 @@ export class TestCase implements TestCase {
 	setupCode?: string;
 	dependsOn?: string[];
 
-	constructor(data: Partial<TestCase> & { id: string; name: string }) {
+	constructor(data: Partial<ITestCase> & { id: string; name: string }) {
 		this.id = data.id;
 		this.name = data.name;
 		this.type = data.type || TestType.Unit;
@@ -76,7 +76,7 @@ export class TestCase implements TestCase {
 	}
 }
 
-export interface TestSuite {
+export interface ITestSuite {
 	id: string; // Unique identifier for the suite
 	name: string; // Human-readable suite name
 	filePath: string; // Absolute path to test file
@@ -88,7 +88,7 @@ export interface TestSuite {
 	setupComplexity: ComplexityLevel; // Setup/teardown complexity rating
 }
 
-export class TestSuite implements TestSuite {
+export class TestSuite implements ITestSuite {
 	id: string;
 	name: string;
 	filePath: string;
@@ -99,7 +99,7 @@ export class TestSuite implements TestSuite {
 	dependencies: string[];
 	setupComplexity: ComplexityLevel;
 
-	constructor(data: Partial<TestSuite> & { id: string; name: string }) {
+	constructor(data: Partial<ITestSuite> & { id: string; name: string }) {
 		this.id = data.id;
 		this.name = data.name;
 		this.filePath = data.filePath || "";
@@ -113,7 +113,7 @@ export class TestSuite implements TestSuite {
 }
 
 export class TestSuiteBuilder {
-	private suite: Partial<TestSuite> = {};
+	private suite: Partial<ITestSuite> = {};
 
 	constructor(id: string, name: string) {
 		this.suite.id = id;
@@ -159,15 +159,25 @@ export class TestSuiteBuilder {
 		this.validateSuite();
 		this.recalculateExecutionTime();
 
+		// After validation, these fields are guaranteed to exist
+		if (
+			!this.suite.id ||
+			!this.suite.name ||
+			!this.suite.testCases ||
+			!this.suite.dependencies
+		) {
+			throw new Error("Required suite fields are missing after validation");
+		}
+
 		return {
-			id: this.suite.id!,
-			name: this.suite.name!,
+			id: this.suite.id,
+			name: this.suite.name,
 			filePath: this.suite.filePath || "",
 			category: this.suite.category || TestCategory.Optimize,
-			testCases: this.suite.testCases!,
+			testCases: this.suite.testCases,
 			executionTime: this.suite.executionTime || 0,
 			lastModified: this.suite.lastModified || new Date(),
-			dependencies: this.suite.dependencies!,
+			dependencies: this.suite.dependencies,
 			setupComplexity: this.suite.setupComplexity || ComplexityLevel.Medium,
 		};
 	}
@@ -244,15 +254,24 @@ export class TestCaseBuilder {
 	build(): TestCase {
 		this.validateTestCase();
 
+		// After validation, these fields are guaranteed to exist
+		if (
+			!this.testCase.id ||
+			!this.testCase.name ||
+			!this.testCase.coverageAreas
+		) {
+			throw new Error("Required test case fields are missing after validation");
+		}
+
 		const executionTime = this.testCase.executionTime || 50;
 		return {
-			id: this.testCase.id!,
-			name: this.testCase.name!,
+			id: this.testCase.id,
+			name: this.testCase.name,
 			type: this.testCase.type || TestType.Unit,
 			executionTime,
 			isFlaky: this.testCase.isFlaky || false,
 			duplicateOf: this.testCase.duplicateOf,
-			coverageAreas: this.testCase.coverageAreas!,
+			coverageAreas: this.testCase.coverageAreas,
 			lastFailure: this.testCase.lastFailure,
 			priority: this.testCase.priority || Priority.Medium,
 			estimatedDuration: this.testCase.estimatedDuration || executionTime,
@@ -278,14 +297,14 @@ export class TestCaseBuilder {
 }
 
 // Utility functions for TestSuite operations
-export function calculateTotalExecutionTime(testSuites: TestSuite[]): number {
+export function calculateTotalExecutionTime(testSuites: ITestSuite[]): number {
 	return testSuites.reduce((sum, suite) => sum + suite.executionTime, 0);
 }
 
-export function categorizeTestSuites(testSuites: TestSuite[]): {
-	critical: TestSuite[];
-	optimize: TestSuite[];
-	remove: TestSuite[];
+export function categorizeTestSuites(testSuites: ITestSuite[]): {
+	critical: ITestSuite[];
+	optimize: ITestSuite[];
+	remove: ITestSuite[];
 } {
 	return testSuites.reduce(
 		(categorized, suite) => {
@@ -293,15 +312,15 @@ export function categorizeTestSuites(testSuites: TestSuite[]): {
 			return categorized;
 		},
 		{
-			critical: [] as TestSuite[],
-			optimize: [] as TestSuite[],
-			remove: [] as TestSuite[],
+			critical: [] as ITestSuite[],
+			optimize: [] as ITestSuite[],
+			remove: [] as ITestSuite[],
 		},
 	);
 }
 
-export function findDuplicateTests(testSuites: TestSuite[]): TestCase[] {
-	const duplicates: TestCase[] = [];
+export function findDuplicateTests(testSuites: ITestSuite[]): ITestCase[] {
+	const duplicates: ITestCase[] = [];
 
 	for (const suite of testSuites) {
 		for (const testCase of suite.testCases) {
@@ -314,8 +333,8 @@ export function findDuplicateTests(testSuites: TestSuite[]): TestCase[] {
 	return duplicates;
 }
 
-export function findFlakyTests(testSuites: TestSuite[]): TestCase[] {
-	const flakyTests: TestCase[] = [];
+export function findFlakyTests(testSuites: ITestSuite[]): ITestCase[] {
+	const flakyTests: ITestCase[] = [];
 
 	for (const suite of testSuites) {
 		for (const testCase of suite.testCases) {
@@ -328,7 +347,7 @@ export function findFlakyTests(testSuites: TestSuite[]): TestCase[] {
 	return flakyTests;
 }
 
-export function validateTestSuite(suite: TestSuite): string[] {
+export function validateTestSuite(suite: ITestSuite): string[] {
 	const errors: string[] = [];
 
 	if (!suite.id || suite.id.trim() === "") {
@@ -364,4 +383,4 @@ export function validateTestSuite(suite: TestSuite): string[] {
 // Legacy class export removed - use individual functions instead
 
 // Re-export types from the types module for convenience
-export { Priority, TestType } from "./types";
+export { ComplexityLevel, Priority, TestCategory, TestType } from "./types";

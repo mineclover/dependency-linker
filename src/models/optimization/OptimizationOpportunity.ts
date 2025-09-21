@@ -22,7 +22,7 @@ export enum OptimizationStatus {
 	Skipped = "skipped",
 }
 
-export interface OptimizationOpportunity {
+export interface IOptimizationOpportunity {
 	id: string; // Unique identifier
 	type: OptimizationType; // Category of optimization
 	targetSuite: string; // TestSuite.id this applies to
@@ -58,7 +58,7 @@ export interface OptimizationOpportunity {
 	};
 }
 
-export class OptimizationOpportunity implements OptimizationOpportunity {
+export class OptimizationOpportunity implements IOptimizationOpportunity {
 	id: string;
 	type: OptimizationType;
 	targetSuite: string;
@@ -94,7 +94,7 @@ export class OptimizationOpportunity implements OptimizationOpportunity {
 	};
 
 	constructor(
-		data: Partial<OptimizationOpportunity> & {
+		data: Partial<IOptimizationOpportunity> & {
 			id: string;
 			type: OptimizationType;
 			targetSuite: string;
@@ -139,7 +139,7 @@ export interface OptimizationImpact {
 export interface OptimizationBatch {
 	id: string;
 	name: string;
-	opportunities: OptimizationOpportunity[];
+	opportunities: IOptimizationOpportunity[];
 	totalEstimatedSaving: number;
 	overallRiskLevel: RiskLevel;
 	executionOrder: string[]; // Order to execute opportunities
@@ -149,7 +149,7 @@ export interface OptimizationBatch {
 }
 
 export class OptimizationOpportunityBuilder {
-	private opportunity: Partial<OptimizationOpportunity> = {};
+	private opportunity: Partial<IOptimizationOpportunity> = {};
 
 	constructor(id: string, type: OptimizationType, targetSuite: string) {
 		this.opportunity.id = id;
@@ -209,11 +209,26 @@ export class OptimizationOpportunityBuilder {
 	build(): OptimizationOpportunity {
 		this.validateOpportunity();
 
+		// After validation, these required fields are guaranteed to exist
+		if (
+			!this.opportunity.id ||
+			!this.opportunity.type ||
+			!this.opportunity.targetSuite ||
+			!this.opportunity.prerequisites ||
+			!this.opportunity.status ||
+			!this.opportunity.createdAt ||
+			!this.opportunity.updatedAt
+		) {
+			throw new Error(
+				"Required opportunity fields are missing after validation",
+			);
+		}
+
 		const timeSaving = this.opportunity.estimatedTimeSaving || 100;
 		return {
-			id: this.opportunity.id!,
-			type: this.opportunity.type!,
-			targetSuite: this.opportunity.targetSuite!,
+			id: this.opportunity.id,
+			type: this.opportunity.type,
+			targetSuite: this.opportunity.targetSuite,
 			targetCases: this.opportunity.targetCases,
 			description:
 				this.opportunity.description || `${this.opportunity.type} optimization`,
@@ -226,10 +241,10 @@ export class OptimizationOpportunityBuilder {
 			riskLevel: this.opportunity.riskLevel || RiskLevel.Medium,
 			implementationEffort:
 				this.opportunity.implementationEffort || EffortLevel.Medium,
-			prerequisites: this.opportunity.prerequisites!,
-			status: this.opportunity.status!,
-			createdAt: this.opportunity.createdAt!,
-			updatedAt: this.opportunity.updatedAt!,
+			prerequisites: this.opportunity.prerequisites,
+			status: this.opportunity.status,
+			createdAt: this.opportunity.createdAt,
+			updatedAt: this.opportunity.updatedAt,
 			completedAt: this.opportunity.completedAt,
 			validationRequired: this.opportunity.validationRequired || false,
 			rollbackPlan: this.opportunity.rollbackPlan,
@@ -250,8 +265,8 @@ export class OptimizationOpportunityBuilder {
  * Prioritize opportunities based on impact and risk
  */
 export function prioritizeOpportunities(
-	opportunities: OptimizationOpportunity[],
-): OptimizationOpportunity[] {
+	opportunities: IOptimizationOpportunity[],
+): IOptimizationOpportunity[] {
 	return [...opportunities].sort((a, b) => {
 		const scoreA = calculatePriorityScore(a);
 		const scoreB = calculatePriorityScore(b);
@@ -263,8 +278,8 @@ export function prioritizeOpportunities(
  * Group opportunities by risk level
  */
 export function groupByRiskLevel(
-	opportunities: OptimizationOpportunity[],
-): Record<RiskLevel, OptimizationOpportunity[]> {
+	opportunities: IOptimizationOpportunity[],
+): Record<RiskLevel, IOptimizationOpportunity[]> {
 	return opportunities.reduce(
 		(groups, opportunity) => {
 			if (!groups[opportunity.riskLevel]) {
@@ -273,7 +288,7 @@ export function groupByRiskLevel(
 			groups[opportunity.riskLevel].push(opportunity);
 			return groups;
 		},
-		{} as Record<RiskLevel, OptimizationOpportunity[]>,
+		{} as Record<RiskLevel, IOptimizationOpportunity[]>,
 	);
 }
 
@@ -281,8 +296,8 @@ export function groupByRiskLevel(
  * Group opportunities by type
  */
 export function groupByType(
-	opportunities: OptimizationOpportunity[],
-): Record<OptimizationType, OptimizationOpportunity[]> {
+	opportunities: IOptimizationOpportunity[],
+): Record<OptimizationType, IOptimizationOpportunity[]> {
 	return opportunities.reduce(
 		(groups, opportunity) => {
 			if (!groups[opportunity.type]) {
@@ -291,7 +306,7 @@ export function groupByType(
 			groups[opportunity.type].push(opportunity);
 			return groups;
 		},
-		{} as Record<OptimizationType, OptimizationOpportunity[]>,
+		{} as Record<OptimizationType, IOptimizationOpportunity[]>,
 	);
 }
 
@@ -299,7 +314,7 @@ export function groupByType(
  * Calculate total estimated time savings
  */
 export function calculateTotalSavings(
-	opportunities: OptimizationOpportunity[],
+	opportunities: IOptimizationOpportunity[],
 ): number {
 	return opportunities.reduce(
 		(sum, opportunity) => sum + opportunity.estimatedTimeSaving,
@@ -311,9 +326,9 @@ export function calculateTotalSavings(
  * Find opportunities that can be executed in parallel
  */
 export function findParallelExecutableOpportunities(
-	opportunities: OptimizationOpportunity[],
-): OptimizationOpportunity[][] {
-	const groups: OptimizationOpportunity[][] = [];
+	opportunities: IOptimizationOpportunity[],
+): IOptimizationOpportunity[][] {
+	const groups: IOptimizationOpportunity[][] = [];
 	const processed = new Set<string>();
 
 	opportunities.forEach((opportunity) => {
@@ -336,7 +351,7 @@ export function findParallelExecutableOpportunities(
  * Validate dependencies and prerequisites
  */
 export function validateDependencies(
-	opportunities: OptimizationOpportunity[],
+	opportunities: IOptimizationOpportunity[],
 ): string[] {
 	const errors: string[] = [];
 	const opportunityIds = new Set(opportunities.map((o) => o.id));
@@ -358,7 +373,7 @@ export function validateDependencies(
  * Create execution plan with proper ordering
  */
 export function createExecutionPlan(
-	opportunities: OptimizationOpportunity[],
+	opportunities: IOptimizationOpportunity[],
 ): OptimizationBatch[] {
 	const batches: OptimizationBatch[] = [];
 	const remaining = [...opportunities];
@@ -401,7 +416,7 @@ export function createExecutionPlan(
 	return batches;
 }
 
-function calculatePriorityScore(opportunity: OptimizationOpportunity): number {
+function calculatePriorityScore(opportunity: IOptimizationOpportunity): number {
 	// Higher savings = higher score
 	const savingsScore = opportunity.estimatedTimeSaving / 1000; // Normalize to seconds
 
@@ -427,9 +442,9 @@ function calculatePriorityScore(opportunity: OptimizationOpportunity): number {
 }
 
 function findNonConflictingOpportunities(
-	target: OptimizationOpportunity,
-	candidates: OptimizationOpportunity[],
-): OptimizationOpportunity[] {
+	target: IOptimizationOpportunity,
+	candidates: IOptimizationOpportunity[],
+): IOptimizationOpportunity[] {
 	const group = [target];
 
 	candidates.forEach((candidate) => {
@@ -451,7 +466,7 @@ function findNonConflictingOpportunities(
 }
 
 function arePrerequisitesSatisfied(
-	opportunity: OptimizationOpportunity,
+	opportunity: IOptimizationOpportunity,
 	completedBatches: OptimizationBatch[],
 ): boolean {
 	const completedOpportunityIds = new Set(
@@ -464,11 +479,9 @@ function arePrerequisitesSatisfied(
 }
 
 function calculateOverallRiskLevel(
-	opportunities: OptimizationOpportunity[],
+	opportunities: IOptimizationOpportunity[],
 ): RiskLevel {
-	const hasHighRisk = opportunities.some(
-		(o) => o.riskLevel === RiskLevel.High,
-	);
+	const hasHighRisk = opportunities.some((o) => o.riskLevel === RiskLevel.High);
 	if (hasHighRisk) return RiskLevel.High;
 
 	const hasMediumRisk = opportunities.some(
@@ -480,7 +493,7 @@ function calculateOverallRiskLevel(
 }
 
 function extractBatchDependencies(
-	opportunities: OptimizationOpportunity[],
+	opportunities: IOptimizationOpportunity[],
 	previousBatches: OptimizationBatch[],
 ): string[] {
 	const dependencies = new Set<string>();
@@ -505,7 +518,7 @@ export const OptimizationTemplates = {
 	removeDuplicate: (
 		targetSuite: string,
 		duplicateTestIds: string[],
-	): Partial<OptimizationOpportunity> => ({
+	): Partial<IOptimizationOpportunity> => ({
 		type: OptimizationType.RemoveDuplicate,
 		targetSuite,
 		targetCases: duplicateTestIds,
@@ -518,7 +531,7 @@ export const OptimizationTemplates = {
 	fixFlaky: (
 		targetSuite: string,
 		flakyTestIds: string[],
-	): Partial<OptimizationOpportunity> => ({
+	): Partial<IOptimizationOpportunity> => ({
 		type: OptimizationType.FixFlaky,
 		targetSuite,
 		targetCases: flakyTestIds,
@@ -540,7 +553,7 @@ export const OptimizationTemplates = {
 	consolidateScenarios: (
 		targetSuite: string,
 		scenarioTestIds: string[],
-	): Partial<OptimizationOpportunity> => ({
+	): Partial<IOptimizationOpportunity> => ({
 		type: OptimizationType.ConsolidateScenarios,
 		targetSuite,
 		targetCases: scenarioTestIds,
@@ -561,7 +574,7 @@ export const OptimizationTemplates = {
 
 	sharedUtilities: (
 		targetSuites: string[],
-	): Partial<OptimizationOpportunity> => ({
+	): Partial<IOptimizationOpportunity> => ({
 		type: OptimizationType.SharedUtilities,
 		targetSuite: targetSuites[0], // Primary target
 		riskLevel: RiskLevel.Low,

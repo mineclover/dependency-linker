@@ -283,9 +283,11 @@ export class DependencyAnalyzer {
 			if (!packageCounts.has(packageName)) {
 				packageCounts.set(packageName, { count: 0, sources: [] });
 			}
-			const info = packageCounts.get(packageName)!;
-			info.count++;
-			info.sources.push(dep.source);
+			const info = packageCounts.get(packageName);
+			if (info) {
+				info.count++;
+				info.sources.push(dep.source);
+			}
 		}
 
 		return Array.from(packageCounts.entries())

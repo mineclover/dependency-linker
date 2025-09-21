@@ -57,7 +57,9 @@ export class TaskRepository implements ITaskRepository {
 			await this.save();
 		}
 
-		this.onTaskCreatedCallbacks.forEach((callback) => callback(task));
+		for (const callback of this.onTaskCreatedCallbacks) {
+			callback(task);
+		}
 		return task;
 	}
 
@@ -81,9 +83,9 @@ export class TaskRepository implements ITaskRepository {
 			await this.save();
 		}
 
-		this.onTaskUpdatedCallbacks.forEach((callback) =>
-			callback(taskId, updates),
-		);
+		for (const callback of this.onTaskUpdatedCallbacks) {
+			callback(taskId, updates);
+		}
 		return updatedTask;
 	}
 
@@ -95,7 +97,9 @@ export class TaskRepository implements ITaskRepository {
 		}
 
 		if (result) {
-			this.onTaskDeletedCallbacks.forEach((callback) => callback(taskId));
+			for (const callback of this.onTaskDeletedCallbacks) {
+				callback(taskId);
+			}
 		}
 
 		return result;

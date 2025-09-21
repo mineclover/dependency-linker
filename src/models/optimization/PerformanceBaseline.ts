@@ -12,7 +12,7 @@ export {
 	TestEnvironment,
 } from "./types";
 
-export interface PerformanceBaseline {
+export interface IPerformanceBaseline {
 	id?: string; // Unique identifier for the baseline
 	timestamp: Date; // When baseline was established
 	totalExecutionTime: number; // Total test execution time in ms
@@ -30,9 +30,12 @@ export interface PerformanceBaseline {
 	metadata: BaselineMetadata; // Additional metadata
 }
 
-export class PerformanceBaseline implements PerformanceBaseline {
+export class PerformanceBaseline implements IPerformanceBaseline {
+	id?: string;
 	timestamp: Date;
 	totalExecutionTime: number;
+	duration?: number;
+	executionTime?: number;
 	totalTests: number;
 	failedTests: number;
 	failedSuites: number;
@@ -45,15 +48,18 @@ export class PerformanceBaseline implements PerformanceBaseline {
 	metadata: BaselineMetadata;
 
 	constructor(
-		data: Partial<PerformanceBaseline> & {
+		data: Partial<IPerformanceBaseline> & {
 			totalExecutionTime: number;
 			totalTests: number;
 			failedTests: number;
 			failedSuites: number;
 		},
 	) {
+		this.id = data.id;
 		this.timestamp = data.timestamp || new Date();
 		this.totalExecutionTime = data.totalExecutionTime;
+		this.duration = data.duration || data.totalExecutionTime;
+		this.executionTime = data.executionTime || data.totalExecutionTime;
 		this.totalTests = data.totalTests;
 		this.failedTests = data.failedTests;
 		this.failedSuites = data.failedSuites;
@@ -124,7 +130,7 @@ export interface PerformanceMetrics {
 }
 
 export class PerformanceBaselineBuilder {
-	private baseline: Partial<PerformanceBaseline> = {};
+	private baseline: Partial<IPerformanceBaseline> = {};
 
 	constructor() {
 		this.baseline.timestamp = new Date();
@@ -192,29 +198,49 @@ export class PerformanceBaselineBuilder {
 	withMetadata(
 		metadata: Partial<BaselineMetadata>,
 	): PerformanceBaselineBuilder {
+		// Filter out undefined values and ensure required fields are present
+		const filteredEntries = Object.entries(metadata).filter(
+			([_, value]) => value !== undefined,
+		);
+		const filteredMetadata = Object.fromEntries(filteredEntries);
+
 		this.baseline.metadata = {
-			...this.baseline.metadata!,
-			...metadata,
-		};
+			...(this.baseline.metadata || {}),
+			...filteredMetadata,
+		} as BaselineMetadata;
 		return this;
 	}
 
 	build(): PerformanceBaseline {
 		this.validateBaseline();
 
+		// Validate required fields exist
+		if (
+			!this.baseline.timestamp ||
+			!this.baseline.totalExecutionTime ||
+			this.baseline.totalTests === undefined ||
+			this.baseline.failedTests === undefined ||
+			this.baseline.failedSuites === undefined ||
+			this.baseline.passRate === undefined ||
+			!this.baseline.environment ||
+			!this.baseline.metadata
+		) {
+			throw new Error("Required baseline fields are missing");
+		}
+
 		return {
-			timestamp: this.baseline.timestamp!,
-			totalExecutionTime: this.baseline.totalExecutionTime!,
-			totalTests: this.baseline.totalTests!,
-			failedTests: this.baseline.failedTests!,
-			failedSuites: this.baseline.failedSuites!,
-			passRate: this.baseline.passRate!,
+			timestamp: this.baseline.timestamp,
+			totalExecutionTime: this.baseline.totalExecutionTime,
+			totalTests: this.baseline.totalTests,
+			failedTests: this.baseline.failedTests,
+			failedSuites: this.baseline.failedSuites,
+			passRate: this.baseline.passRate,
 			coveragePercentage: this.baseline.coveragePercentage || 0,
 			memoryUsage: this.baseline.memoryUsage || 0,
 			workerIssues: this.baseline.workerIssues || false,
 			parserWarnings: this.baseline.parserWarnings || 0,
-			environment: this.baseline.environment!,
-			metadata: this.baseline.metadata!,
+			environment: this.baseline.environment,
+			metadata: this.baseline.metadata,
 		};
 	}
 
@@ -247,7 +273,7 @@ export class PerformanceBaselineBuilder {
  * Compare current performance against baseline
  */
 export function comparePerformance(
-	baseline: PerformanceBaseline,
+	baseline: IPerformanceBaseline,
 	current: PerformanceMetrics,
 ): PerformanceComparison {
 	const timeImprovement = calculatePercentageChange(
@@ -287,7 +313,7 @@ export function comparePerformance(
  * Evaluate if performance meets optimization targets
  */
 export function evaluateOptimizationSuccess(
-	baseline: PerformanceBaseline,
+	baseline: IPerformanceBaseline,
 	current: PerformanceMetrics,
 	targets?: PerformanceTarget,
 ): boolean {
@@ -306,7 +332,7 @@ export function evaluateOptimizationSuccess(
  * Generate optimization recommendations based on baseline
  */
 export function generateOptimizationRecommendations(
-	baseline: PerformanceBaseline,
+	baseline: IPerformanceBaseline,
 ): string[] {
 	const recommendations: string[] = [];
 
@@ -354,7 +380,7 @@ export function generateOptimizationRecommendations(
  * Track performance trends over multiple baselines
  */
 export function trackPerformanceTrends(
-	baselines: PerformanceBaseline[],
+	baselines: IPerformanceBaseline[],
 ): PerformanceTrend {
 	if (baselines.length < 2) {
 		throw new Error("At least 2 baselines required for trend analysis");
@@ -474,8 +500,8 @@ function evaluateOverallSuccess(
 }
 
 function determineTrendDirection(
-	oldest: PerformanceBaseline,
-	newest: PerformanceBaseline,
+	oldest: IPerformanceBaseline,
+	newest: IPerformanceBaseline,
 ): "improving" | "degrading" | "stable" {
 	let improvements = 0;
 	let degradations = 0;

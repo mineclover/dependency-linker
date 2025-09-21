@@ -86,7 +86,9 @@ export class TaskManager implements ITaskManager {
 		if (updates.status && updates.status !== oldStatus) {
 			this.statusChangeCallbacks.forEach((callback) => {
 				try {
-					callback(taskId, oldStatus, updates.status!);
+					if (updates.status) {
+						callback(taskId, oldStatus, updates.status);
+					}
 				} catch (_error) {
 					// Ignore callback errors
 				}
@@ -652,7 +654,12 @@ export class TaskManager implements ITaskManager {
 
 		const createdTasks: Task[] = [];
 		for (const taskData of tasks) {
-			const { id, createdAt, updatedAt, ...cleanTaskData } = taskData;
+			const {
+				id: _id,
+				createdAt: _createdAt,
+				updatedAt: _updatedAt,
+				...cleanTaskData
+			} = taskData;
 			const task = await this.createTask(cleanTaskData);
 			createdTasks.push(task);
 		}

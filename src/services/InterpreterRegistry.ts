@@ -247,9 +247,11 @@ export class InterpreterRegistry implements IInterpreterRegistry {
 
 				if (dependenciesSatisfied) {
 					pipeline.push(interpreter);
-					metadata.supportedOutputTypes?.forEach((type) =>
-						processedTypes.add(type),
-					);
+					if (metadata.supportedOutputTypes) {
+						for (const type of metadata.supportedOutputTypes) {
+							processedTypes.add(type);
+						}
+					}
 				}
 			}
 		}

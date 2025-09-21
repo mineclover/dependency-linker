@@ -16,15 +16,15 @@ export * from "./errors";
 // Legacy class export removed - use individual error functions instead
 export * from "./OptimizationOpportunity";
 export {
+	calculateTotalSavings,
+	createExecutionPlan,
+	findParallelExecutableOpportunities,
+	groupByRiskLevel,
+	groupByType,
 	OptimizationOpportunityBuilder,
 	OptimizationTemplates,
 	prioritizeOpportunities,
-	groupByRiskLevel,
-	groupByType,
-	calculateTotalSavings,
-	findParallelExecutableOpportunities,
 	validateDependencies,
-	createExecutionPlan,
 } from "./OptimizationOpportunity";
 export type {
 	PerformanceComparison,
@@ -36,14 +36,14 @@ export { PerformanceBaselineBuilder } from "./PerformanceBaseline";
 export * from "./TestCase";
 export {
 	analyzeTestCase,
-	findSimilarTests,
-	identifyConsolidationCandidates,
-	groupTestCasesByType,
-	groupTestCasesByPriority,
-	findSlowestTestCases,
-	calculateTestCasesTotalTime,
 	calculateTestCasesFailureRate,
+	calculateTestCasesTotalTime,
+	findSimilarTests,
+	findSlowestTestCases,
 	findTestCasesByCoverageArea,
+	groupTestCasesByPriority,
+	groupTestCasesByType,
+	identifyConsolidationCandidates,
 	validateTestCases,
 } from "./TestCase";
 // Model classes and interfaces

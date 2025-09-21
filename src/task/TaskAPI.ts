@@ -4,11 +4,18 @@
  */
 
 import {
+	createRepositoryError,
+	createTaskNotFoundError,
+	createValidationFailedError,
 	TaskError,
-	TaskErrorFactory,
 	TaskValidationError,
 } from "./errors/TaskError";
-import { TaskValidator } from "./errors/TaskValidator";
+import {
+	getFailedValidations,
+	validateStatusTransition,
+	validateTaskBatch,
+	validateTaskCreation,
+} from "./errors/TaskValidator";
 import type { ITaskManager } from "./interfaces/ITaskManager";
 import { TaskManager } from "./services/TaskManager";
 import {
@@ -84,15 +91,11 @@ export class TaskAPI {
 				this.config.enableValidation !== false &&
 				options.validate !== false
 			) {
-				const validationResults = TaskValidator.validateTaskCreation(taskData);
-				const failedValidations =
-					TaskValidator.getFailedValidations(validationResults);
+				const validationResults = validateTaskCreation(taskData);
+				const failedValidations = getFailedValidations(validationResults);
 
 				if (failedValidations.length > 0) {
-					throw TaskErrorFactory.validationFailed(
-						"new-task",
-						validationResults,
-					);
+					throw createValidationFailedError("new-task", validationResults);
 				}
 			}
 
@@ -122,7 +125,7 @@ export class TaskAPI {
 		try {
 			const task = await this.manager.getTask(taskId);
 			if (!task) {
-				throw TaskErrorFactory.taskNotFound(taskId);
+				throw createTaskNotFoundError(taskId);
 			}
 			return task;
 		} catch (error) {
@@ -138,7 +141,7 @@ export class TaskAPI {
 			// Validate status transition if status is being updated
 			if (updates.status) {
 				const currentTask = await this.getTask(taskId);
-				const transitionResult = TaskValidator.validateStatusTransition(
+				const transitionResult = validateStatusTransition(
 					currentTask.status,
 					updates.status,
 					taskId,
@@ -329,12 +332,11 @@ export class TaskAPI {
 	async createBatch(batchData: Omit<TaskBatch, "id">): Promise<TaskBatch> {
 		try {
 			if (this.config.enableValidation) {
-				const validationResults = TaskValidator.validateTaskBatch({
+				const validationResults = validateTaskBatch({
 					...batchData,
 					id: "temp",
 				});
-				const failedValidations =
-					TaskValidator.getFailedValidations(validationResults);
+				const failedValidations = getFailedValidations(validationResults);
 
 				if (failedValidations.length > 0) {
 					throw new TaskValidationError(
@@ -819,7 +821,7 @@ export class TaskAPI {
 		}
 
 		if (error instanceof Error) {
-			return TaskErrorFactory.repositoryError(operation, error, taskId);
+			return createRepositoryError(operation, error, taskId);
 		}
 
 		return new TaskError(
