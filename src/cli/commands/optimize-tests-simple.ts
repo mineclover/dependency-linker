@@ -314,9 +314,9 @@ export class OptimizeTestsCommand {
 
 		if (result.improvements.length > 0) {
 			console.log(`   Improvement Types:`);
-			result.improvements.forEach((improvement: any) =>
-				console.log(`     - ${improvement.type}: ${improvement.description}`),
-			);
+			for (const improvement of result.improvements) {
+				console.log(`     - ${improvement.type}: ${improvement.description}`);
+			}
 		}
 	}
 

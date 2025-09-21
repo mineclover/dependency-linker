@@ -13,13 +13,18 @@ export {
 } from "./constants";
 // Error handling
 export * from "./errors";
-// Re-export error utilities
-export { ErrorUtils } from "./errors";
+// Legacy class export removed - use individual error functions instead
 export * from "./OptimizationOpportunity";
 export {
 	OptimizationOpportunityBuilder,
-	OptimizationOpportunityManager,
 	OptimizationTemplates,
+	prioritizeOpportunities,
+	groupByRiskLevel,
+	groupByType,
+	calculateTotalSavings,
+	findParallelExecutableOpportunities,
+	validateDependencies,
+	createExecutionPlan,
 } from "./OptimizationOpportunity";
 export type {
 	PerformanceComparison,
@@ -27,14 +32,19 @@ export type {
 	PerformanceTarget,
 } from "./PerformanceBaseline";
 export * from "./PerformanceBaseline";
-export {
-	PerformanceAnalyzer,
-	PerformanceBaselineBuilder,
-} from "./PerformanceBaseline";
+export { PerformanceBaselineBuilder } from "./PerformanceBaseline";
 export * from "./TestCase";
 export {
-	TestCaseAnalyzer,
-	TestCaseUtils,
+	analyzeTestCase,
+	findSimilarTests,
+	identifyConsolidationCandidates,
+	groupTestCasesByType,
+	groupTestCasesByPriority,
+	findSlowestTestCases,
+	calculateTestCasesTotalTime,
+	calculateTestCasesFailureRate,
+	findTestCasesByCoverageArea,
+	validateTestCases,
 } from "./TestCase";
 // Model classes and interfaces
 export * from "./TestSuite";
@@ -43,7 +53,6 @@ export * from "./TestSuite";
 export {
 	TestCaseBuilder,
 	TestSuiteBuilder,
-	TestSuiteUtils,
 } from "./TestSuite";
 // Re-export commonly used types for convenience
 export type {

@@ -13,7 +13,7 @@ import {
 } from "../lib/AnalysisResultHelper";
 import {
 	type AnalysisConfig,
-	AnalysisConfigUtils,
+	createDefaultAnalysisConfig,
 } from "../models/AnalysisConfig";
 import type { AnalysisResult } from "../models/AnalysisResult";
 import type { ExportInfo } from "../models/ExportInfo";
@@ -105,7 +105,7 @@ export class TypeScriptAnalyzer {
 		};
 
 		// Initialize new AnalysisEngine (T046)
-		const engineConfig = AnalysisConfigUtils.default();
+		const engineConfig = createDefaultAnalysisConfig();
 		engineConfig.timeout = this.config.defaultTimeout;
 		engineConfig.useCache = this.config.enableCache;
 
@@ -752,7 +752,7 @@ export class TypeScriptAnalyzer {
 	 * Convert legacy options to new AnalysisConfig (T046)
 	 */
 	private convertOptionsToConfig(options?: AnalysisOptions): AnalysisConfig {
-		const config = AnalysisConfigUtils.default();
+		const config = createDefaultAnalysisConfig();
 
 		if (options?.parseTimeout !== undefined) {
 			config.timeout = options.parseTimeout;

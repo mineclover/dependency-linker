@@ -71,7 +71,7 @@ export class DiagnosticCommand {
 			const systemInfo = await this.getSystemInfo();
 			const healthCheck = await this.runHealthCheck();
 
-			let benchmark;
+			let benchmark: any;
 			if (options.includeBenchmark) {
 				benchmark = await this.runBenchmark();
 			}
@@ -101,7 +101,7 @@ export class DiagnosticCommand {
 	private async getSystemInfo(): Promise<SystemInfo> {
 		const memUsage = process.memoryUsage();
 
-		let packageInfo;
+		let packageInfo: any;
 		try {
 			const packagePath = path.join(process.cwd(), "package.json");
 			if (fs.existsSync(packagePath)) {
@@ -353,7 +353,10 @@ export class DiagnosticCommand {
 		options: DiagnosticOptions,
 	): Promise<void> {
 		try {
-			const outputPath = path.resolve(options.outputFile!);
+			if (!options.outputFile) {
+				throw new Error("Output file path is required");
+			}
+			const outputPath = path.resolve(options.outputFile);
 			const outputDir = path.dirname(outputPath);
 
 			// Ensure output directory exists

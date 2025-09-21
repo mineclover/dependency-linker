@@ -4,7 +4,15 @@
  */
 
 // Re-export helper utilities
-export { PerformanceBenchmark } from "../helpers/benchmark/PerformanceBenchmark";
+export {
+	assertPerformance,
+	type BenchmarkOptions,
+	type BenchmarkResult,
+	benchmark,
+	clearBenchmarkResults,
+	getAllBenchmarkResults,
+	getBenchmarkResult,
+} from "../helpers/benchmark/PerformanceBenchmark";
 // Re-export everything from models and services
 export * from "../models/optimization";
 export * from "../services/optimization";

@@ -7,9 +7,14 @@ import type { IDataExtractor } from "../extractors/IDataExtractor";
 import type { IDataInterpreter } from "../interpreters/IDataInterpreter";
 import {
 	type AnalysisConfig,
-	AnalysisConfigPresets,
-	AnalysisConfigUtils,
 	type AnalysisDepth,
+	createComprehensiveAnalysisConfig,
+	createDefaultAnalysisConfig,
+	createDevelopmentAnalysisConfig,
+	createFastAnalysisConfig,
+	createProductionAnalysisConfig,
+	createSecurityAnalysisConfig,
+	mergeAnalysisConfigs,
 } from "../models/AnalysisConfig";
 import { AnalysisEngine } from "./AnalysisEngine";
 import type {
@@ -20,11 +25,11 @@ import type {
 
 export class AnalysisEngineFactory implements IAnalysisEngineFactory {
 	private static readonly PRESETS: Record<string, () => AnalysisConfig> = {
-		fast: () => AnalysisConfigPresets.fast(),
-		comprehensive: () => AnalysisConfigPresets.comprehensive(),
-		development: () => AnalysisConfigPresets.development(),
-		production: () => AnalysisConfigPresets.production(),
-		security: () => AnalysisConfigPresets.security(),
+		fast: () => createFastAnalysisConfig(),
+		comprehensive: () => createComprehensiveAnalysisConfig(),
+		development: () => createDevelopmentAnalysisConfig(),
+		production: () => createProductionAnalysisConfig(),
+		security: () => createSecurityAnalysisConfig(),
 	};
 
 	/**
@@ -97,7 +102,7 @@ export class AnalysisEngineFactory implements IAnalysisEngineFactory {
 	): AnalysisEngine {
 		const baseConfig = this.createLanguageOptimizedConfig(language);
 		const mergedConfig = config
-			? AnalysisConfigUtils.merge(baseConfig, config)
+			? mergeAnalysisConfigs(baseConfig, config)
 			: baseConfig;
 
 		return this.create(mergedConfig);
@@ -145,7 +150,7 @@ export class AnalysisEngineFactory implements IAnalysisEngineFactory {
 	}
 
 	private createLanguageOptimizedConfig(language: string): AnalysisConfig {
-		const config = AnalysisConfigUtils.default();
+		const config = createDefaultAnalysisConfig();
 
 		switch (language.toLowerCase()) {
 			case "typescript":
@@ -166,7 +171,7 @@ export class AnalysisEngineFactory implements IAnalysisEngineFactory {
 
 			default:
 				// Use comprehensive config for unknown languages
-				return AnalysisConfigPresets.comprehensive();
+				return createComprehensiveAnalysisConfig();
 		}
 
 		return config;
@@ -174,7 +179,7 @@ export class AnalysisEngineFactory implements IAnalysisEngineFactory {
 }
 
 export class AnalysisEngineBuilder implements IAnalysisEngineBuilder {
-	private config: AnalysisConfig = AnalysisConfigUtils.default();
+	private config: AnalysisConfig = createDefaultAnalysisConfig();
 	private extractors: Map<string, IDataExtractor<any>> = new Map();
 	private interpreters: Map<string, IDataInterpreter<any, any>> = new Map();
 	private events?: IAnalysisEngineEvents;
@@ -277,7 +282,7 @@ export class AnalysisEngineBuilder implements IAnalysisEngineBuilder {
 	): IAnalysisEngineBuilder {
 		const factory = new AnalysisEngineFactory();
 		const presetConfig = factory.createWithPreset(preset).getDefaultConfig();
-		this.config = AnalysisConfigUtils.merge(presetConfig, this.config);
+		this.config = mergeAnalysisConfigs(presetConfig, this.config);
 		return this;
 	}
 

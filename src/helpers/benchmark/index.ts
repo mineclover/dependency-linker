@@ -3,4 +3,10 @@
  */
 
 export type { BenchmarkOptions, BenchmarkResult } from "./PerformanceBenchmark";
-export { PerformanceBenchmark } from "./PerformanceBenchmark";
+export {
+	assertPerformance,
+	benchmark,
+	clearBenchmarkResults,
+	getAllBenchmarkResults,
+	getBenchmarkResult,
+} from "./PerformanceBenchmark";

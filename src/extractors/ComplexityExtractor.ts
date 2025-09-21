@@ -104,7 +104,10 @@ export class ComplexityExtractor
 
 			// Recursively visit children
 			for (let i = 0; i < node.childCount; i++) {
-				visit(node.child(i)!);
+				const child = node.child(i);
+				if (child) {
+					visit(child);
+				}
 			}
 		};
 
@@ -210,7 +213,10 @@ export class ComplexityExtractor
 
 			// Recursively visit children
 			for (let i = 0; i < current.childCount; i++) {
-				visit(current.child(i)!);
+				const child = current.child(i);
+				if (child) {
+					visit(child);
+				}
 			}
 		};
 
@@ -252,7 +258,10 @@ export class ComplexityExtractor
 
 			// Recursively visit children with nesting context
 			for (let i = 0; i < current.childCount; i++) {
-				visit(current.child(i)!, true);
+				const child = current.child(i);
+				if (child) {
+					visit(child, true);
+				}
 			}
 
 			// Reset nesting level when exiting nesting structures
@@ -282,7 +291,10 @@ export class ComplexityExtractor
 
 			// Recursively visit children
 			for (let i = 0; i < current.childCount; i++) {
-				visit(current.child(i)!);
+				const child = current.child(i);
+				if (child) {
+					visit(child);
+				}
 			}
 
 			// Decrement depth when exiting nesting structure

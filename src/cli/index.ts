@@ -5,7 +5,7 @@
  * Main entry point for the command-line interface
  */
 
-import { AnalysisResultUtils } from "../models/AnalysisResult";
+import { isSuccessful } from "../models/AnalysisResult";
 import { CLIAdapter } from "./CLIAdapter";
 import { CommandParser } from "./CommandParser";
 import { BatchCommand } from "./commands/BatchCommand";
@@ -111,7 +111,9 @@ export class TypeScriptDependencyLinkerCLI {
 			const validation = await this.cliAdapter.validateOptions(cliOptions);
 			if (!validation.isValid) {
 				console.error("Validation failed:");
-				validation.errors.forEach((error) => console.error(`  - ${error}`));
+				for (const error of validation.errors) {
+					console.error(`  - ${error}`);
+				}
 				return 1;
 			}
 
@@ -127,7 +129,7 @@ export class TypeScriptDependencyLinkerCLI {
 			const output = this.cliAdapter.formatResult(result, options.format);
 			console.log(output);
 
-			return AnalysisResultUtils.isSuccessful(result) ? 0 : 1;
+			return isSuccessful(result) ? 0 : 1;
 		} catch (error) {
 			console.error(
 				"Analysis failed:",
@@ -177,9 +179,9 @@ export class TypeScriptDependencyLinkerCLI {
 				return 0;
 			} else {
 				console.error("Batch analysis failed:");
-				result.errors.forEach((error) => {
+				for (const error of result.errors) {
 					console.error(`  ${error.file}: ${error.error}`);
-				});
+				}
 				return 1;
 			}
 		} catch (error) {

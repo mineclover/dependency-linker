@@ -278,90 +278,90 @@ export class TestCaseBuilder {
 }
 
 // Utility functions for TestSuite operations
-export class TestSuiteUtils {
-	static calculateTotalExecutionTime(testSuites: TestSuite[]): number {
-		return testSuites.reduce((sum, suite) => sum + suite.executionTime, 0);
-	}
-
-	static categorizeTestSuites(testSuites: TestSuite[]): {
-		critical: TestSuite[];
-		optimize: TestSuite[];
-		remove: TestSuite[];
-	} {
-		return testSuites.reduce(
-			(categorized, suite) => {
-				categorized[suite.category].push(suite);
-				return categorized;
-			},
-			{
-				critical: [] as TestSuite[],
-				optimize: [] as TestSuite[],
-				remove: [] as TestSuite[],
-			},
-		);
-	}
-
-	static findDuplicateTests(testSuites: TestSuite[]): TestCase[] {
-		const duplicates: TestCase[] = [];
-
-		testSuites.forEach((suite) => {
-			suite.testCases.forEach((testCase) => {
-				if (testCase.duplicateOf) {
-					duplicates.push(testCase);
-				}
-			});
-		});
-
-		return duplicates;
-	}
-
-	static findFlakyTests(testSuites: TestSuite[]): TestCase[] {
-		const flakyTests: TestCase[] = [];
-
-		testSuites.forEach((suite) => {
-			suite.testCases.forEach((testCase) => {
-				if (testCase.isFlaky) {
-					flakyTests.push(testCase);
-				}
-			});
-		});
-
-		return flakyTests;
-	}
-
-	static validateTestSuite(suite: TestSuite): string[] {
-		const errors: string[] = [];
-
-		if (!suite.id || suite.id.trim() === "") {
-			errors.push("TestSuite id must be unique and non-empty");
-		}
-
-		if (suite.executionTime <= 0) {
-			errors.push("TestSuite executionTime must be greater than 0");
-		}
-
-		if (!suite.filePath.endsWith(".test.ts")) {
-			errors.push("TestSuite filePath must be a .test.ts file");
-		}
-
-		// Validate test cases
-		const testCaseIds = new Set<string>();
-		suite.testCases.forEach((testCase) => {
-			if (testCaseIds.has(testCase.id)) {
-				errors.push(`Duplicate test case ID: ${testCase.id}`);
-			}
-			testCaseIds.add(testCase.id);
-
-			if (testCase.executionTime <= 0) {
-				errors.push(
-					`Test case ${testCase.id} executionTime must be greater than 0`,
-				);
-			}
-		});
-
-		return errors;
-	}
+export function calculateTotalExecutionTime(testSuites: TestSuite[]): number {
+	return testSuites.reduce((sum, suite) => sum + suite.executionTime, 0);
 }
+
+export function categorizeTestSuites(testSuites: TestSuite[]): {
+	critical: TestSuite[];
+	optimize: TestSuite[];
+	remove: TestSuite[];
+} {
+	return testSuites.reduce(
+		(categorized, suite) => {
+			categorized[suite.category].push(suite);
+			return categorized;
+		},
+		{
+			critical: [] as TestSuite[],
+			optimize: [] as TestSuite[],
+			remove: [] as TestSuite[],
+		},
+	);
+}
+
+export function findDuplicateTests(testSuites: TestSuite[]): TestCase[] {
+	const duplicates: TestCase[] = [];
+
+	for (const suite of testSuites) {
+		for (const testCase of suite.testCases) {
+			if (testCase.duplicateOf) {
+				duplicates.push(testCase);
+			}
+		}
+	}
+
+	return duplicates;
+}
+
+export function findFlakyTests(testSuites: TestSuite[]): TestCase[] {
+	const flakyTests: TestCase[] = [];
+
+	for (const suite of testSuites) {
+		for (const testCase of suite.testCases) {
+			if (testCase.isFlaky) {
+				flakyTests.push(testCase);
+			}
+		}
+	}
+
+	return flakyTests;
+}
+
+export function validateTestSuite(suite: TestSuite): string[] {
+	const errors: string[] = [];
+
+	if (!suite.id || suite.id.trim() === "") {
+		errors.push("TestSuite id must be unique and non-empty");
+	}
+
+	if (suite.executionTime <= 0) {
+		errors.push("TestSuite executionTime must be greater than 0");
+	}
+
+	if (!suite.filePath.endsWith(".test.ts")) {
+		errors.push("TestSuite filePath must be a .test.ts file");
+	}
+
+	// Validate test cases
+	const testCaseIds = new Set<string>();
+	for (const testCase of suite.testCases) {
+		if (testCaseIds.has(testCase.id)) {
+			errors.push(`Duplicate test case ID: ${testCase.id}`);
+		}
+		testCaseIds.add(testCase.id);
+
+		if (testCase.executionTime <= 0) {
+			errors.push(
+				`Test case ${testCase.id} executionTime must be greater than 0`,
+			);
+		}
+	}
+
+	return errors;
+}
+
+// Legacy class export removed - use individual functions instead
 
 // Re-export types from the types module for convenience
 export { Priority, TestType } from "./types";

@@ -9,12 +9,13 @@ import { execSync } from "node:child_process";
 import * as fs from "node:fs";
 import * as path from "node:path";
 import {
-	PerformanceAnalyzer,
+	comparePerformance,
 	type PerformanceBaseline,
 	PerformanceBaselineBuilder,
 	type PerformanceComparison,
 	type PerformanceMetrics,
 	type PerformanceTrend,
+	trackPerformanceTrends,
 } from "../../models/optimization/PerformanceBaseline";
 
 export interface PerformanceTrackingOptions {
@@ -314,10 +315,7 @@ export class PerformanceTracker {
 
 		console.log("📊 Comparing performance...");
 
-		const comparison = PerformanceAnalyzer.comparePerformance(
-			baseline,
-			current,
-		);
+		const comparison = comparePerformance(baseline, current);
 
 		console.log("✅ Performance comparison completed");
 		this.logComparisonSummary(comparison);
@@ -340,7 +338,7 @@ export class PerformanceTracker {
 			);
 		}
 
-		const trend = PerformanceAnalyzer.trackTrends(baselines);
+		const trend = trackPerformanceTrends(baselines);
 		const predictions = this.generatePredictions(baselines);
 
 		return {

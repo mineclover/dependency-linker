@@ -6,7 +6,6 @@
 import fs from "node:fs";
 import path from "node:path";
 import { glob } from "glob";
-import { BatchAnalyzer } from "../../api/BatchAnalyzer";
 import { TypeScriptAnalyzer } from "../../api/TypeScriptAnalyzer";
 import { LogLevel } from "../../api/types";
 import {
@@ -55,7 +54,6 @@ export interface BatchResult {
 
 export class BatchCommand {
 	private analyzer: TypeScriptAnalyzer;
-	private batchAnalyzer: BatchAnalyzer;
 	private formatter: EnhancedOutputFormatter;
 
 	constructor() {
@@ -63,10 +61,6 @@ export class BatchCommand {
 			enableCache: true, // Enable cache for batch operations
 			logLevel: LogLevel.WARN,
 			defaultTimeout: 15000,
-		});
-
-		this.batchAnalyzer = new BatchAnalyzer(this.analyzer, {
-			maxConcurrency: 5,
 		});
 
 		this.formatter = new EnhancedOutputFormatter();
@@ -295,7 +289,10 @@ export class BatchCommand {
 		options: BatchCommandOptions,
 	): Promise<void> {
 		try {
-			const outputPath = path.resolve(options.outputFile!);
+			if (!options.outputFile) {
+				throw new Error("Output file path is required");
+			}
+			const outputPath = path.resolve(options.outputFile);
 			const outputDir = path.dirname(outputPath);
 
 			// Ensure output directory exists

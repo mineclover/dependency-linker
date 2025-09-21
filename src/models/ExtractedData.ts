@@ -295,201 +295,197 @@ export function createExtractedDataTemplate(
 /**
  * Utility class for working with ExtractedData objects
  */
-export class ExtractedDataUtils {
-	/**
-	 * Merges multiple extracted data objects of the same type
-	 */
-	static merge(dataList: ExtractedData[]): ExtractedData | null {
-		if (dataList.length === 0) {
-			return null;
-		}
+/**
+ * Merges multiple extracted data objects of the same type
+ */
+export function mergeExtractedData(
+	dataList: ExtractedData[],
+): ExtractedData | null {
+	if (dataList.length === 0) {
+		return null;
+	}
 
-		if (dataList.length === 1) {
-			return dataList[0];
-		}
+	if (dataList.length === 1) {
+		return dataList[0];
+	}
 
-		const firstItem = dataList[0];
-		const sameType = dataList.every((item) => item.type === firstItem.type);
+	const firstItem = dataList[0];
+	const sameType = dataList.every((item) => item.type === firstItem.type);
 
-		if (!sameType) {
-			throw new Error("Cannot merge extracted data of different types");
-		}
+	if (!sameType) {
+		throw new Error("Cannot merge extracted data of different types");
+	}
 
-		const merged: ExtractedData = {
-			...firstItem,
-			sourceFile: `merged-${dataList.length}-files`,
-			extractedAt: new Date(),
-			data: {},
-			metadata: {
-				...firstItem.metadata,
-				itemCount: 0,
-				confidence: 0,
-				isComplete: true,
-				warnings: [],
-				performance: {
-					extractionTime: 0,
-					memoryUsed: 0,
-					astNodesProcessed: 0,
-				},
-				context: {
-					mergedFrom: dataList.map((item) => item.sourceFile),
-					mergedAt: new Date().toISOString(),
-				},
+	const merged: ExtractedData = {
+		...firstItem,
+		sourceFile: `merged-${dataList.length}-files`,
+		extractedAt: new Date(),
+		data: {},
+		metadata: {
+			...firstItem.metadata,
+			itemCount: 0,
+			confidence: 0,
+			isComplete: true,
+			warnings: [],
+			performance: {
+				extractionTime: 0,
+				memoryUsed: 0,
+				astNodesProcessed: 0,
 			},
-		};
+			context: {
+				mergedFrom: dataList.map((item) => item.sourceFile),
+				mergedAt: new Date().toISOString(),
+			},
+		},
+	};
 
-		// Merge data based on type
-		switch (firstItem.type) {
-			case "dependencies":
-				merged.data = ExtractedDataUtils.mergeDependencies(
-					dataList as DependencyExtraction[],
-				);
-				break;
-			case "identifiers":
-				merged.data = ExtractedDataUtils.mergeIdentifiers(
-					dataList as IdentifierExtraction[],
-				);
-				break;
-			case "complexity":
-				merged.data = ExtractedDataUtils.mergeComplexity(
-					dataList as ComplexityExtraction[],
-				);
-				break;
-			default:
-				// Generic merge - combine arrays, sum numbers, merge objects
-				merged.data = ExtractedDataUtils.genericMerge(
-					dataList.map((item) => item.data),
-				);
-		}
-
-		// Aggregate metadata
-		merged.metadata.itemCount = dataList.reduce(
-			(sum, item) => sum + item.metadata.itemCount,
-			0,
-		);
-		merged.metadata.confidence =
-			dataList.reduce((sum, item) => sum + item.metadata.confidence, 0) /
-			dataList.length;
-		merged.metadata.isComplete = dataList.every(
-			(item) => item.metadata.isComplete,
-		);
-		merged.metadata.warnings = dataList.flatMap(
-			(item) => item.metadata.warnings,
-		);
-		merged.metadata.performance.extractionTime = dataList.reduce(
-			(sum, item) => sum + item.metadata.performance.extractionTime,
-			0,
-		);
-		merged.metadata.performance.memoryUsed = Math.max(
-			...dataList.map((item) => item.metadata.performance.memoryUsed),
-		);
-		merged.metadata.performance.astNodesProcessed = dataList.reduce(
-			(sum, item) => sum + item.metadata.performance.astNodesProcessed,
-			0,
-		);
-
-		return merged;
+	// Merge data based on type
+	switch (firstItem.type) {
+		case "dependencies":
+			merged.data = mergeDependencies(dataList as DependencyExtraction[]);
+			break;
+		case "identifiers":
+			merged.data = mergeIdentifiers(dataList as IdentifierExtraction[]);
+			break;
+		case "complexity":
+			merged.data = mergeComplexity(dataList as ComplexityExtraction[]);
+			break;
+		default:
+			// Generic merge - combine arrays, sum numbers, merge objects
+			merged.data = genericMerge(dataList.map((item) => item.data));
 	}
 
-	private static mergeDependencies(dataList: DependencyExtraction[]): any {
-		const merged = {
-			external: new Set<string>(),
-			internal: new Set<string>(),
-			devDependencies: new Set<string>(),
-			peerDependencies: new Set<string>(),
-			imports: [] as ImportStatement[],
-			exports: [] as ExportStatement[],
-		};
+	// Aggregate metadata
+	merged.metadata.itemCount = dataList.reduce(
+		(sum, item) => sum + item.metadata.itemCount,
+		0,
+	);
+	merged.metadata.confidence =
+		dataList.reduce((sum, item) => sum + item.metadata.confidence, 0) /
+		dataList.length;
+	merged.metadata.isComplete = dataList.every(
+		(item) => item.metadata.isComplete,
+	);
+	merged.metadata.warnings = dataList.flatMap((item) => item.metadata.warnings);
+	merged.metadata.performance.extractionTime = dataList.reduce(
+		(sum, item) => sum + item.metadata.performance.extractionTime,
+		0,
+	);
+	merged.metadata.performance.memoryUsed = Math.max(
+		...dataList.map((item) => item.metadata.performance.memoryUsed),
+	);
+	merged.metadata.performance.astNodesProcessed = dataList.reduce(
+		(sum, item) => sum + item.metadata.performance.astNodesProcessed,
+		0,
+	);
 
-		for (const item of dataList) {
-			item.data.external.forEach((dep) => merged.external.add(dep));
-			item.data.internal.forEach((dep) => merged.internal.add(dep));
-			item.data.devDependencies.forEach((dep) =>
-				merged.devDependencies.add(dep),
-			);
-			item.data.peerDependencies.forEach((dep) =>
-				merged.peerDependencies.add(dep),
-			);
-			merged.imports.push(...item.data.imports);
-			merged.exports.push(...item.data.exports);
+	return merged;
+}
+
+function mergeDependencies(dataList: DependencyExtraction[]): any {
+	const merged = {
+		external: new Set<string>(),
+		internal: new Set<string>(),
+		devDependencies: new Set<string>(),
+		peerDependencies: new Set<string>(),
+		imports: [] as ImportStatement[],
+		exports: [] as ExportStatement[],
+	};
+
+	for (const item of dataList) {
+		for (const dep of item.data.external) {
+			merged.external.add(dep);
 		}
-
-		return {
-			external: Array.from(merged.external),
-			internal: Array.from(merged.internal),
-			devDependencies: Array.from(merged.devDependencies),
-			peerDependencies: Array.from(merged.peerDependencies),
-			imports: merged.imports,
-			exports: merged.exports,
-		};
+		for (const dep of item.data.internal) {
+			merged.internal.add(dep);
+		}
+		for (const dep of item.data.devDependencies) {
+			merged.devDependencies.add(dep);
+		}
+		for (const dep of item.data.peerDependencies) {
+			merged.peerDependencies.add(dep);
+		}
+		merged.imports.push(...item.data.imports);
+		merged.exports.push(...item.data.exports);
 	}
 
-	private static mergeIdentifiers(dataList: IdentifierExtraction[]): any {
-		const merged = {
-			functions: [] as FunctionIdentifier[],
-			classes: [] as ClassIdentifier[],
-			interfaces: [] as InterfaceIdentifier[],
-			variables: [] as VariableIdentifier[],
-			types: [] as TypeIdentifier[],
-		};
+	return {
+		external: Array.from(merged.external),
+		internal: Array.from(merged.internal),
+		devDependencies: Array.from(merged.devDependencies),
+		peerDependencies: Array.from(merged.peerDependencies),
+		imports: merged.imports,
+		exports: merged.exports,
+	};
+}
 
-		for (const item of dataList) {
-			merged.functions.push(...item.data.functions);
-			merged.classes.push(...item.data.classes);
-			merged.interfaces.push(...item.data.interfaces);
-			merged.variables.push(...item.data.variables);
-			merged.types.push(...item.data.types);
-		}
+function mergeIdentifiers(dataList: IdentifierExtraction[]): any {
+	const merged = {
+		functions: [] as FunctionIdentifier[],
+		classes: [] as ClassIdentifier[],
+		interfaces: [] as InterfaceIdentifier[],
+		variables: [] as VariableIdentifier[],
+		types: [] as TypeIdentifier[],
+	};
 
-		return merged;
+	for (const item of dataList) {
+		merged.functions.push(...item.data.functions);
+		merged.classes.push(...item.data.classes);
+		merged.interfaces.push(...item.data.interfaces);
+		merged.variables.push(...item.data.variables);
+		merged.types.push(...item.data.types);
 	}
 
-	private static mergeComplexity(dataList: ComplexityExtraction[]): any {
-		const functions: FunctionComplexity[] = [];
-		let totalCyclomatic = 0;
-		let totalCognitive = 0;
-		let maxNesting = 0;
-		let totalLoc = 0;
-		let totalMaintainability = 0;
+	return merged;
+}
 
-		for (const item of dataList) {
-			totalCyclomatic += item.data.cyclomaticComplexity;
-			totalCognitive += item.data.cognitiveComplexity;
-			maxNesting = Math.max(maxNesting, item.data.nestingDepth);
-			totalLoc += item.data.linesOfCode;
-			totalMaintainability += item.data.maintainabilityIndex;
-			functions.push(...item.data.functionComplexities);
-		}
+function mergeComplexity(dataList: ComplexityExtraction[]): any {
+	const functions: FunctionComplexity[] = [];
+	let totalCyclomatic = 0;
+	let totalCognitive = 0;
+	let maxNesting = 0;
+	let totalLoc = 0;
+	let totalMaintainability = 0;
 
-		return {
-			cyclomaticComplexity: totalCyclomatic,
-			cognitiveComplexity: totalCognitive,
-			nestingDepth: maxNesting,
-			linesOfCode: totalLoc,
-			maintainabilityIndex: totalMaintainability / dataList.length,
-			functionComplexities: functions,
-		};
+	for (const item of dataList) {
+		totalCyclomatic += item.data.cyclomaticComplexity;
+		totalCognitive += item.data.cognitiveComplexity;
+		maxNesting = Math.max(maxNesting, item.data.nestingDepth);
+		totalLoc += item.data.linesOfCode;
+		totalMaintainability += item.data.maintainabilityIndex;
+		functions.push(...item.data.functionComplexities);
 	}
 
-	private static genericMerge(dataList: any[]): any {
-		const merged: any = {};
+	return {
+		cyclomaticComplexity: totalCyclomatic,
+		cognitiveComplexity: totalCognitive,
+		nestingDepth: maxNesting,
+		linesOfCode: totalLoc,
+		maintainabilityIndex: totalMaintainability / dataList.length,
+		functionComplexities: functions,
+	};
+}
 
-		for (const data of dataList) {
-			for (const [key, value] of Object.entries(data)) {
-				if (Array.isArray(value)) {
-					if (!merged[key]) merged[key] = [];
-					merged[key].push(...value);
-				} else if (typeof value === "number") {
-					merged[key] = (merged[key] || 0) + value;
-				} else if (typeof value === "object" && value !== null) {
-					if (!merged[key]) merged[key] = {};
-					Object.assign(merged[key], value);
-				} else {
-					merged[key] = value;
-				}
+function genericMerge(dataList: any[]): any {
+	const merged: any = {};
+
+	for (const data of dataList) {
+		for (const [key, value] of Object.entries(data)) {
+			if (Array.isArray(value)) {
+				if (!merged[key]) merged[key] = [];
+				merged[key].push(...value);
+			} else if (typeof value === "number") {
+				merged[key] = (merged[key] || 0) + value;
+			} else if (typeof value === "object" && value !== null) {
+				if (!merged[key]) merged[key] = {};
+				Object.assign(merged[key], value);
+			} else {
+				merged[key] = value;
 			}
 		}
-
-		return merged;
 	}
+
+	return merged;
 }
+
+// Legacy class export removed - use individual functions instead

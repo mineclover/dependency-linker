@@ -12,12 +12,21 @@ import type { IDataInterpreter } from "../interpreters/IDataInterpreter";
 import { IdentifierAnalysisInterpreter } from "../interpreters/IdentifierAnalysisInterpreter";
 import {
 	type AnalysisConfig,
-	AnalysisConfigUtils,
+	createDefaultAnalysisConfig,
+	mergeAnalysisConfigs,
 } from "../models/AnalysisConfig";
-import { AnalysisErrorFactory, isAnalysisError } from "../models/AnalysisError";
+import {
+	createEngineDisabledError,
+	createErrorFromParseError,
+	createParseError,
+	createUnknownError,
+	createUnsupportedLanguageError,
+	isAnalysisError,
+} from "../models/AnalysisError";
 import {
 	type AnalysisResult,
-	AnalysisResultFactory,
+	createAnalysisResult,
+	createErrorAnalysisResult,
 } from "../models/AnalysisResult";
 import type { CacheStats } from "../models/CacheEntry";
 import type {
@@ -68,7 +77,7 @@ export class AnalysisEngine implements IAnalysisEngine {
 		this.interpreterRegistry = new InterpreterRegistry();
 		this.cacheManager = new CacheManager();
 		this.dataIntegrator = new DataIntegrator();
-		this.defaultConfig = config || AnalysisConfigUtils.default();
+		this.defaultConfig = config || createDefaultAnalysisConfig();
 		this.startTime = Date.now();
 		this.performanceMonitor = new PerformanceMonitor();
 
@@ -104,7 +113,7 @@ export class AnalysisEngine implements IAnalysisEngine {
 	): Promise<AnalysisResult> {
 		const startTime = Date.now();
 		const analysisConfig = config
-			? AnalysisConfigUtils.merge(this.defaultConfig, config)
+			? mergeAnalysisConfigs(this.defaultConfig, config)
 			: this.defaultConfig;
 
 		// Start performance monitoring
@@ -112,7 +121,7 @@ export class AnalysisEngine implements IAnalysisEngine {
 		const initialMemory = process.memoryUsage().heapUsed;
 
 		if (!this.enabled) {
-			throw AnalysisErrorFactory.createEngineDisabledError();
+			throw createEngineDisabledError();
 		}
 
 		try {
@@ -138,7 +147,7 @@ export class AnalysisEngine implements IAnalysisEngine {
 			}
 
 			// Create new analysis result
-			const result = AnalysisResultFactory.create(filePath, "unknown");
+			const result = createAnalysisResult(filePath, "unknown");
 
 			// Step 1: Parse the file with enhanced monitoring
 			const parseStartTime = Date.now();
@@ -147,7 +156,7 @@ export class AnalysisEngine implements IAnalysisEngine {
 			const parser = this.parserRegistry.detectAndGetParser(filePath);
 
 			if (!parser) {
-				throw AnalysisErrorFactory.createUnsupportedLanguageError(filePath);
+				throw createUnsupportedLanguageError(filePath);
 			}
 
 			const parseResult = await parser.parse(filePath);
@@ -156,16 +165,13 @@ export class AnalysisEngine implements IAnalysisEngine {
 			if (parseResult.errors.length > 0) {
 				result.errors.push(
 					...parseResult.errors.map((error) =>
-						AnalysisErrorFactory.fromParseError(error, filePath),
+						createErrorFromParseError(error, filePath),
 					),
 				);
 			}
 
 			if (!parseResult.ast) {
-				throw AnalysisErrorFactory.createParseError(
-					filePath,
-					"Failed to generate AST",
-				);
+				throw createParseError(filePath, "Failed to generate AST");
 			}
 
 			const parseTime = Date.now() - parseStartTime;
@@ -317,12 +323,12 @@ export class AnalysisEngine implements IAnalysisEngine {
 		} catch (error) {
 			const analysisError = isAnalysisError(error)
 				? error
-				: AnalysisErrorFactory.createUnknownError(
+				: createUnknownError(
 						filePath,
 						(error as Error)?.message || "Unknown error",
 					);
 
-			const result = AnalysisResultFactory.createError(filePath, analysisError);
+			const result = createErrorAnalysisResult(filePath, analysisError);
 			result.performanceMetrics.totalTime = Date.now() - startTime;
 
 			this.performanceMetrics.failedAnalyses++;
@@ -346,13 +352,11 @@ export class AnalysisEngine implements IAnalysisEngine {
 				const result = await this.analyzeFile(filePath, config);
 				results.push(result);
 			} catch (error) {
-				const analysisError = AnalysisErrorFactory.createUnknownError(
+				const analysisError = createUnknownError(
 					filePath,
 					error instanceof Error ? error.message : String(error),
 				);
-				results.push(
-					AnalysisResultFactory.createError(filePath, analysisError),
-				);
+				results.push(createErrorAnalysisResult(filePath, analysisError));
 			}
 		}
 
@@ -406,21 +410,21 @@ export class AnalysisEngine implements IAnalysisEngine {
 	): Promise<AnalysisResult> {
 		const startTime = Date.now();
 		const analysisConfig = config
-			? AnalysisConfigUtils.merge(this.defaultConfig, config)
+			? mergeAnalysisConfigs(this.defaultConfig, config)
 			: this.defaultConfig;
 
 		if (!this.enabled) {
-			throw AnalysisErrorFactory.createEngineDisabledError();
+			throw createEngineDisabledError();
 		}
 
 		try {
-			const result = AnalysisResultFactory.create(filePath, "unknown");
+			const result = createAnalysisResult(filePath, "unknown");
 
 			// Step 1: Parse content
 			const parser = this.parserRegistry.detectAndGetParser(filePath, content);
 
 			if (!parser) {
-				throw AnalysisErrorFactory.createUnsupportedLanguageError(filePath);
+				throw createUnsupportedLanguageError(filePath);
 			}
 
 			const parseResult = await parser.parse(filePath, content);
@@ -429,16 +433,13 @@ export class AnalysisEngine implements IAnalysisEngine {
 			if (parseResult.errors.length > 0) {
 				result.errors.push(
 					...parseResult.errors.map((error) =>
-						AnalysisErrorFactory.fromParseError(error, filePath),
+						createErrorFromParseError(error, filePath),
 					),
 				);
 			}
 
 			if (!parseResult.ast) {
-				throw AnalysisErrorFactory.createParseError(
-					filePath,
-					"Failed to generate AST",
-				);
+				throw createParseError(filePath, "Failed to generate AST");
 			}
 
 			// Step 2: Extract and interpret (same as analyzeFile)
@@ -479,12 +480,12 @@ export class AnalysisEngine implements IAnalysisEngine {
 		} catch (error) {
 			const analysisError = isAnalysisError(error)
 				? error
-				: AnalysisErrorFactory.createUnknownError(
+				: createUnknownError(
 						filePath,
 						(error as Error)?.message || "Unknown error",
 					);
 
-			return AnalysisResultFactory.createError(filePath, analysisError);
+			return createErrorAnalysisResult(filePath, analysisError);
 		}
 	}
 

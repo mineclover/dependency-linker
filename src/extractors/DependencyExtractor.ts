@@ -103,7 +103,10 @@ export class DependencyExtractor
 
 			// Recursively visit children
 			for (let i = 0; i < node.childCount; i++) {
-				visit(node.child(i)!);
+				const child = node.child(i);
+				if (child) {
+					visit(child);
+				}
 			}
 		};
 

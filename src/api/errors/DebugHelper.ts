@@ -102,7 +102,7 @@ export class DebugHelper {
 				encoding: "utf8", // Assuming UTF-8 for TypeScript files
 				lineCount: content.split("\n").length,
 				characterCount: content.length,
-				hasUnicodeChars: /[^\u0000-\u007F]/.test(content),
+				hasUnicodeChars: /[\u0080-\uFFFF]/.test(content),
 				parseAttempts: 0,
 				memoryUsage: startMemory,
 			};

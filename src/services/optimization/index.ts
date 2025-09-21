@@ -14,7 +14,15 @@ import { TestAnalyzer } from "./TestAnalyzer";
 import { TestOptimizer } from "./TestOptimizer";
 
 // Helper benchmark class
-export { PerformanceBenchmark } from "../../helpers/benchmark/PerformanceBenchmark";
+export {
+	assertPerformance,
+	type BenchmarkOptions,
+	type BenchmarkResult,
+	benchmark,
+	clearBenchmarkResults,
+	getAllBenchmarkResults,
+	getBenchmarkResult,
+} from "../../helpers/benchmark/PerformanceBenchmark";
 export { PerformanceOptimizer } from "./PerformanceOptimizer";
 export type {
 	PerformanceTrackingOptions,

@@ -227,140 +227,140 @@ export class DependencyError extends OptimizationError {
 /**
  * Utility functions for error handling
  */
-export class ErrorUtils {
-	/**
-	 * Check if an error is an optimization error
-	 */
-	static isOptimizationError(error: any): error is OptimizationError {
-		return error instanceof OptimizationError;
+/**
+ * Check if an error is an optimization error
+ */
+export function isOptimizationError(error: any): error is OptimizationError {
+	return error instanceof OptimizationError;
+}
+
+/**
+ * Check if an error is recoverable
+ */
+export function isRecoverableError(error: any): boolean {
+	if (error instanceof ValidationError) return true;
+	if (error instanceof ConfigurationError) return true;
+	if (error instanceof TimeoutError) return true;
+	return false;
+}
+
+/**
+ * Extract error context for logging
+ */
+export function extractErrorContext(error: any): Record<string, any> {
+	if (error instanceof OptimizationError) {
+		return error.context;
+	}
+	return {
+		name: error?.name || "Unknown",
+		message: error?.message || "Unknown error",
+		stack: error?.stack,
+	};
+}
+
+/**
+ * Create a user-friendly error message
+ */
+export function createUserErrorMessage(error: any): string {
+	if (error instanceof TestAnalysisError) {
+		return `Failed to analyze test suite${error.testSuiteId ? ` '${error.testSuiteId}'` : ""}: ${error.message}`;
 	}
 
-	/**
-	 * Check if an error is recoverable
-	 */
-	static isRecoverableError(error: any): boolean {
-		if (error instanceof ValidationError) return true;
-		if (error instanceof ConfigurationError) return true;
-		if (error instanceof TimeoutError) return true;
-		return false;
+	if (error instanceof TestOptimizationError) {
+		return `Failed to apply ${error.optimizationType} optimization to suite '${error.targetSuite}': ${error.message}`;
 	}
 
-	/**
-	 * Extract error context for logging
-	 */
-	static extractContext(error: any): Record<string, any> {
-		if (error instanceof OptimizationError) {
-			return error.context;
-		}
-		return {
-			name: error?.name || "Unknown",
-			message: error?.message || "Unknown error",
-			stack: error?.stack,
-		};
+	if (error instanceof PerformanceTrackingError) {
+		return `Performance tracking failed for suite '${error.testSuiteId}': ${error.message}`;
 	}
 
-	/**
-	 * Create a user-friendly error message
-	 */
-	static createUserMessage(error: any): string {
-		if (error instanceof TestAnalysisError) {
-			return `Failed to analyze test suite${error.testSuiteId ? ` '${error.testSuiteId}'` : ""}: ${error.message}`;
-		}
-
-		if (error instanceof TestOptimizationError) {
-			return `Failed to apply ${error.optimizationType} optimization to suite '${error.targetSuite}': ${error.message}`;
-		}
-
-		if (error instanceof PerformanceTrackingError) {
-			return `Performance tracking failed for suite '${error.testSuiteId}': ${error.message}`;
-		}
-
-		if (error instanceof ValidationError) {
-			return `Validation failed: ${error.message}. Violations: ${error.violations.join(", ")}`;
-		}
-
-		if (error instanceof BaselineError) {
-			return `Baseline operation failed: ${error.message}`;
-		}
-
-		if (error instanceof ConfigurationError) {
-			return `Configuration error: ${error.message}`;
-		}
-
-		if (error instanceof FileOperationError) {
-			return `File operation '${error.operation}' failed for '${error.filePath}': ${error.message}`;
-		}
-
-		if (error instanceof TimeoutError) {
-			return `Operation timed out after ${error.timeoutMs}ms: ${error.message}`;
-		}
-
-		if (error instanceof DependencyError) {
-			return `Dependency '${error.dependency}' required by '${error.dependentItem}' could not be resolved: ${error.message}`;
-		}
-
-		// Fallback for unknown errors
-		return error?.message || "An unknown error occurred";
+	if (error instanceof ValidationError) {
+		return `Validation failed: ${error.message}. Violations: ${error.violations.join(", ")}`;
 	}
 
-	/**
-	 * Log error with appropriate level
-	 */
-	static logError(error: any, logger?: any): void {
-		const context = ErrorUtils.extractContext(error);
-		const userMessage = ErrorUtils.createUserMessage(error);
+	if (error instanceof BaselineError) {
+		return `Baseline operation failed: ${error.message}`;
+	}
 
-		if (logger) {
-			if (
-				error instanceof ValidationError ||
-				error instanceof ConfigurationError
-			) {
-				logger.warn(userMessage, context);
-			} else if (error instanceof TimeoutError) {
-				logger.warn(userMessage, context);
-			} else {
-				logger.error(userMessage, context);
-			}
+	if (error instanceof ConfigurationError) {
+		return `Configuration error: ${error.message}`;
+	}
+
+	if (error instanceof FileOperationError) {
+		return `File operation '${error.operation}' failed for '${error.filePath}': ${error.message}`;
+	}
+
+	if (error instanceof TimeoutError) {
+		return `Operation timed out after ${error.timeoutMs}ms: ${error.message}`;
+	}
+
+	if (error instanceof DependencyError) {
+		return `Dependency '${error.dependency}' required by '${error.dependentItem}' could not be resolved: ${error.message}`;
+	}
+
+	// Fallback for unknown errors
+	return error?.message || "An unknown error occurred";
+}
+
+/**
+ * Log error with appropriate level
+ */
+export function logError(error: any, logger?: any): void {
+	const context = extractErrorContext(error);
+	const userMessage = createUserErrorMessage(error);
+
+	if (logger) {
+		if (
+			error instanceof ValidationError ||
+			error instanceof ConfigurationError
+		) {
+			logger.warn(userMessage, context);
+		} else if (error instanceof TimeoutError) {
+			logger.warn(userMessage, context);
 		} else {
-			// Fallback to console
-			console.error(userMessage, context);
+			logger.error(userMessage, context);
 		}
-	}
-
-	/**
-	 * Wrap async function with error handling
-	 */
-	static async withErrorHandling<T>(
-		operation: () => Promise<T>,
-		errorType: new (...args: any[]) => OptimizationError,
-		context: Record<string, any> = {},
-	): Promise<T> {
-		try {
-			return await operation();
-		} catch (error) {
-			if (error instanceof OptimizationError) {
-				throw error; // Re-throw optimization errors as-is
-			}
-
-			// Wrap other errors
-			throw new errorType(
-				(error as Error)?.message || "Unknown error occurred",
-				context,
-			);
-		}
-	}
-
-	/**
-	 * Create error from validation violations
-	 */
-	static fromValidationViolations(
-		violations: string[],
-		validationType: string = "general",
-	): ValidationError {
-		const message = `Validation failed with ${violations.length} violation(s)`;
-		return new ValidationError(message, violations, validationType);
+	} else {
+		// Fallback to console
+		console.error(userMessage, context);
 	}
 }
+
+/**
+ * Wrap async function with error handling
+ */
+export async function withErrorHandling<T>(
+	operation: () => Promise<T>,
+	errorType: new (...args: any[]) => OptimizationError,
+	context: Record<string, any> = {},
+): Promise<T> {
+	try {
+		return await operation();
+	} catch (error) {
+		if (error instanceof OptimizationError) {
+			throw error; // Re-throw optimization errors as-is
+		}
+
+		// Wrap other errors
+		throw new errorType(
+			(error as Error)?.message || "Unknown error occurred",
+			context,
+		);
+	}
+}
+
+/**
+ * Create error from validation violations
+ */
+export function fromValidationViolations(
+	violations: string[],
+	validationType: string = "general",
+): ValidationError {
+	const message = `Validation failed with ${violations.length} violation(s)`;
+	return new ValidationError(message, violations, validationType);
+}
+
+// Legacy class export removed - use individual functions instead
 
 /**
  * Error handler decorator for class methods

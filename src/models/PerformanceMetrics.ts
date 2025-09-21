@@ -623,158 +623,159 @@ export class PerformanceMonitor {
 /**
  * Performance analysis and reporting utilities
  */
-export class PerformanceAnalyzer {
-	/**
-	 * Analyzes performance metrics and identifies bottlenecks
-	 */
-	static analyze(metrics: PerformanceMetrics): PerformanceAnalysis {
-		const bottlenecks: string[] = [];
-		const recommendations: string[] = [];
+/**
+ * Analyzes performance metrics and identifies bottlenecks
+ */
+export function analyzePerformance(
+	metrics: PerformanceMetrics,
+): PerformanceAnalysis {
+	const bottlenecks: string[] = [];
+	const recommendations: string[] = [];
 
-		// Analyze parse time
-		const parseRatio = metrics.parseTime / metrics.totalTime;
-		if (parseRatio > 0.5) {
-			bottlenecks.push("parsing");
-			recommendations.push("Consider caching AST or using incremental parsing");
-		}
-
-		// Analyze extraction time
-		const extractionRatio = metrics.extractionTime / metrics.totalTime;
-		if (extractionRatio > 0.3) {
-			bottlenecks.push("extraction");
-			recommendations.push("Optimize extractors or run them in parallel");
-		}
-
-		// Analyze interpretation time
-		const interpretationRatio = metrics.interpretationTime / metrics.totalTime;
-		if (interpretationRatio > 0.3) {
-			bottlenecks.push("interpretation");
-			recommendations.push(
-				"Optimize interpreters or improve data processing algorithms",
-			);
-		}
-
-		// Analyze memory usage
-		const memoryMB = metrics.memoryUsage / (1024 * 1024);
-		if (memoryMB > 100) {
-			bottlenecks.push("memory");
-			recommendations.push(
-				"Implement memory optimization or streaming processing",
-			);
-		}
-
-		// Analyze cache performance
-		if (metrics.cache && metrics.cache.hitRate < 0.5) {
-			bottlenecks.push("cache");
-			recommendations.push("Improve cache strategy or increase cache size");
-		}
-
-		return {
-			overall: PerformanceAnalyzer.calculateOverallScore(metrics),
-			bottlenecks,
-			recommendations,
-			efficiency: PerformanceAnalyzer.calculateEfficiency(metrics),
-			scalability: PerformanceAnalyzer.estimateScalability(metrics),
-		};
+	// Analyze parse time
+	const parseRatio = metrics.parseTime / metrics.totalTime;
+	if (parseRatio > 0.5) {
+		bottlenecks.push("parsing");
+		recommendations.push("Consider caching AST or using incremental parsing");
 	}
 
-	/**
-	 * Compares two performance metrics
-	 */
-	static compare(
-		baseline: PerformanceMetrics,
-		current: PerformanceMetrics,
-	): PerformanceComparison {
-		return {
-			totalTimeChange:
-				((current.totalTime - baseline.totalTime) / baseline.totalTime) * 100,
-			parseTimeChange:
-				((current.parseTime - baseline.parseTime) / baseline.parseTime) * 100,
-			extractionTimeChange:
-				((current.extractionTime - baseline.extractionTime) /
-					baseline.extractionTime) *
-				100,
-			interpretationTimeChange:
-				((current.interpretationTime - baseline.interpretationTime) /
-					baseline.interpretationTime) *
-				100,
-			memoryUsageChange:
-				((current.memoryUsage - baseline.memoryUsage) / baseline.memoryUsage) *
-				100,
-			summary: PerformanceAnalyzer.generateComparisonSummary(baseline, current),
-		};
+	// Analyze extraction time
+	const extractionRatio = metrics.extractionTime / metrics.totalTime;
+	if (extractionRatio > 0.3) {
+		bottlenecks.push("extraction");
+		recommendations.push("Optimize extractors or run them in parallel");
 	}
 
-	/**
-	 * Formats performance metrics for display
-	 */
-	static format(
-		metrics: PerformanceMetrics,
-		format: "summary" | "detailed" = "summary",
-	): string {
-		if (format === "summary") {
-			return `Performance Summary:
+	// Analyze interpretation time
+	const interpretationRatio = metrics.interpretationTime / metrics.totalTime;
+	if (interpretationRatio > 0.3) {
+		bottlenecks.push("interpretation");
+		recommendations.push(
+			"Optimize interpreters or improve data processing algorithms",
+		);
+	}
+
+	// Analyze memory usage
+	const memoryMB = metrics.memoryUsage / (1024 * 1024);
+	if (memoryMB > 100) {
+		bottlenecks.push("memory");
+		recommendations.push(
+			"Implement memory optimization or streaming processing",
+		);
+	}
+
+	// Analyze cache performance
+	if (metrics.cache && metrics.cache.hitRate < 0.5) {
+		bottlenecks.push("cache");
+		recommendations.push("Improve cache strategy or increase cache size");
+	}
+
+	return {
+		overall: calculateOverallScore(metrics),
+		bottlenecks,
+		recommendations,
+		efficiency: calculateEfficiency(metrics),
+		scalability: estimateScalability(metrics),
+	};
+}
+
+/**
+ * Compares two performance metrics
+ */
+export function comparePerformanceMetrics(
+	baseline: PerformanceMetrics,
+	current: PerformanceMetrics,
+): PerformanceComparison {
+	return {
+		totalTimeChange:
+			((current.totalTime - baseline.totalTime) / baseline.totalTime) * 100,
+		parseTimeChange:
+			((current.parseTime - baseline.parseTime) / baseline.parseTime) * 100,
+		extractionTimeChange:
+			((current.extractionTime - baseline.extractionTime) /
+				baseline.extractionTime) *
+			100,
+		interpretationTimeChange:
+			((current.interpretationTime - baseline.interpretationTime) /
+				baseline.interpretationTime) *
+			100,
+		memoryUsageChange:
+			((current.memoryUsage - baseline.memoryUsage) / baseline.memoryUsage) *
+			100,
+		summary: generateComparisonSummary(baseline, current),
+	};
+}
+
+/**
+ * Formats performance metrics for display
+ */
+export function formatPerformanceMetrics(
+	metrics: PerformanceMetrics,
+	format: "summary" | "detailed" = "summary",
+): string {
+	if (format === "summary") {
+		return `Performance Summary:
 Total Time: ${metrics.totalTime}ms
 Parse: ${metrics.parseTime}ms (${((metrics.parseTime / metrics.totalTime) * 100).toFixed(1)}%)
 Extraction: ${metrics.extractionTime}ms (${((metrics.extractionTime / metrics.totalTime) * 100).toFixed(1)}%)
 Interpretation: ${metrics.interpretationTime}ms (${((metrics.interpretationTime / metrics.totalTime) * 100).toFixed(1)}%)
 Memory: ${(metrics.memoryUsage / 1024 / 1024).toFixed(2)}MB
 Cache Hit Rate: ${metrics.cache ? (metrics.cache.hitRate * 100).toFixed(1) : "N/A"}%`;
-		}
-
-		// Detailed format would include breakdown information
-		return JSON.stringify(metrics, null, 2);
 	}
 
-	private static calculateOverallScore(metrics: PerformanceMetrics): number {
-		// Score based on typical performance expectations
-		const timeScore = Math.max(0, 100 - (metrics.totalTime / 1000) * 10); // Penalty for >10s
-		const memoryScore = Math.max(
-			0,
-			100 - (metrics.memoryUsage / (100 * 1024 * 1024)) * 20,
-		); // Penalty for >100MB
-		const cacheScore = metrics.cache ? metrics.cache.hitRate * 100 : 50; // Default 50 if no cache
-
-		return (timeScore + memoryScore + cacheScore) / 3;
-	}
-
-	private static calculateEfficiency(metrics: PerformanceMetrics): number {
-		const totalTime = metrics.totalTime || 1;
-		const memoryMB = metrics.memoryUsage / (1024 * 1024);
-
-		// Efficiency = work done / (time * memory)
-		// Simplified calculation based on successful completion
-		return 1000 / (totalTime * Math.max(1, memoryMB));
-	}
-
-	private static estimateScalability(
-		metrics: PerformanceMetrics,
-	): "excellent" | "good" | "fair" | "poor" {
-		const memoryMB = metrics.memoryUsage / (1024 * 1024);
-		const timePerMB = metrics.totalTime / Math.max(1, memoryMB);
-
-		if (timePerMB < 100 && memoryMB < 50) return "excellent";
-		if (timePerMB < 500 && memoryMB < 100) return "good";
-		if (timePerMB < 1000 && memoryMB < 200) return "fair";
-		return "poor";
-	}
-
-	private static generateComparisonSummary(
-		baseline: PerformanceMetrics,
-		current: PerformanceMetrics,
-	): string {
-		const timeChange =
-			((current.totalTime - baseline.totalTime) / baseline.totalTime) * 100;
-		const memoryChange =
-			((current.memoryUsage - baseline.memoryUsage) / baseline.memoryUsage) *
-			100;
-
-		const timeDirection = timeChange > 0 ? "slower" : "faster";
-		const memoryDirection = memoryChange > 0 ? "more" : "less";
-
-		return `Performance is ${Math.abs(timeChange).toFixed(1)}% ${timeDirection} and uses ${Math.abs(memoryChange).toFixed(1)}% ${memoryDirection} memory compared to baseline.`;
-	}
+	// Detailed format would include breakdown information
+	return JSON.stringify(metrics, null, 2);
 }
+
+function calculateOverallScore(metrics: PerformanceMetrics): number {
+	// Score based on typical performance expectations
+	const timeScore = Math.max(0, 100 - (metrics.totalTime / 1000) * 10); // Penalty for >10s
+	const memoryScore = Math.max(
+		0,
+		100 - (metrics.memoryUsage / (100 * 1024 * 1024)) * 20,
+	); // Penalty for >100MB
+	const cacheScore = metrics.cache ? metrics.cache.hitRate * 100 : 50; // Default 50 if no cache
+
+	return (timeScore + memoryScore + cacheScore) / 3;
+}
+
+function calculateEfficiency(metrics: PerformanceMetrics): number {
+	const totalTime = metrics.totalTime || 1;
+	const memoryMB = metrics.memoryUsage / (1024 * 1024);
+
+	// Efficiency = work done / (time * memory)
+	// Simplified calculation based on successful completion
+	return 1000 / (totalTime * Math.max(1, memoryMB));
+}
+
+function estimateScalability(
+	metrics: PerformanceMetrics,
+): "excellent" | "good" | "fair" | "poor" {
+	const memoryMB = metrics.memoryUsage / (1024 * 1024);
+	const timePerMB = metrics.totalTime / Math.max(1, memoryMB);
+
+	if (timePerMB < 100 && memoryMB < 50) return "excellent";
+	if (timePerMB < 500 && memoryMB < 100) return "good";
+	if (timePerMB < 1000 && memoryMB < 200) return "fair";
+	return "poor";
+}
+
+function generateComparisonSummary(
+	baseline: PerformanceMetrics,
+	current: PerformanceMetrics,
+): string {
+	const timeChange =
+		((current.totalTime - baseline.totalTime) / baseline.totalTime) * 100;
+	const memoryChange =
+		((current.memoryUsage - baseline.memoryUsage) / baseline.memoryUsage) * 100;
+
+	const timeDirection = timeChange > 0 ? "slower" : "faster";
+	const memoryDirection = memoryChange > 0 ? "more" : "less";
+
+	return `Performance is ${Math.abs(timeChange).toFixed(1)}% ${timeDirection} and uses ${Math.abs(memoryChange).toFixed(1)}% ${memoryDirection} memory compared to baseline.`;
+}
+
+// Legacy class export removed - use individual functions instead
 
 export interface PerformanceAnalysis {
 	overall: number;

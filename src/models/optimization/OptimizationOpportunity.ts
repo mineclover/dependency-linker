@@ -246,270 +246,258 @@ export class OptimizationOpportunityBuilder {
 	}
 }
 
-export class OptimizationOpportunityManager {
-	/**
-	 * Prioritize opportunities based on impact and risk
-	 */
-	static prioritizeOpportunities(
-		opportunities: OptimizationOpportunity[],
-	): OptimizationOpportunity[] {
-		return [...opportunities].sort((a, b) => {
-			const scoreA = OptimizationOpportunityManager.calculatePriorityScore(a);
-			const scoreB = OptimizationOpportunityManager.calculatePriorityScore(b);
-			return scoreB - scoreA; // Higher score first
-		});
-	}
+/**
+ * Prioritize opportunities based on impact and risk
+ */
+export function prioritizeOpportunities(
+	opportunities: OptimizationOpportunity[],
+): OptimizationOpportunity[] {
+	return [...opportunities].sort((a, b) => {
+		const scoreA = calculatePriorityScore(a);
+		const scoreB = calculatePriorityScore(b);
+		return scoreB - scoreA; // Higher score first
+	});
+}
 
-	/**
-	 * Group opportunities by risk level
-	 */
-	static groupByRiskLevel(
-		opportunities: OptimizationOpportunity[],
-	): Record<RiskLevel, OptimizationOpportunity[]> {
-		return opportunities.reduce(
-			(groups, opportunity) => {
-				if (!groups[opportunity.riskLevel]) {
-					groups[opportunity.riskLevel] = [];
-				}
-				groups[opportunity.riskLevel].push(opportunity);
-				return groups;
-			},
-			{} as Record<RiskLevel, OptimizationOpportunity[]>,
+/**
+ * Group opportunities by risk level
+ */
+export function groupByRiskLevel(
+	opportunities: OptimizationOpportunity[],
+): Record<RiskLevel, OptimizationOpportunity[]> {
+	return opportunities.reduce(
+		(groups, opportunity) => {
+			if (!groups[opportunity.riskLevel]) {
+				groups[opportunity.riskLevel] = [];
+			}
+			groups[opportunity.riskLevel].push(opportunity);
+			return groups;
+		},
+		{} as Record<RiskLevel, OptimizationOpportunity[]>,
+	);
+}
+
+/**
+ * Group opportunities by type
+ */
+export function groupByType(
+	opportunities: OptimizationOpportunity[],
+): Record<OptimizationType, OptimizationOpportunity[]> {
+	return opportunities.reduce(
+		(groups, opportunity) => {
+			if (!groups[opportunity.type]) {
+				groups[opportunity.type] = [];
+			}
+			groups[opportunity.type].push(opportunity);
+			return groups;
+		},
+		{} as Record<OptimizationType, OptimizationOpportunity[]>,
+	);
+}
+
+/**
+ * Calculate total estimated time savings
+ */
+export function calculateTotalSavings(
+	opportunities: OptimizationOpportunity[],
+): number {
+	return opportunities.reduce(
+		(sum, opportunity) => sum + opportunity.estimatedTimeSaving,
+		0,
+	);
+}
+
+/**
+ * Find opportunities that can be executed in parallel
+ */
+export function findParallelExecutableOpportunities(
+	opportunities: OptimizationOpportunity[],
+): OptimizationOpportunity[][] {
+	const groups: OptimizationOpportunity[][] = [];
+	const processed = new Set<string>();
+
+	opportunities.forEach((opportunity) => {
+		if (processed.has(opportunity.id)) return;
+
+		const parallelGroup = findNonConflictingOpportunities(
+			opportunity,
+			opportunities,
 		);
-	}
+		groups.push(parallelGroup);
+		for (const opp of parallelGroup) {
+			processed.add(opp.id);
+		}
+	});
 
-	/**
-	 * Group opportunities by type
-	 */
-	static groupByType(
-		opportunities: OptimizationOpportunity[],
-	): Record<OptimizationType, OptimizationOpportunity[]> {
-		return opportunities.reduce(
-			(groups, opportunity) => {
-				if (!groups[opportunity.type]) {
-					groups[opportunity.type] = [];
-				}
-				groups[opportunity.type].push(opportunity);
-				return groups;
-			},
-			{} as Record<OptimizationType, OptimizationOpportunity[]>,
-		);
-	}
+	return groups;
+}
 
-	/**
-	 * Calculate total estimated time savings
-	 */
-	static calculateTotalSavings(
-		opportunities: OptimizationOpportunity[],
-	): number {
-		return opportunities.reduce(
-			(sum, opportunity) => sum + opportunity.estimatedTimeSaving,
-			0,
-		);
-	}
+/**
+ * Validate dependencies and prerequisites
+ */
+export function validateDependencies(
+	opportunities: OptimizationOpportunity[],
+): string[] {
+	const errors: string[] = [];
+	const opportunityIds = new Set(opportunities.map((o) => o.id));
 
-	/**
-	 * Find opportunities that can be executed in parallel
-	 */
-	static findParallelExecutableOpportunities(
-		opportunities: OptimizationOpportunity[],
-	): OptimizationOpportunity[][] {
-		const groups: OptimizationOpportunity[][] = [];
-		const processed = new Set<string>();
-
-		opportunities.forEach((opportunity) => {
-			if (processed.has(opportunity.id)) return;
-
-			const parallelGroup =
-				OptimizationOpportunityManager.findNonConflictingOpportunities(
-					opportunity,
-					opportunities,
-				);
-			groups.push(parallelGroup);
-			parallelGroup.forEach((opp) => processed.add(opp.id));
-		});
-
-		return groups;
-	}
-
-	/**
-	 * Validate dependencies and prerequisites
-	 */
-	static validateDependencies(
-		opportunities: OptimizationOpportunity[],
-	): string[] {
-		const errors: string[] = [];
-		const opportunityIds = new Set(opportunities.map((o) => o.id));
-
-		opportunities.forEach((opportunity) => {
-			opportunity.prerequisites.forEach((prerequisite) => {
-				if (!opportunityIds.has(prerequisite)) {
-					errors.push(
-						`Opportunity ${opportunity.id} has unknown prerequisite: ${prerequisite}`,
-					);
-				}
-			});
-		});
-
-		return errors;
-	}
-
-	/**
-	 * Create execution plan with proper ordering
-	 */
-	static createExecutionPlan(
-		opportunities: OptimizationOpportunity[],
-	): OptimizationBatch[] {
-		const batches: OptimizationBatch[] = [];
-		const remaining = [...opportunities];
-		let batchNumber = 1;
-
-		while (remaining.length > 0) {
-			const readyOpportunities = remaining.filter((opp) =>
-				OptimizationOpportunityManager.arePrerequisitesSatisfied(opp, batches),
-			);
-
-			if (readyOpportunities.length === 0 && remaining.length > 0) {
-				throw new Error(
-					"Circular dependency detected in optimization opportunities",
+	opportunities.forEach((opportunity) => {
+		opportunity.prerequisites.forEach((prerequisite) => {
+			if (!opportunityIds.has(prerequisite)) {
+				errors.push(
+					`Opportunity ${opportunity.id} has unknown prerequisite: ${prerequisite}`,
 				);
 			}
+		});
+	});
 
-			const batch: OptimizationBatch = {
-				id: `batch-${batchNumber}`,
-				name: `Optimization Batch ${batchNumber}`,
-				opportunities: readyOpportunities,
-				totalEstimatedSaving:
-					OptimizationOpportunityManager.calculateTotalSavings(
-						readyOpportunities,
-					),
-				overallRiskLevel:
-					OptimizationOpportunityManager.calculateOverallRiskLevel(
-						readyOpportunities,
-					),
-				executionOrder: readyOpportunities.map((o) => o.id),
-				dependencies: OptimizationOpportunityManager.extractBatchDependencies(
-					readyOpportunities,
-					batches,
-				),
-				createdAt: new Date(),
-				status: OptimizationStatus.Planned,
-			};
+	return errors;
+}
 
-			batches.push(batch);
+/**
+ * Create execution plan with proper ordering
+ */
+export function createExecutionPlan(
+	opportunities: OptimizationOpportunity[],
+): OptimizationBatch[] {
+	const batches: OptimizationBatch[] = [];
+	const remaining = [...opportunities];
+	let batchNumber = 1;
 
-			// Remove processed opportunities
-			readyOpportunities.forEach((opp) => {
-				const index = remaining.indexOf(opp);
-				remaining.splice(index, 1);
-			});
+	while (remaining.length > 0) {
+		const readyOpportunities = remaining.filter((opp) =>
+			arePrerequisitesSatisfied(opp, batches),
+		);
 
-			batchNumber++;
+		if (readyOpportunities.length === 0 && remaining.length > 0) {
+			throw new Error(
+				"Circular dependency detected in optimization opportunities",
+			);
 		}
 
-		return batches;
+		const batch: OptimizationBatch = {
+			id: `batch-${batchNumber}`,
+			name: `Optimization Batch ${batchNumber}`,
+			opportunities: readyOpportunities,
+			totalEstimatedSaving: calculateTotalSavings(readyOpportunities),
+			overallRiskLevel: calculateOverallRiskLevel(readyOpportunities),
+			executionOrder: readyOpportunities.map((o) => o.id),
+			dependencies: extractBatchDependencies(readyOpportunities, batches),
+			createdAt: new Date(),
+			status: OptimizationStatus.Planned,
+		};
+
+		batches.push(batch);
+
+		// Remove processed opportunities
+		readyOpportunities.forEach((opp) => {
+			const index = remaining.indexOf(opp);
+			remaining.splice(index, 1);
+		});
+
+		batchNumber++;
 	}
 
-	private static calculatePriorityScore(
-		opportunity: OptimizationOpportunity,
-	): number {
-		// Higher savings = higher score
-		const savingsScore = opportunity.estimatedTimeSaving / 1000; // Normalize to seconds
+	return batches;
+}
 
-		// Lower risk = higher score
-		const riskScore =
-			opportunity.riskLevel === RiskLevel.Low
+function calculatePriorityScore(opportunity: OptimizationOpportunity): number {
+	// Higher savings = higher score
+	const savingsScore = opportunity.estimatedTimeSaving / 1000; // Normalize to seconds
+
+	// Lower risk = higher score
+	const riskScore =
+		opportunity.riskLevel === RiskLevel.Low
+			? 3
+			: opportunity.riskLevel === RiskLevel.Medium
+				? 2
+				: 1;
+
+	// Lower effort = higher score
+	const effortScore =
+		opportunity.implementationEffort === EffortLevel.Minimal
+			? 4
+			: opportunity.implementationEffort === EffortLevel.Low
 				? 3
-				: opportunity.riskLevel === RiskLevel.Medium
+				: opportunity.implementationEffort === EffortLevel.Medium
 					? 2
 					: 1;
 
-		// Lower effort = higher score
-		const effortScore =
-			opportunity.implementationEffort === EffortLevel.Minimal
-				? 4
-				: opportunity.implementationEffort === EffortLevel.Low
-					? 3
-					: opportunity.implementationEffort === EffortLevel.Medium
-						? 2
-						: 1;
+	return savingsScore * 0.5 + riskScore * 0.3 + effortScore * 0.2;
+}
 
-		return savingsScore * 0.5 + riskScore * 0.3 + effortScore * 0.2;
-	}
+function findNonConflictingOpportunities(
+	target: OptimizationOpportunity,
+	candidates: OptimizationOpportunity[],
+): OptimizationOpportunity[] {
+	const group = [target];
 
-	private static findNonConflictingOpportunities(
-		target: OptimizationOpportunity,
-		candidates: OptimizationOpportunity[],
-	): OptimizationOpportunity[] {
-		const group = [target];
+	candidates.forEach((candidate) => {
+		if (candidate.id === target.id) return;
 
-		candidates.forEach((candidate) => {
-			if (candidate.id === target.id) return;
+		// Check if they conflict (same target suite or overlapping target cases)
+		const conflicts =
+			candidate.targetSuite === target.targetSuite ||
+			(candidate.targetCases &&
+				target.targetCases &&
+				candidate.targetCases.some((tc) => target.targetCases?.includes(tc)));
 
-			// Check if they conflict (same target suite or overlapping target cases)
-			const conflicts =
-				candidate.targetSuite === target.targetSuite ||
-				(candidate.targetCases &&
-					target.targetCases &&
-					candidate.targetCases.some((tc) => target.targetCases?.includes(tc)));
+		if (!conflicts) {
+			group.push(candidate);
+		}
+	});
 
-			if (!conflicts) {
-				group.push(candidate);
+	return group;
+}
+
+function arePrerequisitesSatisfied(
+	opportunity: OptimizationOpportunity,
+	completedBatches: OptimizationBatch[],
+): boolean {
+	const completedOpportunityIds = new Set(
+		completedBatches.flatMap((batch) => batch.opportunities.map((o) => o.id)),
+	);
+
+	return opportunity.prerequisites.every((prerequisite) =>
+		completedOpportunityIds.has(prerequisite),
+	);
+}
+
+function calculateOverallRiskLevel(
+	opportunities: OptimizationOpportunity[],
+): RiskLevel {
+	const hasHighRisk = opportunities.some(
+		(o) => o.riskLevel === RiskLevel.High,
+	);
+	if (hasHighRisk) return RiskLevel.High;
+
+	const hasMediumRisk = opportunities.some(
+		(o) => o.riskLevel === RiskLevel.Medium,
+	);
+	if (hasMediumRisk) return RiskLevel.Medium;
+
+	return RiskLevel.Low;
+}
+
+function extractBatchDependencies(
+	opportunities: OptimizationOpportunity[],
+	previousBatches: OptimizationBatch[],
+): string[] {
+	const dependencies = new Set<string>();
+
+	opportunities.forEach((opportunity) => {
+		opportunity.prerequisites.forEach((prerequisite) => {
+			// Find which batch contains this prerequisite
+			const batch = previousBatches.find((b) =>
+				b.opportunities.some((o) => o.id === prerequisite),
+			);
+			if (batch) {
+				dependencies.add(batch.id);
 			}
 		});
+	});
 
-		return group;
-	}
-
-	private static arePrerequisitesSatisfied(
-		opportunity: OptimizationOpportunity,
-		completedBatches: OptimizationBatch[],
-	): boolean {
-		const completedOpportunityIds = new Set(
-			completedBatches.flatMap((batch) => batch.opportunities.map((o) => o.id)),
-		);
-
-		return opportunity.prerequisites.every((prerequisite) =>
-			completedOpportunityIds.has(prerequisite),
-		);
-	}
-
-	private static calculateOverallRiskLevel(
-		opportunities: OptimizationOpportunity[],
-	): RiskLevel {
-		const hasHighRisk = opportunities.some(
-			(o) => o.riskLevel === RiskLevel.High,
-		);
-		if (hasHighRisk) return RiskLevel.High;
-
-		const hasMediumRisk = opportunities.some(
-			(o) => o.riskLevel === RiskLevel.Medium,
-		);
-		if (hasMediumRisk) return RiskLevel.Medium;
-
-		return RiskLevel.Low;
-	}
-
-	private static extractBatchDependencies(
-		opportunities: OptimizationOpportunity[],
-		previousBatches: OptimizationBatch[],
-	): string[] {
-		const dependencies = new Set<string>();
-
-		opportunities.forEach((opportunity) => {
-			opportunity.prerequisites.forEach((prerequisite) => {
-				// Find which batch contains this prerequisite
-				const batch = previousBatches.find((b) =>
-					b.opportunities.some((o) => o.id === prerequisite),
-				);
-				if (batch) {
-					dependencies.add(batch.id);
-				}
-			});
-		});
-
-		return Array.from(dependencies);
-	}
+	return Array.from(dependencies);
 }
 
 // Pre-defined optimization opportunity templates

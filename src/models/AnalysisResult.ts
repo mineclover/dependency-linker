@@ -139,12 +139,7 @@ export function createErrorAnalysisResult(
 	return result;
 }
 
-// Legacy class export for backward compatibility - will be deprecated
-/** @deprecated Use individual functions instead of AnalysisResultFactory class */
-export class AnalysisResultFactory {
-	static create = createAnalysisResult;
-	static createError = createErrorAnalysisResult;
-}
+// Legacy class export removed - use individual functions instead
 
 /**
  * Checks if an analysis was successful (no errors)
@@ -225,14 +220,7 @@ export function validateAnalysisResult(result: any): result is AnalysisResult {
 	);
 }
 
-// Legacy class export for backward compatibility - will be deprecated
-/** @deprecated Use individual functions instead of AnalysisResultUtils class */
-export class AnalysisResultUtils {
-	static isSuccessful = isSuccessful;
-	static getErrorsByType = getErrorsByType;
-	static format = formatAnalysisResult;
-	static validate = validateAnalysisResult;
-}
+// Legacy class export removed - use individual functions instead
 
 /**
  * Convenience exports for backwards compatibility with tests

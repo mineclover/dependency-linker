@@ -243,263 +243,263 @@ export class PerformanceBaselineBuilder {
 	}
 }
 
-export class PerformanceAnalyzer {
-	/**
-	 * Compare current performance against baseline
-	 */
-	static comparePerformance(
-		baseline: PerformanceBaseline,
-		current: PerformanceMetrics,
-	): PerformanceComparison {
-		const timeImprovement = PerformanceAnalyzer.calculatePercentageChange(
-			baseline.totalExecutionTime,
-			current.executionTime,
-			true, // Improvement is reduction in time
-		);
+/**
+ * Compare current performance against baseline
+ */
+export function comparePerformance(
+	baseline: PerformanceBaseline,
+	current: PerformanceMetrics,
+): PerformanceComparison {
+	const timeImprovement = calculatePercentageChange(
+		baseline.totalExecutionTime,
+		current.executionTime,
+		true, // Improvement is reduction in time
+	);
 
-		const testReduction = baseline.totalTests - current.testCount;
+	const testReduction = baseline.totalTests - current.testCount;
 
-		const reliabilityChange = current.passRate - baseline.passRate;
+	const reliabilityChange = current.passRate - baseline.passRate;
 
-		const coverageChange =
-			current.coveragePercentage - baseline.coveragePercentage;
+	const coverageChange =
+		current.coveragePercentage - baseline.coveragePercentage;
 
-		const memoryImprovement = PerformanceAnalyzer.calculatePercentageChange(
-			baseline.memoryUsage,
-			current.memoryUsage,
-			true, // Improvement is reduction in memory
-		);
+	const memoryImprovement = calculatePercentageChange(
+		baseline.memoryUsage,
+		current.memoryUsage,
+		true, // Improvement is reduction in memory
+	);
 
-		const targets = PerformanceAnalyzer.getDefaultTargets();
-		const details = PerformanceAnalyzer.evaluateTargets(current, targets);
+	const targets = getDefaultTargets();
+	const details = evaluateTargets(current, targets);
 
-		return {
-			timeImprovement,
-			testReduction,
-			reliabilityChange,
-			coverageChange,
-			memoryImprovement,
-			meetsTargets: PerformanceAnalyzer.evaluateOverallSuccess(
-				current,
-				targets,
-			),
-			details,
-		};
-	}
-
-	/**
-	 * Evaluate if performance meets optimization targets
-	 */
-	static evaluateOptimizationSuccess(
-		baseline: PerformanceBaseline,
-		current: PerformanceMetrics,
-		targets?: PerformanceTarget,
-	): boolean {
-		const actualTargets = targets || PerformanceAnalyzer.getDefaultTargets();
-
-		return (
-			current.executionTime <= actualTargets.targetExecutionTime &&
-			current.testCount <= actualTargets.targetTests &&
-			current.passRate >= actualTargets.targetPassRate &&
-			current.coveragePercentage >= baseline.coveragePercentage - 5 && // Allow 5% coverage loss
-			current.memoryUsage <= actualTargets.targetMemoryUsage
-		);
-	}
-
-	/**
-	 * Generate optimization recommendations based on baseline
-	 */
-	static generateRecommendations(baseline: PerformanceBaseline): string[] {
-		const recommendations: string[] = [];
-
-		if (baseline.totalExecutionTime > 1500) {
-			const reductionNeeded = baseline.totalExecutionTime - 1500;
-			recommendations.push(
-				`Reduce execution time by ${reductionNeeded.toFixed(0)}ms (${((reductionNeeded / baseline.totalExecutionTime) * 100).toFixed(1)}%)`,
-			);
-		}
-
-		if (baseline.passRate < 99) {
-			const improvementNeeded = 99 - baseline.passRate;
-			recommendations.push(
-				`Improve pass rate by ${improvementNeeded.toFixed(1)} percentage points`,
-			);
-		}
-
-		if (baseline.totalTests > 250) {
-			const reductionNeeded = baseline.totalTests - 250;
-			recommendations.push(
-				`Reduce test count by approximately ${reductionNeeded} tests (${((reductionNeeded / baseline.totalTests) * 100).toFixed(1)}%)`,
-			);
-		}
-
-		if (baseline.workerIssues) {
-			recommendations.push("Fix worker exit issues to improve test stability");
-		}
-
-		if (baseline.parserWarnings > 0) {
-			recommendations.push(
-				`Eliminate ${baseline.parserWarnings} parser registration warnings`,
-			);
-		}
-
-		if (baseline.memoryUsage > 100) {
-			recommendations.push(
-				`Reduce memory usage from ${baseline.memoryUsage.toFixed(1)}MB to under 100MB`,
-			);
-		}
-
-		return recommendations;
-	}
-
-	/**
-	 * Track performance trends over multiple baselines
-	 */
-	static trackTrends(baselines: PerformanceBaseline[]): PerformanceTrend {
-		if (baselines.length < 2) {
-			throw new Error("At least 2 baselines required for trend analysis");
-		}
-
-		const sorted = [...baselines].sort(
-			(a, b) => a.timestamp.getTime() - b.timestamp.getTime(),
-		);
-		const oldest = sorted[0];
-		const newest = sorted[sorted.length - 1];
-
-		return {
-			timespan: newest.timestamp.getTime() - oldest.timestamp.getTime(),
-			executionTimeChange: PerformanceAnalyzer.calculatePercentageChange(
-				oldest.totalExecutionTime,
-				newest.totalExecutionTime,
-				true,
-			),
-			passRateChange: newest.passRate - oldest.passRate,
-			testCountChange: newest.totalTests - oldest.totalTests,
-			coverageChange: newest.coveragePercentage - oldest.coveragePercentage,
-			direction: PerformanceAnalyzer.determineTrendDirection(oldest, newest),
-			dataPoints: sorted.length,
-		};
-	}
-
-	private static calculatePercentageChange(
-		baseline: number,
-		current: number,
-		improvementIsReduction: boolean = false,
-	): number {
-		if (baseline === 0) return current === 0 ? 0 : 100;
-
-		const change = ((current - baseline) / baseline) * 100;
-		return improvementIsReduction ? -change : change;
-	}
-
-	private static getDefaultTargets(): PerformanceTarget {
-		return {
-			targetExecutionTime: 1500, // 1.5 seconds
-			targetTests: 250,
-			targetFailedTests: 2, // <1% failure rate
-			targetPassRate: 99, // >99%
-			targetSuiteReliability: 95, // >95%
-			targetMemoryUsage: 100, // 100MB
-		};
-	}
-
-	private static evaluateTargets(
-		current: PerformanceMetrics,
-		targets: PerformanceTarget,
-	): ComparisonDetails {
-		const executionTimeMet =
-			current.executionTime <= targets.targetExecutionTime;
-		const testCountMet = current.testCount <= targets.targetTests;
-		const passRateMet = current.passRate >= targets.targetPassRate;
-		const coverageMet = current.coveragePercentage >= 80; // Maintain minimum coverage
-		const memoryMet = current.memoryUsage <= targets.targetMemoryUsage;
-		const reliabilityMet =
-			(1 - current.failureRate) * 100 >= targets.targetSuiteReliability;
-
-		const improvements: string[] = [];
-		const regressions: string[] = [];
-
-		if (executionTimeMet) improvements.push("Execution time target achieved");
-		else
-			regressions.push(
-				`Execution time ${current.executionTime}ms exceeds target ${targets.targetExecutionTime}ms`,
-			);
-
-		if (testCountMet) improvements.push("Test count target achieved");
-		else
-			regressions.push(
-				`Test count ${current.testCount} exceeds target ${targets.targetTests}`,
-			);
-
-		if (passRateMet) improvements.push("Pass rate target achieved");
-		else
-			regressions.push(
-				`Pass rate ${current.passRate.toFixed(1)}% below target ${targets.targetPassRate}%`,
-			);
-
-		if (coverageMet) improvements.push("Coverage target maintained");
-		else
-			regressions.push(
-				`Coverage ${current.coveragePercentage.toFixed(1)}% below minimum 80%`,
-			);
-
-		if (memoryMet) improvements.push("Memory usage target achieved");
-		else
-			regressions.push(
-				`Memory usage ${current.memoryUsage.toFixed(1)}MB exceeds target ${targets.targetMemoryUsage}MB`,
-			);
-
-		return {
-			executionTimeMet,
-			testCountMet,
-			passRateMet,
-			coverageMet,
-			memoryMet,
-			reliabilityMet,
-			improvements,
-			regressions,
-		};
-	}
-
-	private static evaluateOverallSuccess(
-		current: PerformanceMetrics,
-		targets: PerformanceTarget,
-	): boolean {
-		return (
-			current.executionTime <= targets.targetExecutionTime &&
-			current.testCount <= targets.targetTests &&
-			current.passRate >= targets.targetPassRate &&
-			current.coveragePercentage >= 80 &&
-			current.memoryUsage <= targets.targetMemoryUsage
-		);
-	}
-
-	private static determineTrendDirection(
-		oldest: PerformanceBaseline,
-		newest: PerformanceBaseline,
-	): "improving" | "degrading" | "stable" {
-		let improvements = 0;
-		let degradations = 0;
-
-		// Check execution time (lower is better)
-		if (newest.totalExecutionTime < oldest.totalExecutionTime) improvements++;
-		else if (newest.totalExecutionTime > oldest.totalExecutionTime)
-			degradations++;
-
-		// Check pass rate (higher is better)
-		if (newest.passRate > oldest.passRate) improvements++;
-		else if (newest.passRate < oldest.passRate) degradations++;
-
-		// Check coverage (higher is better)
-		if (newest.coveragePercentage > oldest.coveragePercentage) improvements++;
-		else if (newest.coveragePercentage < oldest.coveragePercentage)
-			degradations++;
-
-		if (improvements > degradations) return "improving";
-		if (degradations > improvements) return "degrading";
-		return "stable";
-	}
+	return {
+		timeImprovement,
+		testReduction,
+		reliabilityChange,
+		coverageChange,
+		memoryImprovement,
+		meetsTargets: evaluateOverallSuccess(current, targets),
+		details,
+	};
 }
+
+/**
+ * Evaluate if performance meets optimization targets
+ */
+export function evaluateOptimizationSuccess(
+	baseline: PerformanceBaseline,
+	current: PerformanceMetrics,
+	targets?: PerformanceTarget,
+): boolean {
+	const actualTargets = targets || getDefaultTargets();
+
+	return (
+		current.executionTime <= actualTargets.targetExecutionTime &&
+		current.testCount <= actualTargets.targetTests &&
+		current.passRate >= actualTargets.targetPassRate &&
+		current.coveragePercentage >= baseline.coveragePercentage - 5 && // Allow 5% coverage loss
+		current.memoryUsage <= actualTargets.targetMemoryUsage
+	);
+}
+
+/**
+ * Generate optimization recommendations based on baseline
+ */
+export function generateOptimizationRecommendations(
+	baseline: PerformanceBaseline,
+): string[] {
+	const recommendations: string[] = [];
+
+	if (baseline.totalExecutionTime > 1500) {
+		const reductionNeeded = baseline.totalExecutionTime - 1500;
+		recommendations.push(
+			`Reduce execution time by ${reductionNeeded.toFixed(0)}ms (${((reductionNeeded / baseline.totalExecutionTime) * 100).toFixed(1)}%)`,
+		);
+	}
+
+	if (baseline.passRate < 99) {
+		const improvementNeeded = 99 - baseline.passRate;
+		recommendations.push(
+			`Improve pass rate by ${improvementNeeded.toFixed(1)} percentage points`,
+		);
+	}
+
+	if (baseline.totalTests > 250) {
+		const reductionNeeded = baseline.totalTests - 250;
+		recommendations.push(
+			`Reduce test count by approximately ${reductionNeeded} tests (${((reductionNeeded / baseline.totalTests) * 100).toFixed(1)}%)`,
+		);
+	}
+
+	if (baseline.workerIssues) {
+		recommendations.push("Fix worker exit issues to improve test stability");
+	}
+
+	if (baseline.parserWarnings > 0) {
+		recommendations.push(
+			`Eliminate ${baseline.parserWarnings} parser registration warnings`,
+		);
+	}
+
+	if (baseline.memoryUsage > 100) {
+		recommendations.push(
+			`Reduce memory usage from ${baseline.memoryUsage.toFixed(1)}MB to under 100MB`,
+		);
+	}
+
+	return recommendations;
+}
+
+/**
+ * Track performance trends over multiple baselines
+ */
+export function trackPerformanceTrends(
+	baselines: PerformanceBaseline[],
+): PerformanceTrend {
+	if (baselines.length < 2) {
+		throw new Error("At least 2 baselines required for trend analysis");
+	}
+
+	const sorted = [...baselines].sort(
+		(a, b) => a.timestamp.getTime() - b.timestamp.getTime(),
+	);
+	const oldest = sorted[0];
+	const newest = sorted[sorted.length - 1];
+
+	return {
+		timespan: newest.timestamp.getTime() - oldest.timestamp.getTime(),
+		executionTimeChange: calculatePercentageChange(
+			oldest.totalExecutionTime,
+			newest.totalExecutionTime,
+			true,
+		),
+		passRateChange: newest.passRate - oldest.passRate,
+		testCountChange: newest.totalTests - oldest.totalTests,
+		coverageChange: newest.coveragePercentage - oldest.coveragePercentage,
+		direction: determineTrendDirection(oldest, newest),
+		dataPoints: sorted.length,
+	};
+}
+
+function calculatePercentageChange(
+	baseline: number,
+	current: number,
+	improvementIsReduction: boolean = false,
+): number {
+	if (baseline === 0) return current === 0 ? 0 : 100;
+
+	const change = ((current - baseline) / baseline) * 100;
+	return improvementIsReduction ? -change : change;
+}
+
+function getDefaultTargets(): PerformanceTarget {
+	return {
+		targetExecutionTime: 1500, // 1.5 seconds
+		targetTests: 250,
+		targetFailedTests: 2, // <1% failure rate
+		targetPassRate: 99, // >99%
+		targetSuiteReliability: 95, // >95%
+		targetMemoryUsage: 100, // 100MB
+	};
+}
+
+function evaluateTargets(
+	current: PerformanceMetrics,
+	targets: PerformanceTarget,
+): ComparisonDetails {
+	const executionTimeMet = current.executionTime <= targets.targetExecutionTime;
+	const testCountMet = current.testCount <= targets.targetTests;
+	const passRateMet = current.passRate >= targets.targetPassRate;
+	const coverageMet = current.coveragePercentage >= 80; // Maintain minimum coverage
+	const memoryMet = current.memoryUsage <= targets.targetMemoryUsage;
+	const reliabilityMet =
+		(1 - current.failureRate) * 100 >= targets.targetSuiteReliability;
+
+	const improvements: string[] = [];
+	const regressions: string[] = [];
+
+	if (executionTimeMet) improvements.push("Execution time target achieved");
+	else
+		regressions.push(
+			`Execution time ${current.executionTime}ms exceeds target ${targets.targetExecutionTime}ms`,
+		);
+
+	if (testCountMet) improvements.push("Test count target achieved");
+	else
+		regressions.push(
+			`Test count ${current.testCount} exceeds target ${targets.targetTests}`,
+		);
+
+	if (passRateMet) improvements.push("Pass rate target achieved");
+	else
+		regressions.push(
+			`Pass rate ${current.passRate.toFixed(1)}% below target ${targets.targetPassRate}%`,
+		);
+
+	if (coverageMet) improvements.push("Coverage target maintained");
+	else
+		regressions.push(
+			`Coverage ${current.coveragePercentage.toFixed(1)}% below minimum 80%`,
+		);
+
+	if (memoryMet) improvements.push("Memory usage target achieved");
+	else
+		regressions.push(
+			`Memory usage ${current.memoryUsage.toFixed(1)}MB exceeds target ${targets.targetMemoryUsage}MB`,
+		);
+
+	return {
+		executionTimeMet,
+		testCountMet,
+		passRateMet,
+		coverageMet,
+		memoryMet,
+		reliabilityMet,
+		improvements,
+		regressions,
+	};
+}
+
+function evaluateOverallSuccess(
+	current: PerformanceMetrics,
+	targets: PerformanceTarget,
+): boolean {
+	return (
+		current.executionTime <= targets.targetExecutionTime &&
+		current.testCount <= targets.targetTests &&
+		current.passRate >= targets.targetPassRate &&
+		current.coveragePercentage >= 80 &&
+		current.memoryUsage <= targets.targetMemoryUsage
+	);
+}
+
+function determineTrendDirection(
+	oldest: PerformanceBaseline,
+	newest: PerformanceBaseline,
+): "improving" | "degrading" | "stable" {
+	let improvements = 0;
+	let degradations = 0;
+
+	// Check execution time (lower is better)
+	if (newest.totalExecutionTime < oldest.totalExecutionTime) improvements++;
+	else if (newest.totalExecutionTime > oldest.totalExecutionTime)
+		degradations++;
+
+	// Check pass rate (higher is better)
+	if (newest.passRate > oldest.passRate) improvements++;
+	else if (newest.passRate < oldest.passRate) degradations++;
+
+	// Check coverage (higher is better)
+	if (newest.coveragePercentage > oldest.coveragePercentage) improvements++;
+	else if (newest.coveragePercentage < oldest.coveragePercentage)
+		degradations++;
+
+	if (improvements > degradations) return "improving";
+	if (degradations > improvements) return "degrading";
+	return "stable";
+}
+
+// Legacy class export removed - use individual functions instead
 
 export interface PerformanceTrend {
 	timespan: number; // Duration between oldest and newest baseline (ms)

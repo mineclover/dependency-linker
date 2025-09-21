@@ -263,272 +263,269 @@ export interface CacheConfiguration {
 /**
  * Utility functions for cache entries
  */
-export class CacheEntryUtils {
-	/**
-	 * Creates a cache key from file path and configuration
-	 */
-	static createKey(filePath: string, config?: any): string {
-		const configHash = config ? CacheEntryUtils.hashObject(config) : "default";
-		const pathHash = CacheEntryUtils.hashString(filePath);
-		return `${pathHash}-${configHash}`;
+/**
+ * Creates a cache key from file path and configuration
+ */
+export function createCacheKey(filePath: string, config?: any): string {
+	const configHash = config ? hashObject(config) : "default";
+	const pathHash = hashString(filePath);
+	return `${pathHash}-${configHash}`;
+}
+
+/**
+ * Checks if a cache entry is expired
+ */
+export function isCacheEntryExpired(entry: CacheEntry): boolean {
+	if (!entry.expiresAt) {
+		return false;
+	}
+	return new Date() > entry.expiresAt;
+}
+
+/**
+ * Checks if a cache entry is valid based on file metadata
+ */
+export function isCacheEntryValid(
+	entry: CacheEntry,
+	currentFileMetadata?: FileMetadata,
+): boolean {
+	if (isCacheEntryExpired(entry)) {
+		return false;
 	}
 
-	/**
-	 * Checks if a cache entry is expired
-	 */
-	static isExpired(entry: CacheEntry): boolean {
-		if (!entry.expiresAt) {
-			return false;
-		}
-		return new Date() > entry.expiresAt;
+	if (!entry.fileMetadata || !currentFileMetadata) {
+		return true; // Cannot validate without metadata
 	}
 
-	/**
-	 * Checks if a cache entry is valid based on file metadata
-	 */
-	static isValid(
-		entry: CacheEntry,
-		currentFileMetadata?: FileMetadata,
-	): boolean {
-		if (CacheEntryUtils.isExpired(entry)) {
-			return false;
-		}
+	return (
+		entry.fileMetadata.lastModified.getTime() ===
+			currentFileMetadata.lastModified.getTime() &&
+		entry.fileMetadata.size === currentFileMetadata.size &&
+		entry.fileMetadata.checksum === currentFileMetadata.checksum
+	);
+}
 
-		if (!entry.fileMetadata || !currentFileMetadata) {
-			return true; // Cannot validate without metadata
-		}
+/**
+ * Calculates the size of an entry's data
+ */
+export function calculateCacheEntrySize(data: any): number {
+	return JSON.stringify(data).length * 2; // Rough estimate (UTF-16)
+}
 
-		return (
-			entry.fileMetadata.lastModified.getTime() ===
-				currentFileMetadata.lastModified.getTime() &&
-			entry.fileMetadata.size === currentFileMetadata.size &&
-			entry.fileMetadata.checksum === currentFileMetadata.checksum
-		);
+/**
+ * Creates an AST cache entry
+ */
+export function createASTCacheEntry(
+	key: string,
+	ast: any,
+	parseTime: number,
+	language: string,
+	parserVersion: string,
+	fileMetadata?: FileMetadata,
+	ttl?: number,
+): ASTCacheEntry {
+	const data = { ast, parseTime, language, parserVersion };
+	const size = calculateCacheEntrySize(data);
+	const nodeCount = countASTNodes(ast);
+	const depth = calculateASTDepth(ast);
+
+	const entry: ASTCacheEntry = {
+		key,
+		data,
+		createdAt: new Date(),
+		lastAccessedAt: new Date(),
+		fileMetadata,
+		metadata: {
+			size,
+			hitCount: 0,
+			source: "ast",
+			version: "1.0.0",
+			tags: ["ast", language],
+			nodeCount,
+			depth,
+			custom: {},
+		},
+	};
+
+	if (ttl) {
+		entry.expiresAt = new Date(Date.now() + ttl);
 	}
 
-	/**
-	 * Calculates the size of an entry's data
-	 */
-	static calculateSize(data: any): number {
-		return JSON.stringify(data).length * 2; // Rough estimate (UTF-16)
+	return entry;
+}
+
+/**
+ * Creates an analysis result cache entry
+ */
+export function createAnalysisCacheEntry(
+	key: string,
+	analysisData: any,
+	extractorsUsed: string[],
+	interpretersUsed: string[],
+	configHash: string,
+	fileMetadata?: FileMetadata,
+	ttl?: number,
+): AnalysisResultCacheEntry {
+	const size = calculateCacheEntrySize(analysisData);
+
+	const entry: AnalysisResultCacheEntry = {
+		key,
+		data: analysisData,
+		createdAt: new Date(),
+		lastAccessedAt: new Date(),
+		fileMetadata,
+		metadata: {
+			size,
+			hitCount: 0,
+			source: "analysis",
+			version: "1.0.0",
+			tags: ["analysis", ...extractorsUsed, ...interpretersUsed],
+			extractorsUsed,
+			interpretersUsed,
+			configHash,
+			custom: {},
+		},
+	};
+
+	if (ttl) {
+		entry.expiresAt = new Date(Date.now() + ttl);
 	}
 
-	/**
-	 * Creates an AST cache entry
-	 */
-	static createASTEntry(
-		key: string,
-		ast: any,
-		parseTime: number,
-		language: string,
-		parserVersion: string,
-		fileMetadata?: FileMetadata,
-		ttl?: number,
-	): ASTCacheEntry {
-		const data = { ast, parseTime, language, parserVersion };
-		const size = CacheEntryUtils.calculateSize(data);
-		const nodeCount = CacheEntryUtils.countASTNodes(ast);
-		const depth = CacheEntryUtils.calculateASTDepth(ast);
+	return entry;
+}
 
-		const entry: ASTCacheEntry = {
-			key,
-			data,
-			createdAt: new Date(),
-			lastAccessedAt: new Date(),
-			fileMetadata,
-			metadata: {
-				size,
-				hitCount: 0,
-				source: "ast",
-				version: "1.0.0",
-				tags: ["ast", language],
-				nodeCount,
-				depth,
-				custom: {},
-			},
-		};
+/**
+ * Updates the last accessed time and increments hit count
+ */
+export function touchCacheEntry(entry: CacheEntry): void {
+	entry.lastAccessedAt = new Date();
+	entry.metadata.hitCount++;
+}
 
-		if (ttl) {
-			entry.expiresAt = new Date(Date.now() + ttl);
-		}
-
+/**
+ * Compresses cache entry data if beneficial
+ */
+export function compressCacheEntry(
+	entry: CacheEntry,
+	algorithm: CompressionInfo["algorithm"] = "gzip",
+): CacheEntry {
+	if (algorithm === "none" || entry.metadata.compression) {
 		return entry;
 	}
 
-	/**
-	 * Creates an analysis result cache entry
-	 */
-	static createAnalysisEntry(
-		key: string,
-		analysisData: any,
-		extractorsUsed: string[],
-		interpretersUsed: string[],
-		configHash: string,
-		fileMetadata?: FileMetadata,
-		ttl?: number,
-	): AnalysisResultCacheEntry {
-		const size = CacheEntryUtils.calculateSize(analysisData);
+	const originalData = JSON.stringify(entry.data);
+	const originalSize = originalData.length;
 
-		const entry: AnalysisResultCacheEntry = {
-			key,
-			data: analysisData,
-			createdAt: new Date(),
-			lastAccessedAt: new Date(),
-			fileMetadata,
-			metadata: {
-				size,
-				hitCount: 0,
-				source: "analysis",
-				version: "1.0.0",
-				tags: ["analysis", ...extractorsUsed, ...interpretersUsed],
-				extractorsUsed,
-				interpretersUsed,
-				configHash,
-				custom: {},
-			},
-		};
+	// Simulate compression (in real implementation, would use actual compression)
+	const compressionRatio = estimateCompressionRatio(originalData, algorithm);
+	const compressedSize = Math.floor(originalSize * compressionRatio);
 
-		if (ttl) {
-			entry.expiresAt = new Date(Date.now() + ttl);
-		}
-
+	if (compressedSize >= originalSize * 0.9) {
+		// Not worth compressing if less than 10% savings
 		return entry;
 	}
 
-	/**
-	 * Updates the last accessed time and increments hit count
-	 */
-	static touch(entry: CacheEntry): void {
-		entry.lastAccessedAt = new Date();
-		entry.metadata.hitCount++;
-	}
-
-	/**
-	 * Compresses cache entry data if beneficial
-	 */
-	static compress(
-		entry: CacheEntry,
-		algorithm: CompressionInfo["algorithm"] = "gzip",
-	): CacheEntry {
-		if (algorithm === "none" || entry.metadata.compression) {
-			return entry;
-		}
-
-		const originalData = JSON.stringify(entry.data);
-		const originalSize = originalData.length;
-
-		// Simulate compression (in real implementation, would use actual compression)
-		const compressionRatio = CacheEntryUtils.estimateCompressionRatio(
-			originalData,
-			algorithm,
-		);
-		const compressedSize = Math.floor(originalSize * compressionRatio);
-
-		if (compressedSize >= originalSize * 0.9) {
-			// Not worth compressing if less than 10% savings
-			return entry;
-		}
-
-		const compressedEntry = {
-			...entry,
-			metadata: {
-				...entry.metadata,
-				compression: {
-					algorithm,
-					originalSize,
-					compressedSize,
-					ratio: compressionRatio,
-				},
+	const compressedEntry = {
+		...entry,
+		metadata: {
+			...entry.metadata,
+			compression: {
+				algorithm,
+				originalSize,
+				compressedSize,
+				ratio: compressionRatio,
 			},
-		};
+		},
+	};
 
-		return compressedEntry;
-	}
+	return compressedEntry;
+}
 
-	/**
-	 * Estimates compression ratio for different algorithms
-	 */
-	private static estimateCompressionRatio(
-		data: string,
-		algorithm: CompressionInfo["algorithm"],
-	): number {
-		const repetitionScore = CacheEntryUtils.calculateRepetitionScore(data);
+/**
+ * Estimates compression ratio for different algorithms
+ */
+function estimateCompressionRatio(
+	data: string,
+	algorithm: CompressionInfo["algorithm"],
+): number {
+	const repetitionScore = calculateRepetitionScore(data);
 
-		switch (algorithm) {
-			case "gzip":
-				return Math.max(0.3, 1 - repetitionScore * 0.7);
-			case "brotli":
-				return Math.max(0.25, 1 - repetitionScore * 0.75);
-			case "lz4":
-				return Math.max(0.4, 1 - repetitionScore * 0.6);
-			default:
-				return 1.0;
-		}
-	}
-
-	/**
-	 * Calculates a repetition score for compression estimation
-	 */
-	private static calculateRepetitionScore(data: string): number {
-		const uniqueChars = new Set(data).size;
-		const totalChars = data.length;
-		return 1 - uniqueChars / totalChars;
-	}
-
-	/**
-	 * Counts the number of nodes in an AST
-	 */
-	private static countASTNodes(ast: any): number {
-		if (!ast || typeof ast !== "object") {
-			return 0;
-		}
-
-		let count = 1; // Count current node
-
-		if (Array.isArray(ast.children)) {
-			for (const child of ast.children) {
-				count += CacheEntryUtils.countASTNodes(child);
-			}
-		}
-
-		return count;
-	}
-
-	/**
-	 * Calculates the depth of an AST
-	 */
-	private static calculateASTDepth(ast: any): number {
-		if (!ast || typeof ast !== "object" || !Array.isArray(ast.children)) {
-			return 1;
-		}
-
-		let maxChildDepth = 0;
-		for (const child of ast.children) {
-			const childDepth = CacheEntryUtils.calculateASTDepth(child);
-			maxChildDepth = Math.max(maxChildDepth, childDepth);
-		}
-
-		return 1 + maxChildDepth;
-	}
-
-	/**
-	 * Creates a simple hash of a string
-	 */
-	private static hashString(str: string): string {
-		let hash = 0;
-		for (let i = 0; i < str.length; i++) {
-			const char = str.charCodeAt(i);
-			hash = (hash << 5) - hash + char;
-			hash = hash & hash; // Convert to 32-bit integer
-		}
-		return Math.abs(hash).toString(36);
-	}
-
-	/**
-	 * Creates a hash of an object
-	 */
-	private static hashObject(obj: any): string {
-		const str = JSON.stringify(obj, Object.keys(obj).sort());
-		return CacheEntryUtils.hashString(str);
+	switch (algorithm) {
+		case "gzip":
+			return Math.max(0.3, 1 - repetitionScore * 0.7);
+		case "brotli":
+			return Math.max(0.25, 1 - repetitionScore * 0.75);
+		case "lz4":
+			return Math.max(0.4, 1 - repetitionScore * 0.6);
+		default:
+			return 1.0;
 	}
 }
+
+/**
+ * Calculates a repetition score for compression estimation
+ */
+function calculateRepetitionScore(data: string): number {
+	const uniqueChars = new Set(data).size;
+	const totalChars = data.length;
+	return 1 - uniqueChars / totalChars;
+}
+
+/**
+ * Counts the number of nodes in an AST
+ */
+function countASTNodes(ast: any): number {
+	if (!ast || typeof ast !== "object") {
+		return 0;
+	}
+
+	let count = 1; // Count current node
+
+	if (Array.isArray(ast.children)) {
+		for (const child of ast.children) {
+			count += countASTNodes(child);
+		}
+	}
+
+	return count;
+}
+
+/**
+ * Calculates the depth of an AST
+ */
+function calculateASTDepth(ast: any): number {
+	if (!ast || typeof ast !== "object" || !Array.isArray(ast.children)) {
+		return 1;
+	}
+
+	let maxChildDepth = 0;
+	for (const child of ast.children) {
+		const childDepth = calculateASTDepth(child);
+		maxChildDepth = Math.max(maxChildDepth, childDepth);
+	}
+
+	return 1 + maxChildDepth;
+}
+
+/**
+ * Creates a simple hash of a string
+ */
+function hashString(str: string): string {
+	let hash = 0;
+	for (let i = 0; i < str.length; i++) {
+		const char = str.charCodeAt(i);
+		hash = (hash << 5) - hash + char;
+		hash = hash & hash; // Convert to 32-bit integer
+	}
+	return Math.abs(hash).toString(36);
+}
+
+/**
+ * Creates a hash of an object
+ */
+function hashObject(obj: any): string {
+	const str = JSON.stringify(obj, Object.keys(obj).sort());
+	return hashString(str);
+}
+
+// Legacy class export removed - use individual functions instead

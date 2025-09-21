@@ -7,12 +7,7 @@ import * as fs from "node:fs";
 import * as path from "node:path";
 import { Command } from "commander";
 import type { TestSuite } from "../../models/optimization/TestSuite";
-import { PerformanceTracker } from "../../services/optimization/PerformanceTracker";
-import { TestAnalyzer } from "../../services/optimization/TestAnalyzer";
-import { TestAssertions } from "../../services/optimization/TestAssertions";
 import { TestBenchmark } from "../../services/optimization/TestBenchmark";
-import { TestDataFactory } from "../../services/optimization/TestDataFactory";
-import { TestOptimizer } from "../../services/optimization/TestOptimizer";
 
 export interface OptimizeTestsOptions {
 	input?: string;
@@ -95,7 +90,8 @@ export class OptimizeTestsCommand {
 			this.validateOptions(options);
 
 			// Discover test suites
-			const testSuites = await this.discoverTestSuites(options.input!);
+			const inputPath = options.input || process.cwd();
+			const testSuites = await this.discoverTestSuites(inputPath);
 			console.log(`📁 Found ${testSuites.length} test suites`);
 
 			if (testSuites.length === 0) {
@@ -529,7 +525,9 @@ export class OptimizeTestsCommand {
 					result.optimizationResult.improvements.map((i: any) => i.type),
 				),
 			];
-			improvementTypes.forEach((type) => console.log(`     - ${type}`));
+			for (const type of improvementTypes) {
+				console.log(`     - ${type}`);
+			}
 		}
 	}
 
