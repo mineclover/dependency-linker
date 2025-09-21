@@ -138,7 +138,8 @@ export class CommandParser {
 						if (!["minimal", "standard", "comprehensive"].includes(level)) {
 							return {
 								error: {
-									message: "Detail level must be one of: minimal, standard, comprehensive",
+									message:
+										"Detail level must be one of: minimal, standard, comprehensive",
 									exitCode: 1,
 								},
 							};
@@ -160,7 +161,8 @@ export class CommandParser {
 						if (!["speed", "balanced", "accuracy"].includes(mode)) {
 							return {
 								error: {
-									message: "Optimization mode must be one of: speed, balanced, accuracy",
+									message:
+										"Optimization mode must be one of: speed, balanced, accuracy",
 									exitCode: 1,
 								},
 							};
@@ -178,7 +180,7 @@ export class CommandParser {
 								},
 							};
 						}
-						const views = args[++i].split(",").map(v => v.trim());
+						const views = args[++i].split(",").map((v) => v.trim());
 						const validViews = ["summary", "table", "tree", "csv", "minimal"];
 						for (const view of views) {
 							if (!validViews.includes(view)) {

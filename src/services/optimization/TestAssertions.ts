@@ -3,10 +3,10 @@
  * Provides specialized assertions for test optimization validation
  */
 
-import type { TestSuite } from "../../models/optimization/TestSuite";
-import type { TestCase } from "../../models/optimization/TestCase";
 import type { OptimizationOpportunity } from "../../models/optimization/OptimizationOpportunity";
 import type { PerformanceBaseline } from "../../models/optimization/PerformanceBaseline";
+import type { TestCase } from "../../models/optimization/TestCase";
+import type { TestSuite } from "../../models/optimization/TestSuite";
 
 export interface AssertionOptions {
 	tolerance?: number;

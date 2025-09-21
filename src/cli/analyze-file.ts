@@ -30,16 +30,16 @@ async function main(): Promise<void> {
 	try {
 		// Check for config command first
 		const args = process.argv.slice(2);
-		if (args.length > 0 && args[0] === 'config') {
+		if (args.length > 0 && args[0] === "config") {
 			// Route to config command
-			const { execSync } = require('node:child_process');
-			const path = require('node:path');
-			const configScript = path.join(__dirname, 'commands', 'config.js');
+			const { execSync } = require("node:child_process");
+			const path = require("node:path");
+			const configScript = path.join(__dirname, "commands", "config.js");
 
 			try {
-				execSync(`node "${configScript}" ${args.slice(1).join(' ')}`, {
-					stdio: 'inherit',
-					encoding: 'utf8'
+				execSync(`node "${configScript}" ${args.slice(1).join(" ")}`, {
+					stdio: "inherit",
+					encoding: "utf8",
 				});
 				process.exit(0);
 			} catch (error) {
@@ -147,7 +147,10 @@ async function main(): Promise<void> {
 				console.log(header);
 			}
 
-			const output = cliAdapter.formatIntegratedResult(integratedData, mergedOptions.format);
+			const output = cliAdapter.formatIntegratedResult(
+				integratedData,
+				mergedOptions.format,
+			);
 			console.log(output);
 
 			// Exit with appropriate code based on overall status

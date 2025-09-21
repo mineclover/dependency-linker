@@ -20,6 +20,10 @@ import {
 	AnalysisResultFactory,
 } from "../models/AnalysisResult";
 import type { CacheStats } from "../models/CacheEntry";
+import type {
+	DataIntegrationConfig,
+	IntegratedAnalysisData,
+} from "../models/IntegratedData";
 import { PerformanceMonitor } from "../models/PerformanceMetrics";
 import { GoParser } from "../parsers/GoParser";
 import { JavaParser } from "../parsers/JavaParser";
@@ -40,9 +44,11 @@ import {
 	type IInterpreterRegistry,
 	InterpreterRegistry,
 } from "./InterpreterRegistry";
+import {
+	DataIntegrator,
+	type IDataIntegrator,
+} from "./integration/DataIntegrator";
 import { ParserRegistry } from "./ParserRegistry";
-import { DataIntegrator, type IDataIntegrator } from "./integration/DataIntegrator";
-import type { IntegratedAnalysisData, DataIntegrationConfig } from "../models/IntegratedData";
 
 export class AnalysisEngine implements IAnalysisEngine {
 	private parserRegistry: ParserRegistry;

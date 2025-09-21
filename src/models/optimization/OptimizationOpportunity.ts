@@ -5,499 +5,580 @@
  * Source: Data model specification, FR-010 (identify flaky tests), research risk assessment
  */
 
-import {
-  OptimizationType,
-  RiskLevel,
-  EffortLevel
-} from './types';
+import { EffortLevel, OptimizationType, RiskLevel } from "./types";
+
+export {
+	EffortLevel,
+	OptimizationType,
+	RiskLevel,
+} from "./types";
 
 export enum OptimizationStatus {
-  Identified = "identified",
-  Planned = "planned",
-  InProgress = "in_progress",
-  Completed = "completed",
-  Failed = "failed",
-  Skipped = "skipped"
+	Identified = "identified",
+	Planned = "planned",
+	InProgress = "in_progress",
+	Completed = "completed",
+	Failed = "failed",
+	Skipped = "skipped",
 }
 
 export interface OptimizationOpportunity {
-  id: string;                    // Unique identifier
-  type: OptimizationType;        // Category of optimization
-  targetSuite: string;           // TestSuite.id this applies to
-  targetCases?: string[];        // Specific TestCase.ids if applicable
-  description: string;           // What needs optimization
-  impact: {
-    timeReduction: number;       // Expected time reduction (ms)
-    complexityReduction: number; // Complexity reduction score
-    maintainabilityImprovement: number; // Maintainability improvement score
-  };
-  estimatedTimeSaving: number;   // Expected execution time reduction (ms) - for compatibility
-  riskLevel: RiskLevel;          // Risk assessment for this change
-  implementationEffort: EffortLevel; // Required work level
-  prerequisites: string[];       // What must be done first
-  status: OptimizationStatus;    // Current status
-  createdAt: Date;              // When opportunity was identified
-  updatedAt: Date;              // Last status update
-  completedAt?: Date;           // When optimization was completed
-  validationRequired: boolean;   // Whether this needs validation
-  rollbackPlan?: string;        // How to undo if something goes wrong
-  strategy?: string;            // Strategy name for optimization
-  constraints?: string[];       // Optimization constraints
-  implementation?: {
-    approach: string;
-    steps: string[];
-    codeChanges?: string[];
-    rollbackPlan?: string;
-  };
-  validation?: {
-    criteria: string[];
-    testPlan: string;
-    successMetrics: string[];
-  };
+	id: string; // Unique identifier
+	type: OptimizationType; // Category of optimization
+	targetSuite: string; // TestSuite.id this applies to
+	targetCases?: string[]; // Specific TestCase.ids if applicable
+	description: string; // What needs optimization
+	impact: {
+		timeReduction: number; // Expected time reduction (ms)
+		complexityReduction: number; // Complexity reduction score
+		maintainabilityImprovement: number; // Maintainability improvement score
+	};
+	estimatedTimeSaving: number; // Expected execution time reduction (ms) - for compatibility
+	riskLevel: RiskLevel; // Risk assessment for this change
+	implementationEffort: EffortLevel; // Required work level
+	prerequisites: string[]; // What must be done first
+	status: OptimizationStatus; // Current status
+	createdAt: Date; // When opportunity was identified
+	updatedAt: Date; // Last status update
+	completedAt?: Date; // When optimization was completed
+	validationRequired: boolean; // Whether this needs validation
+	rollbackPlan?: string; // How to undo if something goes wrong
+	strategy?: string; // Strategy name for optimization
+	constraints?: string[]; // Optimization constraints
+	implementation?: {
+		approach: string;
+		steps: string[];
+		codeChanges?: string[];
+		rollbackPlan?: string;
+	};
+	validation?: {
+		criteria: string[];
+		testPlan: string;
+		successMetrics: string[];
+	};
 }
 
 export class OptimizationOpportunity implements OptimizationOpportunity {
-  id: string;
-  type: OptimizationType;
-  targetSuite: string;
-  targetCases?: string[];
-  description: string;
-  impact: {
-    timeReduction: number;
-    complexityReduction: number;
-    maintainabilityImprovement: number;
-  };
-  estimatedTimeSaving: number;
-  riskLevel: RiskLevel;
-  implementationEffort: EffortLevel;
-  prerequisites: string[];
-  status: OptimizationStatus;
-  createdAt: Date;
-  updatedAt: Date;
-  completedAt?: Date;
-  validationRequired: boolean;
-  rollbackPlan?: string;
-  strategy?: string;
-  constraints?: string[];
-  implementation?: {
-    approach: string;
-    steps: string[];
-    codeChanges?: string[];
-    rollbackPlan?: string;
-  };
-  validation?: {
-    criteria: string[];
-    testPlan: string;
-    successMetrics: string[];
-  };
+	id: string;
+	type: OptimizationType;
+	targetSuite: string;
+	targetCases?: string[];
+	description: string;
+	impact: {
+		timeReduction: number;
+		complexityReduction: number;
+		maintainabilityImprovement: number;
+	};
+	estimatedTimeSaving: number;
+	riskLevel: RiskLevel;
+	implementationEffort: EffortLevel;
+	prerequisites: string[];
+	status: OptimizationStatus;
+	createdAt: Date;
+	updatedAt: Date;
+	completedAt?: Date;
+	validationRequired: boolean;
+	rollbackPlan?: string;
+	strategy?: string;
+	constraints?: string[];
+	implementation?: {
+		approach: string;
+		steps: string[];
+		codeChanges?: string[];
+		rollbackPlan?: string;
+	};
+	validation?: {
+		criteria: string[];
+		testPlan: string;
+		successMetrics: string[];
+	};
 
-  constructor(data: Partial<OptimizationOpportunity> & { id: string; type: OptimizationType; targetSuite: string }) {
-    this.id = data.id;
-    this.type = data.type;
-    this.targetSuite = data.targetSuite;
-    this.targetCases = data.targetCases;
-    this.description = data.description || `${data.type} optimization`;
-    this.impact = data.impact || {
-      timeReduction: data.estimatedTimeSaving || 100,
-      complexityReduction: 0.5,
-      maintainabilityImprovement: 0.3
-    };
-    this.estimatedTimeSaving = data.estimatedTimeSaving || this.impact.timeReduction || 100;
-    this.riskLevel = data.riskLevel || RiskLevel.Medium;
-    this.implementationEffort = data.implementationEffort || EffortLevel.Medium;
-    this.prerequisites = data.prerequisites || [];
-    this.status = data.status || OptimizationStatus.Identified;
-    this.createdAt = data.createdAt || new Date();
-    this.updatedAt = data.updatedAt || new Date();
-    this.completedAt = data.completedAt;
-    this.validationRequired = data.validationRequired || false;
-    this.rollbackPlan = data.rollbackPlan;
-    this.strategy = data.strategy;
-    this.constraints = data.constraints;
-    this.implementation = data.implementation;
-    this.validation = data.validation;
-  }
+	constructor(
+		data: Partial<OptimizationOpportunity> & {
+			id: string;
+			type: OptimizationType;
+			targetSuite: string;
+		},
+	) {
+		this.id = data.id;
+		this.type = data.type;
+		this.targetSuite = data.targetSuite;
+		this.targetCases = data.targetCases;
+		this.description = data.description || `${data.type} optimization`;
+		this.impact = data.impact || {
+			timeReduction: data.estimatedTimeSaving || 100,
+			complexityReduction: 0.5,
+			maintainabilityImprovement: 0.3,
+		};
+		this.estimatedTimeSaving =
+			data.estimatedTimeSaving || this.impact.timeReduction || 100;
+		this.riskLevel = data.riskLevel || RiskLevel.Medium;
+		this.implementationEffort = data.implementationEffort || EffortLevel.Medium;
+		this.prerequisites = data.prerequisites || [];
+		this.status = data.status || OptimizationStatus.Identified;
+		this.createdAt = data.createdAt || new Date();
+		this.updatedAt = data.updatedAt || new Date();
+		this.completedAt = data.completedAt;
+		this.validationRequired = data.validationRequired || false;
+		this.rollbackPlan = data.rollbackPlan;
+		this.strategy = data.strategy;
+		this.constraints = data.constraints;
+		this.implementation = data.implementation;
+		this.validation = data.validation;
+	}
 }
 
 export interface OptimizationImpact {
-  timeSavingPercentage: number;  // (baseline.time - optimized.time) / baseline.time * 100
-  testReduction: number;         // Number of tests removed/consolidated
-  reliabilityImprovement: number; // Pass rate improvement
-  coverageMaintained: boolean;   // Whether coverage was preserved
-  riskRealized: boolean;         // Whether the assessed risk materialized
+	timeSavingPercentage: number; // (baseline.time - optimized.time) / baseline.time * 100
+	testReduction: number; // Number of tests removed/consolidated
+	reliabilityImprovement: number; // Pass rate improvement
+	coverageMaintained: boolean; // Whether coverage was preserved
+	riskRealized: boolean; // Whether the assessed risk materialized
 }
 
 export interface OptimizationBatch {
-  id: string;
-  name: string;
-  opportunities: OptimizationOpportunity[];
-  totalEstimatedSaving: number;
-  overallRiskLevel: RiskLevel;
-  executionOrder: string[];      // Order to execute opportunities
-  dependencies: string[];        // Inter-opportunity dependencies
-  createdAt: Date;
-  status: OptimizationStatus;
+	id: string;
+	name: string;
+	opportunities: OptimizationOpportunity[];
+	totalEstimatedSaving: number;
+	overallRiskLevel: RiskLevel;
+	executionOrder: string[]; // Order to execute opportunities
+	dependencies: string[]; // Inter-opportunity dependencies
+	createdAt: Date;
+	status: OptimizationStatus;
 }
 
 export class OptimizationOpportunityBuilder {
-  private opportunity: Partial<OptimizationOpportunity> = {};
+	private opportunity: Partial<OptimizationOpportunity> = {};
 
-  constructor(id: string, type: OptimizationType, targetSuite: string) {
-    this.opportunity.id = id;
-    this.opportunity.type = type;
-    this.opportunity.targetSuite = targetSuite;
-    this.opportunity.prerequisites = [];
-    this.opportunity.status = OptimizationStatus.Identified;
-    this.opportunity.createdAt = new Date();
-    this.opportunity.updatedAt = new Date();
-  }
+	constructor(id: string, type: OptimizationType, targetSuite: string) {
+		this.opportunity.id = id;
+		this.opportunity.type = type;
+		this.opportunity.targetSuite = targetSuite;
+		this.opportunity.prerequisites = [];
+		this.opportunity.status = OptimizationStatus.Identified;
+		this.opportunity.createdAt = new Date();
+		this.opportunity.updatedAt = new Date();
+	}
 
-  withDescription(description: string): OptimizationOpportunityBuilder {
-    this.opportunity.description = description;
-    return this;
-  }
+	withDescription(description: string): OptimizationOpportunityBuilder {
+		this.opportunity.description = description;
+		return this;
+	}
 
-  withEstimatedTimeSaving(timeSaving: number): OptimizationOpportunityBuilder {
-    if (timeSaving <= 0) {
-      throw new Error('Estimated time saving must be positive');
-    }
-    this.opportunity.estimatedTimeSaving = timeSaving;
-    return this;
-  }
+	withEstimatedTimeSaving(timeSaving: number): OptimizationOpportunityBuilder {
+		if (timeSaving <= 0) {
+			throw new Error("Estimated time saving must be positive");
+		}
+		this.opportunity.estimatedTimeSaving = timeSaving;
+		return this;
+	}
 
-  withRiskLevel(riskLevel: RiskLevel): OptimizationOpportunityBuilder {
-    this.opportunity.riskLevel = riskLevel;
-    return this;
-  }
+	withRiskLevel(riskLevel: RiskLevel): OptimizationOpportunityBuilder {
+		this.opportunity.riskLevel = riskLevel;
+		return this;
+	}
 
-  withEffortLevel(effortLevel: EffortLevel): OptimizationOpportunityBuilder {
-    this.opportunity.implementationEffort = effortLevel;
-    return this;
-  }
+	withEffortLevel(effortLevel: EffortLevel): OptimizationOpportunityBuilder {
+		this.opportunity.implementationEffort = effortLevel;
+		return this;
+	}
 
-  withTargetCases(targetCases: string[]): OptimizationOpportunityBuilder {
-    this.opportunity.targetCases = [...targetCases];
-    return this;
-  }
+	withTargetCases(targetCases: string[]): OptimizationOpportunityBuilder {
+		this.opportunity.targetCases = [...targetCases];
+		return this;
+	}
 
-  addPrerequisite(prerequisite: string): OptimizationOpportunityBuilder {
-    if (!this.opportunity.prerequisites!.includes(prerequisite)) {
-      this.opportunity.prerequisites!.push(prerequisite);
-    }
-    return this;
-  }
+	addPrerequisite(prerequisite: string): OptimizationOpportunityBuilder {
+		if (!this.opportunity.prerequisites!.includes(prerequisite)) {
+			this.opportunity.prerequisites!.push(prerequisite);
+		}
+		return this;
+	}
 
-  requireValidation(required: boolean = true): OptimizationOpportunityBuilder {
-    this.opportunity.validationRequired = required;
-    return this;
-  }
+	requireValidation(required: boolean = true): OptimizationOpportunityBuilder {
+		this.opportunity.validationRequired = required;
+		return this;
+	}
 
-  withRollbackPlan(plan: string): OptimizationOpportunityBuilder {
-    this.opportunity.rollbackPlan = plan;
-    return this;
-  }
+	withRollbackPlan(plan: string): OptimizationOpportunityBuilder {
+		this.opportunity.rollbackPlan = plan;
+		return this;
+	}
 
-  build(): OptimizationOpportunity {
-    this.validateOpportunity();
+	build(): OptimizationOpportunity {
+		this.validateOpportunity();
 
-    const timeSaving = this.opportunity.estimatedTimeSaving || 100;
-    return {
-      id: this.opportunity.id!,
-      type: this.opportunity.type!,
-      targetSuite: this.opportunity.targetSuite!,
-      targetCases: this.opportunity.targetCases,
-      description: this.opportunity.description || `${this.opportunity.type} optimization`,
-      impact: {
-        timeReduction: timeSaving,
-        complexityReduction: 0.5,
-        maintainabilityImprovement: 0.3
-      },
-      estimatedTimeSaving: timeSaving,
-      riskLevel: this.opportunity.riskLevel || RiskLevel.Medium,
-      implementationEffort: this.opportunity.implementationEffort || EffortLevel.Medium,
-      prerequisites: this.opportunity.prerequisites!,
-      status: this.opportunity.status!,
-      createdAt: this.opportunity.createdAt!,
-      updatedAt: this.opportunity.updatedAt!,
-      completedAt: this.opportunity.completedAt,
-      validationRequired: this.opportunity.validationRequired || false,
-      rollbackPlan: this.opportunity.rollbackPlan
-    };
-  }
+		const timeSaving = this.opportunity.estimatedTimeSaving || 100;
+		return {
+			id: this.opportunity.id!,
+			type: this.opportunity.type!,
+			targetSuite: this.opportunity.targetSuite!,
+			targetCases: this.opportunity.targetCases,
+			description:
+				this.opportunity.description || `${this.opportunity.type} optimization`,
+			impact: {
+				timeReduction: timeSaving,
+				complexityReduction: 0.5,
+				maintainabilityImprovement: 0.3,
+			},
+			estimatedTimeSaving: timeSaving,
+			riskLevel: this.opportunity.riskLevel || RiskLevel.Medium,
+			implementationEffort:
+				this.opportunity.implementationEffort || EffortLevel.Medium,
+			prerequisites: this.opportunity.prerequisites!,
+			status: this.opportunity.status!,
+			createdAt: this.opportunity.createdAt!,
+			updatedAt: this.opportunity.updatedAt!,
+			completedAt: this.opportunity.completedAt,
+			validationRequired: this.opportunity.validationRequired || false,
+			rollbackPlan: this.opportunity.rollbackPlan,
+		};
+	}
 
-  private validateOpportunity(): void {
-    if (!this.opportunity.id) {
-      throw new Error('OptimizationOpportunity id is required');
-    }
-    if (!this.opportunity.targetSuite) {
-      throw new Error('OptimizationOpportunity targetSuite is required');
-    }
-  }
+	private validateOpportunity(): void {
+		if (!this.opportunity.id) {
+			throw new Error("OptimizationOpportunity id is required");
+		}
+		if (!this.opportunity.targetSuite) {
+			throw new Error("OptimizationOpportunity targetSuite is required");
+		}
+	}
 }
 
 export class OptimizationOpportunityManager {
-  /**
-   * Prioritize opportunities based on impact and risk
-   */
-  static prioritizeOpportunities(opportunities: OptimizationOpportunity[]): OptimizationOpportunity[] {
-    return [...opportunities].sort((a, b) => {
-      const scoreA = this.calculatePriorityScore(a);
-      const scoreB = this.calculatePriorityScore(b);
-      return scoreB - scoreA; // Higher score first
-    });
-  }
+	/**
+	 * Prioritize opportunities based on impact and risk
+	 */
+	static prioritizeOpportunities(
+		opportunities: OptimizationOpportunity[],
+	): OptimizationOpportunity[] {
+		return [...opportunities].sort((a, b) => {
+			const scoreA = OptimizationOpportunityManager.calculatePriorityScore(a);
+			const scoreB = OptimizationOpportunityManager.calculatePriorityScore(b);
+			return scoreB - scoreA; // Higher score first
+		});
+	}
 
-  /**
-   * Group opportunities by risk level
-   */
-  static groupByRiskLevel(opportunities: OptimizationOpportunity[]): Record<RiskLevel, OptimizationOpportunity[]> {
-    return opportunities.reduce((groups, opportunity) => {
-      if (!groups[opportunity.riskLevel]) {
-        groups[opportunity.riskLevel] = [];
-      }
-      groups[opportunity.riskLevel].push(opportunity);
-      return groups;
-    }, {} as Record<RiskLevel, OptimizationOpportunity[]>);
-  }
+	/**
+	 * Group opportunities by risk level
+	 */
+	static groupByRiskLevel(
+		opportunities: OptimizationOpportunity[],
+	): Record<RiskLevel, OptimizationOpportunity[]> {
+		return opportunities.reduce(
+			(groups, opportunity) => {
+				if (!groups[opportunity.riskLevel]) {
+					groups[opportunity.riskLevel] = [];
+				}
+				groups[opportunity.riskLevel].push(opportunity);
+				return groups;
+			},
+			{} as Record<RiskLevel, OptimizationOpportunity[]>,
+		);
+	}
 
-  /**
-   * Group opportunities by type
-   */
-  static groupByType(opportunities: OptimizationOpportunity[]): Record<OptimizationType, OptimizationOpportunity[]> {
-    return opportunities.reduce((groups, opportunity) => {
-      if (!groups[opportunity.type]) {
-        groups[opportunity.type] = [];
-      }
-      groups[opportunity.type].push(opportunity);
-      return groups;
-    }, {} as Record<OptimizationType, OptimizationOpportunity[]>);
-  }
+	/**
+	 * Group opportunities by type
+	 */
+	static groupByType(
+		opportunities: OptimizationOpportunity[],
+	): Record<OptimizationType, OptimizationOpportunity[]> {
+		return opportunities.reduce(
+			(groups, opportunity) => {
+				if (!groups[opportunity.type]) {
+					groups[opportunity.type] = [];
+				}
+				groups[opportunity.type].push(opportunity);
+				return groups;
+			},
+			{} as Record<OptimizationType, OptimizationOpportunity[]>,
+		);
+	}
 
-  /**
-   * Calculate total estimated time savings
-   */
-  static calculateTotalSavings(opportunities: OptimizationOpportunity[]): number {
-    return opportunities.reduce((sum, opportunity) => sum + opportunity.estimatedTimeSaving, 0);
-  }
+	/**
+	 * Calculate total estimated time savings
+	 */
+	static calculateTotalSavings(
+		opportunities: OptimizationOpportunity[],
+	): number {
+		return opportunities.reduce(
+			(sum, opportunity) => sum + opportunity.estimatedTimeSaving,
+			0,
+		);
+	}
 
-  /**
-   * Find opportunities that can be executed in parallel
-   */
-  static findParallelExecutableOpportunities(opportunities: OptimizationOpportunity[]): OptimizationOpportunity[][] {
-    const groups: OptimizationOpportunity[][] = [];
-    const processed = new Set<string>();
+	/**
+	 * Find opportunities that can be executed in parallel
+	 */
+	static findParallelExecutableOpportunities(
+		opportunities: OptimizationOpportunity[],
+	): OptimizationOpportunity[][] {
+		const groups: OptimizationOpportunity[][] = [];
+		const processed = new Set<string>();
 
-    opportunities.forEach(opportunity => {
-      if (processed.has(opportunity.id)) return;
+		opportunities.forEach((opportunity) => {
+			if (processed.has(opportunity.id)) return;
 
-      const parallelGroup = this.findNonConflictingOpportunities(opportunity, opportunities);
-      groups.push(parallelGroup);
-      parallelGroup.forEach(opp => processed.add(opp.id));
-    });
+			const parallelGroup =
+				OptimizationOpportunityManager.findNonConflictingOpportunities(
+					opportunity,
+					opportunities,
+				);
+			groups.push(parallelGroup);
+			parallelGroup.forEach((opp) => processed.add(opp.id));
+		});
 
-    return groups;
-  }
+		return groups;
+	}
 
-  /**
-   * Validate dependencies and prerequisites
-   */
-  static validateDependencies(opportunities: OptimizationOpportunity[]): string[] {
-    const errors: string[] = [];
-    const opportunityIds = new Set(opportunities.map(o => o.id));
+	/**
+	 * Validate dependencies and prerequisites
+	 */
+	static validateDependencies(
+		opportunities: OptimizationOpportunity[],
+	): string[] {
+		const errors: string[] = [];
+		const opportunityIds = new Set(opportunities.map((o) => o.id));
 
-    opportunities.forEach(opportunity => {
-      opportunity.prerequisites.forEach(prerequisite => {
-        if (!opportunityIds.has(prerequisite)) {
-          errors.push(`Opportunity ${opportunity.id} has unknown prerequisite: ${prerequisite}`);
-        }
-      });
-    });
+		opportunities.forEach((opportunity) => {
+			opportunity.prerequisites.forEach((prerequisite) => {
+				if (!opportunityIds.has(prerequisite)) {
+					errors.push(
+						`Opportunity ${opportunity.id} has unknown prerequisite: ${prerequisite}`,
+					);
+				}
+			});
+		});
 
-    return errors;
-  }
+		return errors;
+	}
 
-  /**
-   * Create execution plan with proper ordering
-   */
-  static createExecutionPlan(opportunities: OptimizationOpportunity[]): OptimizationBatch[] {
-    const batches: OptimizationBatch[] = [];
-    const remaining = [...opportunities];
-    let batchNumber = 1;
+	/**
+	 * Create execution plan with proper ordering
+	 */
+	static createExecutionPlan(
+		opportunities: OptimizationOpportunity[],
+	): OptimizationBatch[] {
+		const batches: OptimizationBatch[] = [];
+		const remaining = [...opportunities];
+		let batchNumber = 1;
 
-    while (remaining.length > 0) {
-      const readyOpportunities = remaining.filter(opp =>
-        this.arePrerequisitesSatisfied(opp, batches)
-      );
+		while (remaining.length > 0) {
+			const readyOpportunities = remaining.filter((opp) =>
+				OptimizationOpportunityManager.arePrerequisitesSatisfied(opp, batches),
+			);
 
-      if (readyOpportunities.length === 0 && remaining.length > 0) {
-        throw new Error('Circular dependency detected in optimization opportunities');
-      }
+			if (readyOpportunities.length === 0 && remaining.length > 0) {
+				throw new Error(
+					"Circular dependency detected in optimization opportunities",
+				);
+			}
 
-      const batch: OptimizationBatch = {
-        id: `batch-${batchNumber}`,
-        name: `Optimization Batch ${batchNumber}`,
-        opportunities: readyOpportunities,
-        totalEstimatedSaving: this.calculateTotalSavings(readyOpportunities),
-        overallRiskLevel: this.calculateOverallRiskLevel(readyOpportunities),
-        executionOrder: readyOpportunities.map(o => o.id),
-        dependencies: this.extractBatchDependencies(readyOpportunities, batches),
-        createdAt: new Date(),
-        status: OptimizationStatus.Planned
-      };
+			const batch: OptimizationBatch = {
+				id: `batch-${batchNumber}`,
+				name: `Optimization Batch ${batchNumber}`,
+				opportunities: readyOpportunities,
+				totalEstimatedSaving:
+					OptimizationOpportunityManager.calculateTotalSavings(
+						readyOpportunities,
+					),
+				overallRiskLevel:
+					OptimizationOpportunityManager.calculateOverallRiskLevel(
+						readyOpportunities,
+					),
+				executionOrder: readyOpportunities.map((o) => o.id),
+				dependencies: OptimizationOpportunityManager.extractBatchDependencies(
+					readyOpportunities,
+					batches,
+				),
+				createdAt: new Date(),
+				status: OptimizationStatus.Planned,
+			};
 
-      batches.push(batch);
+			batches.push(batch);
 
-      // Remove processed opportunities
-      readyOpportunities.forEach(opp => {
-        const index = remaining.indexOf(opp);
-        remaining.splice(index, 1);
-      });
+			// Remove processed opportunities
+			readyOpportunities.forEach((opp) => {
+				const index = remaining.indexOf(opp);
+				remaining.splice(index, 1);
+			});
 
-      batchNumber++;
-    }
+			batchNumber++;
+		}
 
-    return batches;
-  }
+		return batches;
+	}
 
-  private static calculatePriorityScore(opportunity: OptimizationOpportunity): number {
-    // Higher savings = higher score
-    const savingsScore = opportunity.estimatedTimeSaving / 1000; // Normalize to seconds
+	private static calculatePriorityScore(
+		opportunity: OptimizationOpportunity,
+	): number {
+		// Higher savings = higher score
+		const savingsScore = opportunity.estimatedTimeSaving / 1000; // Normalize to seconds
 
-    // Lower risk = higher score
-    const riskScore = opportunity.riskLevel === RiskLevel.Low ? 3 :
-                     opportunity.riskLevel === RiskLevel.Medium ? 2 : 1;
+		// Lower risk = higher score
+		const riskScore =
+			opportunity.riskLevel === RiskLevel.Low
+				? 3
+				: opportunity.riskLevel === RiskLevel.Medium
+					? 2
+					: 1;
 
-    // Lower effort = higher score
-    const effortScore = opportunity.implementationEffort === EffortLevel.Minimal ? 4 :
-                       opportunity.implementationEffort === EffortLevel.Low ? 3 :
-                       opportunity.implementationEffort === EffortLevel.Medium ? 2 : 1;
+		// Lower effort = higher score
+		const effortScore =
+			opportunity.implementationEffort === EffortLevel.Minimal
+				? 4
+				: opportunity.implementationEffort === EffortLevel.Low
+					? 3
+					: opportunity.implementationEffort === EffortLevel.Medium
+						? 2
+						: 1;
 
-    return savingsScore * 0.5 + riskScore * 0.3 + effortScore * 0.2;
-  }
+		return savingsScore * 0.5 + riskScore * 0.3 + effortScore * 0.2;
+	}
 
-  private static findNonConflictingOpportunities(
-    target: OptimizationOpportunity,
-    candidates: OptimizationOpportunity[]
-  ): OptimizationOpportunity[] {
-    const group = [target];
+	private static findNonConflictingOpportunities(
+		target: OptimizationOpportunity,
+		candidates: OptimizationOpportunity[],
+	): OptimizationOpportunity[] {
+		const group = [target];
 
-    candidates.forEach(candidate => {
-      if (candidate.id === target.id) return;
+		candidates.forEach((candidate) => {
+			if (candidate.id === target.id) return;
 
-      // Check if they conflict (same target suite or overlapping target cases)
-      const conflicts = candidate.targetSuite === target.targetSuite ||
-                       (candidate.targetCases && target.targetCases &&
-                        candidate.targetCases.some(tc => target.targetCases!.includes(tc)));
+			// Check if they conflict (same target suite or overlapping target cases)
+			const conflicts =
+				candidate.targetSuite === target.targetSuite ||
+				(candidate.targetCases &&
+					target.targetCases &&
+					candidate.targetCases.some((tc) => target.targetCases!.includes(tc)));
 
-      if (!conflicts) {
-        group.push(candidate);
-      }
-    });
+			if (!conflicts) {
+				group.push(candidate);
+			}
+		});
 
-    return group;
-  }
+		return group;
+	}
 
-  private static arePrerequisitesSatisfied(
-    opportunity: OptimizationOpportunity,
-    completedBatches: OptimizationBatch[]
-  ): boolean {
-    const completedOpportunityIds = new Set(
-      completedBatches.flatMap(batch => batch.opportunities.map(o => o.id))
-    );
+	private static arePrerequisitesSatisfied(
+		opportunity: OptimizationOpportunity,
+		completedBatches: OptimizationBatch[],
+	): boolean {
+		const completedOpportunityIds = new Set(
+			completedBatches.flatMap((batch) => batch.opportunities.map((o) => o.id)),
+		);
 
-    return opportunity.prerequisites.every(prerequisite =>
-      completedOpportunityIds.has(prerequisite)
-    );
-  }
+		return opportunity.prerequisites.every((prerequisite) =>
+			completedOpportunityIds.has(prerequisite),
+		);
+	}
 
-  private static calculateOverallRiskLevel(opportunities: OptimizationOpportunity[]): RiskLevel {
-    const hasHighRisk = opportunities.some(o => o.riskLevel === RiskLevel.High);
-    if (hasHighRisk) return RiskLevel.High;
+	private static calculateOverallRiskLevel(
+		opportunities: OptimizationOpportunity[],
+	): RiskLevel {
+		const hasHighRisk = opportunities.some(
+			(o) => o.riskLevel === RiskLevel.High,
+		);
+		if (hasHighRisk) return RiskLevel.High;
 
-    const hasMediumRisk = opportunities.some(o => o.riskLevel === RiskLevel.Medium);
-    if (hasMediumRisk) return RiskLevel.Medium;
+		const hasMediumRisk = opportunities.some(
+			(o) => o.riskLevel === RiskLevel.Medium,
+		);
+		if (hasMediumRisk) return RiskLevel.Medium;
 
-    return RiskLevel.Low;
-  }
+		return RiskLevel.Low;
+	}
 
-  private static extractBatchDependencies(
-    opportunities: OptimizationOpportunity[],
-    previousBatches: OptimizationBatch[]
-  ): string[] {
-    const dependencies = new Set<string>();
+	private static extractBatchDependencies(
+		opportunities: OptimizationOpportunity[],
+		previousBatches: OptimizationBatch[],
+	): string[] {
+		const dependencies = new Set<string>();
 
-    opportunities.forEach(opportunity => {
-      opportunity.prerequisites.forEach(prerequisite => {
-        // Find which batch contains this prerequisite
-        const batch = previousBatches.find(b =>
-          b.opportunities.some(o => o.id === prerequisite)
-        );
-        if (batch) {
-          dependencies.add(batch.id);
-        }
-      });
-    });
+		opportunities.forEach((opportunity) => {
+			opportunity.prerequisites.forEach((prerequisite) => {
+				// Find which batch contains this prerequisite
+				const batch = previousBatches.find((b) =>
+					b.opportunities.some((o) => o.id === prerequisite),
+				);
+				if (batch) {
+					dependencies.add(batch.id);
+				}
+			});
+		});
 
-    return Array.from(dependencies);
-  }
+		return Array.from(dependencies);
+	}
 }
 
 // Pre-defined optimization opportunity templates
 export const OptimizationTemplates = {
-  removeDuplicate: (targetSuite: string, duplicateTestIds: string[]): Partial<OptimizationOpportunity> => ({
-    type: OptimizationType.RemoveDuplicate,
-    targetSuite,
-    targetCases: duplicateTestIds,
-    riskLevel: RiskLevel.Low,
-    implementationEffort: EffortLevel.Minimal,
-    validationRequired: true,
-    rollbackPlan: "Restore removed test cases from backup"
-  }),
+	removeDuplicate: (
+		targetSuite: string,
+		duplicateTestIds: string[],
+	): Partial<OptimizationOpportunity> => ({
+		type: OptimizationType.RemoveDuplicate,
+		targetSuite,
+		targetCases: duplicateTestIds,
+		riskLevel: RiskLevel.Low,
+		implementationEffort: EffortLevel.Minimal,
+		validationRequired: true,
+		rollbackPlan: "Restore removed test cases from backup",
+	}),
 
-  fixFlaky: (targetSuite: string, flakyTestIds: string[]): Partial<OptimizationOpportunity> => ({
-    type: OptimizationType.FixFlaky,
-    targetSuite,
-    targetCases: flakyTestIds,
-    riskLevel: RiskLevel.Medium,
-    implementationEffort: EffortLevel.Medium,
-    validationRequired: true,
-    rollbackPlan: "Revert test modifications and mark as skipped"
-  }),
+	fixFlaky: (
+		targetSuite: string,
+		flakyTestIds: string[],
+	): Partial<OptimizationOpportunity> => ({
+		type: OptimizationType.FixFlaky,
+		targetSuite,
+		targetCases: flakyTestIds,
+		riskLevel: RiskLevel.Medium,
+		implementationEffort: EffortLevel.Medium,
+		validationRequired: true,
+		rollbackPlan: "Revert test modifications and mark as skipped",
+	}),
 
-  simplifySetup: (targetSuite: string): Partial<OptimizationOpportunity> => ({
-    type: OptimizationType.SimplifySetup,
-    targetSuite,
-    riskLevel: RiskLevel.Medium,
-    implementationEffort: EffortLevel.Low,
-    validationRequired: true,
-    rollbackPlan: "Restore original setup/teardown code"
-  }),
+	simplifySetup: (targetSuite: string): Partial<OptimizationOpportunity> => ({
+		type: OptimizationType.SimplifySetup,
+		targetSuite,
+		riskLevel: RiskLevel.Medium,
+		implementationEffort: EffortLevel.Low,
+		validationRequired: true,
+		rollbackPlan: "Restore original setup/teardown code",
+	}),
 
-  consolidateScenarios: (targetSuite: string, scenarioTestIds: string[]): Partial<OptimizationOpportunity> => ({
-    type: OptimizationType.ConsolidateScenarios,
-    targetSuite,
-    targetCases: scenarioTestIds,
-    riskLevel: RiskLevel.High,
-    implementationEffort: EffortLevel.High,
-    validationRequired: true,
-    rollbackPlan: "Split consolidated test back into individual scenarios"
-  }),
+	consolidateScenarios: (
+		targetSuite: string,
+		scenarioTestIds: string[],
+	): Partial<OptimizationOpportunity> => ({
+		type: OptimizationType.ConsolidateScenarios,
+		targetSuite,
+		targetCases: scenarioTestIds,
+		riskLevel: RiskLevel.High,
+		implementationEffort: EffortLevel.High,
+		validationRequired: true,
+		rollbackPlan: "Split consolidated test back into individual scenarios",
+	}),
 
-  behaviorFocus: (targetSuite: string): Partial<OptimizationOpportunity> => ({
-    type: OptimizationType.BehaviorFocus,
-    targetSuite,
-    riskLevel: RiskLevel.Medium,
-    implementationEffort: EffortLevel.Medium,
-    validationRequired: true,
-    rollbackPlan: "Revert to implementation-focused tests"
-  }),
+	behaviorFocus: (targetSuite: string): Partial<OptimizationOpportunity> => ({
+		type: OptimizationType.BehaviorFocus,
+		targetSuite,
+		riskLevel: RiskLevel.Medium,
+		implementationEffort: EffortLevel.Medium,
+		validationRequired: true,
+		rollbackPlan: "Revert to implementation-focused tests",
+	}),
 
-  sharedUtilities: (targetSuites: string[]): Partial<OptimizationOpportunity> => ({
-    type: OptimizationType.SharedUtilities,
-    targetSuite: targetSuites[0], // Primary target
-    riskLevel: RiskLevel.Low,
-    implementationEffort: EffortLevel.Low,
-    validationRequired: false,
-    rollbackPlan: "Remove shared utilities and restore inline code"
-  })
+	sharedUtilities: (
+		targetSuites: string[],
+	): Partial<OptimizationOpportunity> => ({
+		type: OptimizationType.SharedUtilities,
+		targetSuite: targetSuites[0], // Primary target
+		riskLevel: RiskLevel.Low,
+		implementationEffort: EffortLevel.Low,
+		validationRequired: false,
+		rollbackPlan: "Remove shared utilities and restore inline code",
+	}),
 };

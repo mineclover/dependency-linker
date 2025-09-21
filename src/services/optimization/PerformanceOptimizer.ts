@@ -4,7 +4,11 @@
  */
 
 import type { AnalysisResult } from "../../models/AnalysisResult";
-import type { IntegratedAnalysisData, DataIntegrationConfig, OutputViews } from "../../models/IntegratedData";
+import type {
+	DataIntegrationConfig,
+	IntegratedAnalysisData,
+	OutputViews,
+} from "../../models/IntegratedData";
 
 export interface OptimizationMetrics {
 	memoryUsage: {
@@ -44,7 +48,7 @@ export class PerformanceOptimizer {
 		enableDataCompression: false,
 		enableMemoryPooling: true,
 		maxConcurrency: 4,
-		batchSize: 10
+		batchSize: 10,
 	};
 
 	/**
@@ -53,7 +57,7 @@ export class PerformanceOptimizer {
 	async optimizeIntegration(
 		results: AnalysisResult[],
 		config: DataIntegrationConfig,
-		strategy: OptimizationStrategy = this.defaultStrategy
+		strategy: OptimizationStrategy = this.defaultStrategy,
 	): Promise<{
 		data: IntegratedAnalysisData[];
 		metrics: OptimizationMetrics;
@@ -64,9 +68,17 @@ export class PerformanceOptimizer {
 		let optimizedData: IntegratedAnalysisData[];
 
 		if (strategy.enableLazyLoading && results.length > strategy.batchSize) {
-			optimizedData = await this.processWithLazyLoading(results, config, strategy);
+			optimizedData = await this.processWithLazyLoading(
+				results,
+				config,
+				strategy,
+			);
 		} else if (strategy.maxConcurrency > 1 && results.length > 1) {
-			optimizedData = await this.processWithConcurrency(results, config, strategy);
+			optimizedData = await this.processWithConcurrency(
+				results,
+				config,
+				strategy,
+			);
 		} else {
 			optimizedData = await this.processSequentially(results, config);
 		}
@@ -78,18 +90,18 @@ export class PerformanceOptimizer {
 			memoryUsage: {
 				before: initialMemory,
 				after: finalMemory,
-				reduction: ((initialMemory - finalMemory) / initialMemory) * 100
+				reduction: ((initialMemory - finalMemory) / initialMemory) * 100,
 			},
 			processingTime: {
 				original: endTime - startTime,
 				optimized: endTime - startTime,
-				improvement: 0 // Would be calculated against baseline
+				improvement: 0, // Would be calculated against baseline
 			},
 			dataSize: {
 				originalBytes: this.calculateDataSize(results),
 				optimizedBytes: this.calculateDataSize(optimizedData),
-				compressionRatio: 0
-			}
+				compressionRatio: 0,
+			},
 		};
 
 		this.metrics.push(metrics);
@@ -103,7 +115,7 @@ export class PerformanceOptimizer {
 	private async processWithLazyLoading(
 		results: AnalysisResult[],
 		config: DataIntegrationConfig,
-		strategy: OptimizationStrategy
+		strategy: OptimizationStrategy,
 	): Promise<IntegratedAnalysisData[]> {
 		const processed: IntegratedAnalysisData[] = [];
 		const batchSize = strategy.batchSize;
@@ -128,7 +140,7 @@ export class PerformanceOptimizer {
 	private async processWithConcurrency(
 		results: AnalysisResult[],
 		config: DataIntegrationConfig,
-		strategy: OptimizationStrategy
+		strategy: OptimizationStrategy,
 	): Promise<IntegratedAnalysisData[]> {
 		const { maxConcurrency } = strategy;
 		const chunks: AnalysisResult[][] = [];
@@ -141,7 +153,9 @@ export class PerformanceOptimizer {
 		const allResults: IntegratedAnalysisData[] = [];
 
 		for (const chunk of chunks) {
-			const chunkPromises = chunk.map(result => this.processResult(result, config));
+			const chunkPromises = chunk.map((result) =>
+				this.processResult(result, config),
+			);
 			const chunkResults = await Promise.all(chunkPromises);
 			allResults.push(...chunkResults);
 		}
@@ -154,7 +168,7 @@ export class PerformanceOptimizer {
 	 */
 	private async processSequentially(
 		results: AnalysisResult[],
-		config: DataIntegrationConfig
+		config: DataIntegrationConfig,
 	): Promise<IntegratedAnalysisData[]> {
 		const processed: IntegratedAnalysisData[] = [];
 
@@ -171,7 +185,7 @@ export class PerformanceOptimizer {
 	 */
 	private async processBatch(
 		batch: AnalysisResult[],
-		config: DataIntegrationConfig
+		config: DataIntegrationConfig,
 	): Promise<IntegratedAnalysisData[]> {
 		// Use memory pooling for batch processing
 		const poolKey = `batch-${batch.length}`;
@@ -183,7 +197,7 @@ export class PerformanceOptimizer {
 		}
 
 		const results = await Promise.all(
-			batch.map(result => this.processResult(result, config))
+			batch.map((result) => this.processResult(result, config)),
 		);
 
 		// Return objects to pool for reuse
@@ -197,7 +211,7 @@ export class PerformanceOptimizer {
 	 */
 	private async processResult(
 		result: AnalysisResult,
-		config: DataIntegrationConfig
+		config: DataIntegrationConfig,
 	): Promise<IntegratedAnalysisData> {
 		const cacheKey = this.generateCacheKey(result, config);
 
@@ -216,11 +230,12 @@ export class PerformanceOptimizer {
 			core,
 			views,
 			metadata,
-			detailed
+			detailed,
 		};
 
 		// Cache if enabled
-		if (config.enabledViews.length <= 3) { // Cache only for smaller view sets
+		if (config.enabledViews.length <= 3) {
+			// Cache only for smaller view sets
 			this.viewCache.set(cacheKey, integrated);
 		}
 
@@ -232,7 +247,7 @@ export class PerformanceOptimizer {
 	 */
 	private buildOptimizedViews(
 		result: AnalysisResult,
-		config: DataIntegrationConfig
+		config: DataIntegrationConfig,
 	): OutputViews {
 		const views: Partial<OutputViews> = {};
 
@@ -267,30 +282,33 @@ export class PerformanceOptimizer {
 		// Simplified core info extraction
 		return {
 			file: {
-				name: result.filePath.split('/').pop() || result.filePath,
+				name: result.filePath.split("/").pop() || result.filePath,
 				path: result.filePath,
 				size: 0, // Would get from actual file stats if needed
 			},
 			language: {
 				detected: result.language,
 				confidence: 1.0,
-				parser: this.getParserName(result.language)
+				parser: this.getParserName(result.language),
 			},
 			status: {
 				overall: result.errors?.length > 0 ? "error" : "success",
-				message: result.errors?.length > 0 ? `${result.errors.length} errors` : "Success"
+				message:
+					result.errors?.length > 0
+						? `${result.errors.length} errors`
+						: "Success",
 			},
 			timing: {
 				parse: result.performanceMetrics?.parseTime || 0,
 				extract: result.performanceMetrics?.extractionTime || 0,
 				interpret: result.performanceMetrics?.interpretationTime || 0,
-				total: result.performanceMetrics?.totalTime || 0
+				total: result.performanceMetrics?.totalTime || 0,
 			},
 			memory: {
 				peak: result.performanceMetrics?.memoryUsage || 0,
-				efficiency: 0.85 // Default efficiency estimate
+				efficiency: 0.85, // Default efficiency estimate
 			},
-			counts: this.extractCounts(result)
+			counts: this.extractCounts(result),
 		};
 	}
 
@@ -301,7 +319,7 @@ export class PerformanceOptimizer {
 		const deps = result.extractedData?.dependency?.dependencies?.length || 0;
 		const imports = result.extractedData?.dependency?.imports?.length || 0;
 		const exports = result.extractedData?.dependency?.exports?.length || 0;
-		const fileName = result.filePath.split('/').pop() || result.filePath;
+		const fileName = result.filePath.split("/").pop() || result.filePath;
 
 		return {
 			fileName,
@@ -310,7 +328,7 @@ export class PerformanceOptimizer {
 			exportCount: exports,
 			parseTime: result.performanceMetrics?.parseTime || 0,
 			status: result.errors?.length > 0 ? "FAIL" : "OK",
-			issues: result.errors || []
+			issues: result.errors || [],
 		};
 	}
 
@@ -322,7 +340,10 @@ export class PerformanceOptimizer {
 		const deps = result.extractedData?.dependency;
 
 		return {
-			file: this.truncateString(result.filePath.split('/').pop() || result.filePath, 25),
+			file: this.truncateString(
+				result.filePath.split("/").pop() || result.filePath,
+				25,
+			),
 			lang: result.language,
 			deps: deps?.dependencies?.length || 0,
 			imports: deps?.imports?.length || 0,
@@ -331,7 +352,7 @@ export class PerformanceOptimizer {
 			classes: identifiers?.classes?.length || 0,
 			time: `${result.performanceMetrics?.parseTime || 0}ms`,
 			memory: this.formatMemory(result.performanceMetrics?.memoryUsage || 0),
-			status: result.errors?.length > 0 ? "✗" : "✓"
+			status: result.errors?.length > 0 ? "✗" : "✓",
 		};
 	}
 
@@ -339,7 +360,7 @@ export class PerformanceOptimizer {
 	 * Build tree view efficiently
 	 */
 	private buildTreeView(result: AnalysisResult): any {
-		const fileName = result.filePath.split('/').pop() || result.filePath;
+		const fileName = result.filePath.split("/").pop() || result.filePath;
 		const deps = result.extractedData?.dependency?.dependencies || [];
 		const identifiers = result.extractedData?.identifier;
 
@@ -350,10 +371,11 @@ export class PerformanceOptimizer {
 				{
 					name: "Dependencies",
 					value: deps.length,
-					children: deps.slice(0, 10).map((dep: any) => ({ // Limit to first 10 for performance
+					children: deps.slice(0, 10).map((dep: any) => ({
+						// Limit to first 10 for performance
 						name: dep.name,
-						value: dep.version || "latest"
-					}))
+						value: dep.version || "latest",
+					})),
 				},
 				{
 					name: "Code Structure",
@@ -361,10 +383,10 @@ export class PerformanceOptimizer {
 					children: [
 						{ name: "Functions", value: identifiers?.functions?.length || 0 },
 						{ name: "Classes", value: identifiers?.classes?.length || 0 },
-						{ name: "Variables", value: identifiers?.variables?.length || 0 }
-					]
-				}
-			]
+						{ name: "Variables", value: identifiers?.variables?.length || 0 },
+					],
+				},
+			],
 		};
 
 		return { root };
@@ -392,10 +414,12 @@ export class PerformanceOptimizer {
 			linesOfCode: complexity?.overall?.linesOfCode || 0,
 			parseTime: result.performanceMetrics?.parseTime || 0,
 			totalTime: result.performanceMetrics?.totalTime || 0,
-			memoryUsage: this.formatMemory(result.performanceMetrics?.memoryUsage || 0),
+			memoryUsage: this.formatMemory(
+				result.performanceMetrics?.memoryUsage || 0,
+			),
 			status: result.errors?.length > 0 ? "FAIL" : "OK",
 			errors: result.errors?.length || 0,
-			warnings: 0 // Would extract warnings if available
+			warnings: 0, // Would extract warnings if available
 		};
 	}
 
@@ -403,7 +427,7 @@ export class PerformanceOptimizer {
 	 * Build minimal view efficiently
 	 */
 	private buildMinimalView(result: AnalysisResult): any {
-		const fileName = result.filePath.split('/').pop() || result.filePath;
+		const fileName = result.filePath.split("/").pop() || result.filePath;
 		const deps = result.extractedData?.dependency?.dependencies?.length || 0;
 		const exports = result.extractedData?.dependency?.exports?.length || 0;
 		const time = result.performanceMetrics?.parseTime || 0;
@@ -413,57 +437,63 @@ export class PerformanceOptimizer {
 			deps,
 			exports,
 			time,
-			ok: (result.errors?.length || 0) === 0
+			ok: (result.errors?.length || 0) === 0,
 		};
 	}
 
 	/**
 	 * Build metadata efficiently
 	 */
-	private buildMetadata(result: AnalysisResult, config: DataIntegrationConfig): any {
+	private buildMetadata(
+		result: AnalysisResult,
+		config: DataIntegrationConfig,
+	): any {
 		return {
 			integrationVersion: "2.0.0",
 			integratedAt: new Date(),
 			dataSources: {
 				extractors: ["dependency", "identifier"], // Simplified
 				interpreters: ["dependency-analysis"],
-				versions: {}
+				versions: {},
 			},
 			integrationOptions: {
 				includeLowConfidence: false,
 				mergeStrategy: "balanced" as const,
 				conflictResolution: "merge" as const,
-				qualityThreshold: 0.8
+				qualityThreshold: 0.8,
 			},
 			dataQuality: {
 				completeness: 0.9,
 				accuracy: 0.85,
 				consistency: 0.8,
-				coverage: 0.75
+				coverage: 0.75,
 			},
 			confidence: {
 				overall: 0.85,
 				parsing: 0.9,
 				extraction: 0.8,
 				interpretation: 0.7,
-				integration: 0.9
-			}
+				integration: 0.9,
+			},
 		};
 	}
 
 	/**
 	 * Build detailed info efficiently
 	 */
-	private buildDetailedInfo(result: AnalysisResult, config: DataIntegrationConfig): any {
+	private buildDetailedInfo(
+		result: AnalysisResult,
+		config: DataIntegrationConfig,
+	): any {
 		// Build simplified detailed info based on detail level
 		const baseInfo = {
 			insights: {
 				keyFindings: [
 					`Analysis completed for ${result.language} file`,
-					`Found ${result.extractedData?.dependency?.dependencies?.length || 0} dependencies`
-				]
+					`Found ${result.extractedData?.dependency?.dependencies?.length || 0} dependencies`,
+				],
 			},
-			recommendations: []
+			recommendations: [],
 		};
 
 		if (config.detailLevel === "comprehensive") {
@@ -472,8 +502,8 @@ export class PerformanceOptimizer {
 					title: "Code Quality",
 					priority: "medium" as const,
 					description: "Consider reviewing code structure",
-					implementation: { estimatedTime: "30 minutes" }
-				}
+					implementation: { estimatedTime: "30 minutes" },
+				},
 			] as never[];
 		}
 
@@ -483,8 +513,11 @@ export class PerformanceOptimizer {
 	/**
 	 * Helper methods
 	 */
-	private generateCacheKey(result: AnalysisResult, config: DataIntegrationConfig): string {
-		const views = config.enabledViews.sort().join(',');
+	private generateCacheKey(
+		result: AnalysisResult,
+		config: DataIntegrationConfig,
+	): string {
+		const views = config.enabledViews.sort().join(",");
 		const hash = this.simpleHash(result.filePath + result.language + views);
 		return `cache-${hash}`;
 	}
@@ -493,14 +526,14 @@ export class PerformanceOptimizer {
 		let hash = 0;
 		for (let i = 0; i < str.length; i++) {
 			const char = str.charCodeAt(i);
-			hash = ((hash << 5) - hash) + char;
+			hash = (hash << 5) - hash + char;
 			hash = hash & hash; // Convert to 32-bit integer
 		}
 		return Math.abs(hash).toString(36);
 	}
 
 	private getMemoryUsage(): number {
-		if (typeof process !== 'undefined' && process.memoryUsage) {
+		if (typeof process !== "undefined" && process.memoryUsage) {
 			return process.memoryUsage().heapUsed;
 		}
 		return 0;
@@ -517,17 +550,20 @@ export class PerformanceOptimizer {
 		return {
 			dependencies: {
 				total: deps?.dependencies?.length || 0,
-				external: deps?.dependencies?.filter((d: any) => !d.isLocal)?.length || 0,
-				internal: deps?.dependencies?.filter((d: any) => d.isLocal)?.length || 0,
-				builtin: deps?.dependencies?.filter((d: any) => d.isBuiltin)?.length || 0
+				external:
+					deps?.dependencies?.filter((d: any) => !d.isLocal)?.length || 0,
+				internal:
+					deps?.dependencies?.filter((d: any) => d.isLocal)?.length || 0,
+				builtin:
+					deps?.dependencies?.filter((d: any) => d.isBuiltin)?.length || 0,
 			},
 			identifiers: {
 				functions: identifiers?.functions?.length || 0,
 				classes: identifiers?.classes?.length || 0,
 				interfaces: identifiers?.interfaces?.length || 0,
 				variables: identifiers?.variables?.length || 0,
-				types: identifiers?.types?.length || 0
-			}
+				types: identifiers?.types?.length || 0,
+			},
 		};
 	}
 
@@ -538,7 +574,7 @@ export class PerformanceOptimizer {
 			javascript: "tree-sitter-javascript",
 			jsx: "tree-sitter-javascript",
 			go: "tree-sitter-go",
-			java: "tree-sitter-java"
+			java: "tree-sitter-java",
 		};
 		return parserMap[language] || "unknown";
 	}
@@ -583,18 +619,23 @@ export class PerformanceOptimizer {
 				averageProcessingTime: 0,
 				averageMemoryReduction: 0,
 				cacheHitRate: 0,
-				totalOptimizations: 0
+				totalOptimizations: 0,
 			};
 		}
 
-		const avgProcessingTime = this.metrics.reduce((sum, m) => sum + m.processingTime.optimized, 0) / this.metrics.length;
-		const avgMemoryReduction = this.metrics.reduce((sum, m) => sum + m.memoryUsage.reduction, 0) / this.metrics.length;
+		const avgProcessingTime =
+			this.metrics.reduce((sum, m) => sum + m.processingTime.optimized, 0) /
+			this.metrics.length;
+		const avgMemoryReduction =
+			this.metrics.reduce((sum, m) => sum + m.memoryUsage.reduction, 0) /
+			this.metrics.length;
 
 		return {
 			averageProcessingTime: avgProcessingTime,
 			averageMemoryReduction: avgMemoryReduction,
-			cacheHitRate: this.viewCache.size / (this.metrics.length + this.viewCache.size),
-			totalOptimizations: this.metrics.length
+			cacheHitRate:
+				this.viewCache.size / (this.metrics.length + this.viewCache.size),
+			totalOptimizations: this.metrics.length,
 		};
 	}
 }

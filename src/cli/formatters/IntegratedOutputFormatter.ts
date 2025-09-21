@@ -3,16 +3,16 @@
  * Enhanced formatter that works with IntegratedAnalysisData for optimized output
  */
 
+import type { AnalysisResult } from "../../models/AnalysisResult";
 import type {
+	CSVView,
 	IntegratedAnalysisData,
+	MinimalView,
 	SummaryView,
 	TableView,
+	TreeNode,
 	TreeView,
-	CSVView,
-	MinimalView,
-	TreeNode
 } from "../../models/IntegratedData";
-import type { AnalysisResult } from "../../models/AnalysisResult";
 
 export interface OutputOptions {
 	format: "summary" | "table" | "tree" | "csv" | "json" | "minimal" | "report";
@@ -28,7 +28,7 @@ export class IntegratedOutputFormatter {
 	 */
 	format(
 		data: IntegratedAnalysisData | IntegratedAnalysisData[],
-		options: OutputOptions
+		options: OutputOptions,
 	): string {
 		const dataArray = Array.isArray(data) ? data : [data];
 
@@ -59,28 +59,47 @@ export class IntegratedOutputFormatter {
 	/**
 	 * Format as summary (one line per file)
 	 */
-	private formatSummary(data: IntegratedAnalysisData[], options: OutputOptions): string {
-		return data.map(item => {
-			const view = item.views.summary;
-			let issues = "";
-			if (view.issues && view.issues.length > 0) {
-				issues = ` (${view.issues.length} issues)`;
-			}
+	private formatSummary(
+		data: IntegratedAnalysisData[],
+		options: OutputOptions,
+	): string {
+		return data
+			.map((item) => {
+				const view = item.views.summary;
+				let issues = "";
+				if (view.issues && view.issues.length > 0) {
+					issues = ` (${view.issues.length} issues)`;
+				}
 
-			return `${view.fileName} | ${view.depCount} deps, ${view.importCount} imports, ${view.exportCount} exports | ${view.parseTime}ms | ${view.status}${issues}`;
-		}).join('\n');
+				return `${view.fileName} | ${view.depCount} deps, ${view.importCount} imports, ${view.exportCount} exports | ${view.parseTime}ms | ${view.status}${issues}`;
+			})
+			.join("\n");
 	}
 
 	/**
 	 * Format as ASCII table
 	 */
-	private formatTable(data: IntegratedAnalysisData[], options: OutputOptions): string {
+	private formatTable(
+		data: IntegratedAnalysisData[],
+		options: OutputOptions,
+	): string {
 		if (data.length === 0) {
 			return "No data to display";
 		}
 
-		const headers = ["File", "Lang", "Deps", "Imports", "Exports", "Functions", "Classes", "Time", "Memory", "Status"];
-		const rows = data.map(item => {
+		const headers = [
+			"File",
+			"Lang",
+			"Deps",
+			"Imports",
+			"Exports",
+			"Functions",
+			"Classes",
+			"Time",
+			"Memory",
+			"Status",
+		];
+		const rows = data.map((item) => {
 			const view = item.views.table;
 			return [
 				this.truncateString(view.file, 25),
@@ -92,7 +111,7 @@ export class IntegratedOutputFormatter {
 				view.classes,
 				view.time,
 				view.memory,
-				view.status
+				view.status,
 			];
 		});
 
@@ -102,40 +121,64 @@ export class IntegratedOutputFormatter {
 	/**
 	 * Format as tree structure
 	 */
-	private formatTree(data: IntegratedAnalysisData, options: OutputOptions): string {
+	private formatTree(
+		data: IntegratedAnalysisData,
+		options: OutputOptions,
+	): string {
 		return this.renderTreeNode(data.views.tree.root, "", true);
 	}
 
 	/**
 	 * Format multiple files as tree structures
 	 */
-	private formatMultipleAsTree(data: IntegratedAnalysisData[], options: OutputOptions): string {
-		return data.map((item, index) => {
-			let output = `\n${index + 1}. ${this.formatTree(item, options)}`;
-			if (index < data.length - 1) {
-				output += "\n" + "─".repeat(50);
-			}
-			return output;
-		}).join('\n');
+	private formatMultipleAsTree(
+		data: IntegratedAnalysisData[],
+		options: OutputOptions,
+	): string {
+		return data
+			.map((item, index) => {
+				let output = `\n${index + 1}. ${this.formatTree(item, options)}`;
+				if (index < data.length - 1) {
+					output += "\n" + "─".repeat(50);
+				}
+				return output;
+			})
+			.join("\n");
 	}
 
 	/**
 	 * Format as CSV
 	 */
-	private formatCSV(data: IntegratedAnalysisData[], options: OutputOptions): string {
+	private formatCSV(
+		data: IntegratedAnalysisData[],
+		options: OutputOptions,
+	): string {
 		const lines: string[] = [];
 
 		if (options.includeHeaders !== false) {
 			const headers = [
-				"File", "Language", "Dependencies", "Imports", "Exports",
-				"Functions", "Classes", "Interfaces", "Variables",
-				"Cyclomatic Complexity", "Lines of Code", "Parse Time",
-				"Total Time", "Memory Usage", "Status", "Errors", "Warnings"
+				"File",
+				"Language",
+				"Dependencies",
+				"Imports",
+				"Exports",
+				"Functions",
+				"Classes",
+				"Interfaces",
+				"Variables",
+				"Cyclomatic Complexity",
+				"Lines of Code",
+				"Parse Time",
+				"Total Time",
+				"Memory Usage",
+				"Status",
+				"Errors",
+				"Warnings",
 			];
-			lines.push(headers.map(h => this.escapeCSV(h)).join(','));
+			lines.push(headers.map((h) => this.escapeCSV(h)).join(","));
 		}
 
-		data.forEach(item => {
+		data.forEach((item) => {
 			const view = item.views.csv;
 			const row = [
 				view.file,
@@ -154,12 +197,12 @@ export class IntegratedOutputFormatter {
 				view.memoryUsage,
 				view.status,
 				view.errors,
-				view.warnings
+				view.warnings,
 			];
-			lines.push(row.map(v => this.escapeCSV(String(v))).join(','));
+			lines.push(row.map((v) => this.escapeCSV(String(v))).join(","));
 		});
 
-		return lines.join('\n');
+		return lines.join("\n");
 	}
 
 	/**
@@ -167,7 +210,7 @@ export class IntegratedOutputFormatter {
 	 */
 	private formatJSON(
 		data: IntegratedAnalysisData | IntegratedAnalysisData[],
-		options: OutputOptions
+		options: OutputOptions,
 	): string {
 		const indent = options.compact ? 0 : 2;
 		return JSON.stringify(data, null, indent);
@@ -176,18 +219,26 @@ export class IntegratedOutputFormatter {
 	/**
 	 * Format as minimal output
 	 */
-	private formatMinimal(data: IntegratedAnalysisData[], options: OutputOptions): string {
-		return data.map(item => {
-			const view = item.views.minimal;
-			const status = view.ok ? "✓" : "✗";
-			return `${view.name}: ${view.deps}/${view.exports} (${view.time}ms) ${status}`;
-		}).join('\n');
+	private formatMinimal(
+		data: IntegratedAnalysisData[],
+		options: OutputOptions,
+	): string {
+		return data
+			.map((item) => {
+				const view = item.views.minimal;
+				const status = view.ok ? "✓" : "✗";
+				return `${view.name}: ${view.deps}/${view.exports} (${view.time}ms) ${status}`;
+			})
+			.join("\n");
 	}
 
 	/**
 	 * Format as detailed report
 	 */
-	private formatReport(data: IntegratedAnalysisData, options: OutputOptions): string {
+	private formatReport(
+		data: IntegratedAnalysisData,
+		options: OutputOptions,
+	): string {
 		let output = "Analysis Report\n";
 		output += "==============\n\n";
 
@@ -250,7 +301,7 @@ export class IntegratedOutputFormatter {
 		if (data.detailed.insights.keyFindings.length > 0) {
 			output += "Key Findings\n";
 			output += "------------\n";
-			data.detailed.insights.keyFindings.forEach(finding => {
+			data.detailed.insights.keyFindings.forEach((finding) => {
 				output += `• ${finding}\n`;
 			});
 			output += "\n";
@@ -284,32 +335,47 @@ export class IntegratedOutputFormatter {
 	/**
 	 * Format multiple files as reports
 	 */
-	private formatMultipleAsReport(data: IntegratedAnalysisData[], options: OutputOptions): string {
-		return data.map((item, index) => {
-			let output = `\n${"=".repeat(60)}\n`;
-			output += `Report ${index + 1} of ${data.length}\n`;
-			output += `${"=".repeat(60)}\n`;
-			output += this.formatReport(item, options);
-			return output;
-		}).join('\n');
+	private formatMultipleAsReport(
+		data: IntegratedAnalysisData[],
+		options: OutputOptions,
+	): string {
+		return data
+			.map((item, index) => {
+				let output = `\n${"=".repeat(60)}\n`;
+				output += `Report ${index + 1} of ${data.length}\n`;
+				output += `${"=".repeat(60)}\n`;
+				output += this.formatReport(item, options);
+				return output;
+			})
+			.join("\n");
 	}
 
 	/**
 	 * Build ASCII table
 	 */
-	private buildAsciiTable(headers: string[], rows: string[][], options: OutputOptions): string {
+	private buildAsciiTable(
+		headers: string[],
+		rows: string[][],
+		options: OutputOptions,
+	): string {
 		const maxWidth = options.maxWidth || 120;
 
 		// Calculate column widths
 		const columnWidths = headers.map((header, index) => {
 			const maxContentWidth = Math.max(
 				header.length,
-				...rows.map(row => String(row[index] || "").length)
+				...rows.map((row) => String(row[index] || "").length),
 			);
-			return Math.min(maxContentWidth, Math.floor(maxWidth / headers.length) - 3);
+			return Math.min(
+				maxContentWidth,
+				Math.floor(maxWidth / headers.length) - 3,
+			);
 		});
 
-		const totalWidth = columnWidths.reduce((sum, width) => sum + width, 0) + (headers.length - 1) * 3 + 4;
+		const totalWidth =
+			columnWidths.reduce((sum, width) => sum + width, 0) +
+			(headers.length - 1) * 3 +
+			4;
 		const separator = "─".repeat(totalWidth - 2);
 
 		let output = `┌${separator}┐\n`;
@@ -322,7 +388,7 @@ export class IntegratedOutputFormatter {
 		output += `├${separator}┤\n`;
 
 		// Data rows
-		rows.forEach(row => {
+		rows.forEach((row) => {
 			const cells = row.map((cell, index) => {
 				return this.padString(String(cell || ""), columnWidths[index]);
 			});
@@ -336,7 +402,11 @@ export class IntegratedOutputFormatter {
 	/**
 	 * Render tree node recursively
 	 */
-	private renderTreeNode(node: TreeNode, prefix: string = "", isLast: boolean = true): string {
+	private renderTreeNode(
+		node: TreeNode,
+		prefix: string = "",
+		isLast: boolean = true,
+	): string {
 		const connector = isLast ? "└── " : "├── ";
 		const valueStr = node.value !== undefined ? ` (${node.value})` : "";
 
@@ -403,7 +473,11 @@ export class IntegratedOutputFormatter {
 	/**
 	 * Create progress indicator
 	 */
-	createProgressIndicator(current: number, total: number, width: number = 40): string {
+	createProgressIndicator(
+		current: number,
+		total: number,
+		width: number = 40,
+	): string {
 		const percentage = Math.min(100, Math.max(0, (current / total) * 100));
 		const filled = Math.round((percentage / 100) * width);
 		const empty = width - filled;
@@ -417,7 +491,7 @@ export class IntegratedOutputFormatter {
 	 */
 	formatLegacy(
 		result: AnalysisResult | AnalysisResult[],
-		format: string
+		format: string,
 	): string {
 		// This provides compatibility with the old formatter
 		// In practice, you would migrate to use IntegratedAnalysisData
@@ -425,20 +499,24 @@ export class IntegratedOutputFormatter {
 
 		switch (format) {
 			case "summary":
-				return results.map(r => {
-					const deps = r.extractedData?.dependency?.dependencies?.length || 0;
-					const exports = r.extractedData?.dependency?.exports?.length || 0;
-					const time = r.performanceMetrics?.parseTime || 0;
-					const status = r.errors?.length ? "FAIL" : "OK";
-					const fileName = r.filePath.split('/').pop() || r.filePath;
-					return `${fileName} | ${deps} deps, ${exports} exports | ${time}ms | ${status}`;
-				}).join('\n');
+				return results
+					.map((r) => {
+						const deps = r.extractedData?.dependency?.dependencies?.length || 0;
+						const exports = r.extractedData?.dependency?.exports?.length || 0;
+						const time = r.performanceMetrics?.parseTime || 0;
+						const status = r.errors?.length ? "FAIL" : "OK";
+						const fileName = r.filePath.split("/").pop() || r.filePath;
+						return `${fileName} | ${deps} deps, ${exports} exports | ${time}ms | ${status}`;
+					})
+					.join("\n");
 
 			case "json":
 				return JSON.stringify(result, null, 2);
 
 			default:
-				throw new Error(`Legacy format ${format} not supported. Please use IntegratedAnalysisData.`);
+				throw new Error(
+					`Legacy format ${format} not supported. Please use IntegratedAnalysisData.`,
+				);
 		}
 	}
 }

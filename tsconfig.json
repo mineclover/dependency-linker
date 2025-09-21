@@ -12,7 +12,7 @@
 		"declaration": true,
 		"declarationMap": true,
 		"sourceMap": true,
-		"removeComments": false,
+		"removeComments": true,
 		"resolveJsonModule": true,
 		"allowSyntheticDefaultImports": true,
 		"moduleResolution": "node",
@@ -25,7 +25,9 @@
 		"strictBindCallApply": true,
 		"strictPropertyInitialization": true,
 		"noImplicitOverride": true,
-		"exactOptionalPropertyTypes": false
+		"exactOptionalPropertyTypes": false,
+		"incremental": true,
+		"tsBuildInfoFile": "./dist/.tsbuildinfo"
 	},
 	"include": ["src/**/*"],
 	"exclude": ["node_modules", "dist", "tests"],

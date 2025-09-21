@@ -5,8 +5,8 @@
  * Allows users to manage integration configuration presets and settings
  */
 
-import { CLIAdapter } from "../CLIAdapter";
 import { IntegrationConfigManager } from "../../config/IntegrationConfig";
+import { CLIAdapter } from "../CLIAdapter";
 
 interface ConfigOptions {
 	action: "list" | "show" | "validate" | "create" | "delete";
@@ -22,7 +22,7 @@ interface ConfigOptions {
 function parseArgs(args: string[]): ConfigOptions {
 	const options: ConfigOptions = {
 		action: "list",
-		format: "text"
+		format: "text",
 	};
 
 	for (let i = 0; i < args.length; i++) {
@@ -141,19 +141,33 @@ async function main() {
 						console.log(`Description: ${preset.description}`);
 						console.log(`Detail Level: ${preset.config.detailLevel}`);
 						console.log(`Optimization Mode: ${preset.config.optimizationMode}`);
-						console.log(`Enabled Views: ${preset.config.enabledViews.join(", ")}`);
+						console.log(
+							`Enabled Views: ${preset.config.enabledViews.join(", ")}`,
+						);
 						console.log(`Size Limits:`);
-						console.log(`  Max String Length: ${preset.config.sizeLimits.maxStringLength}`);
-						console.log(`  Max Array Length: ${preset.config.sizeLimits.maxArrayLength}`);
+						console.log(
+							`  Max String Length: ${preset.config.sizeLimits.maxStringLength}`,
+						);
+						console.log(
+							`  Max Array Length: ${preset.config.sizeLimits.maxArrayLength}`,
+						);
 						console.log(`  Max Depth: ${preset.config.sizeLimits.maxDepth}`);
 						console.log(`Performance:`);
-						console.log(`  Max Concurrency: ${preset.optimization.maxConcurrency}`);
+						console.log(
+							`  Max Concurrency: ${preset.optimization.maxConcurrency}`,
+						);
 						console.log(`  Batch Size: ${preset.optimization.batchSize}`);
-						console.log(`  Lazy Loading: ${preset.optimization.enableLazyLoading}`);
-						console.log(`  View Caching: ${preset.optimization.enableViewCaching}`);
+						console.log(
+							`  Lazy Loading: ${preset.optimization.enableLazyLoading}`,
+						);
+						console.log(
+							`  View Caching: ${preset.optimization.enableViewCaching}`,
+						);
 					}
 				} catch (error) {
-					console.error(`Error: ${error instanceof Error ? error.message : String(error)}`);
+					console.error(
+						`Error: ${error instanceof Error ? error.message : String(error)}`,
+					);
 					process.exit(1);
 				}
 				break;
@@ -175,12 +189,14 @@ async function main() {
 
 						if (validation.errors.length > 0) {
 							console.log(`Errors:`);
-							validation.errors.forEach(error => console.log(`  - ${error}`));
+							validation.errors.forEach((error) => console.log(`  - ${error}`));
 						}
 
 						if (validation.warnings.length > 0) {
 							console.log(`Warnings:`);
-							validation.warnings.forEach(warning => console.log(`  - ${warning}`));
+							validation.warnings.forEach((warning) =>
+								console.log(`  - ${warning}`),
+							);
 						}
 
 						if (validation.isValid && validation.warnings.length === 0) {
@@ -188,19 +204,25 @@ async function main() {
 						}
 					}
 				} catch (error) {
-					console.error(`Error: ${error instanceof Error ? error.message : String(error)}`);
+					console.error(
+						`Error: ${error instanceof Error ? error.message : String(error)}`,
+					);
 					process.exit(1);
 				}
 				break;
 
 			case "create":
 				console.log("Custom preset creation is not yet implemented.");
-				console.log("You can create presets programmatically using the IntegrationConfigManager API.");
+				console.log(
+					"You can create presets programmatically using the IntegrationConfigManager API.",
+				);
 				break;
 
 			case "delete":
 				console.log("Custom preset deletion is not yet implemented.");
-				console.log("Custom presets can be managed programmatically using the IntegrationConfigManager API.");
+				console.log(
+					"Custom presets can be managed programmatically using the IntegrationConfigManager API.",
+				);
 				break;
 
 			default:
@@ -209,14 +231,18 @@ async function main() {
 				process.exit(1);
 		}
 	} catch (error) {
-		console.error(`Error: ${error instanceof Error ? error.message : String(error)}`);
+		console.error(
+			`Error: ${error instanceof Error ? error.message : String(error)}`,
+		);
 		process.exit(1);
 	}
 }
 
 if (require.main === module) {
-	main().catch(error => {
-		console.error(`Fatal error: ${error instanceof Error ? error.message : String(error)}`);
+	main().catch((error) => {
+		console.error(
+			`Fatal error: ${error instanceof Error ? error.message : String(error)}`,
+		);
 		process.exit(1);
 	});
 }

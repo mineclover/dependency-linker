@@ -10,6 +10,7 @@
 	},
 	"scripts": {
 		"build": "tsc",
+		"build:clean": "rm -rf dist && npm run build",
 		"test": "jest",
 		"test:watch": "jest --watch",
 		"test:coverage": "jest --coverage",
@@ -17,6 +18,7 @@
 		"lint:fix": "biome check --write src/",
 		"format": "biome format --write .",
 		"format:check": "biome format .",
+		"typecheck": "tsc --noEmit",
 		"dev": "tsc --watch",
 		"start": "node dist/cli/analyze-file.js",
 		"verify-separation": "bash scripts/verify-separation.sh",
@@ -25,7 +27,9 @@
 		"benchmark:quick": "node -e \"require('./scripts/benchmark.js').runBenchmark('Single File Analysis (Medium)', require('./scripts/benchmark.js').benchmarks['Single File Analysis (Medium)'], 1)\"",
 		"diagnostic": "node scripts/diagnostic-cli.js",
 		"optimize-tests": "node -r ts-node/register src/cli/commands/optimize-tests.ts",
-		"optimize-tests-simple": "node -r ts-node/register src/cli/commands/optimize-tests-simple.ts"
+		"optimize-tests-simple": "node -r ts-node/register src/cli/commands/optimize-tests-simple.ts",
+		"prepack": "npm run build",
+		"prepublishOnly": "npm run lint && npm run typecheck && npm run test"
 	},
 	"keywords": [
 		"tree-sitter",

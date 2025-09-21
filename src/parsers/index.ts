@@ -3,8 +3,8 @@
  * Exports all available language parsers
  */
 
-export { ILanguageParser } from './ILanguageParser';
-export { TypeScriptParser } from './TypeScriptParser';
-export { JavaScriptParser } from './JavaScriptParser';
-export { GoParser } from './GoParser';
-export { JavaParser } from './JavaParser';
+export { GoParser } from "./GoParser";
+export { ILanguageParser } from "./ILanguageParser";
+export { JavaParser } from "./JavaParser";
+export { JavaScriptParser } from "./JavaScriptParser";
+export { TypeScriptParser } from "./TypeScriptParser";

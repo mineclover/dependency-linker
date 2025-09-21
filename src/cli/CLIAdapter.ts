@@ -3,14 +3,17 @@
  * Bridges the CLI interface with the new API layer while maintaining perfect compatibility
  */
 
+import { IntegrationConfigManager } from "../config/IntegrationConfig";
 import type { AnalysisConfig } from "../models/AnalysisConfig";
 import type { AnalysisResult } from "../models/AnalysisResult";
-import type { IntegratedAnalysisData, DataIntegrationConfig } from "../models/IntegratedData";
+import type {
+	DataIntegrationConfig,
+	IntegratedAnalysisData,
+} from "../models/IntegratedData";
 import { AnalysisEngine } from "../services/AnalysisEngine";
+import { DataIntegrator } from "../services/integration/DataIntegrator";
 import { EnhancedOutputFormatter } from "./formatters/EnhancedOutputFormatter";
 import { UniversalFormatter } from "./formatters/UniversalFormatter";
-import { IntegrationConfigManager } from "../config/IntegrationConfig";
-import { DataIntegrator } from "../services/integration/DataIntegrator";
 
 export interface CLIOptions {
 	file: string;
@@ -141,7 +144,9 @@ export class CLIAdapter {
 	 * @param options CLI options
 	 * @returns Integrated analysis data
 	 */
-	async analyzeFileIntegrated(options: CLIOptions): Promise<IntegratedAnalysisData> {
+	async analyzeFileIntegrated(
+		options: CLIOptions,
+	): Promise<IntegratedAnalysisData> {
 		// Convert CLI options to analysis config
 		const analysisConfig: AnalysisConfig = {
 			useCache: false,
@@ -151,15 +156,16 @@ export class CLIAdapter {
 		};
 
 		// Create integration config using configuration manager
-		const integrationConfig: DataIntegrationConfig = this.configManager.getConfigForCLI({
-			preset: options.preset,
-			detailLevel: options.detailLevel,
-			optimizationMode: options.optimizationMode,
-			enabledViews: options.enabledViews,
-			maxStringLength: options.maxStringLength,
-			maxArrayLength: options.maxArrayLength,
-			maxDepth: options.maxDepth
-		});
+		const integrationConfig: DataIntegrationConfig =
+			this.configManager.getConfigForCLI({
+				preset: options.preset,
+				detailLevel: options.detailLevel,
+				optimizationMode: options.optimizationMode,
+				enabledViews: options.enabledViews,
+				maxStringLength: options.maxStringLength,
+				maxArrayLength: options.maxArrayLength,
+				maxDepth: options.maxDepth,
+			});
 
 		// Validate the generated configuration
 		const validation = this.configManager.validateConfig(integrationConfig);
@@ -173,7 +179,10 @@ export class CLIAdapter {
 		}
 
 		// Perform analysis and integration
-		const result = await this.analysisEngine.analyzeFile(options.file, analysisConfig);
+		const result = await this.analysisEngine.analyzeFile(
+			options.file,
+			analysisConfig,
+		);
 		return this.dataIntegrator.integrate(result, integrationConfig);
 	}
 
@@ -301,7 +310,11 @@ export class CLIAdapter {
 	/**
 	 * Validate configuration options
 	 */
-	validateConfiguration(options: CLIOptions): { isValid: boolean; errors: string[]; warnings: string[] } {
+	validateConfiguration(options: CLIOptions): {
+		isValid: boolean;
+		errors: string[];
+		warnings: string[];
+	} {
 		try {
 			const config = this.configManager.getConfigForCLI({
 				preset: options.preset,
@@ -310,7 +323,7 @@ export class CLIAdapter {
 				enabledViews: options.enabledViews,
 				maxStringLength: options.maxStringLength,
 				maxArrayLength: options.maxArrayLength,
-				maxDepth: options.maxDepth
+				maxDepth: options.maxDepth,
 			});
 
 			return this.configManager.validateConfig(config);
@@ -318,7 +331,7 @@ export class CLIAdapter {
 			return {
 				isValid: false,
 				errors: [error instanceof Error ? error.message : String(error)],
-				warnings: []
+				warnings: [],
 			};
 		}
 	}
@@ -326,7 +339,10 @@ export class CLIAdapter {
 	/**
 	 * Get effective configuration for given options
 	 */
-	getEffectiveConfiguration(options: CLIOptions, format: string = "text"): string {
+	getEffectiveConfiguration(
+		options: CLIOptions,
+		format: string = "text",
+	): string {
 		try {
 			const config = this.configManager.getConfigForCLI({
 				preset: options.preset,
@@ -335,7 +351,7 @@ export class CLIAdapter {
 				enabledViews: options.enabledViews,
 				maxStringLength: options.maxStringLength,
 				maxArrayLength: options.maxArrayLength,
-				maxDepth: options.maxDepth
+				maxDepth: options.maxDepth,
 			});
 
 			if (format === "json") {
@@ -358,7 +374,8 @@ export class CLIAdapter {
 
 			return output;
 		} catch (error) {
-			const errorMessage = error instanceof Error ? error.message : String(error);
+			const errorMessage =
+				error instanceof Error ? error.message : String(error);
 			return format === "json"
 				? JSON.stringify({ error: errorMessage }, null, 2)
 				: `Error: ${errorMessage}`;

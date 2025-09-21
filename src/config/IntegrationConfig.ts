@@ -32,7 +32,7 @@ export class IntegrationConfigManager {
 	constructor(customSettings?: Partial<IntegrationSettings>) {
 		this.settings = {
 			...this.getDefaultSettings(),
-			...customSettings
+			...customSettings,
 		};
 	}
 
@@ -42,7 +42,7 @@ export class IntegrationConfigManager {
 	getPresets(): Record<string, IntegrationPreset> {
 		return {
 			...this.getBuiltinPresets(),
-			...this.settings.customPresets
+			...this.settings.customPresets,
 		};
 	}
 
@@ -75,13 +75,13 @@ export class IntegrationConfigManager {
 		name: string,
 		description: string,
 		config: DataIntegrationConfig,
-		optimization?: OptimizationStrategy
+		optimization?: OptimizationStrategy,
 	): void {
 		this.settings.customPresets[name] = {
 			name,
 			description,
 			config,
-			optimization: optimization || this.settings.performanceDefaults
+			optimization: optimization || this.settings.performanceDefaults,
 		};
 	}
 
@@ -111,14 +111,22 @@ export class IntegrationConfigManager {
 		const config: DataIntegrationConfig = {
 			...baseConfig,
 			...(options.detailLevel && { detailLevel: options.detailLevel }),
-			...(options.optimizationMode && { optimizationMode: options.optimizationMode }),
-			...(options.enabledViews && { enabledViews: options.enabledViews as any }),
+			...(options.optimizationMode && {
+				optimizationMode: options.optimizationMode,
+			}),
+			...(options.enabledViews && {
+				enabledViews: options.enabledViews as any,
+			}),
 			sizeLimits: {
 				...baseConfig.sizeLimits,
-				...(options.maxStringLength && { maxStringLength: options.maxStringLength }),
-				...(options.maxArrayLength && { maxArrayLength: options.maxArrayLength }),
-				...(options.maxDepth && { maxDepth: options.maxDepth })
-			}
+				...(options.maxStringLength && {
+					maxStringLength: options.maxStringLength,
+				}),
+				...(options.maxArrayLength && {
+					maxArrayLength: options.maxArrayLength,
+				}),
+				...(options.maxDepth && { maxDepth: options.maxDepth }),
+			},
 		};
 
 		return config;
@@ -143,20 +151,26 @@ export class IntegrationConfigManager {
 		const validViews = ["summary", "table", "tree", "csv", "minimal"];
 		for (const view of config.enabledViews) {
 			if (!validViews.includes(view)) {
-				errors.push(`Invalid view: ${view}. Valid views: ${validViews.join(", ")}`);
+				errors.push(
+					`Invalid view: ${view}. Valid views: ${validViews.join(", ")}`,
+				);
 			}
 		}
 
 		// Validate detail level
 		const validDetailLevels = ["minimal", "standard", "comprehensive"];
 		if (!validDetailLevels.includes(config.detailLevel)) {
-			errors.push(`Invalid detail level: ${config.detailLevel}. Valid levels: ${validDetailLevels.join(", ")}`);
+			errors.push(
+				`Invalid detail level: ${config.detailLevel}. Valid levels: ${validDetailLevels.join(", ")}`,
+			);
 		}
 
 		// Validate optimization mode
 		const validOptimizationModes = ["speed", "balanced", "accuracy"];
 		if (!validOptimizationModes.includes(config.optimizationMode)) {
-			errors.push(`Invalid optimization mode: ${config.optimizationMode}. Valid modes: ${validOptimizationModes.join(", ")}`);
+			errors.push(
+				`Invalid optimization mode: ${config.optimizationMode}. Valid modes: ${validOptimizationModes.join(", ")}`,
+			);
 		}
 
 		// Validate size limits
@@ -177,14 +191,17 @@ export class IntegrationConfigManager {
 		if (config.sizeLimits.maxArrayLength > 1000) {
 			warnings.push("Very large maxArrayLength may impact performance");
 		}
-		if (config.enabledViews.length > 3 && config.detailLevel === "comprehensive") {
+		if (
+			config.enabledViews.length > 3 &&
+			config.detailLevel === "comprehensive"
+		) {
 			warnings.push("Many views with comprehensive detail level may be slow");
 		}
 
 		return {
 			isValid: errors.length === 0,
 			errors,
-			warnings
+			warnings,
 		};
 	}
 
@@ -202,8 +219,8 @@ export class IntegrationConfigManager {
 				sizeLimits: {
 					maxStringLength: 1000,
 					maxArrayLength: 100,
-					maxDepth: 10
-				}
+					maxDepth: 10,
+				},
 			},
 			performanceDefaults: {
 				enableLazyLoading: true,
@@ -211,14 +228,14 @@ export class IntegrationConfigManager {
 				enableDataCompression: false,
 				enableMemoryPooling: true,
 				maxConcurrency: 4,
-				batchSize: 10
+				batchSize: 10,
 			},
 			outputDefaults: {
 				preferredFormat: "report",
 				fallbackFormat: "json",
 				maxOutputSize: 1024 * 1024, // 1MB
-				truncateStrings: true
-			}
+				truncateStrings: true,
+			},
 		};
 	}
 
@@ -237,8 +254,8 @@ export class IntegrationConfigManager {
 					sizeLimits: {
 						maxStringLength: 500,
 						maxArrayLength: 50,
-						maxDepth: 5
-					}
+						maxDepth: 5,
+					},
 				},
 				optimization: {
 					enableLazyLoading: true,
@@ -246,8 +263,8 @@ export class IntegrationConfigManager {
 					enableDataCompression: false,
 					enableMemoryPooling: false,
 					maxConcurrency: 8,
-					batchSize: 20
-				}
+					batchSize: 20,
+				},
 			},
 			balanced: {
 				name: "balanced",
@@ -259,8 +276,8 @@ export class IntegrationConfigManager {
 					sizeLimits: {
 						maxStringLength: 1000,
 						maxArrayLength: 100,
-						maxDepth: 10
-					}
+						maxDepth: 10,
+					},
 				},
 				optimization: {
 					enableLazyLoading: true,
@@ -268,8 +285,8 @@ export class IntegrationConfigManager {
 					enableDataCompression: false,
 					enableMemoryPooling: true,
 					maxConcurrency: 4,
-					batchSize: 10
-				}
+					batchSize: 10,
+				},
 			},
 			comprehensive: {
 				name: "comprehensive",
@@ -281,8 +298,8 @@ export class IntegrationConfigManager {
 					sizeLimits: {
 						maxStringLength: 2000,
 						maxArrayLength: 200,
-						maxDepth: 15
-					}
+						maxDepth: 15,
+					},
 				},
 				optimization: {
 					enableLazyLoading: false,
@@ -290,12 +307,13 @@ export class IntegrationConfigManager {
 					enableDataCompression: false,
 					enableMemoryPooling: true,
 					maxConcurrency: 2,
-					batchSize: 5
-				}
+					batchSize: 5,
+				},
 			},
 			lightweight: {
 				name: "lightweight",
-				description: "Minimal memory usage for resource-constrained environments",
+				description:
+					"Minimal memory usage for resource-constrained environments",
 				config: {
 					enabledViews: ["summary"],
 					detailLevel: "minimal",
@@ -303,8 +321,8 @@ export class IntegrationConfigManager {
 					sizeLimits: {
 						maxStringLength: 200,
 						maxArrayLength: 20,
-						maxDepth: 3
-					}
+						maxDepth: 3,
+					},
 				},
 				optimization: {
 					enableLazyLoading: true,
@@ -312,12 +330,13 @@ export class IntegrationConfigManager {
 					enableDataCompression: true,
 					enableMemoryPooling: true,
 					maxConcurrency: 2,
-					batchSize: 5
-				}
+					batchSize: 5,
+				},
 			},
 			debug: {
 				name: "debug",
-				description: "Maximum detail and all views for debugging and development",
+				description:
+					"Maximum detail and all views for debugging and development",
 				config: {
 					enabledViews: ["summary", "table", "tree", "csv", "minimal"],
 					detailLevel: "comprehensive",
@@ -325,8 +344,8 @@ export class IntegrationConfigManager {
 					sizeLimits: {
 						maxStringLength: 5000,
 						maxArrayLength: 500,
-						maxDepth: 20
-					}
+						maxDepth: 20,
+					},
 				},
 				optimization: {
 					enableLazyLoading: false,
@@ -334,16 +353,18 @@ export class IntegrationConfigManager {
 					enableDataCompression: false,
 					enableMemoryPooling: false,
 					maxConcurrency: 1,
-					batchSize: 1
-				}
-			}
+					batchSize: 1,
+				},
+			},
 		};
 	}
 
 	/**
 	 * Load configuration from file or environment
 	 */
-	static async loadFromFile(configPath?: string): Promise<IntegrationConfigManager> {
+	static async loadFromFile(
+		configPath?: string,
+	): Promise<IntegrationConfigManager> {
 		// Implementation for loading from file would go here
 		// For now, return default configuration
 		return new IntegrationConfigManager();

@@ -21,7 +21,7 @@ export class ParserRegistry implements IParserRegistry {
 		for (const language of metadata.supportedLanguages) {
 			if (this.parsers.has(language)) {
 				// Only warn in development/debug mode to reduce noise in tests
-				if (process.env.NODE_ENV !== 'test' && process.env.DEBUG) {
+				if (process.env.NODE_ENV !== "test" && process.env.DEBUG) {
 					console.warn(
 						`Parser for language '${language}' is already registered. Overwriting.`,
 					);

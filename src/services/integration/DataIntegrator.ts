@@ -5,27 +5,30 @@
 
 import type { AnalysisResult } from "../../models/AnalysisResult";
 import type {
-	IntegratedAnalysisData,
+	AnalysisInsights,
 	CoreAnalysisInfo,
-	DetailedAnalysisInfo,
-	OutputViews,
-	IntegratedMetadata,
-	DataIntegrationConfig,
-	SummaryView,
-	TableView,
-	TreeView,
 	CSVView,
-	MinimalView,
-	TreeNode,
-	TreeSummary,
-	MergedDependencyInfo,
+	DataIntegrationConfig,
+	DataQualityAssessment,
+	DetailedAnalysisInfo,
+	IntegratedAnalysisData,
+	IntegratedMetadata,
 	MergedCodeStructure,
 	MergedComplexityMetrics,
-	AnalysisInsights,
+	MergedDependencyInfo,
+	MinimalView,
+	OutputViews,
 	Recommendation,
-	DataQualityAssessment
+	SummaryView,
+	TableView,
+	TreeNode,
+	TreeSummary,
+	TreeView,
 } from "../../models/IntegratedData";
-import { PerformanceOptimizer, type OptimizationStrategy } from "../optimization/PerformanceOptimizer";
+import {
+	type OptimizationStrategy,
+	PerformanceOptimizer,
+} from "../optimization/PerformanceOptimizer";
 
 export interface IDataIntegrator {
 	/**
@@ -33,7 +36,7 @@ export interface IDataIntegrator {
 	 */
 	integrate(
 		result: AnalysisResult,
-		config?: DataIntegrationConfig
+		config?: DataIntegrationConfig,
 	): Promise<IntegratedAnalysisData>;
 
 	/**
@@ -41,7 +44,7 @@ export interface IDataIntegrator {
 	 */
 	integrateBatch(
 		results: AnalysisResult[],
-		config?: DataIntegrationConfig
+		config?: DataIntegrationConfig,
 	): Promise<IntegratedAnalysisData[]>;
 
 	/**
@@ -58,8 +61,8 @@ export class DataIntegrator implements IDataIntegrator {
 		sizeLimits: {
 			maxStringLength: 1000,
 			maxArrayLength: 100,
-			maxDepth: 10
-		}
+			maxDepth: 10,
+		},
 	};
 
 	private optimizer: PerformanceOptimizer;
@@ -70,7 +73,7 @@ export class DataIntegrator implements IDataIntegrator {
 
 	async integrate(
 		result: AnalysisResult,
-		config?: DataIntegrationConfig
+		config?: DataIntegrationConfig,
 	): Promise<IntegratedAnalysisData> {
 		const finalConfig = { ...this.defaultConfig, ...config };
 		const startTime = performance.now();
@@ -92,7 +95,7 @@ export class DataIntegrator implements IDataIntegrator {
 				core,
 				detailed,
 				views,
-				metadata
+				metadata,
 			};
 
 			// Update integration timing
@@ -107,15 +110,16 @@ export class DataIntegrator implements IDataIntegrator {
 			await this.validateIntegration(integrated);
 
 			return integrated;
-
 		} catch (error) {
-			throw new Error(`Data integration failed: ${error instanceof Error ? error.message : String(error)}`);
+			throw new Error(
+				`Data integration failed: ${error instanceof Error ? error.message : String(error)}`,
+			);
 		}
 	}
 
 	async integrateBatch(
 		results: AnalysisResult[],
-		config?: DataIntegrationConfig
+		config?: DataIntegrationConfig,
 	): Promise<IntegratedAnalysisData[]> {
 		const finalConfig = { ...this.defaultConfig, ...config };
 		const strategy = this.getOptimizationStrategy(finalConfig);
@@ -133,11 +137,15 @@ export class DataIntegrator implements IDataIntegrator {
 
 		for (const chunk of chunks) {
 			try {
-				const chunkPromises = chunk.map(result => this.integrate(result, finalConfig));
+				const chunkPromises = chunk.map((result) =>
+					this.integrate(result, finalConfig),
+				);
 				const chunkResults = await Promise.all(chunkPromises);
 				allResults.push(...chunkResults.filter(Boolean));
 			} catch (error) {
-				console.warn('Chunk processing failed, falling back to sequential processing for this chunk');
+				console.warn(
+					"Chunk processing failed, falling back to sequential processing for this chunk",
+				);
 
 				// Process chunk sequentially as fallback
 				for (const result of chunk) {
@@ -170,9 +178,14 @@ export class DataIntegrator implements IDataIntegrator {
 
 			// 품질 점수 확인 (전체 품질 계산)
 			const quality = data.metadata.dataQuality;
-			const qualityScore = (quality.completeness + quality.accuracy + quality.consistency + quality.freshness + quality.validity) / 5;
+			const qualityScore =
+				(quality.completeness +
+					quality.accuracy +
+					quality.consistency +
+					quality.freshness +
+					quality.validity) /
+				5;
 			return qualityScore >= 0.7; // 70% 이상의 품질 요구
-
 		} catch (error) {
 			console.error("Integration validation failed:", error);
 			return false;
@@ -186,60 +199,61 @@ export class DataIntegrator implements IDataIntegrator {
 
 		return {
 			file: {
-				name: result.filePath.split('/').pop() || result.filePath,
+				name: result.filePath.split("/").pop() || result.filePath,
 				path: result.filePath,
 				extension: this.getFileExtension(result.filePath),
-				size: result.metadata?.fileSize
+				size: result.metadata?.fileSize,
 			},
 			language: {
-				detected: result.language || 'unknown',
+				detected: result.language || "unknown",
 				confidence: 0.95, // Default confidence
-				parser: 'tree-sitter' // Default parser
+				parser: "tree-sitter", // Default parser
 			},
 			status: {
-				overall: result.errors && result.errors.length > 0 ? "error" : "success",
+				overall:
+					result.errors && result.errors.length > 0 ? "error" : "success",
 				code: result.errors?.length ? "E001" : "S000",
-				message: result.errors?.map(e => e.message || String(e)).join('; ')
+				message: result.errors?.map((e) => e.message || String(e)).join("; "),
 			},
 			counts: {
 				dependencies: {
 					total: dependencyData.dependencies?.length || 0,
 					external: dependencyData.external?.length || 0,
 					internal: dependencyData.internal?.length || 0,
-					builtin: dependencyData.builtin?.length || 0
+					builtin: dependencyData.builtin?.length || 0,
 				},
 				imports: {
 					total: dependencyData.imports?.length || 0,
 					named: dependencyData.namedImports?.length || 0,
 					default: dependencyData.defaultImports?.length || 0,
-					namespace: dependencyData.namespaceImports?.length || 0
+					namespace: dependencyData.namespaceImports?.length || 0,
 				},
 				exports: {
 					total: dependencyData.exports?.length || 0,
 					named: dependencyData.namedExports?.length || 0,
 					default: dependencyData.defaultExports?.length || 0,
-					reexports: dependencyData.reexports?.length || 0
+					reexports: dependencyData.reexports?.length || 0,
 				},
 				identifiers: {
 					functions: identifierData.functions?.length || 0,
 					classes: identifierData.classes?.length || 0,
 					interfaces: identifierData.interfaces?.length || 0,
 					variables: identifierData.variables?.length || 0,
-					types: identifierData.types?.length || 0
-				}
+					types: identifierData.types?.length || 0,
+				},
 			},
 			timing: {
 				parse: result.performanceMetrics?.parseTime || 0,
 				extract: result.performanceMetrics?.extractionTime || 0,
 				interpret: result.performanceMetrics?.interpretationTime || 0,
 				integrate: 0, // Will be set after integration
-				total: result.performanceMetrics?.totalTime || 0
+				total: result.performanceMetrics?.totalTime || 0,
 			},
 			memory: {
 				peak: result.performanceMetrics?.memoryUsage || 0,
 				current: process.memoryUsage().heapUsed,
-				efficiency: 0.85 // Default efficiency score
-			}
+				efficiency: 0.85, // Default efficiency score
+			},
 		};
 	}
 
@@ -249,13 +263,13 @@ export class DataIntegrator implements IDataIntegrator {
 			codeStructure: this.buildMergedCodeStructure(result),
 			complexity: this.buildMergedComplexity(result),
 			insights: this.buildAnalysisInsights(result),
-			recommendations: this.buildRecommendations(result)
+			recommendations: this.buildRecommendations(result),
 		};
 	}
 
 	private buildOptimizedViews(
 		result: AnalysisResult,
-		config: DataIntegrationConfig
+		config: DataIntegrationConfig,
 	): OutputViews {
 		// Only build views that are enabled in the configuration
 		const views: Partial<OutputViews> = {};
@@ -287,7 +301,7 @@ export class DataIntegrator implements IDataIntegrator {
 
 	private buildMetadata(
 		result: AnalysisResult,
-		config: DataIntegrationConfig
+		config: DataIntegrationConfig,
 	): IntegratedMetadata {
 		return {
 			integrationVersion: "1.0.0",
@@ -295,13 +309,13 @@ export class DataIntegrator implements IDataIntegrator {
 			dataSources: {
 				extractors: result.metadata?.extractorsUsed || [],
 				interpreters: result.metadata?.interpretersUsed || [],
-				versions: { integration: "1.0.0" }
+				versions: { integration: "1.0.0" },
 			},
 			integrationOptions: {
 				includeLowConfidence: config.detailLevel !== "minimal",
 				mergeStrategy: "balanced",
 				conflictResolution: "merge",
-				qualityThreshold: 0.7
+				qualityThreshold: 0.7,
 			},
 			dataQuality: this.assessDataQuality(result),
 			confidence: {
@@ -309,22 +323,22 @@ export class DataIntegrator implements IDataIntegrator {
 				parsing: result.errors?.length ? 0.7 : 0.95,
 				extraction: 0.9,
 				interpretation: 0.85,
-				integration: 0.9
-			}
+				integration: 0.9,
+			},
 		};
 	}
 
 	private buildSummaryView(result: AnalysisResult): SummaryView {
 		const dependencyData = result.extractedData?.dependency || {};
 		return {
-			fileName: result.filePath.split('/').pop() || result.filePath,
+			fileName: result.filePath.split("/").pop() || result.filePath,
 			depCount: dependencyData.dependencies?.length || 0,
 			importCount: dependencyData.imports?.length || 0,
 			exportCount: dependencyData.exports?.length || 0,
 			parseTime: result.performanceMetrics?.parseTime || 0,
 			status: result.errors?.length ? "Error" : "OK",
 			language: result.language || "unknown",
-			issues: result.errors?.slice(0, 3).map(e => e.message || String(e)) // Limit to 3 issues
+			issues: result.errors?.slice(0, 3).map((e) => e.message || String(e)), // Limit to 3 issues
 		};
 	}
 
@@ -334,7 +348,10 @@ export class DataIntegrator implements IDataIntegrator {
 		const deps = dependencyData.dependencies?.length || 0;
 
 		return {
-			file: this.truncateString(result.filePath.split('/').pop() || result.filePath, 30),
+			file: this.truncateString(
+				result.filePath.split("/").pop() || result.filePath,
+				30,
+			),
 			lang: result.language?.substring(0, 3).toUpperCase() || "UNK",
 			deps: deps.toString(),
 			imports: (dependencyData.imports?.length || 0).toString(),
@@ -344,7 +361,7 @@ export class DataIntegrator implements IDataIntegrator {
 			time: `${result.performanceMetrics?.parseTime || 0}ms`,
 			memory: this.formatMemory(result.performanceMetrics?.memoryUsage || 0),
 			status: result.errors?.length ? "ERR" : "OK",
-			issues: result.errors?.length ? "⚠" : "✓"
+			issues: result.errors?.length ? "⚠" : "✓",
 		};
 	}
 
@@ -355,7 +372,7 @@ export class DataIntegrator implements IDataIntegrator {
 
 		const root: TreeNode = {
 			type: "file",
-			name: result.filePath.split('/').pop() || result.filePath,
+			name: result.filePath.split("/").pop() || result.filePath,
 			children: [
 				{
 					type: "section",
@@ -364,8 +381,8 @@ export class DataIntegrator implements IDataIntegrator {
 					children: dependencies.slice(0, 5).map((dep: any) => ({
 						type: "item",
 						name: dep.name || dep.source || String(dep),
-						metadata: { type: "dependency" }
-					}))
+						metadata: { type: "dependency" },
+					})),
 				},
 				{
 					type: "section",
@@ -374,8 +391,8 @@ export class DataIntegrator implements IDataIntegrator {
 					children: exports.slice(0, 5).map((exp: any) => ({
 						type: "item",
 						name: exp.name || exp.source || String(exp),
-						metadata: { type: "export" }
-					}))
+						metadata: { type: "export" },
+					})),
 				},
 				{
 					type: "section",
@@ -384,16 +401,18 @@ export class DataIntegrator implements IDataIntegrator {
 						{
 							type: "metric",
 							name: "Parse Time",
-							value: `${result.performanceMetrics?.parseTime || 0}ms`
+							value: `${result.performanceMetrics?.parseTime || 0}ms`,
 						},
 						{
 							type: "metric",
 							name: "Memory",
-							value: this.formatMemory(result.performanceMetrics?.memoryUsage || 0)
-						}
-					]
-				}
-			]
+							value: this.formatMemory(
+								result.performanceMetrics?.memoryUsage || 0,
+							),
+						},
+					],
+				},
+			],
 		};
 
 		return {
@@ -401,8 +420,8 @@ export class DataIntegrator implements IDataIntegrator {
 			summary: {
 				totalNodes: this.countTreeNodes(root),
 				maxDepth: this.calculateTreeDepth(root),
-				sections: ["Dependencies", "Exports", "Metrics"]
-			}
+				sections: ["Dependencies", "Exports", "Metrics"],
+			},
 		};
 	}
 
@@ -428,133 +447,150 @@ export class DataIntegrator implements IDataIntegrator {
 			memoryUsage: result.performanceMetrics?.memoryUsage || 0,
 			status: result.errors?.length ? "error" : "success",
 			errors: result.errors?.length || 0,
-			warnings: 0 // AnalysisResult doesn't have warnings array
+			warnings: 0, // AnalysisResult doesn't have warnings array
 		};
 	}
 
 	private buildMinimalView(result: AnalysisResult): MinimalView {
 		const dependencyData = result.extractedData?.dependency || {};
 		return {
-			name: result.filePath.split('/').pop() || result.filePath,
+			name: result.filePath.split("/").pop() || result.filePath,
 			deps: dependencyData.dependencies?.length || 0,
 			exports: dependencyData.exports?.length || 0,
 			time: result.performanceMetrics?.parseTime || 0,
-			ok: !result.errors?.length
+			ok: !result.errors?.length,
 		};
 	}
 
 	// Helper methods for building complex structures
-	private buildMergedDependencies(result: AnalysisResult): MergedDependencyInfo {
+	private buildMergedDependencies(
+		result: AnalysisResult,
+	): MergedDependencyInfo {
 		const dependencyData = result.extractedData?.dependency || {};
 
 		return {
-			external: dependencyData.external?.map((dep: any) => ({
-				name: dep.name || dep.source || String(dep),
-				type: "import" as const,
-				usageCount: 1,
-				locations: [],
-				resolved: true
-			})) || [],
-			internal: dependencyData.internal?.map((dep: any) => ({
-				name: dep.name || dep.source || String(dep),
-				type: "import" as const,
-				usageCount: 1,
-				locations: [],
-				resolved: true
-			})) || [],
-			builtin: dependencyData.builtin?.map((dep: any) => ({
-				name: dep.name || dep.source || String(dep),
-				type: "import" as const,
-				usageCount: 1,
-				locations: [],
-				resolved: true
-			})) || [],
+			external:
+				dependencyData.external?.map((dep: any) => ({
+					name: dep.name || dep.source || String(dep),
+					type: "import" as const,
+					usageCount: 1,
+					locations: [],
+					resolved: true,
+				})) || [],
+			internal:
+				dependencyData.internal?.map((dep: any) => ({
+					name: dep.name || dep.source || String(dep),
+					type: "import" as const,
+					usageCount: 1,
+					locations: [],
+					resolved: true,
+				})) || [],
+			builtin:
+				dependencyData.builtin?.map((dep: any) => ({
+					name: dep.name || dep.source || String(dep),
+					type: "import" as const,
+					usageCount: 1,
+					locations: [],
+					resolved: true,
+				})) || [],
 			graph: {
 				nodes: (dependencyData.dependencies?.length || 0) + 1, // +1 for current file
 				edges: dependencyData.dependencies?.length || 0,
 				depth: 1,
 				fanIn: 0,
 				fanOut: dependencyData.dependencies?.length || 0,
-				clusters: 1
+				clusters: 1,
 			},
 			cycles: [],
 			unused: [],
-			security: []
+			security: [],
 		};
 	}
 
-	private buildMergedCodeStructure(result: AnalysisResult): MergedCodeStructure {
+	private buildMergedCodeStructure(
+		result: AnalysisResult,
+	): MergedCodeStructure {
 		const identifierData = result.extractedData?.identifier || {};
 		const dependencyData = result.extractedData?.dependency || {};
 
 		return {
-			functions: identifierData.functions?.map((func: any) => ({
-				name: func.name || "anonymous",
-				signature: func.signature || "",
-				complexity: func.complexity || 1,
-				linesOfCode: func.linesOfCode || 0,
-				parameters: func.parameters || 0,
-				returnType: func.returnType,
-				isExported: func.isExported || false,
-				isAsync: func.isAsync || false,
-				visibility: "public" as const,
-				calls: [],
-				calledBy: [],
-				location: { line: func.line || 0, column: func.column || 0 }
-			})) || [],
-			classes: identifierData.classes?.map((cls: any) => ({
-				name: cls.name || "Anonymous",
-				methods: cls.methods || 0,
-				properties: cls.properties || 0,
-				extends: cls.extends,
-				implements: cls.implements || [],
-				isExported: cls.isExported || false,
-				isAbstract: cls.isAbstract || false,
-				complexity: cls.complexity || 1,
-				cohesion: 0.8,
-				coupling: 0.3,
-				location: { line: cls.line || 0, column: cls.column || 0 }
-			})) || [],
-			interfaces: identifierData.interfaces?.map((iface: any) => ({
-				name: iface.name || "Anonymous",
-				methods: iface.methods || 0,
-				properties: iface.properties || 0,
-				extends: iface.extends || [],
-				isExported: iface.isExported || false,
-				usage: 1,
-				location: { line: iface.line || 0, column: iface.column || 0 }
-			})) || [],
-			types: identifierData.types?.map((type: any) => ({
-				name: type.name || "Anonymous",
-				definition: type.definition || "",
-				category: "object" as const,
-				isExported: type.isExported || false,
-				usage: 1,
-				complexity: 1,
-				location: { line: type.line || 0, column: type.column || 0 }
-			})) || [],
-			variables: identifierData.variables?.map((variable: any) => ({
-				name: variable.name || "anonymous",
-				type: variable.type,
-				kind: variable.kind || "let" as const,
-				isExported: variable.isExported || false,
-				scope: "global" as const,
-				mutations: 0,
-				location: { line: variable.line || 0, column: variable.column || 0 }
-			})) || [],
+			functions:
+				identifierData.functions?.map((func: any) => ({
+					name: func.name || "anonymous",
+					signature: func.signature || "",
+					complexity: func.complexity || 1,
+					linesOfCode: func.linesOfCode || 0,
+					parameters: func.parameters || 0,
+					returnType: func.returnType,
+					isExported: func.isExported || false,
+					isAsync: func.isAsync || false,
+					visibility: "public" as const,
+					calls: [],
+					calledBy: [],
+					location: { line: func.line || 0, column: func.column || 0 },
+				})) || [],
+			classes:
+				identifierData.classes?.map((cls: any) => ({
+					name: cls.name || "Anonymous",
+					methods: cls.methods || 0,
+					properties: cls.properties || 0,
+					extends: cls.extends,
+					implements: cls.implements || [],
+					isExported: cls.isExported || false,
+					isAbstract: cls.isAbstract || false,
+					complexity: cls.complexity || 1,
+					cohesion: 0.8,
+					coupling: 0.3,
+					location: { line: cls.line || 0, column: cls.column || 0 },
+				})) || [],
+			interfaces:
+				identifierData.interfaces?.map((iface: any) => ({
+					name: iface.name || "Anonymous",
+					methods: iface.methods || 0,
+					properties: iface.properties || 0,
+					extends: iface.extends || [],
+					isExported: iface.isExported || false,
+					usage: 1,
+					location: { line: iface.line || 0, column: iface.column || 0 },
+				})) || [],
+			types:
+				identifierData.types?.map((type: any) => ({
+					name: type.name || "Anonymous",
+					definition: type.definition || "",
+					category: "object" as const,
+					isExported: type.isExported || false,
+					usage: 1,
+					complexity: 1,
+					location: { line: type.line || 0, column: type.column || 0 },
+				})) || [],
+			variables:
+				identifierData.variables?.map((variable: any) => ({
+					name: variable.name || "anonymous",
+					type: variable.type,
+					kind: variable.kind || ("let" as const),
+					isExported: variable.isExported || false,
+					scope: "global" as const,
+					mutations: 0,
+					location: { line: variable.line || 0, column: variable.column || 0 },
+				})) || [],
 			module: {
 				type: "esmodule" as const,
-				hasDefaultExport: dependencyData.exports?.some((exp: any) => exp.name === "default" || exp.type === "default") || false,
+				hasDefaultExport:
+					dependencyData.exports?.some(
+						(exp: any) => exp.name === "default" || exp.type === "default",
+					) || false,
 				namedExports: dependencyData.exports?.length || 0,
 				reexports: 0,
 				sideEffects: false,
-				treeShakeable: true
+				treeShakeable: true,
 			},
-			patterns: []
+			patterns: [],
 		};
 	}
 
-	private buildMergedComplexity(result: AnalysisResult): MergedComplexityMetrics {
+	private buildMergedComplexity(
+		result: AnalysisResult,
+	): MergedComplexityMetrics {
 		const complexityData = result.extractedData?.complexity || {};
 
 		return {
@@ -573,8 +609,8 @@ export class DataIntegrator implements IDataIntegrator {
 					difficulty: 10,
 					effort: 1000,
 					timeToImplement: 60,
-					bugs: 0.1
-				}
+					bugs: 0.1,
+				},
 			},
 			functions: [],
 			classes: [],
@@ -582,7 +618,7 @@ export class DataIntegrator implements IDataIntegrator {
 				duplicateLines: 0,
 				duplicateBlocks: 0,
 				codeSmells: [],
-				documentationCoverage: 0.8
+				documentationCoverage: 0.8,
 			},
 			maintainability: {
 				index: 75,
@@ -590,10 +626,10 @@ export class DataIntegrator implements IDataIntegrator {
 				debt: {
 					estimated: 30,
 					rating: "A" as const,
-					issues: []
+					issues: [],
 				},
-				trends: []
-			}
+				trends: [],
+			},
 		};
 	}
 
@@ -619,7 +655,7 @@ export class DataIntegrator implements IDataIntegrator {
 			keyFindings: insights,
 			risks: [],
 			opportunities: [],
-			benchmarks: []
+			benchmarks: [],
 		};
 	}
 
@@ -635,18 +671,23 @@ export class DataIntegrator implements IDataIntegrator {
 				priority: "medium",
 				title: "Consider reducing dependencies",
 				description: "High dependency count may impact maintainability",
-				rationale: "Fewer dependencies reduce update burden and security surface",
+				rationale:
+					"Fewer dependencies reduce update burden and security surface",
 				implementation: {
-					steps: ["Audit dependencies", "Remove unused dependencies", "Consider bundling"],
+					steps: [
+						"Audit dependencies",
+						"Remove unused dependencies",
+						"Consider bundling",
+					],
 					estimatedTime: "2-4 hours",
-					difficulty: "medium"
+					difficulty: "medium",
 				},
 				impact: {
 					maintainability: "positive",
 					security: "positive",
 					effort: "medium",
-					confidence: 0.8
-				}
+					confidence: 0.8,
+				},
 			});
 		}
 
@@ -657,8 +698,8 @@ export class DataIntegrator implements IDataIntegrator {
 	private assessDataQuality(result: AnalysisResult): DataQualityAssessment {
 		let completeness = 0.8; // Base score
 		let accuracy = 0.9;
-		let consistency = 0.85;
-		let freshness = 1.0; // Always fresh as just analyzed
+		const consistency = 0.85;
+		const freshness = 1.0; // Always fresh as just analyzed
 		let validity = 0.9;
 
 		// Adjust based on errors
@@ -668,11 +709,15 @@ export class DataIntegrator implements IDataIntegrator {
 		}
 
 		// Adjust based on data availability
-		if (!result.extractedData || Object.keys(result.extractedData).length === 0) {
+		if (
+			!result.extractedData ||
+			Object.keys(result.extractedData).length === 0
+		) {
 			completeness *= 0.5;
 		}
 
-		const overall = (completeness + accuracy + consistency + freshness + validity) / 5;
+		const overall =
+			(completeness + accuracy + consistency + freshness + validity) / 5;
 
 		return {
 			completeness,
@@ -680,12 +725,13 @@ export class DataIntegrator implements IDataIntegrator {
 			consistency,
 			freshness,
 			validity,
-			issues: result.errors?.map(error => ({
-				type: "invalid" as const,
-				severity: "medium" as const,
-				description: error.message || String(error),
-				affectedData: ["extractedData"]
-			})) || []
+			issues:
+				result.errors?.map((error) => ({
+					type: "invalid" as const,
+					severity: "medium" as const,
+					description: error.message || String(error),
+					affectedData: ["extractedData"],
+				})) || [],
 		};
 	}
 
@@ -709,27 +755,30 @@ export class DataIntegrator implements IDataIntegrator {
 
 	// Utility methods
 	private getFileExtension(filePath: string): string {
-		const parts = filePath.split('.');
-		return parts.length > 1 ? parts[parts.length - 1] : '';
+		const parts = filePath.split(".");
+		return parts.length > 1 ? parts[parts.length - 1] : "";
 	}
 
 	private truncateString(str: string, maxLength: number): string {
 		if (str.length <= maxLength) return str;
-		return str.substring(0, maxLength - 3) + '...';
+		return str.substring(0, maxLength - 3) + "...";
 	}
 
 	private formatMemory(bytes: number): string {
-		if (bytes === 0) return '0B';
+		if (bytes === 0) return "0B";
 		const k = 1024;
-		const sizes = ['B', 'KB', 'MB', 'GB'];
+		const sizes = ["B", "KB", "MB", "GB"];
 		const i = Math.floor(Math.log(bytes) / Math.log(k));
-		return parseFloat((bytes / Math.pow(k, i)).toFixed(1)) + sizes[i];
+		return parseFloat((bytes / k ** i).toFixed(1)) + sizes[i];
 	}
 
 	private countTreeNodes(node: TreeNode): number {
 		let count = 1;
 		if (node.children) {
-			count += node.children.reduce((sum, child) => sum + this.countTreeNodes(child), 0);
+			count += node.children.reduce(
+				(sum, child) => sum + this.countTreeNodes(child),
+				0,
+			);
 		}
 		return count;
 	}
@@ -738,12 +787,16 @@ export class DataIntegrator implements IDataIntegrator {
 		if (!node.children || node.children.length === 0) {
 			return currentDepth;
 		}
-		return Math.max(...node.children.map(child =>
-			this.calculateTreeDepth(child, currentDepth + 1)
-		));
+		return Math.max(
+			...node.children.map((child) =>
+				this.calculateTreeDepth(child, currentDepth + 1),
+			),
+		);
 	}
 
-	private getOptimizationStrategy(config: DataIntegrationConfig): OptimizationStrategy {
+	private getOptimizationStrategy(
+		config: DataIntegrationConfig,
+	): OptimizationStrategy {
 		switch (config.optimizationMode) {
 			case "speed":
 				return {
@@ -752,7 +805,7 @@ export class DataIntegrator implements IDataIntegrator {
 					enableDataCompression: false,
 					enableMemoryPooling: false,
 					maxConcurrency: 8,
-					batchSize: 20
+					batchSize: 20,
 				};
 			case "accuracy":
 				return {
@@ -761,7 +814,7 @@ export class DataIntegrator implements IDataIntegrator {
 					enableDataCompression: false,
 					enableMemoryPooling: true,
 					maxConcurrency: 2,
-					batchSize: 5
+					batchSize: 5,
 				};
 			case "balanced":
 			default:
@@ -771,7 +824,7 @@ export class DataIntegrator implements IDataIntegrator {
 					enableDataCompression: false,
 					enableMemoryPooling: true,
 					maxConcurrency: 4,
-					batchSize: 10
+					batchSize: 10,
 				};
 		}
 	}

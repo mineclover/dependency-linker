@@ -197,18 +197,17 @@ export class IdentifierAnalysisInterpreter
 
 		// Count large classes (simplified - would need method analysis)
 		const classes = identifiers.filter((i) => i.type === "class");
-		const largeClasses = classes.filter(
-			(c) => {
-				// Check if endLine exists, otherwise use a reasonable default
-				const endLine = c.location?.endLine || c.location?.line + 50;
-				// This is a simplified heuristic - would need more sophisticated analysis
-				return identifiers.filter(
+		const largeClasses = classes.filter((c) => {
+			// Check if endLine exists, otherwise use a reasonable default
+			const endLine = c.location?.endLine || c.location?.line + 50;
+			// This is a simplified heuristic - would need more sophisticated analysis
+			return (
+				identifiers.filter(
 					(i) =>
-						i.location?.line > c.location?.line &&
-						i.location?.line < endLine,
-				).length > 10;
-			},
-		).length;
+						i.location?.line > c.location?.line && i.location?.line < endLine,
+				).length > 10
+			);
+		}).length;
 
 		return {
 			averageParametersPerFunction:

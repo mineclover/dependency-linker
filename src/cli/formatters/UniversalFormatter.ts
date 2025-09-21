@@ -6,9 +6,16 @@
 import type { AnalysisResult } from "../../models/AnalysisResult";
 import type { IntegratedAnalysisData } from "../../models/IntegratedData";
 import { EnhancedOutputFormatter } from "./EnhancedOutputFormatter";
-import { IntegratedOutputFormatter, type OutputOptions } from "./IntegratedOutputFormatter";
+import {
+	IntegratedOutputFormatter,
+	type OutputOptions,
+} from "./IntegratedOutputFormatter";
 
-export type FormattableData = AnalysisResult | AnalysisResult[] | IntegratedAnalysisData | IntegratedAnalysisData[];
+export type FormattableData =
+	| AnalysisResult
+	| AnalysisResult[]
+	| IntegratedAnalysisData
+	| IntegratedAnalysisData[];
 
 export interface UniversalFormatOptions extends OutputOptions {
 	preferIntegrated?: boolean;
@@ -30,7 +37,10 @@ export class UniversalFormatter {
 		if (this.isIntegratedData(data)) {
 			return this.integratedFormatter.format(data, options);
 		} else {
-			return this.formatAnalysisResult(data as AnalysisResult | AnalysisResult[], options);
+			return this.formatAnalysisResult(
+				data as AnalysisResult | AnalysisResult[],
+				options,
+			);
 		}
 	}
 
@@ -39,13 +49,15 @@ export class UniversalFormatter {
 	 */
 	private formatAnalysisResult(
 		data: AnalysisResult | AnalysisResult[],
-		options: UniversalFormatOptions
+		options: UniversalFormatOptions,
 	): string {
 		const results = Array.isArray(data) ? data : [data];
 
 		switch (options.format) {
 			case "summary":
-				return results.map(r => this.enhancedFormatter.formatAsSummary(r)).join('\n');
+				return results
+					.map((r) => this.enhancedFormatter.formatAsSummary(r))
+					.join("\n");
 
 			case "table":
 				return this.enhancedFormatter.formatAsTable(results);
@@ -54,13 +66,18 @@ export class UniversalFormatter {
 				if (results.length === 1) {
 					return this.enhancedFormatter.formatAsTree(results[0]);
 				} else {
-					return results.map((r, i) =>
-						`\n${i + 1}. ${this.enhancedFormatter.formatAsTree(r)}`
-					).join('\n' + "─".repeat(50) + '\n');
+					return results
+						.map(
+							(r, i) => `\n${i + 1}. ${this.enhancedFormatter.formatAsTree(r)}`,
+						)
+						.join("\n" + "─".repeat(50) + "\n");
 				}
 
 			case "csv":
-				return this.enhancedFormatter.formatAsCSV(results, options.includeHeaders);
+				return this.enhancedFormatter.formatAsCSV(
+					results,
+					options.includeHeaders,
+				);
 
 			case "json":
 				return this.enhancedFormatter.formatAsJSON(data, options.compact);
@@ -69,31 +86,40 @@ export class UniversalFormatter {
 				if (results.length === 1) {
 					return this.enhancedFormatter.formatAsReport(results[0]);
 				} else {
-					return results.map((r, i) =>
-						`\n${"=".repeat(60)}\nReport ${i + 1} of ${results.length}\n${"=".repeat(60)}\n` +
-						this.enhancedFormatter.formatAsReport(r)
-					).join('\n');
+					return results
+						.map(
+							(r, i) =>
+								`\n${"=".repeat(60)}\nReport ${i + 1} of ${results.length}\n${"=".repeat(60)}\n` +
+								this.enhancedFormatter.formatAsReport(r),
+						)
+						.join("\n");
 				}
 
 			case "minimal":
-				return results.map(r => {
-					const deps = r.extractedData?.dependency?.dependencies?.length || 0;
-					const exports = r.extractedData?.dependency?.exports?.length || 0;
-					const time = r.performanceMetrics?.parseTime || 0;
-					const status = r.errors?.length ? "✗" : "✓";
-					const fileName = r.filePath.split('/').pop() || r.filePath;
-					return `${fileName}: ${deps}/${exports} (${time}ms) ${status}`;
-				}).join('\n');
+				return results
+					.map((r) => {
+						const deps = r.extractedData?.dependency?.dependencies?.length || 0;
+						const exports = r.extractedData?.dependency?.exports?.length || 0;
+						const time = r.performanceMetrics?.parseTime || 0;
+						const status = r.errors?.length ? "✗" : "✓";
+						const fileName = r.filePath.split("/").pop() || r.filePath;
+						return `${fileName}: ${deps}/${exports} (${time}ms) ${status}`;
+					})
+					.join("\n");
 
 			default:
-				throw new Error(`Unsupported format for AnalysisResult: ${options.format}`);
+				throw new Error(
+					`Unsupported format for AnalysisResult: ${options.format}`,
+				);
 		}
 	}
 
 	/**
 	 * Type guard to check if data is IntegratedAnalysisData
 	 */
-	private isIntegratedData(data: FormattableData): data is IntegratedAnalysisData | IntegratedAnalysisData[] {
+	private isIntegratedData(
+		data: FormattableData,
+	): data is IntegratedAnalysisData | IntegratedAnalysisData[] {
 		if (Array.isArray(data)) {
 			return data.length > 0 && this.hasIntegratedStructure(data[0]);
 		}
@@ -104,22 +130,32 @@ export class UniversalFormatter {
 	 * Check if object has IntegratedAnalysisData structure
 	 */
 	private hasIntegratedStructure(obj: any): boolean {
-		return obj &&
-			typeof obj === 'object' &&
+		return (
+			obj &&
+			typeof obj === "object" &&
 			obj.core &&
 			obj.views &&
 			obj.metadata &&
 			obj.detailed &&
 			obj.core.file &&
 			obj.views.summary &&
-			obj.views.table;
+			obj.views.table
+		);
 	}
 
 	/**
 	 * Get available formats for given data type
 	 */
 	getAvailableFormats(data: FormattableData): string[] {
-		const baseFormats = ["summary", "table", "tree", "csv", "json", "minimal", "report"];
+		const baseFormats = [
+			"summary",
+			"table",
+			"tree",
+			"csv",
+			"json",
+			"minimal",
+			"report",
+		];
 
 		if (this.isIntegratedData(data)) {
 			// All formats supported for integrated data
@@ -154,25 +190,26 @@ export class UniversalFormatter {
 			return {
 				recommended: isIntegrated ? "report" : "report",
 				alternatives: ["json", "tree"],
-				reason: "Single file analysis - detailed report provides comprehensive view"
+				reason:
+					"Single file analysis - detailed report provides comprehensive view",
 			};
 		} else if (count <= 10) {
 			return {
 				recommended: "table",
 				alternatives: ["summary", "csv"],
-				reason: "Small batch - table format provides good overview"
+				reason: "Small batch - table format provides good overview",
 			};
 		} else if (count <= 100) {
 			return {
 				recommended: "summary",
 				alternatives: ["csv", "minimal"],
-				reason: "Medium batch - summary format is most readable"
+				reason: "Medium batch - summary format is most readable",
 			};
 		} else {
 			return {
 				recommended: isIntegrated ? "minimal" : "csv",
 				alternatives: ["csv", "json"],
-				reason: "Large batch - minimal format reduces output size"
+				reason: "Large batch - minimal format reduces output size",
 			};
 		}
 	}
@@ -182,7 +219,7 @@ export class UniversalFormatter {
 	 */
 	formatWithMetadata(
 		data: FormattableData,
-		options: UniversalFormatOptions
+		options: UniversalFormatOptions,
 	): {
 		content: string;
 		metadata: {
@@ -201,11 +238,13 @@ export class UniversalFormatter {
 			content,
 			metadata: {
 				format: options.format,
-				dataType: this.isIntegratedData(data) ? "IntegratedAnalysisData" : "AnalysisResult",
+				dataType: this.isIntegratedData(data)
+					? "IntegratedAnalysisData"
+					: "AnalysisResult",
 				itemCount: Array.isArray(data) ? data.length : 1,
 				outputSize: content.length,
-				processingTime
-			}
+				processingTime,
+			},
 		};
 	}
 
@@ -215,23 +254,25 @@ export class UniversalFormatter {
 	formatOptimized(
 		data: FormattableData,
 		preferredFormat: string,
-		maxOutputSize?: number
+		maxOutputSize?: number,
 	): {
 		content: string;
 		actualFormat: string;
 		optimized: boolean;
 	} {
-		const baseOptions: UniversalFormatOptions = { format: preferredFormat as any };
+		const baseOptions: UniversalFormatOptions = {
+			format: preferredFormat as any,
+		};
 
 		// Try preferred format first
-		let result = this.formatWithMetadata(data, baseOptions);
+		const result = this.formatWithMetadata(data, baseOptions);
 
 		// If output is too large and we have a limit, try to optimize
 		if (maxOutputSize && result.metadata.outputSize > maxOutputSize) {
 			const suggestions = this.suggestFormat(data);
 			const optimizedOptions: UniversalFormatOptions = {
 				format: suggestions.recommended as any,
-				compact: true
+				compact: true,
 			};
 
 			const optimizedResult = this.formatWithMetadata(data, optimizedOptions);
@@ -240,7 +281,7 @@ export class UniversalFormatter {
 				return {
 					content: optimizedResult.content,
 					actualFormat: suggestions.recommended,
-					optimized: true
+					optimized: true,
 				};
 			}
 		}
@@ -248,7 +289,7 @@ export class UniversalFormatter {
 		return {
 			content: result.content,
 			actualFormat: preferredFormat,
-			optimized: false
+			optimized: false,
 		};
 	}
 
@@ -261,7 +302,15 @@ export class UniversalFormatter {
 		features: string[];
 	} {
 		return {
-			supportedFormats: ["summary", "table", "tree", "csv", "json", "minimal", "report"],
+			supportedFormats: [
+				"summary",
+				"table",
+				"tree",
+				"csv",
+				"json",
+				"minimal",
+				"report",
+			],
 			supportedDataTypes: ["AnalysisResult", "IntegratedAnalysisData"],
 			features: [
 				"Auto-detection of data types",
@@ -269,8 +318,8 @@ export class UniversalFormatter {
 				"Backward compatibility",
 				"Progress indicators",
 				"Metadata generation",
-				"Output size optimization"
-			]
+				"Output size optimization",
+			],
 		};
 	}
 }
