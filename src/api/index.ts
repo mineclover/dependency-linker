@@ -25,7 +25,8 @@ export {
 	getBatchAnalysis,
 	resetFactoryAnalyzer,
 } from "./factory-functions";
-// Main API Class
+// Main API Classes
 export { TypeScriptAnalyzer } from "./TypeScriptAnalyzer";
+export { BatchAnalyzer } from "./BatchAnalyzer";
 // Core API Types
 export * from "./types";

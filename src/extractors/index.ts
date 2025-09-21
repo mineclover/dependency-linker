@@ -1,6 +1,6 @@
 /**
- * Extractors Module - Built-in data extractors
- * Exports all built-in data extraction plugins
+ * Data Extractors
+ * Built-in data extraction plugins for AST analysis
  */
 
 export {
@@ -9,13 +9,13 @@ export {
 	type ComplexityInfo,
 } from "./ComplexityExtractor";
 
-// Built-in extractors
+// ===== BUILT-IN EXTRACTORS =====
 export {
 	type DependencyExtractionResult,
 	DependencyExtractor,
 	type DependencyInfo,
 } from "./DependencyExtractor";
-// Base interface
+// ===== BASE INTERFACE =====
 export { IDataExtractor } from "./IDataExtractor";
 export {
 	type IdentifierExtractionResult,

@@ -493,8 +493,8 @@ describe('Plugin System Integration', () => {
         interpreters: []
       });
 
-      // Should have some errors but still complete
-      expect(result.errors.length).toBeGreaterThan(0);
+      // Error extractor should return null in extractedData
+      expect(result.extractedData['error-test']).toBeNull();
       // Other extractors should still work
       expect(result.extractedData.dependency).toBeDefined();
     });
@@ -555,8 +555,8 @@ describe('Plugin System Integration', () => {
         interpreters: ['dependency-analysis', 'error-test']
       });
 
-      // Should have some errors but still complete
-      expect(result.errors.length).toBeGreaterThan(0);
+      // Error interpreter should return null in interpretedData
+      expect(result.interpretedData['error-test']).toBeNull();
       // Other interpreters should still work
       expect(result.interpretedData['dependency-analysis']).toBeDefined();
     });

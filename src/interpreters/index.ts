@@ -1,9 +1,9 @@
 /**
- * Interpreters Module - Built-in data interpreters
- * Exports all built-in data interpretation plugins
+ * Data Interpreters
+ * Built-in data interpretation plugins for analysis results processing
  */
 
-// Built-in interpreters
+// ===== BUILT-IN INTERPRETERS =====
 export {
 	DependencyAnalysisInterpreter,
 	type DependencyAnalysisResult,
@@ -12,7 +12,7 @@ export {
 	type Recommendation,
 	type RiskFactor,
 } from "./DependencyAnalysisInterpreter";
-// Base interface
+// ===== BASE INTERFACE =====
 export { IDataInterpreter } from "./IDataInterpreter";
 
 export {

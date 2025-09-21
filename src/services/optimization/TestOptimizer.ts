@@ -64,12 +64,7 @@ interface OptimizationLog {
 	files?: string[];
 }
 
-interface OptimizationContext {
-	backupDirectory: string;
-	tempDirectory: string;
-	enableBackups: boolean;
-	dryRun: boolean;
-}
+// OptimizationContext interface removed - not currently used
 
 // Note: BackupEntry interface reserved for future backup functionality
 // interface BackupEntry {
@@ -82,16 +77,6 @@ interface OptimizationContext {
 export class TestOptimizer {
 	private logs: OptimizationLog[] = [];
 	private backups: Map<string, string> = new Map();
-
-	private context: OptimizationContext;
-	constructor(context?: OptimizationContext) {
-		this.context = context || {
-			backupDirectory: "./backups",
-			tempDirectory: "./temp",
-			enableBackups: false,
-			dryRun: false,
-		};
-	}
 
 	async executeOptimizations(
 		opportunities: OptimizationOpportunity[],

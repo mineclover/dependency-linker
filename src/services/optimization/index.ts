@@ -1,19 +1,14 @@
 /**
- * Test Optimization Services - Public API
- * Centralized exports for all optimization services
+ * Test Optimization Services
+ * Complete test optimization framework with analysis, optimization, and performance tracking
  */
 
-export { PerformanceTracker } from "./PerformanceTracker";
-// Core service classes
-export { TestAnalyzer } from "./TestAnalyzer";
-export { TestOptimizer } from "./TestOptimizer";
-
 import { PerformanceTracker } from "./PerformanceTracker";
-// Import classes for internal use
+// ===== IMPORTS FOR INTERNAL USE =====
 import { TestAnalyzer } from "./TestAnalyzer";
 import { TestOptimizer } from "./TestOptimizer";
 
-// Helper benchmark class
+// ===== BENCHMARK UTILITIES =====
 export {
 	assertPerformance,
 	type BenchmarkOptions,
@@ -29,36 +24,35 @@ export type {
 	TestExecutionResult,
 	TestSuiteMetrics,
 } from "./PerformanceTracker";
-// Re-export service interfaces and types for convenience
+export { PerformanceTracker } from "./PerformanceTracker";
+// ===== TYPE EXPORTS =====
 export type {
 	CategorizedTests,
 	TestAnalysisOptions,
 	TestFileInfo,
 	TestSuiteAnalysis,
 } from "./TestAnalyzer";
+// ===== CORE SERVICES =====
+export { TestAnalyzer } from "./TestAnalyzer";
+// ===== UTILITY SERVICES =====
 export { TestAssertions } from "./TestAssertions";
 export { TestBenchmark } from "./TestBenchmark";
-// Utility services
 export { TestDataFactory } from "./TestDataFactory";
+export { TestOptimizer } from "./TestOptimizer";
 export { TestSetupManager } from "./TestSetupManager";
 
-// Configuration interfaces
+// ===== ORCHESTRATOR =====
 export interface OptimizationServiceConfig {
 	/** Maximum number of concurrent optimizations */
 	maxConcurrentOptimizations?: number;
-
 	/** Default timeout for service operations (ms) */
 	defaultTimeoutMs?: number;
-
 	/** Enable detailed performance tracking */
 	enablePerformanceTracking?: boolean;
-
 	/** Enable real-time monitoring */
 	enableRealTimeMonitoring?: boolean;
-
 	/** Output directory for reports and logs */
 	outputDirectory?: string;
-
 	/** Log level for service operations */
 	logLevel?: "error" | "warn" | "info" | "debug" | "trace";
 }

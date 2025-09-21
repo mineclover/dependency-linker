@@ -24,10 +24,7 @@ import type {
 	TreeNode,
 	TreeView,
 } from "../../models/IntegratedData";
-import {
-	type OptimizationStrategy,
-	PerformanceOptimizer,
-} from "../optimization/PerformanceOptimizer";
+import type { OptimizationStrategy } from "../optimization/PerformanceOptimizer";
 
 export interface IDataIntegrator {
 	/**
@@ -63,11 +60,6 @@ export class DataIntegrator implements IDataIntegrator {
 			maxDepth: 10,
 		},
 	};
-
-	private optimizer: PerformanceOptimizer;
-	constructor() {
-		this.optimizer = new PerformanceOptimizer();
-	}
 
 	async integrate(
 		result: AnalysisResult,

@@ -183,8 +183,6 @@ export class AnalysisEngineBuilder implements IAnalysisEngineBuilder {
 	private extractors: Map<string, IDataExtractor<any>> = new Map();
 	private interpreters: Map<string, IDataInterpreter<any, any>> = new Map();
 	private events?: IAnalysisEngineEvents;
-	private cacheEnabled: boolean = false;
-	private cacheSize: number = 100;
 
 	/**
 	 * Sets the configuration
@@ -228,7 +226,6 @@ export class AnalysisEngineBuilder implements IAnalysisEngineBuilder {
 	 * Enables cache
 	 */
 	withCache(enabled: boolean): IAnalysisEngineBuilder {
-		this.cacheEnabled = enabled;
 		this.config.useCache = enabled;
 		return this;
 	}
@@ -237,7 +234,6 @@ export class AnalysisEngineBuilder implements IAnalysisEngineBuilder {
 	 * Sets cache size
 	 */
 	withCacheSize(maxSize: number): IAnalysisEngineBuilder {
-		this.cacheSize = maxSize;
 		this.config.maxCacheSize = maxSize;
 		return this;
 	}
