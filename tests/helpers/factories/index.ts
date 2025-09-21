@@ -2,6 +2,10 @@
  * Test data factories for optimization testing
  */
 
+import * as fs from 'fs';
+import * as path from 'path';
+import * as os from 'os';
+
 export interface TestSuiteData {
   id: string;
   name: string;
@@ -40,7 +44,45 @@ export interface PerformanceBaselineData {
   testCount: number;
 }
 
+export interface TempFileSpec {
+  path: string;
+  content: string;
+}
+
+export interface TempFileResult {
+  rootDir: string;
+  cleanup: () => Promise<void>;
+}
+
 export class TestDataFactory {
+  static async createTempFiles(files: TempFileSpec[]): Promise<TempFileResult> {
+    const tempDir = fs.mkdtempSync(path.join(os.tmpdir(), 'test-optimization-'));
+
+    // Create all specified files
+    for (const file of files) {
+      const fullPath = path.join(tempDir, file.path);
+      const dir = path.dirname(fullPath);
+
+      // Ensure directory exists
+      fs.mkdirSync(dir, { recursive: true });
+
+      // Write file content
+      fs.writeFileSync(fullPath, file.content, 'utf8');
+    }
+
+    return {
+      rootDir: tempDir,
+      cleanup: async () => {
+        try {
+          fs.rmSync(tempDir, { recursive: true, force: true });
+        } catch (error) {
+          // Ignore cleanup errors in tests
+          console.warn(`Failed to clean up temp directory ${tempDir}:`, error);
+        }
+      }
+    };
+  }
+
   static createTestSuite(overrides: Partial<TestSuiteData> = {}): TestSuiteData {
     return {
       id: `suite-${Date.now()}`,
