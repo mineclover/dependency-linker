@@ -16,37 +16,103 @@ import type { ExportInfo } from '../../src/models/ExportInfo';
  * Mock analysis results for different test scenarios
  */
 export const mockAnalysisResults = {
-	simple: {
-		filePath: '/test/simple.ts',
-		success: true,
-		dependencies: [] as DependencyInfo[],
-		imports: [] as ImportInfo[],
-		exports: [] as ExportInfo[],
-		parseTime: 15,
-	} as AnalysisResult,
+	simple: (() => {
+		const { createPathInfo } = require('../../src/models/PathInfo');
+		const filePath = '/test/simple.ts';
+		return {
+			filePath,
+			pathInfo: createPathInfo(filePath),
+			language: 'typescript',
+			extractedData: {
+				dependencies: [] as DependencyInfo[],
+				imports: [] as ImportInfo[],
+				exports: [] as ExportInfo[],
+			},
+			interpretedData: {},
+			performanceMetrics: {
+				parseTime: 15,
+				extractionTime: 10,
+				interpretationTime: 5,
+				totalTime: 30,
+				memoryUsage: 1.2
+			},
+			errors: [],
+			metadata: {
+				timestamp: new Date(),
+				version: '2.0.0',
+				config: {}
+			}
+		} as AnalysisResult;
+	})(),
 
-	complex: {
-		filePath: '/test/complex.ts',
-		success: true,
-		dependencies: [] as DependencyInfo[],
-		imports: [] as ImportInfo[],
-		exports: [] as ExportInfo[],
-		parseTime: 45,
-	} as AnalysisResult,
+	complex: (() => {
+		const { createPathInfo } = require('../../src/models/PathInfo');
+		const filePath = '/test/complex.ts';
+		return {
+			filePath,
+			pathInfo: createPathInfo(filePath),
+			language: 'typescript',
+			extractedData: {
+				dependencies: [] as DependencyInfo[],
+				imports: [] as ImportInfo[],
+				exports: [] as ExportInfo[],
+			},
+			interpretedData: {},
+			performanceMetrics: {
+				parseTime: 45,
+				extractionTime: 30,
+				interpretationTime: 15,
+				totalTime: 90,
+				memoryUsage: 3.5
+			},
+			errors: [],
+			metadata: {
+				timestamp: new Date(),
+				version: '2.0.0',
+				config: {}
+			}
+		} as AnalysisResult;
+	})(),
 
-	withErrors: {
-		filePath: '/test/with-errors.ts',
-		success: false,
-		dependencies: [] as DependencyInfo[],
-		imports: [] as ImportInfo[],
-		exports: [] as ExportInfo[],
-		parseTime: 35,
-		error: {
-			code: 'PARSE_ERROR',
-			message: 'Syntax errors found in file',
-			details: ['Expected ":" after property name at line 5']
-		} as AnalysisError,
-	} as AnalysisResult,
+	withErrors: (() => {
+		const { createPathInfo } = require('../../src/models/PathInfo');
+		const filePath = '/test/with-errors.ts';
+		return {
+			filePath,
+			pathInfo: createPathInfo(filePath),
+			language: 'typescript',
+			extractedData: {
+				dependencies: [] as DependencyInfo[],
+				imports: [] as ImportInfo[],
+				exports: [] as ExportInfo[],
+			},
+			interpretedData: {},
+			performanceMetrics: {
+				parseTime: 35,
+				extractionTime: 20,
+				interpretationTime: 10,
+				totalTime: 65,
+				memoryUsage: 2.1
+			},
+			errors: [{
+				type: 'ParseError',
+				message: 'Syntax errors found in file',
+				severity: 'error',
+				source: 'parser',
+				context: {
+					operation: 'parsing',
+					details: ['Expected ":" after property name at line 5']
+				},
+				timestamp: new Date(),
+				id: 'parse-error-1'
+			}],
+			metadata: {
+				timestamp: new Date(),
+				version: '2.0.0',
+				config: {}
+			}
+		} as AnalysisResult;
+	})(),
 };
 
 /**

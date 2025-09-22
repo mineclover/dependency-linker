@@ -560,6 +560,82 @@ npm test
 - **Error Recovery**: 부분 파싱으로 강건성 확보
 - **Cross-Platform**: macOS/Linux/Windows 지원
 
+## 🌍 크로스 플랫폼 지원
+
+PathInfo 시스템은 모든 주요 운영체제에서 최적화된 성능을 제공합니다:
+
+### 🪟 Windows 지원
+- **드라이브 문자**: `C:\`, `D:\` 등 Windows 드라이브 처리
+- **UNC 경로**: `\\server\share\file` 네트워크 경로 지원
+- **환경 변수**: `%USERPROFILE%`, `%PROGRAMFILES%` 등 자동 확장
+- **PowerShell 통합**: Windows 개발 환경 최적화
+
+**Windows 데모 실행:**
+```bash
+npx tsx demo-windows-pathinfo.ts
+```
+
+### 🍎 macOS 지원
+- **앱 번들**: `.app` 패키지 구조 인식 및 분석
+- **틸드 확장**: `~/Documents` 홈 디렉토리 자동 확장
+- **시스템 경로**: `/Applications`, `/Library`, `/System` 특별 처리
+- **Apple Silicon**: ARM64 아키텍처 네이티브 최적화
+- **Homebrew**: `/opt/homebrew` 패키지 경로 지원
+
+**macOS 데모 실행:**
+```bash
+npx tsx demo-macos-pathinfo.ts
+```
+
+### 🐧 Linux 지원
+- **POSIX 준수**: 표준 Unix 경로 시스템
+- **FHS 표준**: Filesystem Hierarchy Standard 호환
+- **권한 시스템**: Linux 파일 권한 인식
+- **시스템 디렉토리**: `/usr`, `/etc`, `/var` 등 표준 경로
+
+**Linux 데모 실행:**
+```bash
+npx tsx demo-linux-pathinfo.ts
+```
+
+### 🌍 통합 멀티 OS 데모
+모든 플랫폼의 기능을 한 번에 체험:
+```bash
+npx tsx demo-multi-os-pathinfo.ts
+```
+
+### 📁 크로스 플랫폼 개발 가이드
+- **[Windows 개발 가이드](docs/windows-development-guide.md)**: Windows 환경 최적화
+- **[macOS 개발 가이드](docs/macos-development-guide.md)**: macOS 환경 최적화
+- **[크로스 플랫폼 예제](examples/cross-platform-paths.ts)**: 통합 경로 처리 유틸리티
+
+### 🔧 플랫폼별 최적화 기능
+```javascript
+// 플랫폼 감지 및 최적화
+const { createPathInfo } = require('./src/lib/index');
+
+// Windows
+const windowsPath = createPathInfo('C:\\Users\\Name\\file.txt');
+console.log(windowsPath.separator); // '\'
+
+// macOS
+const macosPath = createPathInfo('/Applications/App.app/Contents/MacOS/App');
+console.log(macosPath.isWithinProject); // false (시스템 앱)
+
+// Linux
+const linuxPath = createPathInfo('/usr/local/bin/tool');
+console.log(linuxPath.depth); // 4
+```
+
+### 🎯 크로스 플랫폼 테스트
+```bash
+# 모든 플랫폼 호환성 테스트
+npx tsx test-cross-platform-paths.ts
+
+# 플랫폼별 성능 벤치마크
+npm run benchmark:cross-platform
+```
+
 ## 라이선스
 
 MIT 라이선스로 제공됩니다.

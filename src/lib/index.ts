@@ -16,11 +16,14 @@ export { AnalysisResult } from "../models/AnalysisResult";
 export { CacheEntry } from "../models/CacheEntry";
 export { ExtractedData } from "../models/ExtractedData";
 export { PerformanceMetrics } from "../models/PerformanceMetrics";
+export { PathInfo, createPathInfo, createValidatedPathInfo, createBatchPathInfo, comparePathInfo, groupPathInfoByDirectory, filterPathInfo } from "../models/PathInfo";
 export { GoParser } from "../parsers/GoParser";
 // Language parsers
 export { ILanguageParser } from "../parsers/ILanguageParser";
 export { JavaParser } from "../parsers/JavaParser";
 export { JavaScriptParser } from "../parsers/JavaScriptParser";
+export { MarkdownParser, LinkType } from "../parsers/MarkdownParser";
+export type { MarkdownAST, MarkdownNode, MarkdownLink } from "../parsers/MarkdownParser";
 export { TypeScriptParser } from "../parsers/TypeScriptParser";
 export { AnalysisEngine } from "../services/AnalysisEngine";
 export { AnalysisEngineFactory } from "../services/AnalysisEngineFactory";
@@ -34,4 +37,17 @@ export { ParserRegistry } from "../services/ParserRegistry";
 
 // Utility and factory functions
 export * from "./factory";
+
+// Analysis functions
+export {
+	analyzeTypeScriptFile,
+	analyzeMarkdownFile,
+	extractDependencies,
+	extractMarkdownLinks,
+	getBatchAnalysis,
+	getBatchMarkdownAnalysis,
+	analyzeDirectory,
+	getFactoryMarkdownEngine,
+	resetFactoryAnalyzers
+} from "../api/factory-functions";
 // export * from "./types"; // Removed - types file not needed

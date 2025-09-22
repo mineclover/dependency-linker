@@ -118,8 +118,10 @@ describe('CacheManager', () => {
     test('should cache and retrieve analysis result', async () => {
       const filePath = 'result-test.ts';
       const config = { extractors: ['dependency'], interpreters: ['dependency-analysis'] };
+      const { createPathInfo } = require('../../../src/models/PathInfo');
       const result: AnalysisResult = {
         filePath,
+        pathInfo: createPathInfo(filePath),
         language: 'typescript',
         extractedData: {},
         interpretedData: {},
@@ -149,8 +151,10 @@ describe('CacheManager', () => {
       const filePath = 'config-test.ts';
       const config1 = { extractors: ['dependency'] };
       const config2 = { extractors: ['identifier'] };
+      const { createPathInfo } = require('../../../src/models/PathInfo');
       const result: AnalysisResult = {
         filePath,
+        pathInfo: createPathInfo(filePath),
         language: 'typescript',
         extractedData: {},
         interpretedData: {},

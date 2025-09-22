@@ -22,3 +22,8 @@ export {
 	IdentifierExtractor,
 	type IdentifierInfo,
 } from "./IdentifierExtractor";
+export {
+	MarkdownLinkExtractor,
+	type MarkdownLinkDependency,
+	type MarkdownLinkExtractionOptions
+} from "./MarkdownLinkExtractor";

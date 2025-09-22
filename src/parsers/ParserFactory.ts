@@ -11,6 +11,7 @@ import type {
 } from "./ILanguageParser";
 import { JavaParser } from "./JavaParser";
 import { JavaScriptParser } from "./JavaScriptParser";
+import { MarkdownParser } from "./MarkdownParser";
 import { TypeScriptParser } from "./TypeScriptParser";
 
 export class ParserFactory implements IParserFactory {
@@ -29,6 +30,8 @@ export class ParserFactory implements IParserFactory {
 		go: GoParser,
 		golang: GoParser,
 		java: JavaParser,
+		markdown: MarkdownParser,
+		md: MarkdownParser,
 	};
 
 	/**

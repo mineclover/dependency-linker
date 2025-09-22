@@ -220,6 +220,254 @@ export function resolvePath(inputPath: string, basePath?: string): string {
 }
 
 /**
+ * Resolve path for AnalysisResult, ensuring consistent absolute path format
+ * 
+ * @param inputPath - Input file path (relative or absolute)
+ * @param projectRoot - Optional project root directory (defaults to process.cwd())
+ * @returns Normalized absolute path for AnalysisResult
+ * 
+ * @example
+ * ```typescript
+ * const resultPath = resolveAnalysisPath('./src/index.ts');
+ * // Returns: '/Users/user/project/src/index.ts'
+ * 
+ * const resultPath = resolveAnalysisPath('../other/file.ts', '/Users/user/project/src');
+ * // Returns: '/Users/user/project/other/file.ts'
+ * ```
+ */
+export function resolveAnalysisPath(inputPath: string, projectRoot?: string): string {
+	try {
+		const basePath = projectRoot || process.cwd();
+		
+		// If already absolute, just normalize it
+		if (path.isAbsolute(inputPath)) {
+			return normalizePath(inputPath);
+		}
+		
+		// Resolve relative path against project root
+		const resolved = path.resolve(basePath, inputPath);
+		return normalizePath(resolved);
+	} catch (error) {
+		logger.error(`Analysis path resolution failed: ${inputPath}`, error);
+		// Fallback to basic resolution
+		return normalizePath(path.resolve(inputPath));
+	}
+}
+
+/**
+ * Convert absolute path back to project-relative path for display purposes
+ * 
+ * @param absolutePath - Absolute file path
+ * @param projectRoot - Project root directory (defaults to process.cwd())
+ * @returns Relative path from project root
+ * 
+ * @example
+ * ```typescript
+ * const relativePath = toProjectRelativePath('/Users/user/project/src/index.ts');
+ * // Returns: 'src/index.ts'
+ * ```
+ */
+export function toProjectRelativePath(absolutePath: string, projectRoot?: string): string {
+	try {
+		const basePath = projectRoot || process.cwd();
+		const relative = path.relative(basePath, absolutePath);
+		
+		// If the path goes outside project root, return the absolute path
+		if (relative.startsWith('..')) {
+			return absolutePath;
+		}
+		
+		return normalizePath(relative);
+	} catch (error) {
+		logger.error(`Project relative path conversion failed: ${absolutePath}`, error);
+		return absolutePath;
+	}
+}
+
+/**
+ * Validate and resolve path for AnalysisResult with additional checks
+ * 
+ * @param inputPath - Input file path
+ * @param options - Path resolution options
+ * @returns Resolved path information
+ * 
+ * @example
+ * ```typescript
+ * const pathInfo = validateAndResolveAnalysisPath('./src/index.ts', {
+ *   mustExist: true,
+ *   allowedExtensions: ['.ts', '.js']
+ * });
+ * 
+ * if (pathInfo.isValid) {
+ *   console.log(`Resolved: ${pathInfo.absolutePath}`);
+ *   console.log(`Relative: ${pathInfo.relativePath}`);
+ * }
+ * ```
+ */
+export function validateAndResolveAnalysisPath(
+	inputPath: string,
+	options?: {
+		projectRoot?: string;
+		mustExist?: boolean;
+		allowedExtensions?: string[];
+		maxLength?: number;
+	}
+): {
+	isValid: boolean;
+	absolutePath: string;
+	relativePath: string;
+	error?: string;
+	exists?: boolean;
+	extension?: string;
+} {
+	const {
+		projectRoot,
+		mustExist = false,
+		allowedExtensions,
+		maxLength = 1000
+	} = options || {};
+
+	try {
+		// Basic validation
+		if (!inputPath || typeof inputPath !== 'string') {
+			return {
+				isValid: false,
+				absolutePath: '',
+				relativePath: '',
+				error: 'Invalid input path'
+			};
+		}
+
+		if (inputPath.length > maxLength) {
+			return {
+				isValid: false,
+				absolutePath: inputPath,
+				relativePath: inputPath,
+				error: `Path too long (${inputPath.length} > ${maxLength})`
+			};
+		}
+
+		// Path resolution
+		const absolutePath = resolveAnalysisPath(inputPath, projectRoot);
+		const relativePath = toProjectRelativePath(absolutePath, projectRoot);
+		const extension = path.extname(absolutePath);
+
+		// Extension validation
+		if (allowedExtensions && allowedExtensions.length > 0) {
+			if (!allowedExtensions.includes(extension)) {
+				return {
+					isValid: false,
+					absolutePath,
+					relativePath,
+					extension,
+					error: `Extension '${extension}' not allowed. Allowed: ${allowedExtensions.join(', ')}`
+				};
+			}
+		}
+
+		// Existence check
+		let exists: boolean | undefined;
+		if (mustExist) {
+			try {
+				const fs = require('node:fs');
+				exists = fs.existsSync(absolutePath);
+				if (!exists) {
+					return {
+						isValid: false,
+						absolutePath,
+						relativePath,
+						extension,
+						exists,
+						error: `File does not exist: ${absolutePath}`
+					};
+				}
+			} catch (fsError) {
+				return {
+					isValid: false,
+					absolutePath,
+					relativePath,
+					extension,
+					error: `File existence check failed: ${fsError instanceof Error ? fsError.message : 'Unknown error'}`
+				};
+			}
+		}
+
+		return {
+			isValid: true,
+			absolutePath,
+			relativePath,
+			extension,
+			exists
+		};
+
+	} catch (error) {
+		return {
+			isValid: false,
+			absolutePath: inputPath,
+			relativePath: inputPath,
+			error: `Path validation failed: ${error instanceof Error ? error.message : 'Unknown error'}`
+		};
+	}
+}
+
+/**
+ * Batch resolve multiple paths for AnalysisResult
+ * 
+ * @param inputPaths - Array of input file paths
+ * @param projectRoot - Optional project root directory
+ * @returns Array of resolved path information
+ * 
+ * @example
+ * ```typescript
+ * const resolved = batchResolveAnalysisPaths([
+ *   './src/index.ts',
+ *   './docs/README.md',
+ *   '../other/file.js'
+ * ]);
+ * 
+ * resolved.forEach(pathInfo => {
+ *   if (pathInfo.isValid) {
+ *     console.log(`${pathInfo.relativePath} -> ${pathInfo.absolutePath}`);
+ *   } else {
+ *     console.error(`Error: ${pathInfo.error}`);
+ *   }
+ * });
+ * ```
+ */
+export function batchResolveAnalysisPaths(
+	inputPaths: string[],
+	projectRoot?: string
+): Array<{
+	input: string;
+	isValid: boolean;
+	absolutePath: string;
+	relativePath: string;
+	error?: string;
+}> {
+	return inputPaths.map(inputPath => {
+		try {
+			const absolutePath = resolveAnalysisPath(inputPath, projectRoot);
+			const relativePath = toProjectRelativePath(absolutePath, projectRoot);
+			
+			return {
+				input: inputPath,
+				isValid: true,
+				absolutePath,
+				relativePath
+			};
+		} catch (error) {
+			return {
+				input: inputPath,
+				isValid: false,
+				absolutePath: inputPath,
+				relativePath: inputPath,
+				error: error instanceof Error ? error.message : 'Unknown error'
+			};
+		}
+	});
+}
+
+/**
  * Check if path is absolute
  * @param inputPath Path to check
  * @returns true if path is absolute

@@ -54,12 +54,31 @@ class MockTestDataFactory implements ITestDataFactory {
   }
 
   createMockAnalysisResult(overrides: Partial<AnalysisResult> = {}): AnalysisResult {
+    const { createPathInfo } = require('../../src/models/PathInfo');
+    const filePath = overrides.filePath || '/mock/test.ts';
+
     return {
-      filePath: '/mock/test.ts',
-      dependencies: ['path', 'fs'],
-      exports: ['default'],
-      parseTime: 150,
+      filePath,
+      pathInfo: createPathInfo(filePath),
+      language: 'typescript',
+      extractedData: {
+        dependencies: ['path', 'fs'],
+        exports: ['default']
+      },
+      interpretedData: {},
+      performanceMetrics: {
+        parseTime: 150,
+        extractionTime: 50,
+        interpretationTime: 25,
+        totalTime: 225,
+        memoryUsage: 2.5
+      },
       errors: [],
+      metadata: {
+        timestamp: new Date(),
+        version: '2.0.0',
+        config: {}
+      },
       ...overrides
     };
   }

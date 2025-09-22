@@ -6,11 +6,15 @@
 
 import type { AnalysisError } from "./AnalysisError";
 import type { PerformanceMetrics } from "./PerformanceMetrics";
+import type { PathInfo } from "./PathInfo";
 
 // Comprehensive analysis result interface
 export interface AnalysisResult {
-	/** Absolute path to the analyzed file */
+	/** Absolute path to the analyzed file (legacy - use pathInfo.absolute instead) */
 	filePath: string;
+
+	/** Comprehensive path information */
+	pathInfo: PathInfo;
 
 	/** Detected or specified programming language */
 	language: string;
@@ -101,8 +105,12 @@ export function createAnalysisResult(
 	filePath: string,
 	language: string,
 ): AnalysisResult {
+	// Import createPathInfo to generate PathInfo
+	const createPathInfo = require('./PathInfo').createPathInfo;
+
 	return {
 		filePath,
+		pathInfo: createPathInfo(filePath),
 		language,
 		extractedData: {},
 		interpretedData: {},

@@ -25,3 +25,16 @@ export {
 	type NamingConventionAnalysis,
 	type RefactoringRecommendation,
 } from "./IdentifierAnalysisInterpreter";
+
+export {
+	LinkDependencyInterpreter,
+	type LinkDependencyAnalysis,
+	type LinkSummary,
+	type ProcessedDependency,
+	type LinkIssue,
+	DependencyCategory,
+	LinkStatus,
+	IssueType,
+	IssueSeverity,
+	type LinkAnalysisOptions
+} from "./LinkDependencyInterpreter";
