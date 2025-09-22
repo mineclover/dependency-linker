@@ -55,4 +55,9 @@ export interface ICacheManager {
 	 * Performs cleanup operations
 	 */
 	cleanup(): Promise<void>;
+
+	/**
+	 * Shuts down cache manager and cleans up all resources
+	 */
+	shutdown(): Promise<void>;
 }

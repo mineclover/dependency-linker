@@ -64,13 +64,14 @@ module.exports = {
 	maxWorkers: "50%", // Optimize for integration tests
 	testSequencer: "@jest/test-sequencer",
 
-	// Fix resource leak issues (T004)
-	forceExit: true,
-	detectOpenHandles: false, // Temporarily disabled to reduce noise
-	detectLeaks: false, // Temporarily disabled to allow tests to pass
+	// Improved resource management
+	forceExit: false, // Allow proper cleanup
+	detectOpenHandles: true, // Enable to detect actual leaks
+	detectLeaks: false, // Keep disabled to reduce performance impact
 
-	// Worker management to prevent exit issues
-	workerIdleMemoryLimit: "500MB",
+	// Enhanced worker management
+	workerIdleMemoryLimit: "200MB", // Reduce memory limit
+	maxConcurrency: 4, // Limit concurrent tests to reduce conflicts
 
 	// Cache management for better performance
 	clearMocks: true,

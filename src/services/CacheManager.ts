@@ -20,6 +20,7 @@ export class CacheManager implements ICacheManager {
 	private cache: Map<string, CacheEntry<any>> = new Map();
 	private stats: CacheStats;
 	private config: CacheConfiguration;
+	private cleanupTimer?: NodeJS.Timeout;
 
 	constructor(config?: Partial<CacheConfiguration>) {
 		this.config = {
@@ -64,7 +65,11 @@ export class CacheManager implements ICacheManager {
 
 		// Start cleanup interval if configured
 		if (this.config.cleanupInterval > 0) {
-			setInterval(() => this.cleanup(), this.config.cleanupInterval);
+			this.cleanupTimer = setInterval(() => this.cleanup(), this.config.cleanupInterval);
+			// Make timer not prevent process exit
+			if (this.cleanupTimer.unref) {
+				this.cleanupTimer.unref();
+			}
 		}
 
 		// Load persisted cache if enabled
@@ -595,6 +600,17 @@ export class CacheManager implements ICacheManager {
 			await fs.unlink(cachePath);
 		} catch (_error) {
 			// File doesn't exist - that's fine
+		}
+	}
+
+	/**
+	 * Shutdown cache manager and clean up resources
+	 */
+	async shutdown(): Promise<void> {
+		// Clear cleanup timer
+		if (this.cleanupTimer) {
+			clearInterval(this.cleanupTimer);
+			this.cleanupTimer = undefined;
 		}
 	}
 }

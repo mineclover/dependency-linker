@@ -670,7 +670,11 @@ export class AnalysisEngine implements IAnalysisEngine {
 		this.extractorRegistry.clear();
 		this.interpreterRegistry.clear();
 		this.parserRegistry.clear();
+
+		// Properly shutdown cache manager (including timers)
+		await this.cacheManager.shutdown();
 		await this.cacheManager.clear();
+
 		this.enabled = false;
 	}
 

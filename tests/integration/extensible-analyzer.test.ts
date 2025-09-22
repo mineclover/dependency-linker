@@ -9,6 +9,7 @@ import { AnalysisEngine } from '../../src/services/AnalysisEngine';
 import type { IDataExtractor } from '../../src/extractors/IDataExtractor';
 import type { IDataInterpreter } from '../../src/interpreters/IDataInterpreter';
 import type { AnalysisConfig } from '../../src/models/AnalysisConfig';
+import { TestIsolationManager, setupTestIsolation } from '../helpers/test-isolation';
 
 // Security Analysis Extension
 class SecurityAnalysisExtractor implements IDataExtractor<any> {
@@ -419,8 +420,11 @@ class CodeQualityExtractor implements IDataExtractor<any> {
 describe('Extensible Analyzer Integration', () => {
   let engine: AnalysisEngine;
 
+  // Setup test isolation
+  setupTestIsolation();
+
   beforeEach(() => {
-    engine = new AnalysisEngine();
+    engine = TestIsolationManager.createEngine();
   });
 
   describe('Custom Analysis Domain Extensions', () => {

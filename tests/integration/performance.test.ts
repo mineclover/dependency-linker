@@ -9,6 +9,7 @@ import { AnalysisEngine } from '../../src/services/AnalysisEngine';
 import type { AnalysisConfig } from '../../src/models/AnalysisConfig';
 import * as fs from 'node:fs';
 import * as path from 'node:path';
+import { TestIsolationManager, setupTestIsolation } from '../helpers/test-isolation';
 
 // Performance thresholds from requirements
 const PERFORMANCE_TARGETS = {
@@ -54,13 +55,12 @@ describe('Performance Integration Tests', () => {
   let engine: AnalysisEngine;
   let monitor: PerformanceMonitor;
 
-  beforeEach(() => {
-    engine = new AnalysisEngine();
-    monitor = new PerformanceMonitor();
-  });
+  // Setup test isolation
+  setupTestIsolation();
 
-  afterEach(async () => {
-    await engine.shutdown();
+  beforeEach(() => {
+    engine = TestIsolationManager.createEngine();
+    monitor = new PerformanceMonitor();
   });
 
   describe('Single File Performance', () => {
