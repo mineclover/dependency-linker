@@ -501,7 +501,8 @@ export class IntegratedOutputFormatter {
 						const exports = r.extractedData?.dependency?.exports?.length || 0;
 						const time = r.performanceMetrics?.parseTime || 0;
 						const status = r.errors?.length ? "FAIL" : "OK";
-						const fileName = r.filePath?.split("/").pop() || r.filePath || "unknown";
+						const fileName =
+							r.filePath?.split("/").pop() || r.filePath || "unknown";
 						return `${fileName} | ${deps} deps, ${exports} exports | ${time}ms | ${status}`;
 					})
 					.join("\n");

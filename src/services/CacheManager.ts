@@ -65,7 +65,10 @@ export class CacheManager implements ICacheManager {
 
 		// Start cleanup interval if configured
 		if (this.config.cleanupInterval > 0) {
-			this.cleanupTimer = setInterval(() => this.cleanup(), this.config.cleanupInterval);
+			this.cleanupTimer = setInterval(
+				() => this.cleanup(),
+				this.config.cleanupInterval,
+			);
 			// Make timer not prevent process exit
 			if (this.cleanupTimer.unref) {
 				this.cleanupTimer.unref();

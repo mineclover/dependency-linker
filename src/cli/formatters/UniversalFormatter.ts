@@ -102,7 +102,8 @@ export class UniversalFormatter {
 						const exports = r.extractedData?.dependency?.exports?.length || 0;
 						const time = r.performanceMetrics?.parseTime || 0;
 						const status = r.errors?.length ? "✗" : "✓";
-						const fileName = r.filePath?.split("/").pop() || r.filePath || "unknown";
+						const fileName =
+							r.filePath?.split("/").pop() || r.filePath || "unknown";
 						return `${fileName}: ${deps}/${exports} (${time}ms) ${status}`;
 					})
 					.join("\n");
@@ -279,7 +280,7 @@ export class UniversalFormatter {
 
 			// If optimized result is still too large, truncate it
 			if (optimizedResult.metadata.outputSize > maxOutputSize) {
-				const truncatedContent = optimizedResult.content.substring(0, maxOutputSize - 100) + "\n... (truncated)";
+				const truncatedContent = `${optimizedResult.content.substring(0, maxOutputSize - 100)}\n... (truncated)`;
 				return {
 					content: truncatedContent,
 					actualFormat: suggestions.recommended,

@@ -14,6 +14,7 @@ export {
 } from "../models/FileAnalysisRequest";
 export { ImportInfo } from "../models/ImportInfo";
 export { SourceLocation } from "../models/SourceLocation";
+export { BatchAnalyzer } from "./BatchAnalyzer";
 // Error Classes
 export * from "./errors";
 // Factory Functions
@@ -27,6 +28,5 @@ export {
 } from "./factory-functions";
 // Main API Classes
 export { TypeScriptAnalyzer } from "./TypeScriptAnalyzer";
-export { BatchAnalyzer } from "./BatchAnalyzer";
 // Core API Types
 export * from "./types";
