@@ -1,0 +1,55 @@
+# Development files
+.claude/
+.gemini/
+.serena/
+.specify/
+.vscode/
+.performance-data/
+.diagnostic_tmp/
+
+# Specifications and documentation (except main docs)
+specs/
+benchmarks/
+demo/
+demo-*.js
+test.ts
+test-*.js
+quick-test.js
+final-verification.js
+verify-models.js
+performance-test.js
+
+# Test files and coverage
+tests/
+coverage/
+jest.config.js
+**/*.test.ts
+**/*.test.js
+**/*.spec.ts
+**/*.spec.js
+
+# Build and development tools
+scripts/
+integrations/
+examples/
+.performance-baseline.json
+llms.txt
+analyze-file
+
+# IDE and temporary files
+*.log
+*.tmp
+.DS_Store
+node_modules/
+.env
+.env.local
+
+# Source files (only built dist/ should be included)
+src/
+tsconfig.json
+biome.json
+
+# Documentation (keep only essential ones)
+docs/
+CLAUDE.md
+IMPLEMENTATION_VALIDATION_REPORT.md

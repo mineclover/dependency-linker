@@ -49,16 +49,23 @@ Comprehensive API documentation for the TypeScript Dependency Linker, organized 
 
 This API documentation is based on comprehensive test analysis:
 
-- **Contract Tests**: Validate API interfaces and behavior
-- **Unit Tests**: Individual component functionality
-- **Integration Tests**: Cross-component interactions
-- **Performance Tests**: Speed and resource validation
+- **Contract Tests**: 11 test suites validating API interfaces and behavior
+- **Unit Tests**: 6 test suites covering individual component functionality
+- **Integration Tests**: 12 test suites covering cross-component interactions
+- **Performance Tests**: Multi-language analysis validation with defined targets
+
+### 📊 Test Coverage Details
+- **Total Test Files**: 33 test suites
+- **Multi-Language Support**: TypeScript, JavaScript, Go, Java analysis tests
+- **Performance Targets**: Parse time <200ms, Memory <500MB, Cache hit rate >80%
+- **Batch Processing**: Concurrent analysis validation up to 10 parallel operations
+- **Error Handling**: Comprehensive error scenario coverage
 
 Each API method includes:
-- ✅ **Test Coverage**: What scenarios are tested
-- 📝 **Usage Examples**: Code examples from actual tests
-- ⚠️ **Error Scenarios**: Known error conditions and handling
-- ⚡ **Performance**: Validated performance characteristics
+- ✅ **Test Coverage**: What scenarios are tested across 33 test suites
+- 📝 **Usage Examples**: Code examples from actual test implementations
+- ⚠️ **Error Scenarios**: Known error conditions and handling patterns
+- ⚡ **Performance**: Validated performance characteristics with CI targets
 
 ## 🚀 Quick Start Guide
 

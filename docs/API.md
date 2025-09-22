@@ -7,10 +7,17 @@ Complete API reference for programmatic usage of the TypeScript Dependency Linke
 This document provides a quick overview. For comprehensive API documentation with test-driven specifications, see the **[api/](api/)** directory:
 
 - **[Factory Functions](api/functions/factory-functions.md)** - Simple function-based API
-- **[TypeScriptAnalyzer Class](api/classes/TypeScriptAnalyzer.md)** - Full-featured analyzer class  
+- **[TypeScriptAnalyzer Class](api/classes/TypeScriptAnalyzer.md)** - Full-featured analyzer class
 - **[BatchAnalyzer Class](api/classes/BatchAnalyzer.md)** - Enterprise batch processing
 - **[Core Interfaces](api/core/interfaces.md)** - System interfaces and contracts
 - **[API Index](api/README.md)** - Complete API documentation index
+
+### 🧪 Test-Validated API
+All APIs are backed by **33 comprehensive test suites** covering:
+- Multi-language analysis (TypeScript, JavaScript, Go, Java)
+- Performance validation (<200ms parse time, <500MB memory)
+- Error handling and edge cases
+- Batch processing and concurrency control
 
 ## Installation
 
