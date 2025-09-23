@@ -131,11 +131,12 @@ export { ParserRegistry } from "./services/ParserRegistry";
 export { TypeScriptParser } from "./services/TypeScriptParser"; // Legacy parser
 // ===== TASK MANAGEMENT SYSTEM =====
 export * from "./task";
+export * from "./types/ASTWrappers";
 // ===== TYPE SYSTEM =====
 export * from "./types/TreeSitterTypes";
-export * from "./types/ASTWrappers";
 // ===== UTILITIES =====
 export { createLogger } from "./utils/logger";
+export * from "./utils/PathResolutionUtils";
 export * from "./utils/PathUtils";
 
 // ===== CONFIGURATION =====

@@ -8,7 +8,11 @@ import * as path from "node:path";
 import Parser from "tree-sitter";
 import Go from "tree-sitter-go";
 import type { AST } from "../extractors/IDataExtractor";
-import type { TreeSitterLanguage, TreeSitterNode, TreeSitterTree } from "../types/TreeSitterTypes";
+import type {
+	TreeSitterLanguage,
+	TreeSitterNode,
+	TreeSitterTree,
+} from "../types/TreeSitterTypes";
 import type {
 	ASTVisitor,
 	ILanguageParser,

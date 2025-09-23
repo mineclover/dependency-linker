@@ -73,7 +73,8 @@ export interface IInterpreterRegistry {
 }
 
 export class InterpreterRegistry implements IInterpreterRegistry {
-	private interpreters: Map<string, IDataInterpreter<unknown, unknown>> = new Map();
+	private interpreters: Map<string, IDataInterpreter<unknown, unknown>> =
+		new Map();
 
 	/**
 	 * Registers a data interpreter
@@ -85,7 +86,10 @@ export class InterpreterRegistry implements IInterpreterRegistry {
 		if (this.interpreters.has(name)) {
 			console.warn(`Interpreter '${name}' is already registered. Overwriting.`);
 		}
-		this.interpreters.set(name, interpreter as IDataInterpreter<unknown, unknown>);
+		this.interpreters.set(
+			name,
+			interpreter as IDataInterpreter<unknown, unknown>,
+		);
 	}
 
 	/**

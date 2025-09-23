@@ -71,7 +71,9 @@ export class DependencyExtractor
 		const tree = ast as Parser.Tree;
 		const sourceCode = ""; // TODO: Read source code from filePath if needed
 		const dependencies: DependencyInfo[] = [];
-		const cursor = tree.walk();
+
+		// Fix: Use rootNode.walk() instead of tree.walk()
+		const cursor = tree.rootNode.walk();
 
 		const visit = (node: Parser.SyntaxNode) => {
 			// Handle import declarations

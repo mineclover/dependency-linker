@@ -4,9 +4,42 @@
  * Consolidates parsed AST, extracted data, interpreted results, and metadata
  */
 
+import type { DependencyExtractionResult } from "../extractors/DependencyExtractor";
+import type { IdentifierExtractionResult } from "../extractors/IdentifierExtractor";
+import type { DependencyAnalysisResult } from "../interpreters/DependencyAnalysisInterpreter";
+import type { IdentifierAnalysisResult } from "../interpreters/IdentifierAnalysisInterpreter";
+import type { PathResolutionResult } from "../interpreters/PathResolverInterpreter";
+import type { AnalysisConfig } from "./AnalysisConfig";
 import type { AnalysisError } from "./AnalysisError";
 import type { PathInfo } from "./PathInfo";
 import type { PerformanceMetrics } from "./PerformanceMetrics";
+
+/**
+ * Standard extracted data types that can appear in extractedData
+ */
+export interface StandardExtractedData {
+	dependency?: DependencyExtractionResult;
+	identifier?: IdentifierExtractionResult;
+	complexity?: {
+		overall: number;
+		cognitive: number;
+		nestingDepth: number;
+		linesOfCode: number;
+		linesOfComments: number;
+		linesBlank: number;
+	};
+	[extractorName: string]: unknown;
+}
+
+/**
+ * Standard interpreted data types that can appear in interpretedData
+ */
+export interface StandardInterpretedData {
+	"dependency-analysis"?: DependencyAnalysisResult;
+	"identifier-analysis"?: IdentifierAnalysisResult;
+	"path-resolver"?: PathResolutionResult;
+	[interpreterName: string]: unknown;
+}
 
 // Comprehensive analysis result interface
 export interface AnalysisResult {
@@ -51,7 +84,7 @@ export interface AnalysisMetadata {
 	version: string;
 
 	/** Analysis configuration used */
-	config: any;
+	config: AnalysisConfig | any;
 
 	/** Whether this result came from cache (optional for compatibility) */
 	fromCache?: boolean;
@@ -86,10 +119,26 @@ export interface AnalysisConfiguration {
 	maxCacheSize?: number;
 
 	/** Additional options for extractors */
-	extractorOptions?: Record<string, any>;
+	extractorOptions?: {
+		[extractorName: string]: {
+			enabled?: boolean;
+			timeout?: number;
+			maxDepth?: number;
+			includeTypes?: boolean;
+			[option: string]: unknown;
+		};
+	};
 
 	/** Additional options for interpreters */
-	interpreterOptions?: Record<string, any>;
+	interpreterOptions?: {
+		[interpreterName: string]: {
+			enabled?: boolean;
+			timeout?: number;
+			threshold?: number;
+			includeMetrics?: boolean;
+			[option: string]: unknown;
+		};
+	};
 
 	/** Analysis depth level (1-5, where 5 is most comprehensive) */
 	depth?: number;

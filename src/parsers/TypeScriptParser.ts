@@ -12,7 +12,11 @@ import type { DependencyInfo } from "../models/DependencyInfo";
 import type { ExportInfo } from "../models/ExportInfo";
 import type { ImportInfo } from "../models/ImportInfo";
 import { TypeSafeAST } from "../types/ASTWrappers";
-import type { TreeSitterLanguage, TreeSitterNode, TreeSitterTree } from "../types/TreeSitterTypes";
+import type {
+	TreeSitterLanguage,
+	TreeSitterNode,
+	TreeSitterTree,
+} from "../types/TreeSitterTypes";
 import type {
 	ASTVisitor,
 	ILanguageParser,
@@ -367,7 +371,10 @@ export class TypeScriptParser implements ILanguageParser {
 		});
 	}
 
-	private extractSyntaxErrors(ast: TreeSitterTree, _content: string): ParseError[] {
+	private extractSyntaxErrors(
+		ast: TreeSitterTree,
+		_content: string,
+	): ParseError[] {
 		const errors: ParseError[] = [];
 
 		const visit = (node: TreeSitterNode): void => {

@@ -34,16 +34,16 @@ export interface PerformanceBreakdown {
 	parser: ParserMetrics;
 
 	/** Extractor-specific metrics */
-	extractors: Map<string, ExtractorMetrics>;
+	extractors: Record<string, ExtractorMetrics>;
 
 	/** Interpreter-specific metrics */
-	interpreters: Map<string, InterpreterMetrics>;
+	interpreters: Record<string, InterpreterMetrics>;
 
-	/** I/O operation metrics */
-	io: IOMetrics;
+	/** I/O operation metrics (optional) */
+	io?: IOMetrics;
 
-	/** Cache operation metrics */
-	cache: CacheOperationMetrics;
+	/** Cache operation metrics (optional) */
+	cache?: CacheOperationMetrics;
 }
 
 export interface ParserMetrics {
@@ -246,8 +246,8 @@ export class PerformanceMonitor {
 			memoryUsage: 0,
 		};
 		this.breakdownMetrics = {
-			extractors: new Map(),
-			interpreters: new Map(),
+			extractors: {},
+			interpreters: {},
 		};
 	}
 
@@ -294,10 +294,10 @@ export class PerformanceMonitor {
 		this.updateMemoryTracking(memoryUsage);
 
 		if (!this.breakdownMetrics.extractors) {
-			this.breakdownMetrics.extractors = new Map();
+			this.breakdownMetrics.extractors = {};
 		}
 
-		this.breakdownMetrics.extractors.set(name, {
+		this.breakdownMetrics.extractors[name] = {
 			name,
 			version,
 			extractionTime,
@@ -306,10 +306,10 @@ export class PerformanceMonitor {
 			confidence,
 			success,
 			error,
-		});
+		};
 
-		// Take memory snapshot if this is the last extractor or first major one
-		if (this.breakdownMetrics.extractors.size === 1) {
+		// Take memory snapshot if this is the first major extractor
+		if (Object.keys(this.breakdownMetrics.extractors).length === 1) {
 			this.takeMemorySnapshot("extract");
 		}
 	}
@@ -332,13 +332,13 @@ export class PerformanceMonitor {
 		this.updateMemoryTracking(memoryUsage);
 
 		if (!this.breakdownMetrics.interpreters) {
-			this.breakdownMetrics.interpreters = new Map();
+			this.breakdownMetrics.interpreters = {};
 		}
 
 		const processingRate =
 			interpretationTime > 0 ? (inputDataSize / interpretationTime) * 1000 : 0;
 
-		this.breakdownMetrics.interpreters.set(name, {
+		this.breakdownMetrics.interpreters[name] = {
 			name,
 			version,
 			interpretationTime,
@@ -348,10 +348,10 @@ export class PerformanceMonitor {
 			processingRate,
 			success,
 			error,
-		});
+		};
 
 		// Take memory snapshot if this is the last interpreter or first major one
-		if (this.breakdownMetrics.interpreters.size === 1) {
+		if (Object.keys(this.breakdownMetrics.interpreters).length === 1) {
 			this.takeMemorySnapshot("interpret");
 		}
 	}

@@ -38,3 +38,10 @@ export {
 	type LinkSummary,
 	type ProcessedDependency,
 } from "./LinkDependencyInterpreter";
+
+export {
+	type PathResolutionResult,
+	type PathResolverConfig,
+	PathResolverInterpreter,
+	type ResolvedDependency,
+} from "./PathResolverInterpreter";

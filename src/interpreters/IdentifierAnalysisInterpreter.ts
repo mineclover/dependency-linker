@@ -9,12 +9,12 @@ import type {
 } from "../extractors/IdentifierExtractor";
 import type {
 	IDataInterpreter,
-	InterpreterContext,
 	InterpreterConfiguration,
+	InterpreterContext,
 	InterpreterDependency,
 	InterpreterMetadata,
 	OutputSchema,
-	ValidationResult
+	ValidationResult,
 } from "./IDataInterpreter";
 
 export interface IdentifierAnalysisResult {
