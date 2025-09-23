@@ -17,6 +17,9 @@ This project provides a comprehensive multi-language code analysis framework wit
 - **📊 Multiple Formats**: JSON (API), compact, summary, table, CSV, and more
 - **🛡️ Error Recovery**: Robust parsing with graceful error handling
 - **🔌 Plugin System**: Extensible extractors and interpreters for custom analysis
+- **🎯 Enhanced Dependency Analysis**: Named import tracking with actual usage analysis
+- **🌳 Tree-shaking Optimization**: Dead code detection and bundle size optimization
+- **📊 Usage Pattern Analysis**: Method call frequency and dependency utilization metrics
 
 ### 🚀 API Capabilities
 - **Class-based API**: `TypeScriptAnalyzer` with dependency injection
@@ -459,6 +462,289 @@ import type { PathInfo as IPathInfo } from '@context-action/dependency-linker/di
 const parser: TypeScriptParser = new TypeScriptParser();
 const result: ParseResult = await parser.parse('file.ts');
 ```
+
+## 🎯 Enhanced Dependency Analysis
+
+### 📊 EnhancedDependencyExtractor - Named Import Usage Tracking
+
+The `EnhancedDependencyExtractor` extends the basic dependency analysis to provide detailed insights into named import usage, dead code detection, and tree-shaking optimization opportunities.
+
+#### 🚀 Key Features
+
+- **🔍 Named Import Tracking**: Tracks which methods from named imports are actually used
+- **📈 Usage Statistics**: Method call frequency and usage patterns
+- **🗑️ Dead Code Detection**: Identifies imported but unused methods
+- **🌳 Tree-shaking Optimization**: Bundle size reduction recommendations
+- **📍 Source Location Tracking**: Exact line/column information for all usage
+- **🔗 Dependency Utilization**: Package usage efficiency metrics
+
+#### 📦 Import and Usage
+
+```javascript
+// ES6/TypeScript import
+import { EnhancedDependencyExtractor } from '@context-action/dependency-linker';
+
+// CommonJS import
+const { EnhancedDependencyExtractor } = require('@context-action/dependency-linker');
+
+// Tree-shaking optimized import
+import { EnhancedDependencyExtractor } from '@context-action/dependency-linker/dist/extractors/EnhancedDependencyExtractor';
+```
+
+#### 💡 Basic Usage Example
+
+```javascript
+import { EnhancedDependencyExtractor } from '@context-action/dependency-linker';
+import { TypeScriptParser } from '@context-action/dependency-linker';
+
+async function analyzeNamedImports() {
+  const code = `
+import { useState, useEffect, useMemo } from 'react';
+import { format, addDays } from 'date-fns';
+import { debounce, throttle } from 'lodash';
+
+function MyComponent() {
+  const [date, setDate] = useState(new Date());
+
+  useEffect(() => {
+    const tomorrow = addDays(date, 1);
+    console.log(format(tomorrow, 'yyyy-MM-dd'));
+  }, [date]);
+
+  const debouncedUpdate = debounce(() => {
+    setDate(new Date());
+  }, 1000);
+
+  // throttle is imported but never used
+
+  return <div onClick={debouncedUpdate}>Click me</div>;
+}
+`;
+
+  const parser = new TypeScriptParser();
+  const parseResult = await parser.parse('/example.tsx', code);
+
+  const extractor = new EnhancedDependencyExtractor();
+  const result = extractor.extractEnhanced(parseResult.ast, '/example.tsx');
+
+  console.log('📊 Analysis Results:');
+  console.log(`Total imports: ${result.usageAnalysis.totalImports}`);
+  console.log(`Used methods: ${result.usageAnalysis.usedImports}`);
+  console.log(`Unused imports: ${result.usageAnalysis.unusedImports}`);
+
+  // Detailed per-dependency analysis
+  result.enhancedDependencies.forEach(dep => {
+    console.log(`\n📦 ${dep.source}:`);
+    console.log(`  Imported: ${dep.importedNames?.join(', ')}`);
+    console.log(`  Used: ${dep.usedMethods?.map(m => `${m.methodName}(${m.callCount}x)`).join(', ') || 'None'}`);
+
+    if (dep.unusedImports?.length) {
+      console.log(`  ⚠️ Unused: ${dep.unusedImports.join(', ')}`);
+    }
+  });
+}
+```
+
+#### 🔍 Advanced Analysis Features
+
+##### 1. Tree-shaking Optimization Analysis
+
+```javascript
+async function analyzeTreeShaking() {
+  const lodashCode = `
+import _ from 'lodash';
+import { debounce } from 'lodash';
+
+// Inefficient: default import usage
+const uniqueData = _.uniq([1, 2, 2, 3]);
+const sortedData = _.sortBy([3, 1, 2]);
+
+// Efficient: named import usage
+const debouncedFn = debounce(() => console.log('debounced'), 100);
+`;
+
+  const parser = new TypeScriptParser();
+  const parseResult = await parser.parse('/optimization.ts', lodashCode);
+
+  const extractor = new EnhancedDependencyExtractor();
+  const result = extractor.extractEnhanced(parseResult.ast, '/optimization.ts');
+
+  // Tree-shaking recommendations
+  result.enhancedDependencies.forEach(dep => {
+    if (dep.source === 'lodash') {
+      console.log('🌳 Tree-shaking Recommendations:');
+
+      if (dep.usedMethods) {
+        const defaultImportMethods = dep.usedMethods.filter(m => m.methodName.startsWith('_'));
+
+        if (defaultImportMethods.length > 0) {
+          console.log('⚠️ Inefficient default imports found:');
+          defaultImportMethods.forEach(method => {
+            const methodName = method.methodName.replace('_.', '');
+            console.log(`  ${method.methodName} → import { ${methodName} } from 'lodash/${methodName}';`);
+          });
+        }
+      }
+
+      if (dep.unusedImports?.length) {
+        console.log(`🗑️ Remove unused: ${dep.unusedImports.join(', ')}`);
+      }
+    }
+  });
+}
+```
+
+##### 2. Usage Pattern Analysis
+
+```javascript
+async function analyzeUsagePatterns() {
+  const complexCode = `
+import React, { useState, useEffect, useCallback } from 'react';
+import { format, isAfter, isBefore } from 'date-fns';
+import { debounce, merge, isEmpty } from 'lodash';
+
+const Dashboard = () => {
+  const [data, setData] = useState([]);
+
+  // High frequency: format used multiple times
+  const formatDate = useCallback((date) => format(date, 'yyyy-MM-dd'), []);
+  const formatTime = (date) => format(date, 'HH:mm');
+  const displayDate = (date) => format(date, 'PPP');
+
+  // Medium frequency: debounce, merge
+  const debouncedSearch = debounce((query) => {
+    const filters = merge({}, { search: query });
+    console.log(filters);
+  }, 300);
+
+  // Low frequency: isEmpty
+  const processData = (rawData) => {
+    if (isEmpty(rawData)) return [];
+    return rawData;
+  };
+
+  return <div>Dashboard</div>;
+};
+`;
+
+  const parser = new TypeScriptParser();
+  const parseResult = await parser.parse('/dashboard.tsx', complexCode);
+
+  const extractor = new EnhancedDependencyExtractor();
+  const result = extractor.extractEnhanced(parseResult.ast, '/dashboard.tsx');
+
+  console.log('📈 Usage Pattern Analysis:');
+
+  // Categorize by usage frequency
+  const highUsage = result.usageAnalysis.mostUsedMethods.filter(m => m.count >= 3);
+  const mediumUsage = result.usageAnalysis.mostUsedMethods.filter(m => m.count >= 2 && m.count < 3);
+  const lowUsage = result.usageAnalysis.mostUsedMethods.filter(m => m.count === 1);
+
+  console.log('🔥 High usage (3+ calls):', highUsage.map(m => `${m.method}(${m.count}x)`));
+  console.log('🔶 Medium usage (2 calls):', mediumUsage.map(m => `${m.method}(${m.count}x)`));
+  console.log('🔷 Low usage (1 call):', lowUsage.map(m => `${m.method}(${m.count}x)`));
+
+  // Package utilization analysis
+  result.enhancedDependencies.forEach(dep => {
+    const totalImports = dep.importedNames?.length || 0;
+    const usedImports = dep.usedMethods?.length || 0;
+    const utilizationRate = totalImports > 0 ? ((usedImports / totalImports) * 100).toFixed(1) : 0;
+
+    console.log(`📦 ${dep.source}: ${utilizationRate}% utilization (${usedImports}/${totalImports})`);
+  });
+}
+```
+
+#### 📋 API Reference
+
+##### EnhancedDependencyInfo Interface
+
+```typescript
+interface EnhancedDependencyInfo {
+  // Basic dependency info
+  source: string;
+  type: "external" | "internal" | "relative";
+  location?: SourceLocation;
+  isTypeOnly?: boolean;
+
+  // Enhanced analysis
+  importedNames?: string[];          // All imported named items
+  usedMethods?: UsedMethodInfo[];    // Actually used methods
+  unusedImports?: string[];          // Imported but unused items
+  usageCount?: number;               // Total usage count
+  usageLocations?: SourceLocation[]; // All usage locations
+}
+```
+
+##### UsedMethodInfo Interface
+
+```typescript
+interface UsedMethodInfo {
+  methodName: string;                // Method name
+  originalName?: string;             // Original name if aliased
+  usageType: "call" | "property" | "reference"; // Usage type
+  locations: SourceLocation[];      // All usage locations
+  callCount: number;                 // Number of times called
+  contextInfo?: {
+    parentFunction?: string;
+    isInCondition?: boolean;
+    isInLoop?: boolean;
+    callArguments?: string[];
+  };
+}
+```
+
+##### EnhancedDependencyExtractionResult Interface
+
+```typescript
+interface EnhancedDependencyExtractionResult extends DependencyExtractionResult {
+  enhancedDependencies: EnhancedDependencyInfo[];
+  usageAnalysis: {
+    totalImports: number;
+    usedImports: number;
+    unusedImports: number;
+    mostUsedMethods: Array<{
+      method: string;
+      count: number;
+      source: string;
+    }>;
+    unusedImportsList: Array<{
+      source: string;
+      unusedItems: string[];
+    }>;
+  };
+}
+```
+
+#### 🎯 Usage Scenarios
+
+##### 1. Code Review and Optimization
+- Identify unused imports for code cleanup
+- Find over-imported packages for tree-shaking
+- Analyze method usage patterns for refactoring
+
+##### 2. Bundle Size Optimization
+- Detect inefficient lodash/utility library usage
+- Recommend specific imports over namespace imports
+- Calculate potential bundle size savings
+
+##### 3. Dependency Management
+- Monitor actual usage vs. declared dependencies
+- Identify packages with low utilization rates
+- Track method-level dependency patterns
+
+##### 4. Development Workflow
+- Automated dead code detection in CI/CD
+- Usage-based dependency recommendations
+- Performance-focused import analysis
+
+#### 💡 Best Practices
+
+1. **Use for Large Codebases**: Most effective on projects with many dependencies
+2. **Regular Analysis**: Run periodically to maintain clean imports
+3. **Combine with Linting**: Integrate findings with ESLint unused import rules
+4. **Focus on Heavy Packages**: Prioritize analysis of large libraries (lodash, moment, etc.)
+5. **Bundle Analysis**: Use results to guide tree-shaking and bundler configuration
 
 ### Simple Function API
 
