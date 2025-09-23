@@ -1,20 +1,22 @@
-# TypeScript Dependency Linker
+# Multi-Language Dependency Linker
 
-🎯 **Advanced TypeScript/TSX Analysis Tool with Dual CLI and API Interface**
+🎯 **Advanced Multi-Language AST Analysis Framework with Extensible Plugin Architecture**
 
 ## 🚀 Now Supporting Both CLI and Programmatic API
 
-This project provides a comprehensive TypeScript file analyzer with both command-line interface and programmatic API access, built on tree-sitter for maximum performance and reliability.
+This project provides a comprehensive multi-language code analysis framework with both command-line interface and programmatic API access, built on tree-sitter for maximum performance and reliability. Supports TypeScript, Go, Java, Markdown, and custom analysis types through extensible plugin architecture.
 
 ## 🌟 Key Features
 
-### ✅ Dual Interface Architecture
+### ✅ Multi-Language Plugin Architecture
+- **🌐 Language Support**: TypeScript, Go, Java, Markdown, and extensible parser system
 - **🖥️ CLI Tool**: Complete command-line interface for terminal usage
 - **🔧 Programmatic API**: Full API access for integration into applications
-- **⚡ High Performance**: <10ms analysis time with tree-sitter parsing
-- **🔍 Comprehensive Analysis**: Dependencies, imports, exports, and source locations
+- **⚡ High Performance**: <200ms analysis time with tree-sitter parsing
+- **🔍 Comprehensive Analysis**: Dependencies, imports, exports, complexity, and source locations
 - **📊 Multiple Formats**: JSON (API), compact, summary, table, CSV, and more
 - **🛡️ Error Recovery**: Robust parsing with graceful error handling
+- **🔌 Plugin System**: Extensible extractors and interpreters for custom analysis
 
 ### 🚀 API Capabilities
 - **Class-based API**: `TypeScriptAnalyzer` with dependency injection
@@ -34,7 +36,7 @@ This project provides a comprehensive TypeScript file analyzer with both command
   - 메모리 사용량: <500MB/세션
   - 캐시 적중률: >80%
   - 동시 분석: 10개 병렬 처리
-- **Multi-Language Support**: TypeScript, JavaScript, Go, Java 분석 테스트 ✅
+- **Multi-Language Support**: TypeScript, JavaScript, Go, Java, Markdown 분석 테스트 ✅
 
 ### 📚 문서화
 - **README.md**: 기술 개요 및 설치 가이드 (현재 파일)
@@ -94,23 +96,34 @@ npm run build
 ```
 
 ```javascript
-// Simple function-based API
-const { analyzeTypeScriptFile, extractDependencies } = require('@context-action/dependency-linker');
+// Multi-language analysis API
+const { analyzeTypeScriptFile, GoParser, JavaParser, MarkdownParser } = require('@context-action/dependency-linker');
 
-// Analyze a file
+// TypeScript/JavaScript analysis
 const result = await analyzeTypeScriptFile('./src/component.tsx');
 console.log(result.dependencies);
 
-// Extract dependencies only
-const deps = await extractDependencies('./src/component.tsx');
-console.log(deps); // ['react', 'lodash', './utils']
+// Go analysis
+const goParser = new GoParser();
+const goResult = await goParser.parseFile('./main.go');
+
+// Java analysis
+const javaParser = new JavaParser();
+const javaResult = await javaParser.parseFile('./Main.java');
+
+// Markdown link extraction
+const mdParser = new MarkdownParser();
+const mdResult = await mdParser.parseFile('./README.md');
 ```
 
 ### 🖥️ CLI Usage
 
 ```bash
-# TypeScript file analysis (JSON)
-./analyze-file src/component.tsx
+# Multi-language file analysis (auto-detects language)
+./analyze-file src/component.tsx    # TypeScript
+./analyze-file main.go              # Go
+./analyze-file Main.java            # Java
+./analyze-file README.md            # Markdown
 
 # Human-readable format
 ./analyze-file src/component.tsx --format summary

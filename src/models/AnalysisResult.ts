@@ -5,8 +5,8 @@
  */
 
 import type { AnalysisError } from "./AnalysisError";
-import type { PerformanceMetrics } from "./PerformanceMetrics";
 import type { PathInfo } from "./PathInfo";
+import type { PerformanceMetrics } from "./PerformanceMetrics";
 
 // Comprehensive analysis result interface
 export interface AnalysisResult {
@@ -106,7 +106,7 @@ export function createAnalysisResult(
 	language: string,
 ): AnalysisResult {
 	// Import createPathInfo to generate PathInfo
-	const createPathInfo = require('./PathInfo').createPathInfo;
+	const createPathInfo = require("./PathInfo").createPathInfo;
 
 	return {
 		filePath,

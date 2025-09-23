@@ -523,14 +523,14 @@ export class AnalysisEngine implements IAnalysisEngine {
 	/**
 	 * Gets a list of all registered extractors
 	 */
-	getRegisteredExtractors(): Map<string, IDataExtractor<any>> {
+	getRegisteredExtractors(): Map<string, IDataExtractor<unknown>> {
 		return this.extractorRegistry.getAllExtractors();
 	}
 
 	/**
 	 * Gets a list of all registered interpreters
 	 */
-	getRegisteredInterpreters(): Map<string, IDataInterpreter<any, any>> {
+	getRegisteredInterpreters(): Map<string, IDataInterpreter<unknown, unknown>> {
 		return this.interpreterRegistry.getAllInterpreters();
 	}
 

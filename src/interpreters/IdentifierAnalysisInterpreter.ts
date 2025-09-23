@@ -7,7 +7,15 @@ import type {
 	IdentifierExtractionResult,
 	IdentifierInfo,
 } from "../extractors/IdentifierExtractor";
-import type { IDataInterpreter } from "./IDataInterpreter";
+import type {
+	IDataInterpreter,
+	InterpreterContext,
+	InterpreterConfiguration,
+	InterpreterDependency,
+	InterpreterMetadata,
+	OutputSchema,
+	ValidationResult
+} from "./IDataInterpreter";
 
 export interface IdentifierAnalysisResult {
 	summary: {
@@ -122,7 +130,7 @@ export class IdentifierAnalysisInterpreter
 
 	interpret(
 		input: IdentifierExtractionResult,
-		_context?: any,
+		_context: InterpreterContext,
 	): IdentifierAnalysisResult {
 		const identifiers = input?.identifiers || [];
 
@@ -583,14 +591,15 @@ export class IdentifierAnalysisInterpreter
 		return this.version;
 	}
 
-	validate(_input: IdentifierExtractionResult): any {
+	validate(_input: IdentifierExtractionResult): ValidationResult {
 		return {
-			valid: true,
+			isValid: true,
 			errors: [],
+			warnings: [],
 		};
 	}
 
-	getOutputSchema(): any {
+	getOutputSchema(): OutputSchema {
 		return {
 			type: "object",
 			properties: {
@@ -598,10 +607,12 @@ export class IdentifierAnalysisInterpreter
 				recommendations: { type: "object" },
 				metrics: { type: "object" },
 			},
+			required: ["summary", "recommendations", "metrics"],
+			version: "1.0.0",
 		};
 	}
 
-	getMetadata(): any {
+	getMetadata(): InterpreterMetadata {
 		return {
 			name: this.name,
 			version: this.version,
@@ -613,26 +624,30 @@ export class IdentifierAnalysisInterpreter
 				averageTimePerItem: 30,
 				memoryUsage: "low" as const,
 				timeComplexity: "linear" as const,
+				scalability: "excellent" as const,
+				maxRecommendedDataSize: 2000,
 			},
 			quality: {
 				accuracy: 0.85,
-				precision: 0.8,
-				recall: 0.75,
+				consistency: 0.8,
+				completeness: 0.75,
+				reliability: 0.82,
 			},
 		};
 	}
 
-	configure(_options: any): void {
+	configure(_options: InterpreterConfiguration): void {
 		// Configuration implementation
 	}
 
-	getConfiguration(): any {
+	getConfiguration(): InterpreterConfiguration {
 		return {
-			name: this.name,
-			version: this.version,
-			description: this.description,
-			inputTypes: ["IdentifierExtractionResult"],
-			outputType: "IdentifierAnalysisResult",
+			enabled: true,
+			priority: 1,
+			timeout: 30000,
+			memoryLimit: 100 * 1024 * 1024,
+			defaultOptions: {},
+			errorHandling: "lenient",
 		};
 	}
 
@@ -640,7 +655,7 @@ export class IdentifierAnalysisInterpreter
 		return ["IdentifierExtractionResult"];
 	}
 
-	getDependencies(): any[] {
+	getDependencies(): InterpreterDependency[] {
 		return [];
 	}
 

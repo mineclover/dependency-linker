@@ -4,6 +4,7 @@
  */
 
 import type {
+	AST,
 	ExtractorOptions,
 	IDataExtractor,
 } from "../extractors/IDataExtractor";
@@ -61,7 +62,7 @@ export interface IExtractorRegistry {
 }
 
 export class ExtractorRegistry implements IExtractorRegistry {
-	private extractors: Map<string, IDataExtractor<any>> = new Map();
+	private extractors: Map<string, IDataExtractor<unknown>> = new Map();
 
 	/**
 	 * Registers a data extractor
@@ -70,7 +71,7 @@ export class ExtractorRegistry implements IExtractorRegistry {
 		if (this.extractors.has(name)) {
 			console.warn(`Extractor '${name}' is already registered. Overwriting.`);
 		}
-		this.extractors.set(name, extractor);
+		this.extractors.set(name, extractor as IDataExtractor<unknown>);
 	}
 
 	/**
@@ -95,14 +96,14 @@ export class ExtractorRegistry implements IExtractorRegistry {
 	/**
 	 * Gets all registered extractors
 	 */
-	getAllExtractors(): Map<string, IDataExtractor<any>> {
+	getAllExtractors(): Map<string, IDataExtractor<unknown>> {
 		return new Map(this.extractors);
 	}
 
 	/**
 	 * Gets extractors that support a specific language
 	 */
-	getExtractorsForLanguage(language: string): IDataExtractor<any>[] {
+	getExtractorsForLanguage(language: string): IDataExtractor<unknown>[] {
 		return Array.from(this.extractors.values()).filter((extractor) =>
 			extractor.supports(language),
 		);
@@ -112,12 +113,12 @@ export class ExtractorRegistry implements IExtractorRegistry {
 	 * Executes all registered extractors on an AST
 	 */
 	executeAll(
-		ast: any,
+		ast: AST,
 		filePath: string,
 		language: string,
 		options?: ExtractorOptions,
-	): Record<string, any> {
-		const results: Record<string, any> = {};
+	): Record<string, unknown> {
+		const results: Record<string, unknown> = {};
 
 		for (const [name, extractor] of this.extractors) {
 			if (extractor.supports(language)) {
@@ -149,11 +150,11 @@ export class ExtractorRegistry implements IExtractorRegistry {
 	 */
 	executeSelected(
 		extractorNames: string[],
-		ast: any,
+		ast: AST,
 		filePath: string,
 		options?: ExtractorOptions,
-	): Record<string, any> {
-		const results: Record<string, any> = {};
+	): Record<string, unknown> {
+		const results: Record<string, unknown> = {};
 
 		for (const name of extractorNames) {
 			const extractor = this.extractors.get(name);

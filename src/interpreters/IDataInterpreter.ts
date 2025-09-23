@@ -3,6 +3,8 @@
  * Processes extracted data to generate analysis insights and results
  */
 
+import type { SourceLocation } from "../models/SourceLocation";
+
 export interface IDataInterpreter<TInput, TOutput> {
 	/**
 	 * Interprets extracted data and generates analysis results
@@ -104,13 +106,13 @@ export interface InterpreterContext {
 	language: string;
 
 	/** Analysis metadata */
-	metadata: Record<string, any>;
+	metadata: Record<string, unknown>;
 
 	/** Configuration options */
-	options?: Record<string, any>;
+	options?: Record<string, unknown>;
 
 	/** Available related data from other extractors/interpreters */
-	relatedData?: Record<string, any>;
+	relatedData?: Record<string, unknown>;
 
 	/** Analysis timestamp */
 	timestamp: Date;
@@ -127,10 +129,10 @@ export interface ProjectContext {
 	projectType: string;
 
 	/** Package.json or equivalent configuration */
-	packageInfo?: any;
+	packageInfo?: Record<string, unknown>;
 
 	/** Build configuration */
-	buildConfig?: any;
+	buildConfig?: Record<string, unknown>;
 
 	/** Git information */
 	gitInfo?: GitContext;
@@ -212,7 +214,7 @@ export interface SchemaProperty {
 	required?: boolean;
 
 	/** Default value */
-	default?: any;
+	default?: unknown;
 
 	/** Value constraints */
 	constraints?: PropertyConstraints;
@@ -241,7 +243,7 @@ export interface PropertyConstraints {
 	pattern?: string;
 
 	/** Enumerated values */
-	enum?: any[];
+	enum?: unknown[];
 
 	/** Format specification */
 	format?: string;
@@ -462,7 +464,7 @@ export interface ImportInfo {
 	specifiers: string[];
 
 	/** Source location */
-	location: any;
+	location: SourceLocation;
 }
 
 export interface ExportInfo {
@@ -473,7 +475,7 @@ export interface ExportInfo {
 	type: string;
 
 	/** Source location */
-	location: any;
+	location: SourceLocation;
 }
 
 export interface DependencyGraph {
@@ -559,7 +561,7 @@ export interface SensitiveDataPattern {
 	description: string;
 
 	/** Source location */
-	location: any;
+	location: SourceLocation;
 
 	/** Risk level */
 	risk: "low" | "medium" | "high";
@@ -965,7 +967,7 @@ export interface CodeSmell {
 	severity: "minor" | "major" | "critical";
 
 	/** Location in code */
-	location: any;
+	location: SourceLocation;
 
 	/** Suggested fixes */
 	fixes: string[];

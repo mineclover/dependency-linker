@@ -73,7 +73,7 @@ export interface IInterpreterRegistry {
 }
 
 export class InterpreterRegistry implements IInterpreterRegistry {
-	private interpreters: Map<string, IDataInterpreter<any, any>> = new Map();
+	private interpreters: Map<string, IDataInterpreter<unknown, unknown>> = new Map();
 
 	/**
 	 * Registers a data interpreter
@@ -85,7 +85,7 @@ export class InterpreterRegistry implements IInterpreterRegistry {
 		if (this.interpreters.has(name)) {
 			console.warn(`Interpreter '${name}' is already registered. Overwriting.`);
 		}
-		this.interpreters.set(name, interpreter);
+		this.interpreters.set(name, interpreter as IDataInterpreter<unknown, unknown>);
 	}
 
 	/**
@@ -114,7 +114,7 @@ export class InterpreterRegistry implements IInterpreterRegistry {
 	/**
 	 * Gets all registered interpreters
 	 */
-	getAllInterpreters(): Map<string, IDataInterpreter<any, any>> {
+	getAllInterpreters(): Map<string, IDataInterpreter<unknown, unknown>> {
 		return new Map(this.interpreters);
 	}
 
@@ -124,7 +124,7 @@ export class InterpreterRegistry implements IInterpreterRegistry {
 	getInterpretersForType(
 		inputType: string,
 		outputType?: string,
-	): IDataInterpreter<any, any>[] {
+	): IDataInterpreter<unknown, unknown>[] {
 		return Array.from(this.interpreters.values()).filter((interpreter) => {
 			const metadata = interpreter.getMetadata();
 			const supportsInput =

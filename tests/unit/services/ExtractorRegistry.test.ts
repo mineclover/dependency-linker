@@ -8,7 +8,13 @@ import { ExtractorRegistry } from '../../../src/services/ExtractorRegistry';
 import type { IDataExtractor, ExtractorOptions, ValidationResult, ExtractorMetadata, ExtractorConfiguration, OutputSchema } from '../../../src/extractors/IDataExtractor';
 
 // Mock extractor for testing
-class MockExtractor implements IDataExtractor<any> {
+interface MockExtractionResult {
+  mockData: string;
+  timestamp: string;
+  options: ExtractorOptions;
+}
+
+class MockExtractor implements IDataExtractor<MockExtractionResult> {
   private name: string;
   private version: string;
   private supported: boolean;
@@ -19,7 +25,7 @@ class MockExtractor implements IDataExtractor<any> {
     this.supported = supported;
   }
 
-  extract(ast: any, filePath: string, options?: ExtractorOptions): any {
+  extract(ast: AST, filePath: string, options?: ExtractorOptions): MockExtractionResult {
     return {
       mockData: `extracted from ${filePath}`,
       timestamp: new Date().toISOString(),
@@ -39,7 +45,7 @@ class MockExtractor implements IDataExtractor<any> {
     return this.version;
   }
 
-  validate(data: any): ValidationResult {
+  validate(data: MockExtractionResult): ValidationResult {
     return {
       isValid: true,
       errors: [],

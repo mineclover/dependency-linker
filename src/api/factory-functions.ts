@@ -5,13 +5,13 @@
 
 import * as fs from "node:fs";
 import * as path from "node:path";
-import type { AnalysisResult } from "../models/AnalysisResult";
-import { FileNotFoundError } from "./errors";
-import { TypeScriptAnalyzer } from "./TypeScriptAnalyzer";
-import { AnalysisEngine } from "../services/AnalysisEngine";
-import { MarkdownParser } from "../parsers/MarkdownParser";
 import { MarkdownLinkExtractor } from "../extractors/MarkdownLinkExtractor";
 import { LinkDependencyInterpreter } from "../interpreters/LinkDependencyInterpreter";
+import type { AnalysisResult } from "../models/AnalysisResult";
+import { MarkdownParser } from "../parsers/MarkdownParser";
+import { AnalysisEngine } from "../services/AnalysisEngine";
+import { FileNotFoundError } from "./errors";
+import { TypeScriptAnalyzer } from "./TypeScriptAnalyzer";
 import type {
 	AnalysisOptions,
 	BatchAnalysisOptions,
@@ -44,20 +44,26 @@ function getMarkdownEngine(): AnalysisEngine {
 		sharedMarkdownEngine = new AnalysisEngine();
 
 		// Register Markdown components via registries
-		sharedMarkdownEngine.registerExtractor('markdown-links', new MarkdownLinkExtractor({
-			includeImages: true,
-			includeExternalLinks: true,
-			includeInternalLinks: true,
-			resolveRelativePaths: true,
-			followReferenceLinks: true
-		}));
+		sharedMarkdownEngine.registerExtractor(
+			"markdown-links",
+			new MarkdownLinkExtractor({
+				includeImages: true,
+				includeExternalLinks: true,
+				includeInternalLinks: true,
+				resolveRelativePaths: true,
+				followReferenceLinks: true,
+			}),
+		);
 
-		sharedMarkdownEngine.registerInterpreter('link-analysis', new LinkDependencyInterpreter({
-			validateFiles: true,
-			securityChecks: true,
-			performanceChecks: true,
-			accessibilityChecks: true
-		}));
+		sharedMarkdownEngine.registerInterpreter(
+			"link-analysis",
+			new LinkDependencyInterpreter({
+				validateFiles: true,
+				securityChecks: true,
+				performanceChecks: true,
+				accessibilityChecks: true,
+			}),
+		);
 	}
 	return sharedMarkdownEngine;
 }
@@ -107,16 +113,16 @@ export async function analyzeMarkdownFile(
 
 	try {
 		// Import path utilities
-		const { resolveAnalysisPath } = await import('../utils/PathUtils');
-		const { createPathInfo } = await import('../models/PathInfo');
-		
+		const { resolveAnalysisPath } = await import("../utils/PathUtils");
+		const { createPathInfo } = await import("../models/PathInfo");
+
 		// Create Markdown parser with standard ParserOptions
 		const parser = new MarkdownParser({
 			maxFileSize: 1024 * 1024, // 1MB
 			timeout: 5000,
 			enableErrorRecovery: true,
 			includeLocations: true,
-			encoding: 'utf-8'
+			encoding: "utf-8",
 		});
 
 		// Create extractors and interpreters
@@ -125,7 +131,7 @@ export async function analyzeMarkdownFile(
 			includeExternalLinks: true,
 			includeInternalLinks: true,
 			resolveRelativePaths: true,
-			followReferenceLinks: true
+			followReferenceLinks: true,
 		});
 
 		const linkInterpreter = new LinkDependencyInterpreter({
@@ -133,7 +139,7 @@ export async function analyzeMarkdownFile(
 			checkExternalLinks: true,
 			securityChecks: true,
 			performanceChecks: true,
-			accessibilityChecks: true
+			accessibilityChecks: true,
 		});
 
 		// Parse the markdown file
@@ -145,16 +151,16 @@ export async function analyzeMarkdownFile(
 		// Interpret the dependencies
 		const linkAnalysis = linkInterpreter.interpret(linkDependencies, {
 			filePath,
-			language: 'markdown',
+			language: "markdown",
 			metadata: {},
-			timestamp: new Date()
+			timestamp: new Date(),
 		});
 
 		const totalTime = Date.now() - startTime;
-		
+
 		// Resolve absolute path for consistent AnalysisResult
 		const resolvedPath = resolveAnalysisPath(filePath);
-		
+
 		// Create comprehensive path information
 		const pathInfo = createPathInfo(filePath);
 
@@ -162,82 +168,88 @@ export async function analyzeMarkdownFile(
 		return {
 			filePath: resolvedPath, // Legacy field for backward compatibility
 			pathInfo,
-			language: 'markdown',
+			language: "markdown",
 			extractedData: {
-				'markdown-links': linkDependencies,
-				'markdown-content': {
+				"markdown-links": linkDependencies,
+				"markdown-content": {
 					ast: parseResult.ast,
-					metadata: parseResult.metadata
-				}
+					metadata: parseResult.metadata,
+				},
 			},
 			interpretedData: {
-				'link-analysis': linkAnalysis
+				"link-analysis": linkAnalysis,
 			},
 			performanceMetrics: {
 				parseTime: parseResult.parseTime,
 				extractionTime: 10, // Estimated extraction time
 				interpretationTime: 15, // Estimated interpretation time
 				totalTime,
-				memoryUsage: process.memoryUsage().heapUsed
+				memoryUsage: process.memoryUsage().heapUsed,
 			},
-			errors: parseResult.errors.map(error => ({
-				type: 'ParseError',
+			errors: parseResult.errors.map((error) => ({
+				type: "ParseError",
 				message: error.message,
-				severity: 'error',
-				source: 'parser',
+				severity: "error",
+				source: "parser",
 				context: {
-					operation: 'parsing',
-					details: { location: error.location }
+					operation: "parsing",
+					details: { location: error.location },
 				},
 				timestamp: new Date(),
-				id: `parse-error-${Date.now()}-${Math.random().toString(36).substr(2, 9)}`
+				id: `parse-error-${Date.now()}-${Math.random().toString(36).substr(2, 9)}`,
 			})),
 			metadata: {
 				timestamp: new Date(),
-				version: '1.0.0',
+				version: "1.0.0",
 				config: options || {},
-				fileSize: require('node:fs').statSync(resolvedPath).size,
-				extractorsUsed: ['MarkdownLinkExtractor'],
-				interpretersUsed: ['LinkDependencyInterpreter'],
-				fromCache: parseResult.cacheHit
-			}
+				fileSize: require("node:fs").statSync(resolvedPath).size,
+				extractorsUsed: ["MarkdownLinkExtractor"],
+				interpretersUsed: ["LinkDependencyInterpreter"],
+				fromCache: parseResult.cacheHit,
+			},
 		};
-
 	} catch (error) {
 		const totalTime = Date.now() - startTime;
-		
+
 		// Import path utilities for error case too
 		let resolvedPath: string;
 		let pathInfo: any;
 		try {
-			const { resolveAnalysisPath } = await import('../utils/PathUtils');
-			const { createPathInfo } = await import('../models/PathInfo');
+			const { resolveAnalysisPath } = await import("../utils/PathUtils");
+			const { createPathInfo } = await import("../models/PathInfo");
 			resolvedPath = resolveAnalysisPath(filePath);
 			pathInfo = createPathInfo(filePath);
 		} catch {
 			// Fallback to basic resolution if utils import fails
-			resolvedPath = require('node:path').resolve(filePath);
+			resolvedPath = require("node:path").resolve(filePath);
 			pathInfo = {
 				input: filePath,
 				absolute: resolvedPath,
-				relative: require('node:path').relative(process.cwd(), resolvedPath),
-				directory: require('node:path').dirname(resolvedPath),
-				relativeDirectory: require('node:path').dirname(require('node:path').relative(process.cwd(), resolvedPath)),
-				fileName: require('node:path').basename(resolvedPath),
-				baseName: require('node:path').basename(resolvedPath, require('node:path').extname(resolvedPath)),
-				extension: require('node:path').extname(resolvedPath),
+				relative: require("node:path").relative(process.cwd(), resolvedPath),
+				directory: require("node:path").dirname(resolvedPath),
+				relativeDirectory: require("node:path").dirname(
+					require("node:path").relative(process.cwd(), resolvedPath),
+				),
+				fileName: require("node:path").basename(resolvedPath),
+				baseName: require("node:path").basename(
+					resolvedPath,
+					require("node:path").extname(resolvedPath),
+				),
+				extension: require("node:path").extname(resolvedPath),
 				projectRoot: process.cwd(),
-				isWithinProject: !require('node:path').relative(process.cwd(), resolvedPath).startsWith('..'),
+				isWithinProject: !require("node:path")
+					.relative(process.cwd(), resolvedPath)
+					.startsWith(".."),
 				depth: 0,
-				separator: require('node:path').sep,
-				wasAbsolute: require('node:path').isAbsolute(filePath)
+				separator: require("node:path").sep,
+				wasAbsolute: require("node:path").isAbsolute(filePath),
 			};
 		}
 
 		return {
 			filePath: resolvedPath, // Legacy field for backward compatibility
 			pathInfo,
-			language: 'markdown',
+			language: "markdown",
 			extractedData: {},
 			interpretedData: {},
 			performanceMetrics: {
@@ -245,29 +257,31 @@ export async function analyzeMarkdownFile(
 				extractionTime: 0,
 				interpretationTime: 0,
 				totalTime,
-				memoryUsage: process.memoryUsage().heapUsed
+				memoryUsage: process.memoryUsage().heapUsed,
 			},
-			errors: [{
-				type: 'InternalError',
-				message: error instanceof Error ? error.message : 'Unknown error',
-				severity: 'error',
-				source: 'engine',
-				context: {
-					operation: 'analysis',
-					details: { filePath }
+			errors: [
+				{
+					type: "InternalError",
+					message: error instanceof Error ? error.message : "Unknown error",
+					severity: "error",
+					source: "engine",
+					context: {
+						operation: "analysis",
+						details: { filePath },
+					},
+					timestamp: new Date(),
+					id: `analysis-error-${Date.now()}-${Math.random().toString(36).substr(2, 9)}`,
 				},
-				timestamp: new Date(),
-				id: `analysis-error-${Date.now()}-${Math.random().toString(36).substr(2, 9)}`
-			}],
+			],
 			metadata: {
 				timestamp: new Date(),
-				version: '1.0.0',
+				version: "1.0.0",
 				config: options || {},
 				fileSize: 0,
 				extractorsUsed: [],
 				interpretersUsed: [],
-				fromCache: false
-			}
+				fromCache: false,
+			},
 		};
 	}
 }
@@ -303,9 +317,11 @@ export async function extractDependencies(filePath: string): Promise<string[]> {
  * console.log(links); // ['https://github.com/user/repo', './docs/api.md']
  * ```
  */
-export async function extractMarkdownLinks(filePath: string): Promise<string[]> {
+export async function extractMarkdownLinks(
+	filePath: string,
+): Promise<string[]> {
 	const result = await analyzeMarkdownFile(filePath);
-	const linkData = result.extractedData['markdown-links'];
+	const linkData = result.extractedData["markdown-links"];
 
 	if (!Array.isArray(linkData)) {
 		return [];
@@ -395,11 +411,11 @@ export async function getBatchMarkdownAnalysis(
 				onProgress?.(completed, filePaths.length);
 				return result;
 			} catch (error) {
-				const { createPathInfo } = require('../models/PathInfo');
+				const { createPathInfo } = require("../models/PathInfo");
 				const errorResult = {
 					filePath,
 					pathInfo: createPathInfo(filePath),
-					language: 'markdown',
+					language: "markdown",
 					extractedData: {},
 					interpretedData: {},
 					performanceMetrics: {
@@ -407,30 +423,35 @@ export async function getBatchMarkdownAnalysis(
 						extractionTime: 0,
 						interpretationTime: 0,
 						totalTime: 0,
-						memoryUsage: 0
+						memoryUsage: 0,
 					},
-					errors: [{
-						type: 'InternalError' as const,
-						message: error instanceof Error ? error.message : 'Unknown error',
-						severity: 'error' as const,
-						source: 'engine' as const,
-						context: {
-							operation: 'batch-analysis',
-							input: filePath
+					errors: [
+						{
+							type: "InternalError" as const,
+							message: error instanceof Error ? error.message : "Unknown error",
+							severity: "error" as const,
+							source: "engine" as const,
+							context: {
+								operation: "batch-analysis",
+								input: filePath,
+							},
+							timestamp: new Date(),
+							id: `batch-error-${Date.now()}`,
 						},
-						timestamp: new Date(),
-						id: `batch-error-${Date.now()}`
-					}],
+					],
 					metadata: {
 						timestamp: new Date(),
-						version: '2.0.0',
-						config: {}
+						version: "2.0.0",
+						config: {},
 					},
 				};
 
 				completed++;
 				onProgress?.(completed, filePaths.length);
-				onFileError?.(filePath, error instanceof Error ? error : new Error('Unknown error'));
+				onFileError?.(
+					filePath,
+					error instanceof Error ? error : new Error("Unknown error"),
+				);
 
 				if (continueOnError) {
 					return errorResult;
@@ -504,7 +525,10 @@ export async function analyzeDirectory(
 
 	// Analyze Markdown files
 	if (mdFiles.length > 0) {
-		const markdownResults = await getBatchMarkdownAnalysis(mdFiles, batchOptions);
+		const markdownResults = await getBatchMarkdownAnalysis(
+			mdFiles,
+			batchOptions,
+		);
 		results.push(...markdownResults);
 	}
 
@@ -670,7 +694,7 @@ export function clearFactoryCache(): void {
 	if (sharedMarkdownEngine) {
 		// Clear markdown engine cache if available
 		const cacheManager = (sharedMarkdownEngine as any).cacheManager;
-		if (cacheManager && typeof cacheManager.clear === 'function') {
+		if (cacheManager && typeof cacheManager.clear === "function") {
 			cacheManager.clear();
 		}
 	}

@@ -5,8 +5,10 @@
 
 import type Parser from "tree-sitter";
 import type {
+	AST,
 	ExtractorConfiguration,
 	ExtractorMetadata,
+	ExtractorOptions,
 	IDataExtractor,
 	OutputSchema,
 	ValidationResult,
@@ -62,9 +64,9 @@ export class DependencyExtractor
 		"Extracts dependency information from source code";
 
 	extract(
-		ast: any,
+		ast: AST,
 		_filePath: string,
-		_options?: any,
+		_options?: ExtractorOptions,
 	): DependencyExtractionResult {
 		const tree = ast as Parser.Tree;
 		const sourceCode = ""; // TODO: Read source code from filePath if needed

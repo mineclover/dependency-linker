@@ -7,10 +7,12 @@ import * as fs from "node:fs/promises";
 import * as path from "node:path";
 import Parser from "tree-sitter";
 import TypeScript from "tree-sitter-typescript";
-// import { LegacyAnalysisResult } from '../models/AnalysisResult'; // Removed - legacy not needed
+import type { AST } from "../extractors/IDataExtractor";
 import type { DependencyInfo } from "../models/DependencyInfo";
 import type { ExportInfo } from "../models/ExportInfo";
 import type { ImportInfo } from "../models/ImportInfo";
+import { TypeSafeAST } from "../types/ASTWrappers";
+import type { TreeSitterLanguage, TreeSitterNode, TreeSitterTree } from "../types/TreeSitterTypes";
 import type {
 	ASTVisitor,
 	ILanguageParser,
@@ -89,8 +91,12 @@ export class TypeScriptParser implements ILanguageParser {
 
 			const parseTime = Date.now() - startTime;
 
+			// Create type-safe AST wrapper
+			const typedAST = new TypeSafeAST(ast);
+
 			return {
 				ast,
+				typedAST,
 				language,
 				parseTime,
 				cacheHit: false,
@@ -211,7 +217,7 @@ export class TypeScriptParser implements ILanguageParser {
 	/**
 	 * Gets the underlying grammar/parser instance
 	 */
-	getGrammar(): any {
+	getGrammar(): TreeSitterLanguage | null {
 		return this.parser.getLanguage();
 	}
 
@@ -222,7 +228,7 @@ export class TypeScriptParser implements ILanguageParser {
 		const startTime = Date.now();
 
 		try {
-			const ast = this.parser.parse(content);
+			const ast = this.parser.parse(content) as unknown as TreeSitterTree;
 			const errors = ast ? this.extractSyntaxErrors(ast, content) : [];
 
 			return {
@@ -306,10 +312,10 @@ export class TypeScriptParser implements ILanguageParser {
 	/**
 	 * Traverses AST with visitor pattern
 	 */
-	traverse(ast: any, visitor: ASTVisitor): void {
+	traverse(ast: AST, visitor: ASTVisitor): void {
 		if (!ast) return;
 
-		const visit = (node: any, parent?: any): void => {
+		const visit = (node: TreeSitterNode, parent?: TreeSitterNode): void => {
 			// Call enter hook
 			if (visitor.enter) {
 				const shouldContinue = visitor.enter(node, parent);
@@ -323,8 +329,11 @@ export class TypeScriptParser implements ILanguageParser {
 			}
 
 			// Visit children
-			for (let i = 0; i < node.childCount; i++) {
-				visit(node.child(i), node);
+			if (node?.childCount) {
+				for (let i = 0; i < node.childCount; i++) {
+					const child = node.child(i);
+					if (child) visit(child, node);
+				}
 			}
 
 			// Call leave hook
@@ -333,7 +342,9 @@ export class TypeScriptParser implements ILanguageParser {
 			}
 		};
 
-		visit(ast.rootNode);
+		if ((ast as TreeSitterTree)?.rootNode) {
+			visit((ast as TreeSitterTree).rootNode);
+		}
 	}
 
 	private async parseWithTimeout(
@@ -356,10 +367,10 @@ export class TypeScriptParser implements ILanguageParser {
 		});
 	}
 
-	private extractSyntaxErrors(ast: any, _content: string): ParseError[] {
+	private extractSyntaxErrors(ast: TreeSitterTree, _content: string): ParseError[] {
 		const errors: ParseError[] = [];
 
-		const visit = (node: any): void => {
+		const visit = (node: TreeSitterNode): void => {
 			if (node.hasError) {
 				errors.push({
 					type: "syntax",
@@ -377,7 +388,8 @@ export class TypeScriptParser implements ILanguageParser {
 			}
 
 			for (let i = 0; i < node.childCount; i++) {
-				visit(node.child(i));
+				const child = node.child(i);
+				if (child) visit(child);
 			}
 		};
 
@@ -385,13 +397,14 @@ export class TypeScriptParser implements ILanguageParser {
 		return errors;
 	}
 
-	private countNodes(ast: any): number {
+	private countNodes(ast: TreeSitterTree): number {
 		let count = 0;
 
-		const visit = (node: any): void => {
+		const visit = (node: TreeSitterNode): void => {
 			count++;
 			for (let i = 0; i < node.childCount; i++) {
-				visit(node.child(i));
+				const child = node.child(i);
+				if (child) visit(child);
 			}
 		};
 
@@ -399,13 +412,16 @@ export class TypeScriptParser implements ILanguageParser {
 		return count;
 	}
 
-	private calculateMaxDepth(ast: any): number {
-		const visit = (node: any, depth: number = 0): number => {
+	private calculateMaxDepth(ast: TreeSitterTree): number {
+		const visit = (node: TreeSitterNode, depth: number = 0): number => {
 			let maxDepth = depth;
 
 			for (let i = 0; i < node.childCount; i++) {
-				const childDepth = visit(node.child(i), depth + 1);
-				maxDepth = Math.max(maxDepth, childDepth);
+				const child = node.child(i);
+				if (child) {
+					const childDepth = visit(child, depth + 1);
+					maxDepth = Math.max(maxDepth, childDepth);
+				}
 			}
 
 			return maxDepth;
@@ -474,10 +490,10 @@ export class TypeScriptParser implements ILanguageParser {
 	/**
 	 * Extract dependencies from AST
 	 */
-	private extractDependenciesFromAST(ast: any): DependencyInfo[] {
+	private extractDependenciesFromAST(ast: TreeSitterTree): DependencyInfo[] {
 		const dependencies: DependencyInfo[] = [];
 
-		const visit = (node: any): void => {
+		const visit = (node: TreeSitterNode): void => {
 			if (node.type === "import_statement") {
 				const source = this.extractImportSource(node);
 				if (source) {
@@ -508,7 +524,8 @@ export class TypeScriptParser implements ILanguageParser {
 			}
 
 			for (let i = 0; i < node.childCount; i++) {
-				visit(node.child(i));
+				const child = node.child(i);
+				if (child) visit(child);
 			}
 		};
 
@@ -572,15 +589,18 @@ export class TypeScriptParser implements ILanguageParser {
 	/**
 	 * Extract import source from import_statement node
 	 */
-	private extractImportSource(node: any): string | null {
+	private extractImportSource(node: TreeSitterNode): string | null {
 		// Find string_literal child node
-		const visit = (n: any): string | null => {
+		const visit = (n: TreeSitterNode): string | null => {
 			if (n.type === "string") {
 				return n.text.slice(1, -1); // Remove quotes
 			}
 			for (let i = 0; i < n.childCount; i++) {
-				const result = visit(n.child(i));
-				if (result) return result;
+				const child = n.child(i);
+				if (child) {
+					const result = visit(child);
+					if (result) return result;
+				}
 			}
 			return null;
 		};
@@ -590,7 +610,7 @@ export class TypeScriptParser implements ILanguageParser {
 	/**
 	 * Extract require source from call_expression node
 	 */
-	private extractRequireSource(node: any): string | null {
+	private extractRequireSource(node: TreeSitterNode): string | null {
 		// Check if this is a require() call
 		if (
 			node.firstChild?.type === "identifier" &&

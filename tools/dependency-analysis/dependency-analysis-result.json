@@ -1,0 +1,486 @@
+{
+  "rootFile": "src/services/AnalysisEngine.ts",
+  "totalFiles": 33,
+  "maxDepth": 4,
+  "dependencies": {
+    "src/models/ExtractedData.ts": {
+      "filePath": "src/models/ExtractedData.ts",
+      "relativePath": "src/models/ExtractedData.ts",
+      "dependencies": [],
+      "dependents": [
+        "src/extractors/IDataExtractor.ts"
+      ],
+      "depth": 3,
+      "type": "import"
+    },
+    "src/extractors/IDataExtractor.ts": {
+      "filePath": "src/extractors/IDataExtractor.ts",
+      "relativePath": "src/extractors/IDataExtractor.ts",
+      "dependencies": [
+        "src/models/ExtractedData.ts"
+      ],
+      "dependents": [
+        "src/extractors/ComplexityExtractor.ts",
+        "src/extractors/DependencyExtractor.ts",
+        "src/extractors/IdentifierExtractor.ts",
+        "src/services/ExtractorRegistry.ts",
+        "src/services/IAnalysisEngine.ts",
+        "src/services/AnalysisEngine.ts"
+      ],
+      "depth": 2,
+      "type": "import"
+    },
+    "src/extractors/ComplexityExtractor.ts": {
+      "filePath": "src/extractors/ComplexityExtractor.ts",
+      "relativePath": "src/extractors/ComplexityExtractor.ts",
+      "dependencies": [
+        "src/extractors/IDataExtractor.ts"
+      ],
+      "dependents": [
+        "src/services/AnalysisEngine.ts"
+      ],
+      "depth": 1,
+      "type": "import"
+    },
+    "src/extractors/DependencyExtractor.ts": {
+      "filePath": "src/extractors/DependencyExtractor.ts",
+      "relativePath": "src/extractors/DependencyExtractor.ts",
+      "dependencies": [
+        "src/extractors/IDataExtractor.ts"
+      ],
+      "dependents": [
+        "src/interpreters/DependencyAnalysisInterpreter.ts",
+        "src/services/AnalysisEngine.ts"
+      ],
+      "depth": 1,
+      "type": "import"
+    },
+    "src/extractors/IdentifierExtractor.ts": {
+      "filePath": "src/extractors/IdentifierExtractor.ts",
+      "relativePath": "src/extractors/IdentifierExtractor.ts",
+      "dependencies": [
+        "src/extractors/IDataExtractor.ts"
+      ],
+      "dependents": [
+        "src/interpreters/IdentifierAnalysisInterpreter.ts",
+        "src/services/AnalysisEngine.ts"
+      ],
+      "depth": 1,
+      "type": "import"
+    },
+    "src/interpreters/IDataInterpreter.ts": {
+      "filePath": "src/interpreters/IDataInterpreter.ts",
+      "relativePath": "src/interpreters/IDataInterpreter.ts",
+      "dependencies": [],
+      "dependents": [
+        "src/interpreters/DependencyAnalysisInterpreter.ts",
+        "src/interpreters/IdentifierAnalysisInterpreter.ts",
+        "src/services/InterpreterRegistry.ts",
+        "src/services/IAnalysisEngine.ts",
+        "src/services/AnalysisEngine.ts"
+      ],
+      "depth": 2,
+      "type": "import"
+    },
+    "src/interpreters/DependencyAnalysisInterpreter.ts": {
+      "filePath": "src/interpreters/DependencyAnalysisInterpreter.ts",
+      "relativePath": "src/interpreters/DependencyAnalysisInterpreter.ts",
+      "dependencies": [
+        "src/extractors/DependencyExtractor.ts",
+        "src/interpreters/IDataInterpreter.ts"
+      ],
+      "dependents": [
+        "src/services/AnalysisEngine.ts"
+      ],
+      "depth": 1,
+      "type": "import"
+    },
+    "src/interpreters/IdentifierAnalysisInterpreter.ts": {
+      "filePath": "src/interpreters/IdentifierAnalysisInterpreter.ts",
+      "relativePath": "src/interpreters/IdentifierAnalysisInterpreter.ts",
+      "dependencies": [
+        "src/extractors/IdentifierExtractor.ts",
+        "src/interpreters/IDataInterpreter.ts"
+      ],
+      "dependents": [
+        "src/services/AnalysisEngine.ts"
+      ],
+      "depth": 1,
+      "type": "import"
+    },
+    "src/models/AnalysisConfig.ts": {
+      "filePath": "src/models/AnalysisConfig.ts",
+      "relativePath": "src/models/AnalysisConfig.ts",
+      "dependencies": [],
+      "dependents": [
+        "src/services/IAnalysisEngine.ts",
+        "src/services/AnalysisEngine.ts"
+      ],
+      "depth": 1,
+      "type": "import"
+    },
+    "src/models/AnalysisError.ts": {
+      "filePath": "src/models/AnalysisError.ts",
+      "relativePath": "src/models/AnalysisError.ts",
+      "dependencies": [],
+      "dependents": [
+        "src/models/AnalysisResult.ts",
+        "src/services/AnalysisEngine.ts"
+      ],
+      "depth": 1,
+      "type": "import"
+    },
+    "src/models/PathInfo.ts": {
+      "filePath": "src/models/PathInfo.ts",
+      "relativePath": "src/models/PathInfo.ts",
+      "dependencies": [],
+      "dependents": [
+        "src/models/AnalysisResult.ts"
+      ],
+      "depth": 2,
+      "type": "import"
+    },
+    "src/models/PerformanceMetrics.ts": {
+      "filePath": "src/models/PerformanceMetrics.ts",
+      "relativePath": "src/models/PerformanceMetrics.ts",
+      "dependencies": [],
+      "dependents": [
+        "src/models/AnalysisResult.ts",
+        "src/services/AnalysisEngine.ts"
+      ],
+      "depth": 2,
+      "type": "import"
+    },
+    "src/models/AnalysisResult.ts": {
+      "filePath": "src/models/AnalysisResult.ts",
+      "relativePath": "src/models/AnalysisResult.ts",
+      "dependencies": [
+        "src/models/PathInfo.ts",
+        "src/models/AnalysisError.ts",
+        "src/models/PerformanceMetrics.ts"
+      ],
+      "dependents": [
+        "src/parsers/TypeScriptParser.ts",
+        "src/services/optimization/PerformanceOptimizer.ts",
+        "src/services/integration/DataIntegrator.ts",
+        "src/services/IAnalysisEngine.ts",
+        "src/services/AnalysisEngine.ts"
+      ],
+      "depth": 1,
+      "type": "import"
+    },
+    "src/parsers/ILanguageParser.ts": {
+      "filePath": "src/parsers/ILanguageParser.ts",
+      "relativePath": "src/parsers/ILanguageParser.ts",
+      "dependencies": [],
+      "dependents": [
+        "src/parsers/GoParser.ts",
+        "src/parsers/JavaParser.ts",
+        "src/parsers/TypeScriptParser.ts",
+        "src/parsers/JavaScriptParser.ts",
+        "src/services/ParserRegistry.ts"
+      ],
+      "depth": 2,
+      "type": "import"
+    },
+    "src/parsers/GoParser.ts": {
+      "filePath": "src/parsers/GoParser.ts",
+      "relativePath": "src/parsers/GoParser.ts",
+      "dependencies": [
+        "src/parsers/ILanguageParser.ts"
+      ],
+      "dependents": [
+        "src/services/AnalysisEngine.ts"
+      ],
+      "depth": 1,
+      "type": "import"
+    },
+    "src/parsers/JavaParser.ts": {
+      "filePath": "src/parsers/JavaParser.ts",
+      "relativePath": "src/parsers/JavaParser.ts",
+      "dependencies": [
+        "src/parsers/ILanguageParser.ts"
+      ],
+      "dependents": [
+        "src/services/AnalysisEngine.ts"
+      ],
+      "depth": 1,
+      "type": "import"
+    },
+    "src/models/SourceLocation.ts": {
+      "filePath": "src/models/SourceLocation.ts",
+      "relativePath": "src/models/SourceLocation.ts",
+      "dependencies": [],
+      "dependents": [
+        "src/models/DependencyInfo.ts",
+        "src/models/ExportInfo.ts",
+        "src/models/ImportInfo.ts"
+      ],
+      "depth": 4,
+      "type": "import"
+    },
+    "src/models/DependencyInfo.ts": {
+      "filePath": "src/models/DependencyInfo.ts",
+      "relativePath": "src/models/DependencyInfo.ts",
+      "dependencies": [
+        "src/models/SourceLocation.ts"
+      ],
+      "dependents": [
+        "src/parsers/TypeScriptParser.ts"
+      ],
+      "depth": 3,
+      "type": "import"
+    },
+    "src/models/ExportInfo.ts": {
+      "filePath": "src/models/ExportInfo.ts",
+      "relativePath": "src/models/ExportInfo.ts",
+      "dependencies": [
+        "src/models/SourceLocation.ts"
+      ],
+      "dependents": [
+        "src/parsers/TypeScriptParser.ts"
+      ],
+      "depth": 3,
+      "type": "import"
+    },
+    "src/models/ImportInfo.ts": {
+      "filePath": "src/models/ImportInfo.ts",
+      "relativePath": "src/models/ImportInfo.ts",
+      "dependencies": [
+        "src/models/SourceLocation.ts"
+      ],
+      "dependents": [
+        "src/parsers/TypeScriptParser.ts"
+      ],
+      "depth": 3,
+      "type": "import"
+    },
+    "src/parsers/TypeScriptParser.ts": {
+      "filePath": "src/parsers/TypeScriptParser.ts",
+      "relativePath": "src/parsers/TypeScriptParser.ts",
+      "dependencies": [
+        "src/models/AnalysisResult.ts",
+        "src/models/DependencyInfo.ts",
+        "src/models/ExportInfo.ts",
+        "src/models/ImportInfo.ts",
+        "src/parsers/ILanguageParser.ts"
+      ],
+      "dependents": [
+        "src/parsers/JavaScriptParser.ts",
+        "src/services/AnalysisEngine.ts"
+      ],
+      "depth": 2,
+      "type": "import"
+    },
+    "src/parsers/JavaScriptParser.ts": {
+      "filePath": "src/parsers/JavaScriptParser.ts",
+      "relativePath": "src/parsers/JavaScriptParser.ts",
+      "dependencies": [
+        "src/parsers/TypeScriptParser.ts",
+        "src/parsers/ILanguageParser.ts"
+      ],
+      "dependents": [
+        "src/services/AnalysisEngine.ts"
+      ],
+      "depth": 1,
+      "type": "import"
+    },
+    "src/models/CacheEntry.ts": {
+      "filePath": "src/models/CacheEntry.ts",
+      "relativePath": "src/models/CacheEntry.ts",
+      "dependencies": [],
+      "dependents": [
+        "src/services/ICacheManager.ts",
+        "src/services/CacheManager.ts",
+        "src/services/IAnalysisEngine.ts",
+        "src/services/AnalysisEngine.ts"
+      ],
+      "depth": 3,
+      "type": "import"
+    },
+    "src/services/ICacheManager.ts": {
+      "filePath": "src/services/ICacheManager.ts",
+      "relativePath": "src/services/ICacheManager.ts",
+      "dependencies": [
+        "src/models/CacheEntry.ts"
+      ],
+      "dependents": [
+        "src/services/CacheManager.ts"
+      ],
+      "depth": 2,
+      "type": "import"
+    },
+    "src/services/CacheManager.ts": {
+      "filePath": "src/services/CacheManager.ts",
+      "relativePath": "src/services/CacheManager.ts",
+      "dependencies": [
+        "src/services/ICacheManager.ts",
+        "src/models/CacheEntry.ts"
+      ],
+      "dependents": [
+        "src/services/AnalysisEngine.ts"
+      ],
+      "depth": 1,
+      "type": "import"
+    },
+    "src/services/ExtractorRegistry.ts": {
+      "filePath": "src/services/ExtractorRegistry.ts",
+      "relativePath": "src/services/ExtractorRegistry.ts",
+      "dependencies": [
+        "src/extractors/IDataExtractor.ts"
+      ],
+      "dependents": [
+        "src/services/AnalysisEngine.ts"
+      ],
+      "depth": 1,
+      "type": "import"
+    },
+    "src/services/InterpreterRegistry.ts": {
+      "filePath": "src/services/InterpreterRegistry.ts",
+      "relativePath": "src/services/InterpreterRegistry.ts",
+      "dependencies": [
+        "src/interpreters/IDataInterpreter.ts"
+      ],
+      "dependents": [
+        "src/services/AnalysisEngine.ts"
+      ],
+      "depth": 1,
+      "type": "import"
+    },
+    "src/models/IntegratedData.ts": {
+      "filePath": "src/models/IntegratedData.ts",
+      "relativePath": "src/models/IntegratedData.ts",
+      "dependencies": [],
+      "dependents": [
+        "src/services/optimization/PerformanceOptimizer.ts",
+        "src/services/integration/DataIntegrator.ts",
+        "src/services/AnalysisEngine.ts"
+      ],
+      "depth": 2,
+      "type": "import"
+    },
+    "src/services/optimization/PerformanceOptimizer.ts": {
+      "filePath": "src/services/optimization/PerformanceOptimizer.ts",
+      "relativePath": "src/services/optimization/PerformanceOptimizer.ts",
+      "dependencies": [
+        "src/models/AnalysisResult.ts",
+        "src/models/IntegratedData.ts"
+      ],
+      "dependents": [
+        "src/services/integration/DataIntegrator.ts"
+      ],
+      "depth": 2,
+      "type": "import"
+    },
+    "src/services/integration/DataIntegrator.ts": {
+      "filePath": "src/services/integration/DataIntegrator.ts",
+      "relativePath": "src/services/integration/DataIntegrator.ts",
+      "dependencies": [
+        "src/models/AnalysisResult.ts",
+        "src/models/IntegratedData.ts",
+        "src/services/optimization/PerformanceOptimizer.ts"
+      ],
+      "dependents": [
+        "src/services/AnalysisEngine.ts"
+      ],
+      "depth": 1,
+      "type": "import"
+    },
+    "src/services/ParserRegistry.ts": {
+      "filePath": "src/services/ParserRegistry.ts",
+      "relativePath": "src/services/ParserRegistry.ts",
+      "dependencies": [
+        "src/parsers/ILanguageParser.ts"
+      ],
+      "dependents": [
+        "src/services/AnalysisEngine.ts"
+      ],
+      "depth": 1,
+      "type": "import"
+    },
+    "src/services/IAnalysisEngine.ts": {
+      "filePath": "src/services/IAnalysisEngine.ts",
+      "relativePath": "src/services/IAnalysisEngine.ts",
+      "dependencies": [
+        "src/extractors/IDataExtractor.ts",
+        "src/interpreters/IDataInterpreter.ts",
+        "src/models/AnalysisConfig.ts",
+        "src/models/AnalysisResult.ts",
+        "src/models/CacheEntry.ts"
+      ],
+      "dependents": [
+        "src/services/AnalysisEngine.ts"
+      ],
+      "depth": 1,
+      "type": "import"
+    },
+    "src/services/AnalysisEngine.ts": {
+      "filePath": "src/services/AnalysisEngine.ts",
+      "relativePath": "src/services/AnalysisEngine.ts",
+      "dependencies": [
+        "src/extractors/ComplexityExtractor.ts",
+        "src/extractors/DependencyExtractor.ts",
+        "src/extractors/IdentifierExtractor.ts",
+        "src/interpreters/DependencyAnalysisInterpreter.ts",
+        "src/interpreters/IdentifierAnalysisInterpreter.ts",
+        "src/models/AnalysisConfig.ts",
+        "src/models/AnalysisError.ts",
+        "src/models/AnalysisResult.ts",
+        "src/models/PerformanceMetrics.ts",
+        "src/parsers/GoParser.ts",
+        "src/parsers/JavaParser.ts",
+        "src/parsers/JavaScriptParser.ts",
+        "src/parsers/TypeScriptParser.ts",
+        "src/services/CacheManager.ts",
+        "src/services/ExtractorRegistry.ts",
+        "src/services/InterpreterRegistry.ts",
+        "src/services/integration/DataIntegrator.ts",
+        "src/services/ParserRegistry.ts",
+        "src/extractors/IDataExtractor.ts",
+        "src/interpreters/IDataInterpreter.ts",
+        "src/models/CacheEntry.ts",
+        "src/models/IntegratedData.ts",
+        "src/services/IAnalysisEngine.ts"
+      ],
+      "dependents": [],
+      "depth": 0,
+      "type": "import"
+    }
+  },
+  "dependencyTree": [
+    "📄 src/services/AnalysisEngine.ts (의존성: 23개)",
+    "  📄 src/extractors/ComplexityExtractor.ts (의존성: 1개)",
+    "    📄 src/extractors/IDataExtractor.ts (의존성: 1개)",
+    "      📄 src/models/ExtractedData.ts (의존성: 0개)",
+    "  📄 src/extractors/DependencyExtractor.ts (의존성: 1개)",
+    "  📄 src/extractors/IdentifierExtractor.ts (의존성: 1개)",
+    "  📄 src/interpreters/DependencyAnalysisInterpreter.ts (의존성: 2개)",
+    "    📄 src/interpreters/IDataInterpreter.ts (의존성: 0개)",
+    "  📄 src/interpreters/IdentifierAnalysisInterpreter.ts (의존성: 2개)",
+    "  📄 src/models/AnalysisConfig.ts (의존성: 0개)",
+    "  📄 src/models/AnalysisError.ts (의존성: 0개)",
+    "  📄 src/models/AnalysisResult.ts (의존성: 3개)",
+    "    📄 src/models/PathInfo.ts (의존성: 0개)",
+    "    📄 src/models/PerformanceMetrics.ts (의존성: 0개)",
+    "  📄 src/parsers/GoParser.ts (의존성: 1개)",
+    "    📄 src/parsers/ILanguageParser.ts (의존성: 0개)",
+    "  📄 src/parsers/JavaParser.ts (의존성: 1개)",
+    "  📄 src/parsers/JavaScriptParser.ts (의존성: 2개)",
+    "    📄 src/parsers/TypeScriptParser.ts (의존성: 5개)",
+    "      📄 src/models/DependencyInfo.ts (의존성: 1개)",
+    "        📄 src/models/SourceLocation.ts (의존성: 0개)",
+    "      📄 src/models/ExportInfo.ts (의존성: 1개)",
+    "      📄 src/models/ImportInfo.ts (의존성: 1개)",
+    "  📄 src/services/CacheManager.ts (의존성: 2개)",
+    "    📄 src/services/ICacheManager.ts (의존성: 1개)",
+    "      📄 src/models/CacheEntry.ts (의존성: 0개)",
+    "  📄 src/services/ExtractorRegistry.ts (의존성: 1개)",
+    "  📄 src/services/InterpreterRegistry.ts (의존성: 1개)",
+    "  📄 src/services/integration/DataIntegrator.ts (의존성: 3개)",
+    "    📄 src/models/IntegratedData.ts (의존성: 0개)",
+    "    📄 src/services/optimization/PerformanceOptimizer.ts (의존성: 2개)",
+    "  📄 src/services/ParserRegistry.ts (의존성: 1개)",
+    "  📄 src/services/IAnalysisEngine.ts (의존성: 5개)"
+  ],
+  "circularDependencies": []
+}

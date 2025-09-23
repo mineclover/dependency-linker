@@ -3,24 +3,26 @@
  * Implements ILanguageParser for parsing Markdown files and extracting link dependencies
  */
 
-import { promises as fs } from 'node:fs';
-import { extname, resolve, dirname, join } from 'node:path';
+import { promises as fs } from "node:fs";
+import { extname } from "node:path";
+import type { AST } from "../extractors/IDataExtractor";
+import type { TreeSitterLanguage } from "../types/TreeSitterTypes";
 import type {
 	ILanguageParser,
+	ParseError,
+	ParseMetadata,
 	ParseResult,
-	SyntaxValidationResult,
 	ParserMetadata,
 	ParserOptions,
-	ParseError,
 	ParseWarning,
-	ParseMetadata
-} from './ILanguageParser';
+	SyntaxValidationResult,
+} from "./ILanguageParser";
 
 /**
  * Markdown-specific AST node types
  */
 export interface MarkdownAST {
-	type: 'document';
+	type: "document";
 	children: MarkdownNode[];
 	sourceMap?: SourceMap;
 }
@@ -54,11 +56,11 @@ export interface SourceMap {
  * Link types found in Markdown
  */
 export enum LinkType {
-	INLINE = 'inline',
-	REFERENCE = 'reference',
-	AUTOLINK = 'autolink',
-	IMAGE = 'image',
-	IMAGE_REFERENCE = 'image_reference'
+	INLINE = "inline",
+	REFERENCE = "reference",
+	AUTOLINK = "autolink",
+	IMAGE = "image",
+	IMAGE_REFERENCE = "image_reference",
 }
 
 /**
@@ -89,8 +91,8 @@ export class MarkdownParser implements ILanguageParser {
 			timeout: 5000,
 			enableErrorRecovery: true,
 			includeLocations: true,
-			encoding: 'utf-8',
-			...options
+			encoding: "utf-8",
+			...options,
 		};
 	}
 
@@ -106,18 +108,23 @@ export class MarkdownParser implements ILanguageParser {
 			// Read file content if not provided
 			const fileReadStart = Date.now();
 			if (!content) {
-				content = await fs.readFile(filePath, { encoding: 'utf-8' });
+				content = await fs.readFile(filePath, { encoding: "utf-8" });
 			}
 			const fileReadTime = Date.now() - fileReadStart;
 
 			// Ensure content is defined
-			if (typeof content !== 'string') {
-				throw new Error('Failed to read file content as string');
+			if (typeof content !== "string") {
+				throw new Error("Failed to read file content as string");
 			}
 
 			// Check file size limit
-			if (this.options.maxFileSize && content.length > this.options.maxFileSize) {
-				throw new Error(`File size exceeds limit: ${content.length} > ${this.options.maxFileSize}`);
+			if (
+				this.options.maxFileSize &&
+				content.length > this.options.maxFileSize
+			) {
+				throw new Error(
+					`File size exceeds limit: ${content.length} > ${this.options.maxFileSize}`,
+				);
 			}
 
 			// Parse markdown content
@@ -142,9 +149,9 @@ export class MarkdownParser implements ILanguageParser {
 				nodeCount,
 				maxDepth,
 				fileSize: content.length,
-				encoding: this.options.encoding || 'utf-8',
-				parserVersion: '1.0.0',
-				grammarVersion: 'markdown-1.0',
+				encoding: this.options.encoding || "utf-8",
+				parserVersion: "1.0.0",
+				grammarVersion: "markdown-1.0",
 				memoryUsage: process.memoryUsage().heapUsed,
 				incremental: false,
 				timings: {
@@ -153,32 +160,31 @@ export class MarkdownParser implements ILanguageParser {
 					fileRead: fileReadTime,
 					parsing: parseTime,
 					validation: validationTime,
-					cache: 0 // No cache operations in this implementation
-				}
+					cache: 0, // No cache operations in this implementation
+				},
 			};
 
 			return {
-				ast,
-				language: 'markdown',
+				ast: ast as AST,
+				language: "markdown",
 				parseTime: totalTime,
 				cacheHit: false,
 				errors,
 				warnings,
-				metadata
+				metadata,
 			};
-
 		} catch (error) {
 			const totalTime = Date.now() - startTime;
 			errors.push({
-				type: 'syntax',
-				message: error instanceof Error ? error.message : 'Unknown parse error',
+				type: "syntax",
+				message: error instanceof Error ? error.message : "Unknown parse error",
 				location: { line: 1, column: 1, offset: 0 },
-				severity: 'error'
+				severity: "error",
 			});
 
 			return {
-				ast: { type: 'document', children: [] },
-				language: 'markdown',
+				ast: { type: "document", children: [] } as AST,
+				language: "markdown",
 				parseTime: totalTime,
 				cacheHit: false,
 				errors,
@@ -187,9 +193,9 @@ export class MarkdownParser implements ILanguageParser {
 					nodeCount: 0,
 					maxDepth: 0,
 					fileSize: 0,
-					encoding: this.options.encoding || 'utf-8',
-					parserVersion: '1.0.0',
-					grammarVersion: 'markdown-1.0',
+					encoding: this.options.encoding || "utf-8",
+					parserVersion: "1.0.0",
+					grammarVersion: "markdown-1.0",
 					memoryUsage: process.memoryUsage().heapUsed,
 					incremental: false,
 					timings: {
@@ -198,9 +204,9 @@ export class MarkdownParser implements ILanguageParser {
 						fileRead: 0,
 						parsing: totalTime,
 						validation: 0,
-						cache: 0
-					}
-				}
+						cache: 0,
+					},
+				},
 			};
 		}
 	}
@@ -209,7 +215,7 @@ export class MarkdownParser implements ILanguageParser {
 	 * Check if this parser supports the given language
 	 */
 	supports(language: string): boolean {
-		return ['markdown', 'md'].includes(language.toLowerCase());
+		return ["markdown", "md"].includes(language.toLowerCase());
 	}
 
 	/**
@@ -217,21 +223,21 @@ export class MarkdownParser implements ILanguageParser {
 	 */
 	detectLanguage(filePath: string, content?: string): string {
 		const ext = extname(filePath).toLowerCase();
-		if (['.md', '.markdown', '.mdown', '.mkd'].includes(ext)) {
-			return 'markdown';
+		if ([".md", ".markdown", ".mdown", ".mkd"].includes(ext)) {
+			return "markdown";
 		}
 
 		// Content-based detection
 		if (content) {
 			// Check for common markdown patterns
 			const markdownPatterns = [
-				/^#{1,6}\s+/m,        // Headers
-				/^\*\s+/m,            // Unordered lists
-				/^\d+\.\s+/m,         // Ordered lists
-				/\[.*?\]\(.*?\)/,     // Links
-				/!\[.*?\]\(.*?\)/,    // Images
-				/```[\s\S]*?```/,     // Code blocks
-				/^>\s+/m             // Blockquotes
+				/^#{1,6}\s+/m, // Headers
+				/^\*\s+/m, // Unordered lists
+				/^\d+\.\s+/m, // Ordered lists
+				/\[.*?\]\(.*?\)/, // Links
+				/!\[.*?\]\(.*?\)/, // Images
+				/```[\s\S]*?```/, // Code blocks
+				/^>\s+/m, // Blockquotes
 			];
 
 			const score = markdownPatterns.reduce((acc, pattern) => {
@@ -239,11 +245,11 @@ export class MarkdownParser implements ILanguageParser {
 			}, 0);
 
 			if (score >= 2) {
-				return 'markdown';
+				return "markdown";
 			}
 		}
 
-		return 'unknown';
+		return "unknown";
 	}
 
 	/**
@@ -275,7 +281,7 @@ export class MarkdownParser implements ILanguageParser {
 			}
 			return maxDepth;
 		};
-		
+
 		let maxDepth = 0;
 		for (const child of ast.children) {
 			const childDepth = traverse(child, 1);
@@ -287,8 +293,8 @@ export class MarkdownParser implements ILanguageParser {
 	/**
 	 * Parse markdown content into AST
 	 */
-	private parseMarkdown(content: string, filePath: string): MarkdownAST {
-		const lines = content.split('\n');
+	private parseMarkdown(content: string, _filePath: string): MarkdownAST {
+		const lines = content.split("\n");
 		const children: MarkdownNode[] = [];
 		let currentPosition = 0;
 
@@ -305,56 +311,69 @@ export class MarkdownParser implements ILanguageParser {
 		}
 
 		return {
-			type: 'document',
-			children
+			type: "document",
+			children,
 		};
 	}
 
 	/**
 	 * Parse a single line of markdown
 	 */
-	private parseLine(line: string, lineNumber: number, startOffset: number, endOffset: number): MarkdownNode[] {
+	private parseLine(
+		line: string,
+		lineNumber: number,
+		startOffset: number,
+		endOffset: number,
+	): MarkdownNode[] {
 		const nodes: MarkdownNode[] = [];
 
 		// Headers
 		const headerMatch = line.match(/^(#{1,6})\s+(.+)$/);
 		if (headerMatch) {
 			nodes.push({
-				type: 'heading',
+				type: "heading",
 				value: headerMatch[2],
-				children: this.parseInlineElements(headerMatch[2], lineNumber, startOffset + headerMatch[1].length + 1),
+				children: this.parseInlineElements(
+					headerMatch[2],
+					lineNumber,
+					startOffset + headerMatch[1].length + 1,
+				),
 				position: {
 					start: { line: lineNumber, column: 1, offset: startOffset },
-					end: { line: lineNumber, column: line.length + 1, offset: endOffset }
-				}
+					end: { line: lineNumber, column: line.length + 1, offset: endOffset },
+				},
 			});
 			return nodes;
 		}
 
 		// Code blocks
-		if (line.startsWith('```')) {
+		if (line.startsWith("```")) {
 			nodes.push({
-				type: 'code_block',
+				type: "code_block",
 				value: line.substring(3).trim(),
 				position: {
 					start: { line: lineNumber, column: 1, offset: startOffset },
-					end: { line: lineNumber, column: line.length + 1, offset: endOffset }
-				}
+					end: { line: lineNumber, column: line.length + 1, offset: endOffset },
+				},
 			});
 			return nodes;
 		}
 
 		// Lists
-		const listMatch = line.match(/^(\s*)([\*\-\+]|\d+\.)\s+(.+)$/);
+		const listMatch = line.match(/^(\s*)([*\-+]|\d+\.)\s+(.+)$/);
 		if (listMatch) {
 			nodes.push({
-				type: 'list_item',
+				type: "list_item",
 				value: listMatch[3],
-				children: this.parseInlineElements(listMatch[3], lineNumber, startOffset + listMatch[0].length - listMatch[3].length),
+				children: this.parseInlineElements(
+					listMatch[3],
+					lineNumber,
+					startOffset + listMatch[0].length - listMatch[3].length,
+				),
 				position: {
 					start: { line: lineNumber, column: 1, offset: startOffset },
-					end: { line: lineNumber, column: line.length + 1, offset: endOffset }
-				}
+					end: { line: lineNumber, column: line.length + 1, offset: endOffset },
+				},
 			});
 			return nodes;
 		}
@@ -362,13 +381,13 @@ export class MarkdownParser implements ILanguageParser {
 		// Regular paragraph
 		if (line.trim()) {
 			nodes.push({
-				type: 'paragraph',
+				type: "paragraph",
 				value: line,
 				children: this.parseInlineElements(line, lineNumber, startOffset),
 				position: {
 					start: { line: lineNumber, column: 1, offset: startOffset },
-					end: { line: lineNumber, column: line.length + 1, offset: endOffset }
-				}
+					end: { line: lineNumber, column: line.length + 1, offset: endOffset },
+				},
 			});
 		}
 
@@ -378,15 +397,20 @@ export class MarkdownParser implements ILanguageParser {
 	/**
 	 * Parse inline elements (links, images, etc.)
 	 */
-	private parseInlineElements(text: string, lineNumber: number, startOffset: number): MarkdownNode[] {
+	private parseInlineElements(
+		text: string,
+		lineNumber: number,
+		startOffset: number,
+	): MarkdownNode[] {
 		const nodes: MarkdownNode[] = [];
 
 		// Inline links: [text](url "title")
 		const linkRegex = /\[([^\]]*)\]\(([^)]+)(?:\s+"([^"]*)")?\)/g;
-		let linkMatch;
-		while ((linkMatch = linkRegex.exec(text)) !== null) {
+		let linkMatch: RegExpExecArray | null;
+		linkMatch = linkRegex.exec(text);
+		while (linkMatch !== null) {
 			nodes.push({
-				type: 'link',
+				type: "link",
 				url: linkMatch[2],
 				value: linkMatch[1],
 				title: linkMatch[3],
@@ -394,23 +418,25 @@ export class MarkdownParser implements ILanguageParser {
 					start: {
 						line: lineNumber,
 						column: linkMatch.index + 1,
-						offset: startOffset + linkMatch.index
+						offset: startOffset + linkMatch.index,
 					},
 					end: {
 						line: lineNumber,
 						column: linkMatch.index + linkMatch[0].length + 1,
-						offset: startOffset + linkMatch.index + linkMatch[0].length
-					}
-				}
+						offset: startOffset + linkMatch.index + linkMatch[0].length,
+					},
+				},
 			});
+			linkMatch = linkRegex.exec(text);
 		}
 
 		// Images: ![alt](url "title")
 		const imageRegex = /!\[([^\]]*)\]\(([^)]+)(?:\s+"([^"]*)")?\)/g;
-		let imageMatch;
-		while ((imageMatch = imageRegex.exec(text)) !== null) {
+		let imageMatch: RegExpExecArray | null;
+		imageMatch = imageRegex.exec(text);
+		while (imageMatch !== null) {
 			nodes.push({
-				type: 'image',
+				type: "image",
 				url: imageMatch[2],
 				alt: imageMatch[1],
 				title: imageMatch[3],
@@ -418,38 +444,41 @@ export class MarkdownParser implements ILanguageParser {
 					start: {
 						line: lineNumber,
 						column: imageMatch.index + 1,
-						offset: startOffset + imageMatch.index
+						offset: startOffset + imageMatch.index,
 					},
 					end: {
 						line: lineNumber,
 						column: imageMatch.index + imageMatch[0].length + 1,
-						offset: startOffset + imageMatch.index + imageMatch[0].length
-					}
-				}
+						offset: startOffset + imageMatch.index + imageMatch[0].length,
+					},
+				},
 			});
+			imageMatch = imageRegex.exec(text);
 		}
 
 		// Reference links: [text][ref]
 		const refLinkRegex = /\[([^\]]*)\]\[([^\]]*)\]/g;
-		let refLinkMatch;
-		while ((refLinkMatch = refLinkRegex.exec(text)) !== null) {
+		let refLinkMatch: RegExpExecArray | null;
+		refLinkMatch = refLinkRegex.exec(text);
+		while (refLinkMatch !== null) {
 			nodes.push({
-				type: 'link_reference',
+				type: "link_reference",
 				value: refLinkMatch[1],
 				identifier: refLinkMatch[2],
 				position: {
 					start: {
 						line: lineNumber,
 						column: refLinkMatch.index + 1,
-						offset: startOffset + refLinkMatch.index
+						offset: startOffset + refLinkMatch.index,
 					},
 					end: {
 						line: lineNumber,
 						column: refLinkMatch.index + refLinkMatch[0].length + 1,
-						offset: startOffset + refLinkMatch.index + refLinkMatch[0].length
-					}
-				}
+						offset: startOffset + refLinkMatch.index + refLinkMatch[0].length,
+					},
+				},
 			});
+			refLinkMatch = refLinkRegex.exec(text);
 		}
 
 		return nodes;
@@ -463,19 +492,19 @@ export class MarkdownParser implements ILanguageParser {
 		const errors: ParseError[] = [];
 
 		// Check for common markdown issues
-		const lines = content.split('\n');
+		const lines = content.split("\n");
 		let firstErrorPosition: number | undefined;
 
 		lines.forEach((line, index) => {
 			const lineNumber = index + 1;
 
 			// Check for unclosed code blocks
-			if (line.startsWith('```') && content.split('```').length % 2 === 0) {
+			if (line.startsWith("```") && content.split("```").length % 2 === 0) {
 				errors.push({
-					type: 'syntax',
-					message: 'Potentially unclosed code block',
+					type: "syntax",
+					message: "Potentially unclosed code block",
 					location: { line: lineNumber, column: 1, offset: 0 },
-					severity: 'warning'
+					severity: "warning",
 				});
 				if (firstErrorPosition === undefined) {
 					firstErrorPosition = 0; // Could calculate actual position
@@ -486,10 +515,10 @@ export class MarkdownParser implements ILanguageParser {
 			const malformedLinks = line.match(/\[[^\]]*\]\([^)]*$/g);
 			if (malformedLinks) {
 				errors.push({
-					type: 'syntax',
-					message: 'Malformed link syntax',
+					type: "syntax",
+					message: "Malformed link syntax",
 					location: { line: lineNumber, column: 1, offset: 0 },
-					severity: 'error'
+					severity: "error",
 				});
 				if (firstErrorPosition === undefined) {
 					firstErrorPosition = 0; // Could calculate actual position
@@ -501,7 +530,7 @@ export class MarkdownParser implements ILanguageParser {
 			isValid: errors.length === 0,
 			errors,
 			validationTime: Date.now() - startTime,
-			firstErrorPosition
+			firstErrorPosition,
 		};
 	}
 
@@ -510,24 +539,24 @@ export class MarkdownParser implements ILanguageParser {
 	 */
 	getMetadata(): ParserMetadata {
 		return {
-			name: 'MarkdownParser',
-			version: '1.0.0',
-			supportedLanguages: ['markdown', 'md'],
-			supportedExtensions: ['.md', '.markdown', '.mdown', '.mkd'],
+			name: "MarkdownParser",
+			version: "1.0.0",
+			supportedLanguages: ["markdown", "md"],
+			supportedExtensions: [".md", ".markdown", ".mdown", ".mkd"],
 			capabilities: {
 				incrementalParsing: false,
 				errorRecovery: true,
 				syntaxHighlighting: false,
 				codeFolding: false,
 				maxFileSize: 1024 * 1024, // 1MB
-				memoryLimit: 64 * 1024 * 1024 // 64MB
+				memoryLimit: 64 * 1024 * 1024, // 64MB
 			},
 			performance: {
 				averageSpeed: 1000, // lines per second
 				memoryPerKB: 0.5, // KB memory per KB source
-				timeComplexity: 'linear',
-				threadSafe: true
-			}
+				timeComplexity: "linear",
+				threadSafe: true,
+			},
 		};
 	}
 
@@ -548,7 +577,7 @@ export class MarkdownParser implements ILanguageParser {
 	/**
 	 * Get grammar (not applicable for markdown)
 	 */
-	getGrammar(): any {
+	getGrammar(): TreeSitterLanguage | null {
 		return null; // Markdown doesn't use tree-sitter grammar
 	}
 

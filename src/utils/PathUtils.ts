@@ -221,29 +221,32 @@ export function resolvePath(inputPath: string, basePath?: string): string {
 
 /**
  * Resolve path for AnalysisResult, ensuring consistent absolute path format
- * 
+ *
  * @param inputPath - Input file path (relative or absolute)
  * @param projectRoot - Optional project root directory (defaults to process.cwd())
  * @returns Normalized absolute path for AnalysisResult
- * 
+ *
  * @example
  * ```typescript
  * const resultPath = resolveAnalysisPath('./src/index.ts');
  * // Returns: '/Users/user/project/src/index.ts'
- * 
+ *
  * const resultPath = resolveAnalysisPath('../other/file.ts', '/Users/user/project/src');
  * // Returns: '/Users/user/project/other/file.ts'
  * ```
  */
-export function resolveAnalysisPath(inputPath: string, projectRoot?: string): string {
+export function resolveAnalysisPath(
+	inputPath: string,
+	projectRoot?: string,
+): string {
 	try {
 		const basePath = projectRoot || process.cwd();
-		
+
 		// If already absolute, just normalize it
 		if (path.isAbsolute(inputPath)) {
 			return normalizePath(inputPath);
 		}
-		
+
 		// Resolve relative path against project root
 		const resolved = path.resolve(basePath, inputPath);
 		return normalizePath(resolved);
@@ -256,48 +259,54 @@ export function resolveAnalysisPath(inputPath: string, projectRoot?: string): st
 
 /**
  * Convert absolute path back to project-relative path for display purposes
- * 
+ *
  * @param absolutePath - Absolute file path
  * @param projectRoot - Project root directory (defaults to process.cwd())
  * @returns Relative path from project root
- * 
+ *
  * @example
  * ```typescript
  * const relativePath = toProjectRelativePath('/Users/user/project/src/index.ts');
  * // Returns: 'src/index.ts'
  * ```
  */
-export function toProjectRelativePath(absolutePath: string, projectRoot?: string): string {
+export function toProjectRelativePath(
+	absolutePath: string,
+	projectRoot?: string,
+): string {
 	try {
 		const basePath = projectRoot || process.cwd();
 		const relative = path.relative(basePath, absolutePath);
-		
+
 		// If the path goes outside project root, return the absolute path
-		if (relative.startsWith('..')) {
+		if (relative.startsWith("..")) {
 			return absolutePath;
 		}
-		
+
 		return normalizePath(relative);
 	} catch (error) {
-		logger.error(`Project relative path conversion failed: ${absolutePath}`, error);
+		logger.error(
+			`Project relative path conversion failed: ${absolutePath}`,
+			error,
+		);
 		return absolutePath;
 	}
 }
 
 /**
  * Validate and resolve path for AnalysisResult with additional checks
- * 
+ *
  * @param inputPath - Input file path
  * @param options - Path resolution options
  * @returns Resolved path information
- * 
+ *
  * @example
  * ```typescript
  * const pathInfo = validateAndResolveAnalysisPath('./src/index.ts', {
  *   mustExist: true,
  *   allowedExtensions: ['.ts', '.js']
  * });
- * 
+ *
  * if (pathInfo.isValid) {
  *   console.log(`Resolved: ${pathInfo.absolutePath}`);
  *   console.log(`Relative: ${pathInfo.relativePath}`);
@@ -311,7 +320,7 @@ export function validateAndResolveAnalysisPath(
 		mustExist?: boolean;
 		allowedExtensions?: string[];
 		maxLength?: number;
-	}
+	},
 ): {
 	isValid: boolean;
 	absolutePath: string;
@@ -324,17 +333,17 @@ export function validateAndResolveAnalysisPath(
 		projectRoot,
 		mustExist = false,
 		allowedExtensions,
-		maxLength = 1000
+		maxLength = 1000,
 	} = options || {};
 
 	try {
 		// Basic validation
-		if (!inputPath || typeof inputPath !== 'string') {
+		if (!inputPath || typeof inputPath !== "string") {
 			return {
 				isValid: false,
-				absolutePath: '',
-				relativePath: '',
-				error: 'Invalid input path'
+				absolutePath: "",
+				relativePath: "",
+				error: "Invalid input path",
 			};
 		}
 
@@ -343,7 +352,7 @@ export function validateAndResolveAnalysisPath(
 				isValid: false,
 				absolutePath: inputPath,
 				relativePath: inputPath,
-				error: `Path too long (${inputPath.length} > ${maxLength})`
+				error: `Path too long (${inputPath.length} > ${maxLength})`,
 			};
 		}
 
@@ -360,7 +369,7 @@ export function validateAndResolveAnalysisPath(
 					absolutePath,
 					relativePath,
 					extension,
-					error: `Extension '${extension}' not allowed. Allowed: ${allowedExtensions.join(', ')}`
+					error: `Extension '${extension}' not allowed. Allowed: ${allowedExtensions.join(", ")}`,
 				};
 			}
 		}
@@ -369,7 +378,7 @@ export function validateAndResolveAnalysisPath(
 		let exists: boolean | undefined;
 		if (mustExist) {
 			try {
-				const fs = require('node:fs');
+				const fs = require("node:fs");
 				exists = fs.existsSync(absolutePath);
 				if (!exists) {
 					return {
@@ -378,7 +387,7 @@ export function validateAndResolveAnalysisPath(
 						relativePath,
 						extension,
 						exists,
-						error: `File does not exist: ${absolutePath}`
+						error: `File does not exist: ${absolutePath}`,
 					};
 				}
 			} catch (fsError) {
@@ -387,7 +396,7 @@ export function validateAndResolveAnalysisPath(
 					absolutePath,
 					relativePath,
 					extension,
-					error: `File existence check failed: ${fsError instanceof Error ? fsError.message : 'Unknown error'}`
+					error: `File existence check failed: ${fsError instanceof Error ? fsError.message : "Unknown error"}`,
 				};
 			}
 		}
@@ -397,26 +406,25 @@ export function validateAndResolveAnalysisPath(
 			absolutePath,
 			relativePath,
 			extension,
-			exists
+			exists,
 		};
-
 	} catch (error) {
 		return {
 			isValid: false,
 			absolutePath: inputPath,
 			relativePath: inputPath,
-			error: `Path validation failed: ${error instanceof Error ? error.message : 'Unknown error'}`
+			error: `Path validation failed: ${error instanceof Error ? error.message : "Unknown error"}`,
 		};
 	}
 }
 
 /**
  * Batch resolve multiple paths for AnalysisResult
- * 
+ *
  * @param inputPaths - Array of input file paths
  * @param projectRoot - Optional project root directory
  * @returns Array of resolved path information
- * 
+ *
  * @example
  * ```typescript
  * const resolved = batchResolveAnalysisPaths([
@@ -424,7 +432,7 @@ export function validateAndResolveAnalysisPath(
  *   './docs/README.md',
  *   '../other/file.js'
  * ]);
- * 
+ *
  * resolved.forEach(pathInfo => {
  *   if (pathInfo.isValid) {
  *     console.log(`${pathInfo.relativePath} -> ${pathInfo.absolutePath}`);
@@ -436,7 +444,7 @@ export function validateAndResolveAnalysisPath(
  */
 export function batchResolveAnalysisPaths(
 	inputPaths: string[],
-	projectRoot?: string
+	projectRoot?: string,
 ): Array<{
 	input: string;
 	isValid: boolean;
@@ -444,16 +452,16 @@ export function batchResolveAnalysisPaths(
 	relativePath: string;
 	error?: string;
 }> {
-	return inputPaths.map(inputPath => {
+	return inputPaths.map((inputPath) => {
 		try {
 			const absolutePath = resolveAnalysisPath(inputPath, projectRoot);
 			const relativePath = toProjectRelativePath(absolutePath, projectRoot);
-			
+
 			return {
 				input: inputPath,
 				isValid: true,
 				absolutePath,
-				relativePath
+				relativePath,
 			};
 		} catch (error) {
 			return {
@@ -461,7 +469,7 @@ export function batchResolveAnalysisPaths(
 				isValid: false,
 				absolutePath: inputPath,
 				relativePath: inputPath,
-				error: error instanceof Error ? error.message : 'Unknown error'
+				error: error instanceof Error ? error.message : "Unknown error",
 			};
 		}
 	});

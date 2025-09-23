@@ -8,7 +8,21 @@ import { InterpreterRegistry } from '../../../src/services/InterpreterRegistry';
 import type { IDataInterpreter, InterpreterMetadata, InterpreterConfiguration, ValidationResult, OutputSchema, InterpreterDependency, InterpreterContext } from '../../../src/interpreters/IDataInterpreter';
 
 // Mock interpreter for testing
-class MockInterpreter implements IDataInterpreter<any, any> {
+interface MockInputData {
+  mockData?: string;
+  [key: string]: unknown;
+}
+
+interface MockInterpretedResult {
+  interpretedData: string;
+  originalData: MockInputData;
+  metadata: {
+    processingTime: number;
+    dataCount: number;
+  };
+}
+
+class MockInterpreter implements IDataInterpreter<MockInputData, MockInterpretedResult> {
   private name: string;
   private version: string;
 
@@ -17,7 +31,7 @@ class MockInterpreter implements IDataInterpreter<any, any> {
     this.version = version;
   }
 
-  interpret(data: any, context: InterpreterContext): any {
+  interpret(data: MockInputData, context: InterpreterContext): MockInterpretedResult {
     return {
       interpretedData: `processed data from ${context.filePath}`,
       originalData: data,
@@ -44,7 +58,7 @@ class MockInterpreter implements IDataInterpreter<any, any> {
     return dataType === 'mock' || dataType === 'test';
   }
 
-  validate(data: any): ValidationResult {
+  validate(data: MockInputData): ValidationResult {
     return {
       isValid: true,
       errors: [],
@@ -57,7 +71,7 @@ class MockInterpreter implements IDataInterpreter<any, any> {
       type: 'object',
       properties: {
         interpretedData: { type: 'string', description: 'Processed data' },
-        originalData: { type: 'any', description: 'Original input data' },
+        originalData: { type: 'object', description: 'Original input data' },
         metadata: { type: 'object', description: 'Processing metadata' }
       },
       required: ['interpretedData'],
@@ -99,7 +113,6 @@ class MockInterpreter implements IDataInterpreter<any, any> {
       license: 'MIT'
     };
   }
-
 
   configure(options: InterpreterConfiguration): void {
     // Mock configuration

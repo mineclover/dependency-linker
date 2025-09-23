@@ -27,14 +27,14 @@ export {
 } from "./IdentifierAnalysisInterpreter";
 
 export {
-	LinkDependencyInterpreter,
+	DependencyCategory,
+	IssueSeverity,
+	IssueType,
+	type LinkAnalysisOptions,
 	type LinkDependencyAnalysis,
+	LinkDependencyInterpreter,
+	type LinkIssue,
+	LinkStatus,
 	type LinkSummary,
 	type ProcessedDependency,
-	type LinkIssue,
-	DependencyCategory,
-	LinkStatus,
-	IssueType,
-	IssueSeverity,
-	type LinkAnalysisOptions
 } from "./LinkDependencyInterpreter";

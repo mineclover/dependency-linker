@@ -1,11 +1,11 @@
-# TypeScript Dependency Linker - Claude Code Context
+# Multi-Language Dependency Linker - Claude Code Context
 
 ## Project Overview
-Multi-language AST-based code analysis framework with extensible plugin architecture. Refactoring existing TypeScript dependency analysis to support Go, Java, Python, and custom analysis types.
+Multi-language AST-based code analysis framework with extensible plugin architecture. Supports TypeScript, Go, Java, Markdown, and custom analysis types through tree-sitter parsers with pluggable extractors and interpreters.
 
 ## Current Architecture (Feature 004)
 - **Language**: TypeScript 5.x, Node.js 18+
-- **Dependencies**: tree-sitter, tree-sitter-typescript, tree-sitter-go, tree-sitter-java
+- **Dependencies**: tree-sitter, tree-sitter-typescript, tree-sitter-go, tree-sitter-java, plus Markdown parser
 - **Testing**: Jest with integration test suite
 - **Storage**: File-based caching with JSON serialization
 - **Type**: Single library project with plugin system
@@ -20,9 +20,10 @@ AnalysisEngine (coordinator)
 ```
 
 ## Plugin Architecture
-- `IDataExtractor<T>`: Extract specific data from AST (dependencies, identifiers, etc.)
+- `IDataExtractor<T>`: Extract specific data from AST (dependencies, identifiers, complexity, markdown links, etc.)
 - `IDataInterpreter<TInput, TOutput>`: Process extracted data for analysis
-- `LanguageParser`: Language-specific tree-sitter wrapper
+- `LanguageParser`: Language-specific tree-sitter wrapper (TypeScript, Go, Java, JavaScript)
+- `MarkdownParser`: Specialized markdown link and reference extractor
 
 ## Three-Module Flow
 1. **Code Parser**: Language detection → AST generation → Caching
@@ -41,11 +42,11 @@ AnalysisEngine (coordinator)
 - Cache hit rate: >80%
 - Concurrency: 10 parallel analyses
 
-## Recent Changes (005-test-optimization)
-- **Testing Issues Identified**: 309 tests with 23 failures, 3.17s execution time
-- **Optimization Strategy**: Three-tier categorization (Critical/Optimize/Remove)
-- **Performance Targets**: <1.5s execution, >99% pass rate, ~250 tests
-- **Technical Focus**: Parser registry optimization, shared utilities, behavior-driven testing
+## Recent Changes (Package Publishing Preparation)
+- **Package Name**: Changed to `@context-action/dependency-linker` (removed TypeScript-specific naming)
+- **Multi-Language Support**: Updated documentation to reflect Go, Java, Markdown parser support
+- **Tree-Shaking**: Verified modular architecture supports selective imports
+- **Dependency Analysis Tools**: Created isolated dependency analysis toolkit in `tools/dependency-analysis/`
 
 ## Recent Cleanup and Optimization (2025-09-21)
 - **Completed Tasks**:
@@ -67,8 +68,16 @@ AnalysisEngine (coordinator)
 - **Dependencies**: Clean dependency tree, no unused imports
 - **Performance**: Helper utilities for benchmarking and optimization
 
+## Package Distribution
+- **Name**: `@context-action/dependency-linker`
+- **Version**: 2.0.0
+- **CLI Binaries**: `analyze-file`, `tsdl`
+- **Supported Languages**: TypeScript, JavaScript, Go, Java, Markdown
+- **Tree-Shaking**: Modular exports support selective importing
+- **Dependencies Analysis**: Isolated tools in `tools/dependency-analysis/` for project dependency mapping
+
 ## Next Phase
-Framework ready for implementation of test optimization strategies and performance validation.
+Ready for npm publication under `@context-action` scope with comprehensive multi-language support.
 
 ---
-*Updated during cleanup session - 2025-09-21*
+*Updated for package publishing - 2025-09-23*

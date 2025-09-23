@@ -7,7 +7,8 @@ import * as fs from "node:fs/promises";
 import * as path from "node:path";
 import Parser from "tree-sitter";
 import Go from "tree-sitter-go";
-
+import type { AST } from "../extractors/IDataExtractor";
+import type { TreeSitterLanguage, TreeSitterNode, TreeSitterTree } from "../types/TreeSitterTypes";
 import type {
 	ASTVisitor,
 	ILanguageParser,
@@ -179,7 +180,7 @@ export class GoParser implements ILanguageParser {
 	/**
 	 * Gets the underlying grammar/parser instance
 	 */
-	getGrammar(): any {
+	getGrammar(): TreeSitterLanguage | null {
 		return this.parser.getLanguage();
 	}
 
@@ -267,10 +268,10 @@ export class GoParser implements ILanguageParser {
 	/**
 	 * Traverses AST with visitor pattern
 	 */
-	traverse(ast: any, visitor: ASTVisitor): void {
+	traverse(ast: AST, visitor: ASTVisitor): void {
 		if (!ast) return;
 
-		const visit = (node: any, parent?: any): void => {
+		const visit = (node: TreeSitterNode, parent?: TreeSitterNode): void => {
 			// Call enter hook
 			if (visitor.enter) {
 				const shouldContinue = visitor.enter(node, parent);
@@ -284,8 +285,11 @@ export class GoParser implements ILanguageParser {
 			}
 
 			// Visit children
-			for (let i = 0; i < node.childCount; i++) {
-				visit(node.child(i), node);
+			if (node?.childCount) {
+				for (let i = 0; i < node.childCount; i++) {
+					const child = node.child(i);
+					if (child) visit(child, node);
+				}
 			}
 
 			// Call leave hook
@@ -294,7 +298,9 @@ export class GoParser implements ILanguageParser {
 			}
 		};
 
-		visit(ast.rootNode);
+		if ((ast as TreeSitterTree)?.rootNode) {
+			visit((ast as TreeSitterTree).rootNode);
+		}
 	}
 
 	private async parseWithTimeout(

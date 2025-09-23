@@ -7,7 +7,15 @@ import type {
 	DependencyExtractionResult,
 	DependencyInfo,
 } from "../extractors/DependencyExtractor";
-import type { IDataInterpreter } from "./IDataInterpreter";
+import type {
+	IDataInterpreter,
+	InterpreterContext,
+	InterpreterConfiguration,
+	InterpreterDependency,
+	InterpreterMetadata,
+	OutputSchema,
+	ValidationResult
+} from "./IDataInterpreter";
 
 export interface DependencyAnalysisResult {
 	summary: {
@@ -83,7 +91,7 @@ export class DependencyAnalysisInterpreter
 
 	interpret(
 		input: DependencyExtractionResult,
-		_context: any = {},
+		_context: InterpreterContext,
 	): DependencyAnalysisResult {
 		// Handle both direct array and wrapped object format
 		const dependencies = Array.isArray(input)
@@ -439,14 +447,15 @@ export class DependencyAnalysisInterpreter
 		return this.version;
 	}
 
-	validate(_input: DependencyExtractionResult): any {
+	validate(_input: DependencyExtractionResult): ValidationResult {
 		return {
-			valid: true,
+			isValid: true,
 			errors: [],
+			warnings: [],
 		};
 	}
 
-	getOutputSchema(): any {
+	getOutputSchema(): OutputSchema {
 		return {
 			type: "object",
 			properties: {
@@ -454,10 +463,12 @@ export class DependencyAnalysisInterpreter
 				dependencyGraph: { type: "object" },
 				insights: { type: "object" },
 			},
+			required: ["summary", "dependencyGraph", "insights"],
+			version: "1.0.0",
 		};
 	}
 
-	getMetadata(): any {
+	getMetadata(): InterpreterMetadata {
 		return {
 			name: this.name,
 			version: this.version,
@@ -469,26 +480,30 @@ export class DependencyAnalysisInterpreter
 				averageTimePerItem: 50,
 				memoryUsage: "medium" as const,
 				timeComplexity: "linear" as const,
+				scalability: "good" as const,
+				maxRecommendedDataSize: 1000,
 			},
 			quality: {
 				accuracy: 0.9,
-				precision: 0.85,
-				recall: 0.8,
+				consistency: 0.85,
+				completeness: 0.8,
+				reliability: 0.88,
 			},
 		};
 	}
 
-	configure(_options: any): void {
+	configure(_options: InterpreterConfiguration): void {
 		// Configuration implementation
 	}
 
-	getConfiguration(): any {
+	getConfiguration(): InterpreterConfiguration {
 		return {
-			name: this.name,
-			version: this.version,
-			description: this.description,
-			inputTypes: ["DependencyExtractionResult"],
-			outputType: "DependencyAnalysisResult",
+			enabled: true,
+			priority: 1,
+			timeout: 30000,
+			memoryLimit: 100 * 1024 * 1024,
+			defaultOptions: {},
+			errorHandling: "lenient",
 		};
 	}
 
@@ -496,7 +511,7 @@ export class DependencyAnalysisInterpreter
 		return ["DependencyExtractionResult"];
 	}
 
-	getDependencies(): any[] {
+	getDependencies(): InterpreterDependency[] {
 		return [];
 	}
 

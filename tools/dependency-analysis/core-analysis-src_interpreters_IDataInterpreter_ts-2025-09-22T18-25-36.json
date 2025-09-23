@@ -1,0 +1,19 @@
+{
+  "rootFile": "src/interpreters/IDataInterpreter.ts",
+  "totalFiles": 1,
+  "maxDepth": 0,
+  "dependencies": {
+    "src/interpreters/IDataInterpreter.ts": {
+      "filePath": "src/interpreters/IDataInterpreter.ts",
+      "relativePath": "src/interpreters/IDataInterpreter.ts",
+      "dependencies": [],
+      "dependents": [],
+      "depth": 0,
+      "type": "import"
+    }
+  },
+  "dependencyTree": [
+    "📄 src/interpreters/IDataInterpreter.ts (의존성: 0개)"
+  ],
+  "circularDependencies": []
+}

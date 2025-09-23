@@ -4,6 +4,10 @@
  */
 
 import type { SourceLocation } from "../models/ExtractedData";
+import type { TreeSitterTree } from "../types/TreeSitterTypes";
+
+// Generic AST type to maintain backward compatibility
+export type AST = TreeSitterTree | any;
 
 export interface IDataExtractor<T> {
 	/**
@@ -13,7 +17,7 @@ export interface IDataExtractor<T> {
 	 * @param options Optional extraction options
 	 * @returns Extracted data of type T
 	 */
-	extract(ast: any, filePath: string, options?: ExtractorOptions): T;
+	extract(ast: AST, filePath: string, options?: ExtractorOptions): T;
 
 	/**
 	 * Checks if this extractor supports the given language
@@ -230,7 +234,7 @@ export interface SchemaProperty {
 	required?: boolean;
 
 	/** Default value */
-	default?: any;
+	default?: unknown;
 
 	/** Value constraints */
 	constraints?: PropertyConstraints;
@@ -259,7 +263,7 @@ export interface PropertyConstraints {
 	pattern?: string;
 
 	/** Enum values */
-	enum?: any[];
+	enum?: unknown[];
 
 	/** Format (for strings) */
 	format?: string;
@@ -274,7 +278,7 @@ export interface IDependencyExtractor
 	/**
 	 * Extracts dependency information from AST
 	 */
-	extractDependencies(ast: any, filePath: string): DependencyExtractionResult;
+	extractDependencies(ast: AST, filePath: string): DependencyExtractionResult;
 
 	/**
 	 * Classifies dependencies by type
@@ -295,17 +299,17 @@ export interface IIdentifierExtractor
 	/**
 	 * Extracts all identifiers from AST
 	 */
-	extractIdentifiers(ast: any, filePath: string): IdentifierExtractionResult;
+	extractIdentifiers(ast: AST, filePath: string): IdentifierExtractionResult;
 
 	/**
 	 * Extracts only exported identifiers
 	 */
-	extractExports(ast: any, filePath: string): ExportInfo[];
+	extractExports(ast: AST, filePath: string): ExportInfo[];
 
 	/**
 	 * Extracts type definitions
 	 */
-	extractTypes(ast: any, filePath: string): TypeDefinition[];
+	extractTypes(ast: AST, filePath: string): TypeDefinition[];
 }
 
 export interface IComplexityExtractor
@@ -313,17 +317,17 @@ export interface IComplexityExtractor
 	/**
 	 * Calculates various complexity metrics
 	 */
-	calculateComplexity(ast: any, filePath: string): ComplexityExtractionResult;
+	calculateComplexity(ast: AST, filePath: string): ComplexityExtractionResult;
 
 	/**
 	 * Calculates cyclomatic complexity
 	 */
-	calculateCyclomaticComplexity(ast: any): number;
+	calculateCyclomaticComplexity(ast: AST): number;
 
 	/**
 	 * Calculates cognitive complexity
 	 */
-	calculateCognitiveComplexity(ast: any): number;
+	calculateCognitiveComplexity(ast: AST): number;
 }
 
 /**
@@ -602,7 +606,7 @@ export interface ConstantDefinition {
 	name: string;
 
 	/** Constant value */
-	value: any;
+	value: unknown;
 
 	/** Constant type */
 	type?: string;

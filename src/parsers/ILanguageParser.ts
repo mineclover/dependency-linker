@@ -3,6 +3,13 @@
  * Handles AST generation and syntax validation for different programming languages
  */
 
+import type { AST } from "../extractors/IDataExtractor";
+import type { TypeSafeAST } from "../types/ASTWrappers";
+import type {
+	TreeSitterLanguage,
+	TreeSitterNode,
+} from "../types/TreeSitterTypes";
+
 export interface ILanguageParser {
 	/**
 	 * Parses a file and returns AST with metadata
@@ -31,7 +38,7 @@ export interface ILanguageParser {
 	 * Gets the underlying grammar/parser instance
 	 * @returns The tree-sitter grammar or parser instance
 	 */
-	getGrammar(): any;
+	getGrammar(): TreeSitterLanguage | null;
 
 	/**
 	 * Validates syntax without full parsing
@@ -66,7 +73,10 @@ export interface ILanguageParser {
 
 export interface ParseResult {
 	/** Generated AST */
-	ast: any;
+	ast: AST | null;
+
+	/** Type-safe AST wrapper */
+	typedAST?: TypeSafeAST;
 
 	/** Detected or specified language */
 	language: string;
@@ -301,12 +311,12 @@ export interface ILanguageSpecificParser extends ILanguageParser {
 	/**
 	 * Traverses AST with language-specific visitor pattern
 	 */
-	traverse(ast: any, visitor: ASTVisitor): void;
+	traverse(ast: AST, visitor: ASTVisitor): void;
 
 	/**
 	 * Converts AST to language-specific intermediate representation
 	 */
-	toIR(ast: any): any;
+	toIR(ast: AST): any;
 
 	/**
 	 * Gets language-specific syntax patterns
@@ -316,14 +326,14 @@ export interface ILanguageSpecificParser extends ILanguageParser {
 
 export interface ASTVisitor {
 	/** Called when entering a node */
-	enter?(node: any, parent?: any): undefined | boolean;
+	enter?(node: TreeSitterNode, parent?: TreeSitterNode): undefined | boolean;
 
 	/** Called when leaving a node */
-	leave?(node: any, parent?: any): undefined | boolean;
+	leave?(node: TreeSitterNode, parent?: TreeSitterNode): undefined | boolean;
 
 	/** Called for specific node types */
 	[nodeType: string]:
-		| ((node: any, parent?: any) => undefined | boolean)
+		| ((node: TreeSitterNode, parent?: TreeSitterNode) => undefined | boolean)
 		| undefined;
 }
 

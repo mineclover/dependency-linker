@@ -8,9 +8,8 @@ export { GoParser } from "./GoParser";
 export { ILanguageParser } from "./ILanguageParser";
 export { JavaParser } from "./JavaParser";
 export { JavaScriptParser } from "./JavaScriptParser";
-export { MarkdownParser } from "./MarkdownParser";
-export type { MarkdownAST, MarkdownNode, MarkdownLink } from "./MarkdownParser";
-export { LinkType } from "./MarkdownParser";
+export type { MarkdownAST, MarkdownLink, MarkdownNode } from "./MarkdownParser";
+export { LinkType, MarkdownParser } from "./MarkdownParser";
 // ===== FACTORY =====
 export { ParserFactory } from "./ParserFactory";
 // ===== LANGUAGE PARSERS =====

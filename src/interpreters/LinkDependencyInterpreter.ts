@@ -3,19 +3,17 @@
  * Processes extracted link dependencies and provides analysis insights
  */
 
+import type { MarkdownLinkDependency } from "../extractors/MarkdownLinkExtractor";
+import { LinkType } from "../parsers/MarkdownParser";
 import type {
 	IDataInterpreter,
-	InterpreterContext,
-	ValidationResult,
-	OutputSchema,
-	InterpreterMetadata,
 	InterpreterConfiguration,
-	InterpreterDependency
-} from './IDataInterpreter';
-import type { MarkdownLinkDependency } from '../extractors/MarkdownLinkExtractor';
-import { LinkType } from '../parsers/MarkdownParser';
-import { existsSync, statSync } from 'node:fs';
-import { extname, resolve, dirname } from 'node:path';
+	InterpreterContext,
+	InterpreterDependency,
+	InterpreterMetadata,
+	OutputSchema,
+	ValidationResult,
+} from "./IDataInterpreter";
 
 /**
  * Link dependency analysis result
@@ -87,45 +85,45 @@ export interface AnalysisMetadata {
  * Dependency categories
  */
 export enum DependencyCategory {
-	DOCUMENTATION = 'documentation',
-	IMAGE = 'image',
-	EXTERNAL_RESOURCE = 'external_resource',
-	INTERNAL_FILE = 'internal_file',
-	ANCHOR = 'anchor',
-	EMAIL = 'email',
-	UNKNOWN = 'unknown'
+	DOCUMENTATION = "documentation",
+	IMAGE = "image",
+	EXTERNAL_RESOURCE = "external_resource",
+	INTERNAL_FILE = "internal_file",
+	ANCHOR = "anchor",
+	EMAIL = "email",
+	UNKNOWN = "unknown",
 }
 
 /**
  * Link validation status
  */
 export enum LinkStatus {
-	VALID = 'valid',
-	BROKEN = 'broken',
-	UNREACHABLE = 'unreachable',
-	SUSPICIOUS = 'suspicious',
-	UNKNOWN = 'unknown'
+	VALID = "valid",
+	BROKEN = "broken",
+	UNREACHABLE = "unreachable",
+	SUSPICIOUS = "suspicious",
+	UNKNOWN = "unknown",
 }
 
 /**
  * Issue types
  */
 export enum IssueType {
-	BROKEN_LINK = 'broken_link',
-	MISSING_FILE = 'missing_file',
-	SECURITY_RISK = 'security_risk',
-	PERFORMANCE_ISSUE = 'performance_issue',
-	ACCESSIBILITY_ISSUE = 'accessibility_issue',
-	BEST_PRACTICE = 'best_practice'
+	BROKEN_LINK = "broken_link",
+	MISSING_FILE = "missing_file",
+	SECURITY_RISK = "security_risk",
+	PERFORMANCE_ISSUE = "performance_issue",
+	ACCESSIBILITY_ISSUE = "accessibility_issue",
+	BEST_PRACTICE = "best_practice",
 }
 
 /**
  * Issue severity levels
  */
 export enum IssueSeverity {
-	ERROR = 'error',
-	WARNING = 'warning',
-	INFO = 'info'
+	ERROR = "error",
+	WARNING = "warning",
+	INFO = "info",
 }
 
 /**
@@ -146,7 +144,9 @@ export interface LinkAnalysisOptions {
 /**
  * Link dependency interpreter
  */
-export class LinkDependencyInterpreter implements IDataInterpreter<MarkdownLinkDependency[], LinkDependencyAnalysis> {
+export class LinkDependencyInterpreter
+	implements IDataInterpreter<MarkdownLinkDependency[], LinkDependencyAnalysis>
+{
 	private options: LinkAnalysisOptions;
 
 	constructor(options: LinkAnalysisOptions = {}) {
@@ -160,14 +160,17 @@ export class LinkDependencyInterpreter implements IDataInterpreter<MarkdownLinkD
 			allowedDomains: [],
 			blockedDomains: [],
 			maxFileSizeWarning: 1024 * 1024,
-			...options
+			...options,
 		};
 	}
 
 	/**
 	 * Interprets link dependencies and generates analysis results
 	 */
-	interpret(dependencies: MarkdownLinkDependency[], context: InterpreterContext): LinkDependencyAnalysis {
+	interpret(
+		dependencies: MarkdownLinkDependency[],
+		_context: InterpreterContext,
+	): LinkDependencyAnalysis {
 		const startTime = Date.now();
 		const processedDependencies: ProcessedDependency[] = [];
 		const issues: LinkIssue[] = [];
@@ -188,7 +191,10 @@ export class LinkDependencyInterpreter implements IDataInterpreter<MarkdownLinkD
 			}
 
 			// Check for issues
-			const dependencyIssues = this.checkDependencyIssues(dependency, processed);
+			const dependencyIssues = this.checkDependencyIssues(
+				dependency,
+				processed,
+			);
 			issues.push(...dependencyIssues);
 
 			// Update counters
@@ -200,7 +206,7 @@ export class LinkDependencyInterpreter implements IDataInterpreter<MarkdownLinkD
 			}
 
 			// Count issue types
-			dependencyIssues.forEach(issue => {
+			dependencyIssues.forEach((issue) => {
 				if (issue.type === IssueType.SECURITY_RISK) {
 					securityWarnings++;
 				}
@@ -211,7 +217,11 @@ export class LinkDependencyInterpreter implements IDataInterpreter<MarkdownLinkD
 		}
 
 		// Generate summary
-		const summary = this.generateSummary(dependencies, processedDependencies, domains.size);
+		const summary = this.generateSummary(
+			dependencies,
+			processedDependencies,
+			domains.size,
+		);
 
 		// Generate recommendations
 		const recommendations = this.generateRecommendations(issues, summary);
@@ -228,8 +238,8 @@ export class LinkDependencyInterpreter implements IDataInterpreter<MarkdownLinkD
 				checkedFiles,
 				unreachableLinks,
 				securityWarnings,
-				performanceWarnings
-			}
+				performanceWarnings,
+			},
 		};
 	}
 
@@ -237,23 +247,25 @@ export class LinkDependencyInterpreter implements IDataInterpreter<MarkdownLinkD
 	 * Checks if this interpreter supports the given data type
 	 */
 	supports(dataType: string): boolean {
-		return dataType === 'MarkdownLinkDependency[]' || 
-		       dataType === 'markdown-links' ||
-		       dataType === 'link-dependencies';
+		return (
+			dataType === "MarkdownLinkDependency[]" ||
+			dataType === "markdown-links" ||
+			dataType === "link-dependencies"
+		);
 	}
 
 	/**
 	 * Gets the unique name of this interpreter
 	 */
 	getName(): string {
-		return 'LinkDependencyInterpreter';
+		return "LinkDependencyInterpreter";
 	}
 
 	/**
 	 * Gets the version of this interpreter
 	 */
 	getVersion(): string {
-		return '1.0.0';
+		return "1.0.0";
 	}
 
 	/**
@@ -264,7 +276,7 @@ export class LinkDependencyInterpreter implements IDataInterpreter<MarkdownLinkD
 		const warnings: string[] = [];
 
 		if (!Array.isArray(input)) {
-			errors.push('Input must be an array of MarkdownLinkDependency objects');
+			errors.push("Input must be an array of MarkdownLinkDependency objects");
 			return { isValid: false, errors, warnings };
 		}
 
@@ -272,10 +284,12 @@ export class LinkDependencyInterpreter implements IDataInterpreter<MarkdownLinkD
 			if (!dependency.source) {
 				errors.push(`Dependency at index ${index} missing source property`);
 			}
-			if (typeof dependency.isExternal !== 'boolean') {
-				warnings.push(`Dependency at index ${index} missing or invalid isExternal property`);
+			if (typeof dependency.isExternal !== "boolean") {
+				warnings.push(
+					`Dependency at index ${index} missing or invalid isExternal property`,
+				);
 			}
-			if (typeof dependency.line !== 'number') {
+			if (typeof dependency.line !== "number") {
 				warnings.push(`Dependency at index ${index} missing line number`);
 			}
 		});
@@ -289,8 +303,8 @@ export class LinkDependencyInterpreter implements IDataInterpreter<MarkdownLinkD
 				accuracy: errors.length === 0 ? 1.0 : 0.0,
 				consistency: 1.0,
 				freshness: 1.0,
-				overall: errors.length === 0 ? 0.95 : 0.5
-			}
+				overall: errors.length === 0 ? 0.95 : 0.5,
+			},
 		};
 	}
 
@@ -299,45 +313,45 @@ export class LinkDependencyInterpreter implements IDataInterpreter<MarkdownLinkD
 	 */
 	getOutputSchema(): OutputSchema {
 		return {
-			type: 'object',
+			type: "object",
 			properties: {
 				summary: {
-					type: 'object',
+					type: "object",
 					properties: {
-						totalLinks: { type: 'number' },
-						internalLinks: { type: 'number' },
-						externalLinks: { type: 'number' },
-						brokenLinks: { type: 'number' }
-					}
+						totalLinks: { type: "number" },
+						internalLinks: { type: "number" },
+						externalLinks: { type: "number" },
+						brokenLinks: { type: "number" },
+					},
 				},
 				dependencies: {
-					type: 'array',
+					type: "array",
 					items: {
-						type: 'object',
+						type: "object",
 						properties: {
-							source: { type: 'string' },
-							category: { type: 'string' },
-							status: { type: 'string' }
-						}
-					}
+							source: { type: "string" },
+							category: { type: "string" },
+							status: { type: "string" },
+						},
+					},
 				},
 				issues: {
-					type: 'array',
+					type: "array",
 					items: {
-						type: 'object',
+						type: "object",
 						properties: {
-							type: { type: 'string' },
-							message: { type: 'string' },
-							severity: { type: 'string' }
-						}
-					}
-				}
+							type: { type: "string" },
+							message: { type: "string" },
+							severity: { type: "string" },
+						},
+					},
+				},
 			},
-			required: ['summary', 'dependencies', 'issues'],
-			version: '1.0.0',
+			required: ["summary", "dependencies", "issues"],
+			version: "1.0.0",
 			metadata: {
-				interpreterName: 'LinkDependencyInterpreter'
-			}
+				interpreterName: "LinkDependencyInterpreter",
+			},
 		};
 	}
 
@@ -346,25 +360,30 @@ export class LinkDependencyInterpreter implements IDataInterpreter<MarkdownLinkD
 	 */
 	getMetadata(): InterpreterMetadata {
 		return {
-			name: 'LinkDependencyInterpreter',
-			version: '1.0.0',
-			description: 'Analyzes markdown link dependencies for broken links, security issues, and performance problems',
-			supportedDataTypes: ['MarkdownLinkDependency[]', 'markdown-links', 'link-dependencies'],
-			outputType: 'LinkDependencyAnalysis',
+			name: "LinkDependencyInterpreter",
+			version: "1.0.0",
+			description:
+				"Analyzes markdown link dependencies for broken links, security issues, and performance problems",
+			supportedDataTypes: [
+				"MarkdownLinkDependency[]",
+				"markdown-links",
+				"link-dependencies",
+			],
+			outputType: "LinkDependencyAnalysis",
 			dependencies: [],
 			performance: {
 				averageTimePerItem: 50,
-				memoryUsage: 'low',
-				timeComplexity: 'linear',
-				scalability: 'good',
-				maxRecommendedDataSize: 10000
+				memoryUsage: "low",
+				timeComplexity: "linear",
+				scalability: "good",
+				maxRecommendedDataSize: 10000,
 			},
 			quality: {
 				accuracy: 0.95,
-				completeness: 0.90,
+				completeness: 0.9,
 				consistency: 0.98,
-				reliability: 0.92
-			}
+				reliability: 0.92,
+			},
 		};
 	}
 
@@ -386,12 +405,12 @@ export class LinkDependencyInterpreter implements IDataInterpreter<MarkdownLinkD
 			priority: 100,
 			timeout: 5000,
 			memoryLimit: 64 * 1024 * 1024, // 64MB
-			dataTypes: ['MarkdownLinkDependency[]'],
+			dataTypes: ["MarkdownLinkDependency[]"],
 			defaultOptions: {
-				custom: this.options
+				custom: this.options,
 			},
-			errorHandling: 'lenient',
-			logLevel: 'warn'
+			errorHandling: "lenient",
+			logLevel: "warn",
 		};
 	}
 
@@ -399,7 +418,7 @@ export class LinkDependencyInterpreter implements IDataInterpreter<MarkdownLinkD
 	 * Gets the data types this interpreter can process
 	 */
 	getSupportedDataTypes(): string[] {
-		return ['MarkdownLinkDependency[]', 'markdown-links', 'link-dependencies'];
+		return ["MarkdownLinkDependency[]", "markdown-links", "link-dependencies"];
 	}
 
 	/**
@@ -419,7 +438,9 @@ export class LinkDependencyInterpreter implements IDataInterpreter<MarkdownLinkD
 	/**
 	 * Process a dependency synchronously (for interface compliance)
 	 */
-	private processDependencySync(dependency: MarkdownLinkDependency): ProcessedDependency {
+	private processDependencySync(
+		dependency: MarkdownLinkDependency,
+	): ProcessedDependency {
 		const category = this.categorizeDependency(dependency);
 		const processed: ProcessedDependency = {
 			source: dependency.source,
@@ -427,21 +448,27 @@ export class LinkDependencyInterpreter implements IDataInterpreter<MarkdownLinkD
 			category,
 			status: LinkStatus.UNKNOWN,
 			resolvedPath: dependency.resolvedPath,
-			mimeType: dependency.isInternal ? this.getMimeType(dependency.extension) : undefined,
+			mimeType: dependency.isInternal
+				? this.getMimeType(dependency.extension)
+				: undefined,
 			fileExists: undefined,
-			domain: dependency.isExternal ? this.extractDomain(dependency.source) : undefined,
+			domain: dependency.isExternal
+				? this.extractDomain(dependency.source)
+				: undefined,
 			line: dependency.line,
 			column: dependency.column,
 			title: dependency.title,
-			alt: dependency.alt
+			alt: dependency.alt,
 		};
 
 		// Basic validation for internal links
 		if (dependency.isInternal && dependency.resolvedPath) {
 			try {
-				const fs = require('fs');
+				const fs = require("node:fs");
 				processed.fileExists = fs.existsSync(dependency.resolvedPath);
-				processed.status = processed.fileExists ? LinkStatus.VALID : LinkStatus.UNREACHABLE;
+				processed.status = processed.fileExists
+					? LinkStatus.VALID
+					: LinkStatus.UNREACHABLE;
 			} catch {
 				processed.fileExists = false;
 				processed.status = LinkStatus.UNREACHABLE;
@@ -467,51 +494,13 @@ export class LinkDependencyInterpreter implements IDataInterpreter<MarkdownLinkD
 	}
 
 	/**
-	 * Process a single dependency (async version for internal use)
-	 */
-	private async processDependency(dependency: MarkdownLinkDependency): Promise<ProcessedDependency> {
-		const category = this.categorizeDependency(dependency);
-		const processed: ProcessedDependency = {
-			source: dependency.source,
-			type: dependency.type,
-			category,
-			status: LinkStatus.UNKNOWN,
-			resolvedPath: dependency.resolvedPath,
-			mimeType: dependency.isInternal ? this.getMimeType(dependency.extension) : undefined,
-			fileExists: undefined,
-			domain: dependency.isExternal ? this.extractDomain(dependency.source) : undefined,
-			line: dependency.line,
-			column: dependency.column,
-			title: dependency.title,
-			alt: dependency.alt
-		};
-
-		// Check if internal file exists
-		if (dependency.isInternal && dependency.resolvedPath) {
-			try {
-				const fs = require('fs').promises;
-				await fs.access(dependency.resolvedPath);
-				processed.fileExists = true;
-				processed.status = LinkStatus.VALID;
-			} catch {
-				processed.fileExists = false;
-				processed.status = LinkStatus.UNREACHABLE;
-			}
-		} else if (dependency.isExternal && this.options.checkExternalLinks) {
-			// For external links, we could implement HTTP checks here
-			// For now, assume accessible to avoid async complexity
-			processed.status = LinkStatus.VALID;
-		}
-
-		return processed;
-	}
-
-	/**
 	 * Categorize dependency type
 	 */
-	private categorizeDependency(dependency: MarkdownLinkDependency): DependencyCategory {
+	private categorizeDependency(
+		dependency: MarkdownLinkDependency,
+	): DependencyCategory {
 		if (dependency.isExternal) {
-			if (dependency.source.startsWith('mailto:')) {
+			if (dependency.source.startsWith("mailto:")) {
 				return DependencyCategory.EMAIL;
 			}
 			return DependencyCategory.EXTERNAL_RESOURCE;
@@ -520,10 +509,10 @@ export class LinkDependencyInterpreter implements IDataInterpreter<MarkdownLinkD
 		if (dependency.isInternal) {
 			if (dependency.extension) {
 				const ext = dependency.extension.toLowerCase();
-				if (['.md', '.markdown'].includes(ext)) {
+				if ([".md", ".markdown"].includes(ext)) {
 					return DependencyCategory.DOCUMENTATION;
 				}
-				if (['.png', '.jpg', '.jpeg', '.gif', '.svg'].includes(ext)) {
+				if ([".png", ".jpg", ".jpeg", ".gif", ".svg"].includes(ext)) {
 					return DependencyCategory.IMAGE;
 				}
 			}
@@ -536,7 +525,10 @@ export class LinkDependencyInterpreter implements IDataInterpreter<MarkdownLinkD
 	/**
 	 * Check for issues with a dependency
 	 */
-	private checkDependencyIssues(dependency: MarkdownLinkDependency, processed: ProcessedDependency): LinkIssue[] {
+	private checkDependencyIssues(
+		dependency: MarkdownLinkDependency,
+		processed: ProcessedDependency,
+	): LinkIssue[] {
 		const issues: LinkIssue[] = [];
 
 		// Check for broken links
@@ -546,20 +538,20 @@ export class LinkDependencyInterpreter implements IDataInterpreter<MarkdownLinkD
 				severity: IssueSeverity.ERROR,
 				message: `Broken link: ${dependency.source}`,
 				dependency: dependency,
-				suggestion: 'Verify the link target exists and is accessible'
+				suggestion: "Verify the link target exists and is accessible",
 			});
 		}
 
 		// Check for security issues
 		if (dependency.isExternal && this.options.checkExternalLinks) {
 			const url = dependency.source.toLowerCase();
-			if (url.startsWith('http://')) {
+			if (url.startsWith("http://")) {
 				issues.push({
 					type: IssueType.SECURITY_RISK,
 					severity: IssueSeverity.WARNING,
 					message: `Insecure HTTP link: ${dependency.source}`,
 					dependency: dependency,
-					suggestion: 'Consider using HTTPS instead of HTTP'
+					suggestion: "Consider using HTTPS instead of HTTP",
 				});
 			}
 		}
@@ -567,14 +559,17 @@ export class LinkDependencyInterpreter implements IDataInterpreter<MarkdownLinkD
 		// Check for performance issues
 		if (dependency.isExternal && processed.domain) {
 			// Flag potential performance issues with external resources
-			if (['.jpg', '.jpeg', '.png', '.gif', '.mp4', '.webm'].some(ext =>
-				dependency.source.toLowerCase().includes(ext))) {
+			if (
+				[".jpg", ".jpeg", ".png", ".gif", ".mp4", ".webm"].some((ext) =>
+					dependency.source.toLowerCase().includes(ext),
+				)
+			) {
 				issues.push({
 					type: IssueType.PERFORMANCE_ISSUE,
 					severity: IssueSeverity.INFO,
 					message: `External media resource: ${dependency.source}`,
 					dependency: dependency,
-					suggestion: 'Consider hosting media locally for better performance'
+					suggestion: "Consider hosting media locally for better performance",
 				});
 			}
 		}
@@ -585,15 +580,30 @@ export class LinkDependencyInterpreter implements IDataInterpreter<MarkdownLinkD
 	/**
 	 * Generate summary of analysis
 	 */
-	private generateSummary(dependencies: MarkdownLinkDependency[], processed: ProcessedDependency[], uniqueDomains: number): LinkSummary {
+	private generateSummary(
+		dependencies: MarkdownLinkDependency[],
+		processed: ProcessedDependency[],
+		uniqueDomains: number,
+	): LinkSummary {
 		const totalLinks = dependencies.length;
-		const internalLinks = dependencies.filter(d => d.isInternal).length;
-		const externalLinks = dependencies.filter(d => d.isExternal).length;
-		const brokenLinks = processed.filter(p => p.status === LinkStatus.UNREACHABLE).length;
-		const imageLinks = dependencies.filter(d => d.extension &&
-			['.png', '.jpg', '.jpeg', '.gif', '.svg'].includes(d.extension.toLowerCase())).length;
-		const referenceLinks = dependencies.filter(d => d.type === LinkType.REFERENCE || d.type === LinkType.IMAGE_REFERENCE).length;
-		const linkDensity = totalLinks > 0 ? totalLinks / Math.max(1, dependencies.length) : 0;
+		const internalLinks = dependencies.filter((d) => d.isInternal).length;
+		const externalLinks = dependencies.filter((d) => d.isExternal).length;
+		const brokenLinks = processed.filter(
+			(p) => p.status === LinkStatus.UNREACHABLE,
+		).length;
+		const imageLinks = dependencies.filter(
+			(d) =>
+				d.extension &&
+				[".png", ".jpg", ".jpeg", ".gif", ".svg"].includes(
+					d.extension.toLowerCase(),
+				),
+		).length;
+		const referenceLinks = dependencies.filter(
+			(d) =>
+				d.type === LinkType.REFERENCE || d.type === LinkType.IMAGE_REFERENCE,
+		).length;
+		const linkDensity =
+			totalLinks > 0 ? totalLinks / Math.max(1, dependencies.length) : 0;
 
 		return {
 			totalLinks,
@@ -603,42 +613,62 @@ export class LinkDependencyInterpreter implements IDataInterpreter<MarkdownLinkD
 			imageLinks,
 			referenceLinks,
 			uniqueDomains,
-			linkDensity
+			linkDensity,
 		};
 	}
 
 	/**
 	 * Generate recommendations based on issues
 	 */
-	private generateRecommendations(issues: LinkIssue[], summary: LinkSummary): string[] {
+	private generateRecommendations(
+		issues: LinkIssue[],
+		summary: LinkSummary,
+	): string[] {
 		const recommendations: string[] = [];
 
-		const brokenLinkIssues = issues.filter(i => i.type === IssueType.BROKEN_LINK);
+		const brokenLinkIssues = issues.filter(
+			(i) => i.type === IssueType.BROKEN_LINK,
+		);
 		if (brokenLinkIssues.length > 0) {
 			recommendations.push(`Fix ${brokenLinkIssues.length} broken link(s)`);
 		}
 
-		const securityIssues = issues.filter(i => i.type === IssueType.SECURITY_RISK);
+		const securityIssues = issues.filter(
+			(i) => i.type === IssueType.SECURITY_RISK,
+		);
 		if (securityIssues.length > 0) {
-			recommendations.push(`Address ${securityIssues.length} security concern(s)`);
+			recommendations.push(
+				`Address ${securityIssues.length} security concern(s)`,
+			);
 		}
 
-		const performanceIssues = issues.filter(i => i.type === IssueType.PERFORMANCE_ISSUE);
+		const performanceIssues = issues.filter(
+			(i) => i.type === IssueType.PERFORMANCE_ISSUE,
+		);
 		if (performanceIssues.length > 0) {
-			recommendations.push(`Optimize ${performanceIssues.length} performance issue(s)`);
+			recommendations.push(
+				`Optimize ${performanceIssues.length} performance issue(s)`,
+			);
 		}
 
 		if (summary.externalLinks > summary.internalLinks * 2) {
-			recommendations.push('Consider reducing external dependencies for better reliability');
+			recommendations.push(
+				"Consider reducing external dependencies for better reliability",
+			);
 		}
 
-		const healthScore = summary.totalLinks > 0 ? (summary.totalLinks - summary.brokenLinks) / summary.totalLinks : 1.0;
+		const healthScore =
+			summary.totalLinks > 0
+				? (summary.totalLinks - summary.brokenLinks) / summary.totalLinks
+				: 1.0;
 		if (healthScore < 0.9) {
-			recommendations.push('Review and fix broken links to improve overall link health');
+			recommendations.push(
+				"Review and fix broken links to improve overall link health",
+			);
 		}
 
 		if (recommendations.length === 0) {
-			recommendations.push('No issues found - link dependencies are healthy');
+			recommendations.push("No issues found - link dependencies are healthy");
 		}
 
 		return recommendations;
@@ -649,21 +679,21 @@ export class LinkDependencyInterpreter implements IDataInterpreter<MarkdownLinkD
 	 */
 	private getMimeType(extension?: string): string | undefined {
 		if (!extension) return undefined;
-		
+
 		const mimeTypes: Record<string, string> = {
-			'.md': 'text/markdown',
-			'.markdown': 'text/markdown',
-			'.txt': 'text/plain',
-			'.html': 'text/html',
-			'.htm': 'text/html',
-			'.css': 'text/css',
-			'.js': 'application/javascript',
-			'.json': 'application/json',
-			'.png': 'image/png',
-			'.jpg': 'image/jpeg',
-			'.jpeg': 'image/jpeg',
-			'.gif': 'image/gif',
-			'.svg': 'image/svg+xml'
+			".md": "text/markdown",
+			".markdown": "text/markdown",
+			".txt": "text/plain",
+			".html": "text/html",
+			".htm": "text/html",
+			".css": "text/css",
+			".js": "application/javascript",
+			".json": "application/json",
+			".png": "image/png",
+			".jpg": "image/jpeg",
+			".jpeg": "image/jpeg",
+			".gif": "image/gif",
+			".svg": "image/svg+xml",
 		};
 
 		return mimeTypes[extension.toLowerCase()];

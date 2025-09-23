@@ -23,7 +23,7 @@ export {
 	type IdentifierInfo,
 } from "./IdentifierExtractor";
 export {
-	MarkdownLinkExtractor,
 	type MarkdownLinkDependency,
-	type MarkdownLinkExtractionOptions
+	type MarkdownLinkExtractionOptions,
+	MarkdownLinkExtractor,
 } from "./MarkdownLinkExtractor";
