@@ -12,6 +12,7 @@ import type { PathResolutionResult } from "../interpreters/PathResolverInterpret
 import type { AnalysisConfig } from "./AnalysisConfig";
 import type { AnalysisError } from "./AnalysisError";
 import type { PathInfo } from "./PathInfo";
+import { createPathInfo } from "./PathInfo";
 import type { PerformanceMetrics } from "./PerformanceMetrics";
 
 /**
@@ -154,9 +155,6 @@ export function createAnalysisResult(
 	filePath: string,
 	language: string,
 ): AnalysisResult {
-	// Import createPathInfo to generate PathInfo
-	const createPathInfo = require("./PathInfo").createPathInfo;
-
 	return {
 		filePath,
 		pathInfo: createPathInfo(filePath),

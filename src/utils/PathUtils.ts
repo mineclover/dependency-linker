@@ -3,7 +3,8 @@
  * Handles path normalization, validation, and platform-specific operations
  */
 
-import * as path from "node:path";
+import { existsSync, readdirSync } from "node:fs";
+import { basename, dirname, extname, isAbsolute as pathIsAbsolute, relative, resolve, sep, normalize, join } from "node:path";
 import type { Logger } from "../api/types";
 import { createLogger } from "./logger";
 
@@ -62,7 +63,7 @@ export function normalizePath(
 
 	// Apply standard Node.js path normalization
 	try {
-		normalized = path.normalize(normalized);
+		normalized = normalize(normalized);
 	} catch (error) {
 		logger.warn(`Path normalization failed for: ${inputPath}`, error);
 		return inputPath; // Return original if normalization fails
@@ -167,9 +168,9 @@ function handleSpecialCharacters(
 
 			// Handle reserved names
 			const windowsReserved = /^(CON|PRN|AUX|NUL|COM[1-9]|LPT[1-9])(\.|$)/i;
-			if (windowsReserved.test(path.basename(processed))) {
+			if (windowsReserved.test(basename(processed))) {
 				logger.warn(
-					`Windows reserved name detected: ${path.basename(processed)}`,
+					`Windows reserved name detected: ${basename(processed)}`,
 				);
 			}
 			break;
@@ -210,9 +211,9 @@ function normalizeUnicode(inputPath: string): string {
 export function resolvePath(inputPath: string, basePath?: string): string {
 	try {
 		if (basePath) {
-			return path.resolve(basePath, inputPath);
+			return resolve(basePath, inputPath);
 		}
-		return path.resolve(inputPath);
+		return resolve(inputPath);
 	} catch (error) {
 		logger.error(`Path resolution failed: ${inputPath}`, error);
 		return inputPath;
@@ -243,17 +244,17 @@ export function resolveAnalysisPath(
 		const basePath = projectRoot || process.cwd();
 
 		// If already absolute, just normalize it
-		if (path.isAbsolute(inputPath)) {
+		if (pathIsAbsolute(inputPath)) {
 			return normalizePath(inputPath);
 		}
 
 		// Resolve relative path against project root
-		const resolved = path.resolve(basePath, inputPath);
+		const resolved = resolve(basePath, inputPath);
 		return normalizePath(resolved);
 	} catch (error) {
 		logger.error(`Analysis path resolution failed: ${inputPath}`, error);
 		// Fallback to basic resolution
-		return normalizePath(path.resolve(inputPath));
+		return normalizePath(resolve(inputPath));
 	}
 }
 
@@ -276,14 +277,14 @@ export function toProjectRelativePath(
 ): string {
 	try {
 		const basePath = projectRoot || process.cwd();
-		const relative = path.relative(basePath, absolutePath);
+		const relativePath = relative(basePath, absolutePath);
 
 		// If the path goes outside project root, return the absolute path
-		if (relative.startsWith("..")) {
+		if (relativePath.startsWith("..")) {
 			return absolutePath;
 		}
 
-		return normalizePath(relative);
+		return normalizePath(relativePath);
 	} catch (error) {
 		logger.error(
 			`Project relative path conversion failed: ${absolutePath}`,
@@ -359,7 +360,7 @@ export function validateAndResolveAnalysisPath(
 		// Path resolution
 		const absolutePath = resolveAnalysisPath(inputPath, projectRoot);
 		const relativePath = toProjectRelativePath(absolutePath, projectRoot);
-		const extension = path.extname(absolutePath);
+		const extension = extname(absolutePath);
 
 		// Extension validation
 		if (allowedExtensions && allowedExtensions.length > 0) {
@@ -378,8 +379,7 @@ export function validateAndResolveAnalysisPath(
 		let exists: boolean | undefined;
 		if (mustExist) {
 			try {
-				const fs = require("node:fs");
-				exists = fs.existsSync(absolutePath);
+				exists = existsSync(absolutePath);
 				if (!exists) {
 					return {
 						isValid: false,
@@ -481,7 +481,7 @@ export function batchResolveAnalysisPaths(
  * @returns true if path is absolute
  */
 export function isAbsolute(inputPath: string): boolean {
-	return path.isAbsolute(inputPath);
+	return pathIsAbsolute(inputPath);
 }
 
 /**
@@ -579,8 +579,8 @@ export function getSafeFilename(
 
 	// Limit length to reasonable maximum
 	if (safe.length > 255) {
-		const ext = path.extname(safe);
-		const name = path.basename(safe, ext);
+		const ext = extname(safe);
+		const name = basename(safe, ext);
 		safe = name.substring(0, 255 - ext.length) + ext;
 	}
 
@@ -593,7 +593,7 @@ export function getSafeFilename(
  * @returns Joined path
  */
 export function joinPath(...segments: string[]): string {
-	return path.join(...segments);
+	return join(...segments);
 }
 
 /**
@@ -603,7 +603,7 @@ export function joinPath(...segments: string[]): string {
  * @returns Relative path
  */
 export function getRelativePath(from: string, to: string): string {
-	return path.relative(from, to);
+	return relative(from, to);
 }
 
 /**

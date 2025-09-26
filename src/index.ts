@@ -5,8 +5,6 @@
 
 // ===== CORE API =====
 export * from "./api";
-// ===== CLI & COMMANDS =====
-export * from "./cli";
 // ===== EXTRACTORS & INTERPRETERS =====
 export * from "./extractors";
 export * from "./interpreters";
@@ -26,83 +24,6 @@ export {
 } from "./models/FileAnalysisRequest";
 export { ImportInfo } from "./models/ImportInfo";
 export { IntegratedAnalysisData } from "./models/IntegratedData";
-// ===== OPTIMIZATION TYPES =====
-export type {
-	MemoryUsage,
-	MonitoringOptions,
-	PerformanceComparison,
-	PerformanceMetrics as OptimizationPerformanceMetrics,
-	PerformanceTarget,
-	TestCharacteristics,
-	ValidationOptions,
-	ValidationResult as OptimizationValidationResult,
-} from "./models/optimization";
-// ===== OPTIMIZATION MODELS =====
-export {
-	// Test case utilities
-	analyzeTestCase,
-	BaselineError,
-	// Enums and types
-	ComplexityLevel,
-	ConfigurationError as OptimizationConfigurationError,
-	// Constants and configuration
-	calculateImprovementPercentage,
-	calculatePriorityScore,
-	calculateTestCasesFailureRate,
-	calculateTestCasesTotalTime,
-	// Optimization opportunities
-	calculateTotalSavings,
-	createExecutionPlan,
-	createUserErrorMessage,
-	DependencyError as OptimizationDependencyError,
-	EffortLevel,
-	extractErrorContext,
-	FileOperationError,
-	findParallelExecutableOpportunities,
-	findSimilarTests,
-	findSlowestTestCases,
-	findTestCasesByCoverageArea,
-	fromValidationViolations,
-	getEnvironmentConfig,
-	getOptimizationStrategyName,
-	groupByRiskLevel,
-	groupByType,
-	groupTestCasesByPriority,
-	groupTestCasesByType,
-	handleErrors,
-	identifyConsolidationCandidates,
-	// Utility functions
-	isOptimizationError,
-	isOptimizationType,
-	isRecoverableError,
-	isTestCategory,
-	isTestType,
-	logError,
-	meetsPerformanceTargets,
-	// Error classes (with different names to avoid conflicts)
-	OptimizationError,
-	OptimizationOpportunityBuilder,
-	OptimizationTemplates,
-	OptimizationType,
-	// Performance baseline
-	PerformanceBaselineBuilder,
-	PerformanceTrackingError,
-	Priority,
-	prioritizeOpportunities,
-	RiskLevel,
-	TestAnalysisError,
-	// Builders
-	TestCaseBuilder,
-	TestCategory,
-	TestOptimizationError,
-	TestSuiteBuilder,
-	TestType,
-	TimeoutError,
-	ValidationError as OptimizationValidationError,
-	validateDependencies,
-	validateTestCases,
-	withErrorHandling,
-} from "./models/optimization";
 export { PerformanceMetrics } from "./models/PerformanceMetrics";
 export { SourceLocation } from "./models/SourceLocation";
 export { GoParser } from "./parsers/GoParser";
@@ -125,12 +46,8 @@ export { ICacheManager } from "./services/ICacheManager";
 export { InterpreterRegistry } from "./services/InterpreterRegistry";
 // ===== INTEGRATION SERVICES =====
 export { DataIntegrator } from "./services/integration/DataIntegrator";
-// ===== OPTIMIZATION SERVICES =====
-export * from "./services/optimization";
 export { ParserRegistry } from "./services/ParserRegistry";
 export { TypeScriptParser } from "./services/TypeScriptParser"; // Legacy parser
-// ===== TASK MANAGEMENT SYSTEM =====
-export * from "./task";
 export * from "./types/ASTWrappers";
 // ===== TYPE SYSTEM =====
 export * from "./types/TreeSitterTypes";
@@ -140,4 +57,4 @@ export * from "./utils/PathResolutionUtils";
 export * from "./utils/PathUtils";
 
 // ===== CONFIGURATION =====
-// Configuration is handled through CLI commands
+// Configuration is handled through config files and API

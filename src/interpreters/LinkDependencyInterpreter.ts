@@ -3,6 +3,7 @@
  * Processes extracted link dependencies and provides analysis insights
  */
 
+import { existsSync, statSync } from "node:fs";
 import type { MarkdownLinkDependency } from "../extractors/MarkdownLinkExtractor";
 import { LinkType } from "../parsers/MarkdownParser";
 import type {
@@ -482,8 +483,7 @@ export class LinkDependencyInterpreter
 		} else if (dependency.isInternal && dependency.resolvedPath) {
 			// File existence check for internal links
 			try {
-				const fs = require("node:fs");
-				processed.fileExists = fs.existsSync(dependency.resolvedPath);
+				processed.fileExists = existsSync(dependency.resolvedPath);
 				processed.status = processed.fileExists
 					? LinkStatus.VALID
 					: LinkStatus.BROKEN; // Use BROKEN instead of UNREACHABLE for missing files
@@ -618,8 +618,7 @@ export class LinkDependencyInterpreter
 		// Check for performance issues (large files)
 		if (dependency.isInternal && dependency.resolvedPath && this.options.performanceChecks) {
 			try {
-				const fs = require("node:fs");
-				const stats = fs.statSync(dependency.resolvedPath);
+				const stats = statSync(dependency.resolvedPath);
 				const maxSize = this.options.maxFileSizeWarning || 1024 * 1024; // 1MB default
 				
 				if (stats.size > maxSize) {

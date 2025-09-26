@@ -4,6 +4,8 @@ module.exports = {
 	roots: ["<rootDir>/src", "<rootDir>/tests"],
 	testMatch: [
 		"**/tests/**/*.test.ts",
+		"**/tests/**/*.integration.test.ts",
+		"**/tests/**/*.benchmark.ts",
 		"**/__tests__/**/*.ts",
 		"**/?(*.)+(spec|test).ts",
 	],
@@ -65,9 +67,9 @@ module.exports = {
 	testSequencer: "@jest/test-sequencer",
 
 	// Improved resource management
-	forceExit: false, // Allow proper cleanup
+	forceExit: true, // Force exit after tests complete to prevent hanging
 	detectOpenHandles: true, // Enable to detect actual leaks
-	detectLeaks: false, // Keep disabled to reduce performance impact
+	detectLeaks: false, // Disabled for now due to sensitivity with integration tests
 
 	// Enhanced worker management
 	workerIdleMemoryLimit: "200MB", // Reduce memory limit

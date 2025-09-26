@@ -17,6 +17,8 @@ import { jest } from "@jest/globals";
 
 // Mock fs module
 jest.mock("node:fs", () => ({
+	accessSync: jest.fn(),
+	readFileSync: jest.fn(),
 	promises: {
 		access: jest.fn(),
 		readFile: jest.fn(),
@@ -37,6 +39,8 @@ describe("PathResolverInterpreter", () => {
 		mockSourceFile = "/Users/test/project/src/components/Button.tsx";
 
 		// Mock file system
+		mockFs.accessSync.mockReset();
+		mockFs.readFileSync.mockReset();
 		mockFs.promises.access.mockReset();
 		mockFs.promises.readFile.mockReset();
 
@@ -79,13 +83,13 @@ describe("PathResolverInterpreter", () => {
 			};
 
 			// Mock file existence
-			mockFs.promises.access.mockImplementation(async (filePath: any) => {
+			mockFs.accessSync.mockImplementation((filePath: any) => {
 				const resolvedPaths = [
 					"/Users/test/project/src/components/utils/helpers.ts",
 					"/Users/test/project/src/shared/constants.ts",
 				];
 				if (resolvedPaths.includes(filePath as string)) {
-					return Promise.resolve();
+					return;
 				}
 				throw new Error("File not found");
 			});
@@ -227,14 +231,21 @@ describe("PathResolverInterpreter", () => {
 				},
 			);
 
-			mockFs.promises.access.mockImplementation(async (filePath: any) => {
+			(mockFs.readFileSync as jest.Mock).mockImplementation((filePath: any) => {
+				if (filePath === "/Users/test/project/tsconfig.json") {
+					return JSON.stringify(mockTsconfig);
+				}
+				throw new Error("File not found");
+			});
+
+			mockFs.accessSync.mockImplementation((filePath: any) => {
 				const validPaths = [
 					"/Users/test/project/tsconfig.json",
 					"/Users/test/project/src/components/Header.tsx",
 					"/Users/test/project/src/utils/format.ts",
 				];
 				if (validPaths.includes(filePath as string)) {
-					return Promise.resolve();
+					return;
 				}
 				throw new Error("File not found");
 			});
@@ -277,10 +288,10 @@ describe("PathResolverInterpreter", () => {
 				typeOnlyImportCount: 0,
 			};
 
-			mockFs.promises.access.mockImplementation(async (filePath: any) => {
+			mockFs.accessSync.mockImplementation((filePath: any) => {
 				// Only .ts file exists, not the exact path
 				if (filePath === "/Users/test/project/src/components/utils/api.ts") {
-					return Promise.resolve();
+					return;
 				}
 				throw new Error("File not found");
 			});
@@ -313,10 +324,10 @@ describe("PathResolverInterpreter", () => {
 				typeOnlyImportCount: 0,
 			};
 
-			mockFs.promises.access.mockImplementation(async (filePath: any) => {
+			mockFs.accessSync.mockImplementation((filePath: any) => {
 				// Only index.ts exists in the utils directory
 				if (filePath === "/Users/test/project/src/components/utils/index.ts") {
-					return Promise.resolve();
+					return;
 				}
 				throw new Error("File not found");
 			});
@@ -371,10 +382,10 @@ describe("PathResolverInterpreter", () => {
 				typeOnlyImportCount: 0,
 			};
 
-			mockFs.promises.access.mockImplementation(async (filePath: any) => {
+			mockFs.accessSync.mockImplementation((filePath: any) => {
 				// Only the relative file exists
 				if (filePath === "/Users/test/project/src/components/relative.ts") {
-					return Promise.resolve();
+					return;
 				}
 				throw new Error("File not found");
 			});
@@ -417,8 +428,15 @@ describe("PathResolverInterpreter", () => {
 				},
 			);
 
-			mockFs.promises.access.mockImplementation(async () => {
-				return Promise.resolve();
+			(mockFs.readFileSync as jest.Mock).mockImplementation((filePath: any) => {
+				if (filePath === "/Users/test/project/tsconfig.json") {
+					return "{ invalid json }";
+				}
+				throw new Error("File not found");
+			});
+
+			mockFs.accessSync.mockImplementation(() => {
+				return;
 			});
 
 			const result = await interpreter.interpret(extractedData, mockContext);
@@ -445,7 +463,13 @@ describe("PathResolverInterpreter", () => {
 				typeOnlyImportCount: 0,
 			};
 
-			mockFs.promises.access.mockRejectedValue(new Error("Permission denied"));
+			mockFs.accessSync.mockImplementation(() => {
+				throw new Error("Permission denied");
+			});
+
+			(mockFs.readFileSync as jest.Mock).mockImplementation(() => {
+				throw new Error("File not found");
+			});
 
 			const result = await interpreter.interpret(extractedData, mockContext);
 
@@ -483,9 +507,9 @@ describe("PathResolverInterpreter", () => {
 				typeOnlyImportCount: 0,
 			};
 
-			mockFs.promises.access.mockImplementation(async (filePath: any) => {
+			mockFs.accessSync.mockImplementation((filePath: any) => {
 				if (filePath === "/Users/test/project/src/components/component.vue") {
-					return Promise.resolve();
+					return;
 				}
 				throw new Error("File not found");
 			});

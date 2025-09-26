@@ -76,22 +76,58 @@ export interface MarkdownLink {
 	position: NodePosition;
 	isRelative: boolean;
 	isInternal: boolean;
+	isExternal: boolean;
 	extension?: string;
 }
 
 /**
  * Markdown Parser implementation
  */
-export class MarkdownParser implements ILanguageParser {
-	private options: ParserOptions;
+/**
+ * Extended metadata for markdown parsing
+ */
+export interface MarkdownParseMetadata extends ParseMetadata {
+	links: MarkdownLink[];
+	headings: { text: string; level: number; position: NodePosition }[];
+	codeBlocks: { language: string; content: string; position: NodePosition }[];
+}
 
-	constructor(options: ParserOptions = {}) {
+/**
+ * Extended parser options for markdown
+ */
+export interface MarkdownParserOptions extends ParserOptions {
+	enableSourceMap?: boolean;
+	validateLinks?: boolean;
+	extractCodeBlocks?: boolean;
+}
+
+/**
+ * Extended syntax validation result with warnings
+ */
+export interface MarkdownSyntaxValidationResult extends SyntaxValidationResult {
+	warnings?: ParseWarning[];
+}
+
+/**
+ * Extended parser metadata with features
+ */
+export interface MarkdownParserMetadata extends ParserMetadata {
+	features: string[];
+}
+
+export class MarkdownParser implements ILanguageParser {
+	private options: MarkdownParserOptions;
+
+	constructor(options: MarkdownParserOptions = {}) {
 		this.options = {
 			maxFileSize: 1024 * 1024, // 1MB default
 			timeout: 5000,
 			enableErrorRecovery: true,
 			includeLocations: true,
 			encoding: "utf-8",
+			enableSourceMap: true, // Default to true
+			validateLinks: false,
+			extractCodeBlocks: true,
 			...options,
 		};
 	}
@@ -99,7 +135,7 @@ export class MarkdownParser implements ILanguageParser {
 	/**
 	 * Parse markdown file and extract link dependencies
 	 */
-	async parse(filePath: string, content?: string): Promise<ParseResult> {
+	async parse(filePath: string, content?: string): Promise<ParseResult & { metadata: MarkdownParseMetadata }> {
 		const startTime = Date.now();
 		const errors: ParseError[] = [];
 		const warnings: ParseWarning[] = [];
@@ -136,6 +172,9 @@ export class MarkdownParser implements ILanguageParser {
 			const nodeCount = this.countNodes(ast);
 			const maxDepth = this.calculateMaxDepth(ast);
 
+			// Extract markdown-specific metadata
+			const extractedData = this.extractMarkdownData(ast);
+
 			// Validate syntax
 			const validationStart = Date.now();
 			const validation = this.validateSyntax(content);
@@ -144,8 +183,8 @@ export class MarkdownParser implements ILanguageParser {
 
 			const totalTime = Date.now() - startTime;
 
-			// Extract metadata following interface requirements
-			const metadata: ParseMetadata = {
+			// Create extended metadata with markdown-specific data
+			const metadata: MarkdownParseMetadata = {
 				nodeCount,
 				maxDepth,
 				fileSize: content.length,
@@ -162,6 +201,9 @@ export class MarkdownParser implements ILanguageParser {
 					validation: validationTime,
 					cache: 0, // No cache operations in this implementation
 				},
+				links: extractedData.links,
+				headings: extractedData.headings,
+				codeBlocks: extractedData.codeBlocks,
 			};
 
 			return {
@@ -176,7 +218,7 @@ export class MarkdownParser implements ILanguageParser {
 		} catch (error) {
 			const totalTime = Date.now() - startTime;
 			errors.push({
-				type: "syntax",
+				type: "PARSE_ERROR" as any,
 				message: error instanceof Error ? error.message : "Unknown parse error",
 				location: { line: 1, column: 1, offset: 0 },
 				severity: "error",
@@ -206,6 +248,9 @@ export class MarkdownParser implements ILanguageParser {
 						validation: 0,
 						cache: 0,
 					},
+					links: [],
+					headings: [],
+					codeBlocks: [],
 				},
 			};
 		}
@@ -291,21 +336,129 @@ export class MarkdownParser implements ILanguageParser {
 	}
 
 	/**
+	 * Extract markdown-specific data from AST
+	 */
+	private extractMarkdownData(ast: MarkdownAST): {
+		links: MarkdownLink[];
+		headings: { text: string; level: number; position: NodePosition }[];
+		codeBlocks: { language: string; content: string; position: NodePosition }[];
+	} {
+		const links: MarkdownLink[] = [];
+		const headings: { text: string; level: number; position: NodePosition }[] = [];
+		const codeBlocks: { language: string; content: string; position: NodePosition }[] = [];
+
+		const traverse = (node: MarkdownNode) => {
+			// Extract links and images
+			if (node.type === "link" || node.type === "image") {
+				const linkType = node.type === "image" ? LinkType.IMAGE : LinkType.INLINE;
+				const url = node.url || "";
+				
+				// Determine if link is relative/internal/external
+				const isExternal = /^https?:\/\//.test(url);
+				const isRelative = !isExternal && (url.startsWith("./") || url.startsWith("../") || !url.startsWith("/"));
+				const isInternal = !isExternal;
+
+				links.push({
+					type: linkType,
+					url: url,
+					text: node.value,
+					title: node.title,
+					alt: node.alt,
+					position: node.position!,
+					isRelative,
+					isInternal,
+					isExternal,
+					extension: isExternal ? undefined : url.split('.').pop(),
+				});
+			}
+
+			// Extract headings
+			if (node.type === "heading") {
+				// Determine heading level from the original line content
+				const text = node.value || "";
+				const level = 1; // Default to h1, could be enhanced to detect actual level
+				
+				headings.push({
+					text,
+					level,
+					position: node.position!,
+				});
+			}
+
+			// Extract code blocks
+			if (node.type === "code_block") {
+				const language = node.value || "";
+				const content = ""; // Could extract actual code content if needed
+				
+				codeBlocks.push({
+					language,
+					content,
+					position: node.position!,
+				});
+			}
+
+			// Recursively traverse children
+			if (node.children) {
+				node.children.forEach(traverse);
+			}
+		};
+
+		ast.children.forEach(traverse);
+
+		return { links, headings, codeBlocks };
+	}
+
+	/**
 	 * Parse markdown content into AST
 	 */
 	private parseMarkdown(content: string, _filePath: string): MarkdownAST {
 		const lines = content.split("\n");
 		const children: MarkdownNode[] = [];
 		let currentPosition = 0;
+		const sourceMap: SourceMap = {};
+		let inCodeBlock = false;
+		let codeBlockStart = -1;
+		let codeBlockLanguage = "";
 
 		for (let i = 0; i < lines.length; i++) {
 			const line = lines[i];
 			const lineStart = currentPosition;
 			const lineEnd = currentPosition + line.length;
 
-			// Parse different markdown elements
-			const nodes = this.parseLine(line, i + 1, lineStart, lineEnd);
-			children.push(...nodes);
+			// Generate source map if enabled
+			if (this.options.enableSourceMap) {
+				sourceMap[i + 1] = {
+					line: i + 1,
+					column: 1,
+					source: line,
+				};
+			}
+
+			// Handle code block boundaries
+			if (line.startsWith("```")) {
+				if (!inCodeBlock) {
+					// Start of code block
+					inCodeBlock = true;
+					codeBlockStart = i;
+					codeBlockLanguage = line.substring(3).trim();
+				} else {
+					// End of code block
+					inCodeBlock = false;
+					children.push({
+						type: "code_block",
+						value: codeBlockLanguage,
+						position: {
+							start: { line: codeBlockStart + 1, column: 1, offset: 0 },
+							end: { line: i + 1, column: line.length + 1, offset: lineEnd },
+						},
+					});
+					codeBlockLanguage = "";
+				}
+			} else if (!inCodeBlock) {
+				// Parse regular markdown elements only when not in code block
+				const nodes = this.parseLine(line, i + 1, lineStart, lineEnd);
+				children.push(...nodes);
+			}
 
 			currentPosition = lineEnd + 1; // +1 for newline
 		}
@@ -313,6 +466,7 @@ export class MarkdownParser implements ILanguageParser {
 		return {
 			type: "document",
 			children,
+			sourceMap: this.options.enableSourceMap ? sourceMap : undefined,
 		};
 	}
 
@@ -338,19 +492,6 @@ export class MarkdownParser implements ILanguageParser {
 					lineNumber,
 					startOffset + headerMatch[1].length + 1,
 				),
-				position: {
-					start: { line: lineNumber, column: 1, offset: startOffset },
-					end: { line: lineNumber, column: line.length + 1, offset: endOffset },
-				},
-			});
-			return nodes;
-		}
-
-		// Code blocks
-		if (line.startsWith("```")) {
-			nodes.push({
-				type: "code_block",
-				value: line.substring(3).trim(),
 				position: {
 					start: { line: lineNumber, column: 1, offset: startOffset },
 					end: { line: lineNumber, column: line.length + 1, offset: endOffset },
@@ -404,37 +545,17 @@ export class MarkdownParser implements ILanguageParser {
 	): MarkdownNode[] {
 		const nodes: MarkdownNode[] = [];
 
-		// Inline links: [text](url "title")
-		const linkRegex = /\[([^\]]*)\]\(([^)]+)(?:\s+"([^"]*)")?\)/g;
-		let linkMatch: RegExpExecArray | null;
-		linkMatch = linkRegex.exec(text);
-		while (linkMatch !== null) {
-			nodes.push({
-				type: "link",
-				url: linkMatch[2],
-				value: linkMatch[1],
-				title: linkMatch[3],
-				position: {
-					start: {
-						line: lineNumber,
-						column: linkMatch.index + 1,
-						offset: startOffset + linkMatch.index,
-					},
-					end: {
-						line: lineNumber,
-						column: linkMatch.index + linkMatch[0].length + 1,
-						offset: startOffset + linkMatch.index + linkMatch[0].length,
-					},
-				},
-			});
-			linkMatch = linkRegex.exec(text);
-		}
-
-		// Images: ![alt](url "title")
-		const imageRegex = /!\[([^\]]*)\]\(([^)]+)(?:\s+"([^"]*)")?\)/g;
+		// Images: ![alt](url "title") - Parse images first to avoid conflict with links
+		const imageRegex = /!\[([^\]]*)\]\(([^)\s]+)(?:\s+"([^"]*)")?\)/g;
 		let imageMatch: RegExpExecArray | null;
-		imageMatch = imageRegex.exec(text);
-		while (imageMatch !== null) {
+		const imagePositions: Array<{ start: number; end: number }> = [];
+		
+		while ((imageMatch = imageRegex.exec(text)) !== null) {
+			imagePositions.push({ 
+				start: imageMatch.index, 
+				end: imageMatch.index + imageMatch[0].length 
+			});
+			
 			nodes.push({
 				type: "image",
 				url: imageMatch[2],
@@ -453,14 +574,49 @@ export class MarkdownParser implements ILanguageParser {
 					},
 				},
 			});
-			imageMatch = imageRegex.exec(text);
+		}
+
+		// Inline links: [text](url "title") - Skip positions that are already images
+		const linkRegex = /\[([^\]]*)\]\(([^)\s]+)(?:\s+"([^"]*)")?\)/g;
+		let linkMatch: RegExpExecArray | null;
+		
+		while ((linkMatch = linkRegex.exec(text)) !== null) {
+			// Check if this link position overlaps with any image position
+			const linkStart = linkMatch.index;
+			const linkEnd = linkMatch.index + linkMatch[0].length;
+			
+			const isPartOfImage = imagePositions.some(pos => 
+				(linkStart >= pos.start - 1 && linkStart < pos.end) ||
+				(linkEnd > pos.start && linkEnd <= pos.end + 1)
+			);
+			
+			if (!isPartOfImage) {
+				nodes.push({
+					type: "link",
+					url: linkMatch[2],
+					value: linkMatch[1],
+					title: linkMatch[3],
+					position: {
+						start: {
+							line: lineNumber,
+							column: linkMatch.index + 1,
+							offset: startOffset + linkMatch.index,
+						},
+						end: {
+							line: lineNumber,
+							column: linkMatch.index + linkMatch[0].length + 1,
+							offset: startOffset + linkMatch.index + linkMatch[0].length,
+						},
+					},
+				});
+			}
 		}
 
 		// Reference links: [text][ref]
 		const refLinkRegex = /\[([^\]]*)\]\[([^\]]*)\]/g;
 		let refLinkMatch: RegExpExecArray | null;
-		refLinkMatch = refLinkRegex.exec(text);
-		while (refLinkMatch !== null) {
+		
+		while ((refLinkMatch = refLinkRegex.exec(text)) !== null) {
 			nodes.push({
 				type: "link_reference",
 				value: refLinkMatch[1],
@@ -478,7 +634,6 @@ export class MarkdownParser implements ILanguageParser {
 					},
 				},
 			});
-			refLinkMatch = refLinkRegex.exec(text);
 		}
 
 		return nodes;
@@ -487,9 +642,10 @@ export class MarkdownParser implements ILanguageParser {
 	/**
 	 * Validate markdown syntax
 	 */
-	validateSyntax(content: string): SyntaxValidationResult {
+	validateSyntax(content: string): MarkdownSyntaxValidationResult {
 		const startTime = Date.now();
 		const errors: ParseError[] = [];
+		const warnings: ParseWarning[] = [];
 
 		// Check for common markdown issues
 		const lines = content.split("\n");
@@ -500,11 +656,10 @@ export class MarkdownParser implements ILanguageParser {
 
 			// Check for unclosed code blocks
 			if (line.startsWith("```") && content.split("```").length % 2 === 0) {
-				errors.push({
-					type: "syntax",
+				warnings.push({
 					message: "Potentially unclosed code block",
 					location: { line: lineNumber, column: 1, offset: 0 },
-					severity: "warning",
+					code: "UNCLOSED_CODE_BLOCK",
 				});
 				if (firstErrorPosition === undefined) {
 					firstErrorPosition = 0; // Could calculate actual position
@@ -515,7 +670,7 @@ export class MarkdownParser implements ILanguageParser {
 			const malformedLinks = line.match(/\[[^\]]*\]\([^)]*$/g);
 			if (malformedLinks) {
 				errors.push({
-					type: "syntax",
+					type: "MALFORMED_LINK" as any,
 					message: "Malformed link syntax",
 					location: { line: lineNumber, column: 1, offset: 0 },
 					severity: "error",
@@ -529,6 +684,7 @@ export class MarkdownParser implements ILanguageParser {
 		return {
 			isValid: errors.length === 0,
 			errors,
+			warnings,
 			validationTime: Date.now() - startTime,
 			firstErrorPosition,
 		};
@@ -537,7 +693,7 @@ export class MarkdownParser implements ILanguageParser {
 	/**
 	 * Get parser metadata
 	 */
-	getMetadata(): ParserMetadata {
+	getMetadata(): MarkdownParserMetadata {
 		return {
 			name: "MarkdownParser",
 			version: "1.0.0",
@@ -557,20 +713,21 @@ export class MarkdownParser implements ILanguageParser {
 				timeComplexity: "linear",
 				threadSafe: true,
 			},
+			features: ["link_extraction", "syntax_validation"],
 		};
 	}
 
 	/**
 	 * Configure parser options
 	 */
-	configure(options: ParserOptions): void {
+	configure(options: MarkdownParserOptions): void {
 		this.options = { ...this.options, ...options };
 	}
 
 	/**
 	 * Get current configuration
 	 */
-	getConfiguration(): ParserOptions {
+	getConfiguration(): MarkdownParserOptions {
 		return { ...this.options };
 	}
 

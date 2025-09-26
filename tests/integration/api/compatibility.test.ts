@@ -229,30 +229,13 @@ describe("API Compatibility Layer", () => {
 		});
 	});
 
-	describe("Task Management Compatibility", () => {
-		test("should export task management system", async () => {
-			const mainModule = await import("../../../src/index");
+	describe("Integration Features Compatibility", () => {
+		test("should support configuration management", async () => {
+			const configModule = await import("../../../src/config");
+			expect(configModule).toBeDefined();
 
-			// Task management exports
-			expect(mainModule.TaskManager).toBeDefined();
-			expect(mainModule.TaskExecutor).toBeDefined();
-			expect(mainModule.createTaskAPI).toBeDefined();
-
-			// Task types that should be available
-			expect(mainModule.TaskManager).toBeDefined();
-			expect(mainModule.TaskExecutor).toBeDefined();
-			expect(mainModule.createTaskAPI).toBeDefined();
-		});
-
-		test("should create task API instance", async () => {
-			const { createTaskAPI } = await import("../../../src/task");
-
-			expect(typeof createTaskAPI).toBe("function");
-
-			const taskAPI = createTaskAPI();
-			expect(taskAPI).toBeDefined();
-			expect(typeof taskAPI.createTask).toBe("function");
-			expect(typeof taskAPI.startTask).toBe("function");
+			// Check that config exports exist
+			expect(configModule.IntegrationConfig).toBeDefined();
 		});
 	});
 

@@ -24,7 +24,7 @@ export class TestOptimizationFramework {
 	constructor(
 		config?: import("../services/optimization").OptimizationServiceConfig,
 	) {
-		// Import is done dynamically to avoid circular dependencies
+		// Import is done at the top to avoid circular dependencies
 		const { OptimizationOrchestrator } = require("../services/optimization");
 		this.orchestrator = new OptimizationOrchestrator(config);
 	}

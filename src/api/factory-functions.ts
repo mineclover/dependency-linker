@@ -3,8 +3,8 @@
  * Simple function-based API for easy adoption
  */
 
-import * as fs from "node:fs";
-import * as path from "node:path";
+import { statSync, promises as fsPromises, Dirent } from "node:fs";
+import { resolve, relative, dirname, basename, extname, isAbsolute, sep, join } from "node:path";
 import { MarkdownLinkExtractor } from "../extractors/MarkdownLinkExtractor";
 import { LinkDependencyInterpreter } from "../interpreters/LinkDependencyInterpreter";
 import type { AnalysisResult } from "../models/AnalysisResult";
@@ -202,7 +202,7 @@ export async function analyzeMarkdownFile(
 				timestamp: new Date(),
 				version: "1.0.0",
 				config: options || {},
-				fileSize: require("node:fs").statSync(resolvedPath).size,
+				fileSize: statSync(resolvedPath).size,
 				extractorsUsed: ["MarkdownLinkExtractor"],
 				interpretersUsed: ["LinkDependencyInterpreter"],
 				fromCache: parseResult.cacheHit,
@@ -221,28 +221,27 @@ export async function analyzeMarkdownFile(
 			pathInfo = createPathInfo(filePath);
 		} catch {
 			// Fallback to basic resolution if utils import fails
-			resolvedPath = require("node:path").resolve(filePath);
+			resolvedPath = resolve(filePath);
 			pathInfo = {
 				input: filePath,
 				absolute: resolvedPath,
-				relative: require("node:path").relative(process.cwd(), resolvedPath),
-				directory: require("node:path").dirname(resolvedPath),
-				relativeDirectory: require("node:path").dirname(
-					require("node:path").relative(process.cwd(), resolvedPath),
+				relative: relative(process.cwd(), resolvedPath),
+				directory: dirname(resolvedPath),
+				relativeDirectory: dirname(
+					relative(process.cwd(), resolvedPath),
 				),
-				fileName: require("node:path").basename(resolvedPath),
-				baseName: require("node:path").basename(
+				fileName: basename(resolvedPath),
+				baseName: basename(
 					resolvedPath,
-					require("node:path").extname(resolvedPath),
+					extname(resolvedPath),
 				),
-				extension: require("node:path").extname(resolvedPath),
+				extension: extname(resolvedPath),
 				projectRoot: process.cwd(),
-				isWithinProject: !require("node:path")
-					.relative(process.cwd(), resolvedPath)
+				isWithinProject: !relative(process.cwd(), resolvedPath)
 					.startsWith(".."),
 				depth: 0,
-				separator: require("node:path").sep,
-				wasAbsolute: require("node:path").isAbsolute(filePath),
+				separator: sep,
+				wasAbsolute: isAbsolute(filePath),
 			};
 		}
 
@@ -623,17 +622,17 @@ async function collectFilesRecursive(
 		return;
 	}
 
-	let entries: fs.Dirent[];
+	let entries: Dirent[];
 	try {
-		entries = await fs.promises.readdir(dirPath, { withFileTypes: true });
+		entries = await fsPromises.readdir(dirPath, { withFileTypes: true });
 	} catch (_error) {
 		// Skip directories that can't be read
 		return;
 	}
 
 	for (const entry of entries) {
-		const fullPath = path.join(dirPath, entry.name);
-		const relativePath = path.relative(process.cwd(), fullPath);
+		const fullPath = join(dirPath, entry.name);
+		const relativePath = relative(process.cwd(), fullPath);
 
 		// Check ignore patterns
 		if (shouldIgnore(relativePath, ignorePatterns)) {

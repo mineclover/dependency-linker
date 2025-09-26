@@ -1,6 +1,6 @@
 {
-  "timestamp": "2025-09-26T14:13:32.164Z",
-  "totalExecutionTime": 4.6,
+  "timestamp": "2025-09-26T20:37:51.977Z",
+  "totalExecutionTime": 3.8,
   "totalTests": 0,
   "failedTests": 0,
   "failedSuites": 0,
@@ -16,17 +16,17 @@
     "arch": "arm64",
     "cpuCount": 12,
     "totalMemory": 18432,
-    "availableMemory": 72.28125
+    "availableMemory": 71.234375
   },
   "metadata": {
-    "measurementDuration": 24,
+    "measurementDuration": 22,
     "retries": 0,
-    "confidence": 0.4929607047960608,
+    "confidence": 0.803070663854003,
     "notes": "Baseline established with 5 measurement runs",
-    "gitCommit": "4370d530ce56295159233b23fce334303ee85312",
+    "gitCommit": "3a814ba2cd2dc27dada0e35e7ef49f7f32e0e55d",
     "branch": "main"
   },
-  "duration": 4.6,
-  "executionTime": 4.6,
-  "id": "baseline-1758896012179"
+  "duration": 3.8,
+  "executionTime": 3.8,
+  "id": "baseline-1758919071996"
 }

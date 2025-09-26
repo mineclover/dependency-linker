@@ -1,13 +1,9 @@
 {
 	"name": "@context-action/dependency-linker",
-	"version": "2.3.2",
+	"version": "2.3.5",
 	"description": "Multi-language AST-based code analysis framework with extensible plugin architecture. Supports TypeScript, Go, Java, Markdown, and custom analysis types through tree-sitter parsers.",
 	"main": "dist/index.js",
 	"types": "dist/index.d.ts",
-	"bin": {
-		"analyze-file": "dist/cli/analyze-file.js",
-		"tsdl": "dist/cli/index.js"
-	},
 	"scripts": {
 		"build": "tsc",
 		"build:clean": "rm -rf dist && npm run build",

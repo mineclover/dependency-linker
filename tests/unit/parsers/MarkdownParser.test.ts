@@ -163,8 +163,8 @@ And this is an [image reference][img1].
 
 			// Should find the reference link usage
 			const referenceLinks = result.ast.children.flatMap(
-				(child) =>
-					child.children?.filter((node) => node.type === "link_reference") ||
+				(child: any) =>
+					child.children?.filter((node: any) => node.type === "link_reference") ||
 					[],
 			);
 			expect(referenceLinks).toHaveLength(2);
@@ -265,7 +265,7 @@ Plain code block
 			const result = parser.validateSyntax(content);
 
 			expect(result.warnings).toHaveLength(1);
-			expect(result.warnings[0].type).toBe("UNCLOSED_CODE_BLOCK");
+			expect(result.warnings![0].code).toBe("UNCLOSED_CODE_BLOCK");
 		});
 	});
 

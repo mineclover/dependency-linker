@@ -49,6 +49,25 @@ src/
 tsconfig.json
 biome.json
 
+# Source maps and build artifacts (exclude from npm package)
+dist/**/*.js.map
+dist/**/*.d.ts.map
+dist/.tsbuildinfo
+
+# Development tools and analysis (exclude from npm package)
+tools/
+demo*.ts
+*.md.map
+
+# CLI tools (should be separate package or optional)
+dist/cli/
+dist/task/
+dist/optimization/
+
+# Optimization models (not needed for core parsing)
+dist/models/optimization/
+dist/services/optimization/
+
 # Documentation (keep only essential ones)
 docs/
 CLAUDE.md

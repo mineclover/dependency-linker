@@ -3,6 +3,9 @@
  * Tracks timing, memory usage, and resource utilization
  */
 
+import { readdirSync } from "node:fs";
+import { PerformanceObserver } from "node:perf_hooks";
+
 export interface PerformanceMetrics {
 	/** Time spent parsing AST in milliseconds */
 	parseTime: number;
@@ -568,10 +571,9 @@ export class PerformanceMonitor {
 		try {
 			// On Unix systems, count file descriptors
 			if (process.platform !== "win32") {
-				const fs = require("node:fs");
 				try {
 					const fdDir = "/proc/self/fd";
-					return fs.readdirSync(fdDir).length;
+					return readdirSync(fdDir).length;
 				} catch {
 					// Fallback: estimate based on known operations
 					return 10; // Base file handles
@@ -591,8 +593,7 @@ export class PerformanceMonitor {
 	private setupGCMonitoring(): void {
 		try {
 			// Try to use performance hooks for GC monitoring
-			const perf = require("node:perf_hooks");
-			const obs = new perf.PerformanceObserver((list: any) => {
+			const obs = new PerformanceObserver((list: any) => {
 				for (const entry of list.getEntries()) {
 					if (entry.entryType === "gc") {
 						const memoryBefore =

@@ -2,6 +2,7 @@
  * Comprehensive path information for analyzed files
  */
 
+import { existsSync } from "node:fs";
 import {
 	basename,
 	dirname,
@@ -138,8 +139,7 @@ export function createValidatedPathInfo(
 	// Check file existence if required
 	if (mustExist) {
 		try {
-			const fs = require("node:fs");
-			if (!fs.existsSync(pathInfo.absolute)) {
+			if (!existsSync(pathInfo.absolute)) {
 				isValid = false;
 				validationError = `File does not exist: ${pathInfo.absolute}`;
 			}
