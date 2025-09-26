@@ -22,8 +22,10 @@ This project provides a comprehensive multi-language code analysis framework wit
 - **📊 Usage Pattern Analysis**: Method call frequency and dependency utilization metrics
 
 ### 🚀 API Capabilities
+- **Multi-Language Support**: TypeScript, JavaScript, Go, Java, Markdown parsers
+- **Language-Specific Analysis**: Dedicated extractors and interpreters for each language
 - **Class-based API**: `TypeScriptAnalyzer` with dependency injection
-- **Factory Functions**: Simple function-based API (`analyzeTypeScriptFile`, `extractDependencies`)
+- **Factory Functions**: Simple function-based API (`analyzeTypeScriptFile`, `analyzeMarkdownFile`)
 - **Batch Processing**: `BatchAnalyzer` with concurrency control and resource monitoring
 - **Advanced Caching**: Multi-tier caching with memory and file storage
 - **Event System**: Progress tracking and real-time analysis events
@@ -463,240 +465,193 @@ const parser: TypeScriptParser = new TypeScriptParser();
 const result: ParseResult = await parser.parse('file.ts');
 ```
 
-## 🎯 Enhanced Dependency Analysis
+## 🎯 Language-Specific Analysis Capabilities
 
-### 🔗 LinkDependencyInterpreter - Comprehensive Markdown Link Analysis
+### 📋 Comprehensive Parser Ecosystem
 
-The `LinkDependencyInterpreter` provides comprehensive analysis of Markdown link dependencies with security, performance, and accessibility checks. Recently enhanced with improved categorization, validation, and issue detection capabilities.
+Our multi-language analysis framework provides specialized capabilities for each supported language, with dedicated parsers, extractors, and interpreters working together to deliver comprehensive code analysis.
 
-#### 🚀 Key Features
+#### 🔤 **TypeScript/JavaScript Analysis Stack**
 
-- **🏷️ Smart Categorization**: Email, anchor, image, documentation, and external resource classification
-- **🔍 Link Validation**: File existence checks for internal links with precise status reporting
+**Parser**: `TypeScriptParser`, `JavaScriptParser`
+**Primary Extractors**: `DependencyExtractor`, `EnhancedDependencyExtractor`, `EnhancedExportExtractor`, `IdentifierExtractor`, `ComplexityExtractor`
+**Interpreters**: `DependencyAnalysisInterpreter`, `IdentifierAnalysisInterpreter`, `PathResolverInterpreter`
+
+##### 🚀 Capabilities
+- **📦 Dependency Analysis**: Import/export tracking with named import usage analysis
+- **🌳 Tree-shaking Optimization**: Dead code detection and bundle size reduction
+- **📊 Export Analysis**: Complete export classification with class member analysis
+- **🔍 Identifier Tracking**: Variable and function usage patterns
+- **📈 Complexity Metrics**: Cyclomatic complexity and code quality metrics
+- **🎯 Usage Patterns**: Method call frequency and dependency utilization
+- **📍 Source Locations**: Exact line/column tracking for all elements
+
+##### 💡 Example Use Cases
+```javascript
+// Named import usage analysis
+import { analyzeTypeScriptFile } from '@context-action/dependency-linker';
+
+const result = await analyzeTypeScriptFile('./src/component.tsx', {
+  useIntegrated: true,
+  preset: 'comprehensive'
+});
+
+// Access TypeScript-specific analysis
+console.log('Dependencies:', result.extractedData.dependencies);
+console.log('Export analysis:', result.extractedData.exports);
+console.log('Usage patterns:', result.interpretedData.usageAnalysis);
+```
+
+#### 📄 **Markdown Analysis Stack**
+
+**Parser**: `MarkdownParser`
+**Primary Extractors**: `MarkdownLinkExtractor`
+**Interpreters**: `LinkDependencyInterpreter`
+
+##### 🚀 Capabilities
+- **🔗 Link Analysis**: Comprehensive link dependency tracking
+- **🏷️ Smart Categorization**: Email, anchor, image, documentation classification
 - **🛡️ Security Analysis**: Blocked domain detection and suspicious link identification
-- **⚡ Performance Monitoring**: Large file detection and performance impact warnings
-- **♿ Accessibility Checks**: Image alt text validation and accessibility compliance
-- **📊 Domain Analytics**: Intelligent domain grouping and unique domain counting
-- **📈 Link Density Analysis**: Content-to-link ratio calculation for quality assessment
-- **🔧 MIME Type Detection**: Automatic file type identification based on extensions
-- **⏱️ High-Resolution Timing**: Precise analysis performance measurement
+- **⚡ Performance Monitoring**: Large file detection and performance warnings
+- **♿ Accessibility Checks**: Image alt text validation and compliance
+- **📊 Domain Analytics**: Intelligent domain grouping and analytics
+- **🔧 MIME Type Detection**: Automatic file type identification
+- **📈 Content Quality**: Link density analysis and recommendations
 
-#### 📦 Import and Usage
-
+##### 💡 Example Use Cases
 ```javascript
-// ES6/TypeScript import
-import { LinkDependencyInterpreter } from '@context-action/dependency-linker';
+// Comprehensive markdown link analysis
+import { analyzeMarkdownFile } from '@context-action/dependency-linker';
 
-// CommonJS import
-const { LinkDependencyInterpreter } = require('@context-action/dependency-linker');
+const result = await analyzeMarkdownFile('./docs/README.md');
 
-// Tree-shaking optimized import
-import { LinkDependencyInterpreter } from '@context-action/dependency-linker/dist/interpreters/LinkDependencyInterpreter';
+// Access markdown-specific analysis
+const linkAnalysis = result.interpretedData['link-analysis'];
+console.log('Total links:', linkAnalysis.summary.totalLinks);
+console.log('Broken links:', linkAnalysis.summary.brokenLinks);
+console.log('Security issues:', linkAnalysis.issues.filter(i => i.type === 'security_risk'));
+console.log('Accessibility warnings:', linkAnalysis.issues.filter(i => i.type === 'accessibility_issue'));
 ```
 
-#### 💡 Basic Usage Example
+#### ☕ **Java Analysis Stack**
 
+**Parser**: `JavaParser`
+**Primary Extractors**: `DependencyExtractor`, `IdentifierExtractor`, `ComplexityExtractor`
+**Interpreters**: `DependencyAnalysisInterpreter`, `PathResolverInterpreter`
+
+##### 🚀 Capabilities
+- **📦 Package Analysis**: Import statement and package dependency tracking
+- **🏗️ Class Structure**: Class, interface, and inheritance analysis
+- **📍 Method Tracking**: Method definitions and call patterns
+- **📊 Complexity Analysis**: Method and class complexity metrics
+- **🔍 Identifier Analysis**: Variable and method usage patterns
+- **📁 Package Resolution**: Java package path resolution and validation
+
+##### 💡 Example Use Cases
 ```javascript
-import { LinkDependencyInterpreter, MarkdownLinkExtractor, MarkdownParser } from '@context-action/dependency-linker';
+// Java dependency analysis
+import { JavaParser, DependencyExtractor } from '@context-action/dependency-linker';
 
-async function analyzeMarkdownLinks() {
-  const markdownContent = `
-# Documentation
+const parser = new JavaParser();
+const extractor = new DependencyExtractor();
 
-Check out our [API docs](./api/README.md) and visit [our website](https://example.com).
+const parseResult = await parser.parse('./src/Main.java');
+const dependencies = extractor.extract(parseResult.ast, './src/Main.java');
 
-![Company Logo](./images/logo.png "Our Logo")
-
-For support, email us at [support@example.com](mailto:support@example.com).
-
-See also:
-- [Internal guide](./internal.md)
-- [External resource](https://docs.example.com)
-- [Missing file](./nonexistent.md)
-`;
-
-  // Parse markdown
-  const parser = new MarkdownParser();
-  const parseResult = await parser.parse('/docs/README.md', markdownContent);
-
-  // Extract link dependencies
-  const extractor = new MarkdownLinkExtractor({
-    includeImages: true,
-    includeExternalLinks: true,
-    resolveRelativePaths: true
-  });
-  const dependencies = extractor.extract(parseResult.ast, '/docs/README.md');
-
-  // Analyze with comprehensive checks
-  const interpreter = new LinkDependencyInterpreter({
-    validateFiles: true,
-    securityChecks: true,
-    performanceChecks: true,
-    accessibilityChecks: true,
-    blockedDomains: ['malicious-site.com'],
-    maxFileSizeWarning: 1024 * 1024 // 1MB
-  });
-
-  const analysis = interpreter.interpret(dependencies, {
-    filePath: '/docs/README.md',
-    language: 'markdown',
-    metadata: {},
-    timestamp: new Date()
-  });
-
-  console.log('📊 Link Analysis Results:');
-  console.log(`Total links: ${analysis.summary.totalLinks}`);
-  console.log(`External links: ${analysis.summary.externalLinks}`);
-  console.log(`Internal links: ${analysis.summary.internalLinks}`);
-  console.log(`Broken links: ${analysis.summary.brokenLinks}`);
-  console.log(`Unique domains: ${analysis.summary.uniqueDomains}`);
-  console.log(`Link density: ${analysis.summary.linkDensity.toFixed(2)} links/line`);
-
-  // Category breakdown
-  analysis.dependencies.forEach(dep => {
-    console.log(`${dep.source} → ${dep.category} (${dep.status})`);
-    if (dep.mimeType) {
-      console.log(`  MIME: ${dep.mimeType}`);
-    }
-  });
-
-  // Issues and warnings
-  if (analysis.issues.length > 0) {
-    console.log('\n⚠️ Issues found:');
-    analysis.issues.forEach(issue => {
-      console.log(`${issue.severity.toUpperCase()}: ${issue.message}`);
-      if (issue.suggestion) {
-        console.log(`  💡 ${issue.suggestion}`);
-      }
-    });
-  }
-
-  // Recommendations
-  if (analysis.recommendations.length > 0) {
-    console.log('\n📋 Recommendations:');
-    analysis.recommendations.forEach(rec => console.log(`• ${rec}`));
-  }
-
-  console.log(`\n⏱️ Analysis completed in ${analysis.metadata.analysisTime}ms`);
-}
+console.log('Java imports:', dependencies.filter(d => d.type === 'external'));
+console.log('Internal classes:', dependencies.filter(d => d.type === 'internal'));
 ```
 
-#### 🔍 Advanced Configuration
+#### 🐹 **Go Analysis Stack**
 
+**Parser**: `GoParser`
+**Primary Extractors**: `DependencyExtractor`, `IdentifierExtractor`, `ComplexityExtractor`
+**Interpreters**: `DependencyAnalysisInterpreter`, `PathResolverInterpreter`
+
+##### 🚀 Capabilities
+- **📦 Module Analysis**: Go module and package dependency tracking
+- **🏗️ Function Analysis**: Function definitions and call patterns
+- **📍 Struct Tracking**: Struct definitions and method analysis
+- **📊 Complexity Metrics**: Function and package complexity analysis
+- **🔍 Identifier Tracking**: Variable and function usage patterns
+- **📁 Module Resolution**: Go module path resolution and validation
+
+##### 💡 Example Use Cases
 ```javascript
-// Security-focused configuration
-const secureInterpreter = new LinkDependencyInterpreter({
-  securityChecks: true,
-  blockedDomains: [
-    'malicious-site.com',
-    'suspicious-domain.net',
-    'blocked-tracker.io'
-  ],
-  allowedDomains: [
-    'github.com',
-    'stackoverflow.com',
-    'developer.mozilla.org'
-  ],
-  checkExternalLinks: true
-});
+// Go dependency analysis
+import { GoParser, DependencyExtractor } from '@context-action/dependency-linker';
 
-// Performance-focused configuration
-const performanceInterpreter = new LinkDependencyInterpreter({
-  performanceChecks: true,
-  maxFileSizeWarning: 512 * 1024, // 512KB warning threshold
-  validateFiles: true
-});
+const parser = new GoParser();
+const extractor = new DependencyExtractor();
 
-// Accessibility-focused configuration
-const accessibilityInterpreter = new LinkDependencyInterpreter({
-  accessibilityChecks: true,
-  validateFiles: true
-});
+const parseResult = await parser.parse('./cmd/main.go');
+const dependencies = extractor.extract(parseResult.ast, './cmd/main.go');
 
-// Comprehensive configuration
-const comprehensiveInterpreter = new LinkDependencyInterpreter({
-  validateFiles: true,
-  checkExternalLinks: true,
-  securityChecks: true,
-  performanceChecks: true,
-  accessibilityChecks: true,
-  baseDir: '/project/docs',
-  allowedDomains: ['github.com', 'npm.js'],
-  blockedDomains: ['malicious.com'],
-  maxFileSizeWarning: 1024 * 1024
-});
+console.log('Go imports:', dependencies.filter(d => d.type === 'external'));
+console.log('Local packages:', dependencies.filter(d => d.type === 'internal'));
 ```
 
-#### 📋 Analysis Results Structure
+#### 🔄 **Cross-Language Features**
 
+All parsers share common capabilities through unified interfaces:
+
+##### 🛠️ **Universal Capabilities**
+- **⚡ High Performance**: <200ms analysis time across all languages
+- **🔄 AST Caching**: Intelligent caching for repeated analysis
+- **📊 Metrics Collection**: Performance and quality metrics
+- **🎯 Error Recovery**: Graceful handling of syntax errors
+- **📍 Source Mapping**: Precise location tracking
+- **🔧 Configurable Options**: Flexible parser and extractor configuration
+
+##### 📦 **Shared Interfaces**
 ```typescript
-interface LinkDependencyAnalysis {
-  summary: {
-    totalLinks: number;
-    externalLinks: number;
-    internalLinks: number;
-    brokenLinks: number;
-    imageLinks: number;
-    referenceLinks: number;
-    uniqueDomains: number;
-    linkDensity: number;
-  };
-  dependencies: Array<{
-    source: string;
-    type: 'inline' | 'image' | 'reference';
-    category: 'documentation' | 'image' | 'external_resource' | 'internal_file' | 'anchor' | 'email' | 'unknown';
-    status: 'valid' | 'broken' | 'unreachable' | 'suspicious' | 'unknown';
-    resolvedPath?: string;
-    fileExists?: boolean;
-    fileSize?: number;
-    mimeType?: string;
-    domain?: string;
-    line: number;
-    column: number;
-  }>;
-  issues: Array<{
-    type: 'broken_link' | 'missing_file' | 'security_risk' | 'performance_issue' | 'accessibility_issue';
-    severity: 'error' | 'warning' | 'info';
-    message: string;
-    suggestion?: string;
-  }>;
-  recommendations: string[];
-  metadata: {
-    analysisTime: number;
-    checkedFiles: number;
-    unreachableLinks: number;
-    securityWarnings: number;
-    performanceWarnings: number;
-  };
+// Universal analysis interface
+interface AnalysisResult {
+  filePath: string;
+  language: string;
+  extractedData: Record<string, any>;    // Parser-specific data
+  interpretedData: Record<string, any>;  // Analysis results
+  performanceMetrics: PerformanceMetrics;
+  errors: AnalysisError[];
+}
+
+// All parsers implement ILanguageParser
+interface ILanguageParser {
+  parse(filePath: string, content?: string): Promise<ParseResult>;
+  supports(language: string): boolean;
+  getMetadata(): ParserMetadata;
 }
 ```
 
-#### 🎯 Use Cases
+##### 🎯 **Integration Examples**
+```javascript
+// Multi-language project analysis
+import { AnalysisEngine, ParserFactory } from '@context-action/dependency-linker';
 
-1. **Documentation Quality Assurance**
-   - Validate all internal links in documentation
-   - Identify broken references and missing files
-   - Ensure consistent link formatting
+const engine = new AnalysisEngine();
+const factory = new ParserFactory();
 
-2. **Security Auditing**
-   - Detect suspicious external links
-   - Enforce domain allowlists/blocklists
-   - Identify insecure HTTP links
+// Analyze entire project
+const projectFiles = [
+  './src/index.ts',           // TypeScript
+  './docs/README.md',         // Markdown
+  './backend/Main.java',      // Java
+  './services/main.go'        // Go
+];
 
-3. **Performance Optimization**
-   - Find large files that slow page loading
-   - Calculate link density for content optimization
-   - Optimize resource references
+const results = await Promise.all(
+  projectFiles.map(file => engine.analyzeFile(file))
+);
 
-4. **Accessibility Compliance**
-   - Validate image alt text presence
-   - Ensure proper link descriptions
-   - Check accessibility best practices
+// Unified analysis across languages
+results.forEach(result => {
+  console.log(`${result.language} file: ${result.filePath}`);
+  console.log(`Dependencies: ${Object.keys(result.extractedData).length}`);
+  console.log(`Performance: ${result.performanceMetrics.parseTime}ms`);
+});
+```
 
-5. **Content Management**
-   - Track external dependencies
-   - Monitor domain usage patterns
-   - Automate link health checking
+## 🎯 Advanced Analysis Features
 
 ### 📊 EnhancedDependencyExtractor - Named Import Usage Tracking
 

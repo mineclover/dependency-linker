@@ -5,6 +5,23 @@ All notable changes to this project will be documented in this file.
 The format is based on [Keep a Changelog](https://keepachangelog.com/en/1.0.0/),
 and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0.html).
 
+## [2.3.2] - 2025-09-26
+
+### Documentation
+- **Parser-Specific Organization**: Restructured documentation to group capabilities by language
+  - 🔤 **TypeScript/JavaScript Stack**: Comprehensive dependency, export, and usage analysis
+  - 📄 **Markdown Stack**: Link analysis with security, performance, and accessibility checks
+  - ☕ **Java Stack**: Package analysis, class structure, and method tracking
+  - 🐹 **Go Stack**: Module analysis, function tracking, and struct analysis
+  - 🔄 **Cross-Language Features**: Unified interfaces and universal capabilities
+- **Improved Structure**: Clear separation between language-specific and shared features
+- **Better Navigation**: Enhanced organization for easier feature discovery
+- **Practical Examples**: Language-specific usage examples and integration patterns
+
+### Enhanced
+- **Documentation Quality**: Consolidated and organized parser capabilities for better understanding
+- **User Experience**: Clearer presentation of language-specific features and capabilities
+
 ## [2.3.1] - 2025-09-26
 
 ### Enhanced
