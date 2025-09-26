@@ -1,14 +1,18 @@
-
 /**
  * Test unified API - TypeScript and Markdown analysis together
  */
 
-import { analyzeTypeScriptFile, analyzeMarkdownFile } from "../../src/lib/index";
+import {
+	analyzeTypeScriptFile,
+	analyzeMarkdownFile,
+} from "../../src/lib/index";
 
 describe("Unified API Integration Tests", () => {
 	test("should analyze TypeScript and Markdown files together", async () => {
 		// Test TypeScript analysis
-		const tsResult = await analyzeTypeScriptFile("src/api/TypeScriptAnalyzer.ts");
+		const tsResult = await analyzeTypeScriptFile(
+			"src/api/TypeScriptAnalyzer.ts",
+		);
 
 		// Verify TypeScript analysis results
 		expect(tsResult.filePath).toContain("TypeScriptAnalyzer.ts");

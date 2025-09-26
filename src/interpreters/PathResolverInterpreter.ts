@@ -211,7 +211,7 @@ export class PathResolverInterpreter
 			else {
 				resolved.resolutionType = "relative";
 				const absolutePath = path.resolve(resolutionBase.sourceFileDir, source);
-				
+
 				// Always try extension resolution first
 				try {
 					resolved.resolvedPath = this.resolveWithExtensionsSync(
@@ -222,13 +222,14 @@ export class PathResolverInterpreter
 					// If extension resolution fails due to file system errors, ignore the error
 					// We'll provide a fallback path below
 				}
-				
+
 				// If extension resolution didn't find a file, provide a reasonable fallback
 				if (!resolved.resolvedPath) {
 					const extensions = config.extensions || this.defaultExtensions;
-					resolved.resolvedPath = extensions.length > 0 ? absolutePath + extensions[0] : absolutePath;
+					resolved.resolvedPath =
+						extensions.length > 0 ? absolutePath + extensions[0] : absolutePath;
 				}
-				
+
 				if (resolved.resolvedPath) {
 					resolved.projectRelativePath = toProjectRelativePath(
 						resolved.resolvedPath,
@@ -292,7 +293,9 @@ export class PathResolverInterpreter
 		for (const dep of resolvedDependencies) {
 			// A dependency is considered "resolved" only if it has a path AND the file exists
 			// For external/builtin modules, we don't check existence, so they're always resolved if they have a path
-			const isExternalOrBuiltin = dep.resolutionType === "node_modules" || dep.resolutionType === "builtin";
+			const isExternalOrBuiltin =
+				dep.resolutionType === "node_modules" ||
+				dep.resolutionType === "builtin";
 			if (dep.resolvedPath && (isExternalOrBuiltin || dep.exists)) {
 				summary.resolvedCount++;
 			} else {
@@ -484,14 +487,14 @@ export class PathResolverInterpreter
 		for (const [alias, targetPath] of Object.entries(pathMappings)) {
 			// For aliases like "@" (from "@/*"), we need to match "@/..." patterns
 			// Check if source starts with alias followed by "/" or if alias and source are exact match
-			if (source === alias || source.startsWith(alias + "/")) {
+			if (source === alias || source.startsWith(`${alias}/`)) {
 				let relativePart = source.slice(alias.length);
-				
+
 				// Remove leading slash if present since we'll be joining paths
 				if (relativePart.startsWith("/")) {
 					relativePart = relativePart.slice(1);
 				}
-				
+
 				const resolvedPath = path.resolve(
 					resolutionBase.projectRoot,
 					targetPath,
@@ -511,7 +514,7 @@ export class PathResolverInterpreter
 		extensions: string[],
 	): string | null {
 		let lastError: Error | null = null;
-		
+
 		// Try exact path first
 		try {
 			if (this.fileExistsSync(basePath)) {
@@ -550,11 +553,12 @@ export class PathResolverInterpreter
 
 		// If we got here and we have a permission or access error,
 		// re-throw it so the caller can handle it appropriately
-		if (lastError && (
-			lastError.message.includes("Permission denied") ||
-			lastError.message.includes("EACCES") ||
-			lastError.message.includes("EPERM")
-		)) {
+		if (
+			lastError &&
+			(lastError.message.includes("Permission denied") ||
+				lastError.message.includes("EACCES") ||
+				lastError.message.includes("EPERM"))
+		) {
 			throw lastError;
 		}
 

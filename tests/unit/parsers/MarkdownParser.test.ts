@@ -164,8 +164,9 @@ And this is an [image reference][img1].
 			// Should find the reference link usage
 			const referenceLinks = result.ast.children.flatMap(
 				(child: any) =>
-					child.children?.filter((node: any) => node.type === "link_reference") ||
-					[],
+					child.children?.filter(
+						(node: any) => node.type === "link_reference",
+					) || [],
 			);
 			expect(referenceLinks).toHaveLength(2);
 		});

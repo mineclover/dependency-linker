@@ -3,8 +3,17 @@
  * Simple function-based API for easy adoption
  */
 
-import { statSync, promises as fsPromises, Dirent } from "node:fs";
-import { resolve, relative, dirname, basename, extname, isAbsolute, sep, join } from "node:path";
+import { type Dirent, promises as fsPromises, statSync } from "node:fs";
+import {
+	basename,
+	dirname,
+	extname,
+	isAbsolute,
+	join,
+	relative,
+	resolve,
+	sep,
+} from "node:path";
 import { MarkdownLinkExtractor } from "../extractors/MarkdownLinkExtractor";
 import { LinkDependencyInterpreter } from "../interpreters/LinkDependencyInterpreter";
 import type { AnalysisResult } from "../models/AnalysisResult";
@@ -227,18 +236,14 @@ export async function analyzeMarkdownFile(
 				absolute: resolvedPath,
 				relative: relative(process.cwd(), resolvedPath),
 				directory: dirname(resolvedPath),
-				relativeDirectory: dirname(
-					relative(process.cwd(), resolvedPath),
-				),
+				relativeDirectory: dirname(relative(process.cwd(), resolvedPath)),
 				fileName: basename(resolvedPath),
-				baseName: basename(
-					resolvedPath,
-					extname(resolvedPath),
-				),
+				baseName: basename(resolvedPath, extname(resolvedPath)),
 				extension: extname(resolvedPath),
 				projectRoot: process.cwd(),
-				isWithinProject: !relative(process.cwd(), resolvedPath)
-					.startsWith(".."),
+				isWithinProject: !relative(process.cwd(), resolvedPath).startsWith(
+					"..",
+				),
 				depth: 0,
 				separator: sep,
 				wasAbsolute: isAbsolute(filePath),

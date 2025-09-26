@@ -301,7 +301,8 @@ export class EnhancedExportExtractor
 			/export\s+(const|let|var)\s+([A-Za-z_$][A-Za-z0-9_$]*)/g;
 		let match: RegExpExecArray | null;
 
-		while ((match = variableExportPattern.exec(sourceCode)) !== null) {
+		match = variableExportPattern.exec(sourceCode);
+		while (match !== null) {
 			const varName = match[2];
 			// Check if we already have this variable
 			const exists = exportMethods.some(
@@ -315,13 +316,14 @@ export class EnhancedExportExtractor
 					location: { line: 1, column: 0 }, // Approximate location
 				});
 			}
+			match = variableExportPattern.exec(sourceCode);
 		}
 
 		// Pattern for export { ... } declarations
 		const namedExportPattern = /export\s*\{\s*([^}]+)\s*\}/g;
 		// Reset match variable for reuse
-		match = null;
-		while ((match = namedExportPattern.exec(sourceCode)) !== null) {
+		match = namedExportPattern.exec(sourceCode);
+		while (match !== null) {
 			const exportList = match[1];
 			// Parse individual exports like "internal as publicInternal"
 			const exports = exportList.split(",").map((exp) => exp.trim());
@@ -353,6 +355,7 @@ export class EnhancedExportExtractor
 					});
 				}
 			}
+			match = namedExportPattern.exec(sourceCode);
 		}
 	}
 

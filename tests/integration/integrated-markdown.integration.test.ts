@@ -1,4 +1,3 @@
-
 /**
  * Test script for integrated Markdown analysis using unified API
  */

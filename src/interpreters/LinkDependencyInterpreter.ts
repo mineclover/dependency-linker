@@ -467,15 +467,23 @@ export class LinkDependencyInterpreter
 			processed.status = LinkStatus.VALID;
 		} else if (dependency.isExternal) {
 			// Check security first for external links
-			if (this.options.securityChecks && this.isBlockedDomain(dependency.source)) {
+			if (
+				this.options.securityChecks &&
+				this.isBlockedDomain(dependency.source)
+			) {
 				processed.status = LinkStatus.SUSPICIOUS;
-			} else if (this.options.allowedDomains && this.options.allowedDomains.length > 0) {
+			} else if (
+				this.options.allowedDomains &&
+				this.options.allowedDomains.length > 0
+			) {
 				// Check if domain is in allowed list
 				const domain = this.extractDomain(dependency.source);
-				const isAllowed = this.options.allowedDomains.some(allowed => 
-					domain === allowed || domain?.endsWith('.' + allowed)
+				const isAllowed = this.options.allowedDomains.some(
+					(allowed) => domain === allowed || domain?.endsWith(`.${allowed}`),
 				);
-				processed.status = isAllowed ? LinkStatus.VALID : LinkStatus.UNREACHABLE;
+				processed.status = isAllowed
+					? LinkStatus.VALID
+					: LinkStatus.UNREACHABLE;
 			} else {
 				// For external links, assume accessible (full check would require async)
 				processed.status = LinkStatus.VALID;
@@ -506,14 +514,14 @@ export class LinkDependencyInterpreter
 		try {
 			const urlObj = new URL(url);
 			let hostname = urlObj.hostname;
-			
+
 			// Group subdomains with main domain (e.g., docs.github.com -> github.com)
-			const parts = hostname.split('.');
+			const parts = hostname.split(".");
 			if (parts.length > 2) {
 				// Keep the last two parts for most domains (github.com, example.com, etc.)
-				hostname = parts.slice(-2).join('.');
+				hostname = parts.slice(-2).join(".");
 			}
-			
+
 			return hostname;
 		} catch {
 			return undefined;
@@ -543,7 +551,7 @@ export class LinkDependencyInterpreter
 			if (dependency.type === "image") {
 				return DependencyCategory.IMAGE;
 			}
-			
+
 			if (dependency.extension) {
 				const ext = dependency.extension.toLowerCase();
 				if ([".md", ".markdown"].includes(ext)) {
@@ -616,11 +624,15 @@ export class LinkDependencyInterpreter
 		}
 
 		// Check for performance issues (large files)
-		if (dependency.isInternal && dependency.resolvedPath && this.options.performanceChecks) {
+		if (
+			dependency.isInternal &&
+			dependency.resolvedPath &&
+			this.options.performanceChecks
+		) {
 			try {
 				const stats = statSync(dependency.resolvedPath);
 				const maxSize = this.options.maxFileSizeWarning || 1024 * 1024; // 1MB default
-				
+
 				if (stats.size > maxSize) {
 					issues.push({
 						type: IssueType.PERFORMANCE_ISSUE,
@@ -643,7 +655,8 @@ export class LinkDependencyInterpreter
 					severity: IssueSeverity.WARNING,
 					message: `Image missing alt text: ${dependency.source}`,
 					dependency: dependency,
-					suggestion: "Add descriptive alt text for screen readers and accessibility",
+					suggestion:
+						"Add descriptive alt text for screen readers and accessibility",
 				});
 			}
 		}
@@ -669,20 +682,21 @@ export class LinkDependencyInterpreter
 			(d) =>
 				d.type === "image" || // Check LinkType first
 				(d.extension &&
-				[".png", ".jpg", ".jpeg", ".gif", ".svg"].includes(
-					d.extension.toLowerCase(),
-				)),
+					[".png", ".jpg", ".jpeg", ".gif", ".svg"].includes(
+						d.extension.toLowerCase(),
+					)),
 		).length;
 		const referenceLinks = dependencies.filter(
 			(d) =>
 				d.type === LinkType.REFERENCE || d.type === LinkType.IMAGE_REFERENCE,
 		).length;
-		
+
 		// Calculate link density as links per line
 		// Find the maximum line number to determine total lines
-		const maxLine = dependencies.length > 0 
-			? Math.max(...dependencies.map(d => d.line || 1))
-			: 1;
+		const maxLine =
+			dependencies.length > 0
+				? Math.max(...dependencies.map((d) => d.line || 1))
+				: 1;
 		const linkDensity = totalLinks > 0 ? totalLinks / maxLine : 0;
 
 		return {
@@ -710,7 +724,8 @@ export class LinkDependencyInterpreter
 			(i) => i.type === IssueType.BROKEN_LINK,
 		);
 		if (brokenLinkIssues.length > 0) {
-			const linkText = brokenLinkIssues.length === 1 ? "broken link" : "broken link(s)";
+			const linkText =
+				brokenLinkIssues.length === 1 ? "broken link" : "broken link(s)";
 			recommendations.push(`Fix ${brokenLinkIssues.length} ${linkText}`);
 		}
 
@@ -772,14 +787,14 @@ export class LinkDependencyInterpreter
 
 		let extension = extensionOrSource;
 		// If it's a full source URL/path, extract the extension
-		if (extensionOrSource.includes('.')) {
-			const parts = extensionOrSource.split('.');
-			extension = '.' + parts[parts.length - 1].split('?')[0].split('#')[0]; // Remove query params and fragments
+		if (extensionOrSource.includes(".")) {
+			const parts = extensionOrSource.split(".");
+			extension = `.${parts[parts.length - 1].split("?")[0].split("#")[0]}`; // Remove query params and fragments
 		}
 
 		const mimeTypes: Record<string, string> = {
 			".md": "text/markdown",
-			".markdown": "text/markdown", 
+			".markdown": "text/markdown",
 			".txt": "text/plain",
 			".html": "text/html",
 			".htm": "text/html",
@@ -807,15 +822,18 @@ export class LinkDependencyInterpreter
 	 * Check if a domain is in the blocked domains list
 	 */
 	private isBlockedDomain(source: string): boolean {
-		if (!this.options.blockedDomains || this.options.blockedDomains.length === 0) {
+		if (
+			!this.options.blockedDomains ||
+			this.options.blockedDomains.length === 0
+		) {
 			return false;
 		}
 
 		const domain = this.extractDomain(source);
 		if (!domain) return false;
 
-		return this.options.blockedDomains.some(blocked => 
-			domain.includes(blocked) || blocked.includes(domain)
+		return this.options.blockedDomains.some(
+			(blocked) => domain.includes(blocked) || blocked.includes(domain),
 		);
 	}
 }

@@ -1,4 +1,3 @@
-
 /**
  * Test script for path resolution utilities in AnalysisResult
  */
@@ -10,7 +9,10 @@ import {
 	batchResolveAnalysisPaths,
 } from "../../src/utils/PathUtils";
 
-import { analyzeMarkdownFile, analyzeTypeScriptFile } from "../../src/lib/index";
+import {
+	analyzeMarkdownFile,
+	analyzeTypeScriptFile,
+} from "../../src/lib/index";
 import { isAbsolute } from "node:path";
 
 describe("Path Resolution Integration", () => {

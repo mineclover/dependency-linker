@@ -1,4 +1,3 @@
-
 /**
  * Cross-platform path compatibility tests
  * Tests PathInfo functionality across different operating systems

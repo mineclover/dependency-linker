@@ -1,4 +1,3 @@
-
 /**
  * Test script for Markdown analyzer on current project documentation
  */

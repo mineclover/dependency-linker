@@ -1,4 +1,3 @@
-
 /**
  * Test script for enhanced path properties in AnalysisResult
  */

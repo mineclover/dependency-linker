@@ -135,7 +135,10 @@ export class MarkdownParser implements ILanguageParser {
 	/**
 	 * Parse markdown file and extract link dependencies
 	 */
-	async parse(filePath: string, content?: string): Promise<ParseResult & { metadata: MarkdownParseMetadata }> {
+	async parse(
+		filePath: string,
+		content?: string,
+	): Promise<ParseResult & { metadata: MarkdownParseMetadata }> {
 		const startTime = Date.now();
 		const errors: ParseError[] = [];
 		const warnings: ParseWarning[] = [];
@@ -344,18 +347,28 @@ export class MarkdownParser implements ILanguageParser {
 		codeBlocks: { language: string; content: string; position: NodePosition }[];
 	} {
 		const links: MarkdownLink[] = [];
-		const headings: { text: string; level: number; position: NodePosition }[] = [];
-		const codeBlocks: { language: string; content: string; position: NodePosition }[] = [];
+		const headings: { text: string; level: number; position: NodePosition }[] =
+			[];
+		const codeBlocks: {
+			language: string;
+			content: string;
+			position: NodePosition;
+		}[] = [];
 
 		const traverse = (node: MarkdownNode) => {
 			// Extract links and images
 			if (node.type === "link" || node.type === "image") {
-				const linkType = node.type === "image" ? LinkType.IMAGE : LinkType.INLINE;
+				const linkType =
+					node.type === "image" ? LinkType.IMAGE : LinkType.INLINE;
 				const url = node.url || "";
-				
+
 				// Determine if link is relative/internal/external
 				const isExternal = /^https?:\/\//.test(url);
-				const isRelative = !isExternal && (url.startsWith("./") || url.startsWith("../") || !url.startsWith("/"));
+				const isRelative =
+					!isExternal &&
+					(url.startsWith("./") ||
+						url.startsWith("../") ||
+						!url.startsWith("/"));
 				const isInternal = !isExternal;
 
 				links.push({
@@ -364,11 +377,14 @@ export class MarkdownParser implements ILanguageParser {
 					text: node.value,
 					title: node.title,
 					alt: node.alt,
-					position: node.position!,
+					position: node.position || {
+						start: { line: 0, column: 0, offset: 0 },
+						end: { line: 0, column: 0, offset: 0 },
+					},
 					isRelative,
 					isInternal,
 					isExternal,
-					extension: isExternal ? undefined : url.split('.').pop(),
+					extension: isExternal ? undefined : url.split(".").pop(),
 				});
 			}
 
@@ -377,11 +393,14 @@ export class MarkdownParser implements ILanguageParser {
 				// Determine heading level from the original line content
 				const text = node.value || "";
 				const level = 1; // Default to h1, could be enhanced to detect actual level
-				
+
 				headings.push({
 					text,
 					level,
-					position: node.position!,
+					position: node.position || {
+						start: { line: 0, column: 0, offset: 0 },
+						end: { line: 0, column: 0, offset: 0 },
+					},
 				});
 			}
 
@@ -389,11 +408,14 @@ export class MarkdownParser implements ILanguageParser {
 			if (node.type === "code_block") {
 				const language = node.value || "";
 				const content = ""; // Could extract actual code content if needed
-				
+
 				codeBlocks.push({
 					language,
 					content,
-					position: node.position!,
+					position: node.position || {
+						start: { line: 0, column: 0, offset: 0 },
+						end: { line: 0, column: 0, offset: 0 },
+					},
 				});
 			}
 
@@ -549,13 +571,14 @@ export class MarkdownParser implements ILanguageParser {
 		const imageRegex = /!\[([^\]]*)\]\(([^)\s]+)(?:\s+"([^"]*)")?\)/g;
 		let imageMatch: RegExpExecArray | null;
 		const imagePositions: Array<{ start: number; end: number }> = [];
-		
-		while ((imageMatch = imageRegex.exec(text)) !== null) {
-			imagePositions.push({ 
-				start: imageMatch.index, 
-				end: imageMatch.index + imageMatch[0].length 
+
+		imageMatch = imageRegex.exec(text);
+		while (imageMatch !== null) {
+			imagePositions.push({
+				start: imageMatch.index,
+				end: imageMatch.index + imageMatch[0].length,
 			});
-			
+
 			nodes.push({
 				type: "image",
 				url: imageMatch[2],
@@ -574,22 +597,25 @@ export class MarkdownParser implements ILanguageParser {
 					},
 				},
 			});
+			imageMatch = imageRegex.exec(text);
 		}
 
 		// Inline links: [text](url "title") - Skip positions that are already images
 		const linkRegex = /\[([^\]]*)\]\(([^)\s]+)(?:\s+"([^"]*)")?\)/g;
 		let linkMatch: RegExpExecArray | null;
-		
-		while ((linkMatch = linkRegex.exec(text)) !== null) {
+
+		linkMatch = linkRegex.exec(text);
+		while (linkMatch !== null) {
 			// Check if this link position overlaps with any image position
 			const linkStart = linkMatch.index;
 			const linkEnd = linkMatch.index + linkMatch[0].length;
-			
-			const isPartOfImage = imagePositions.some(pos => 
-				(linkStart >= pos.start - 1 && linkStart < pos.end) ||
-				(linkEnd > pos.start && linkEnd <= pos.end + 1)
+
+			const isPartOfImage = imagePositions.some(
+				(pos) =>
+					(linkStart >= pos.start - 1 && linkStart < pos.end) ||
+					(linkEnd > pos.start && linkEnd <= pos.end + 1),
 			);
-			
+
 			if (!isPartOfImage) {
 				nodes.push({
 					type: "link",
@@ -610,13 +636,15 @@ export class MarkdownParser implements ILanguageParser {
 					},
 				});
 			}
+			linkMatch = linkRegex.exec(text);
 		}
 
 		// Reference links: [text][ref]
 		const refLinkRegex = /\[([^\]]*)\]\[([^\]]*)\]/g;
 		let refLinkMatch: RegExpExecArray | null;
-		
-		while ((refLinkMatch = refLinkRegex.exec(text)) !== null) {
+
+		refLinkMatch = refLinkRegex.exec(text);
+		while (refLinkMatch !== null) {
 			nodes.push({
 				type: "link_reference",
 				value: refLinkMatch[1],
@@ -634,6 +662,7 @@ export class MarkdownParser implements ILanguageParser {
 					},
 				},
 			});
+			refLinkMatch = refLinkRegex.exec(text);
 		}
 
 		return nodes;

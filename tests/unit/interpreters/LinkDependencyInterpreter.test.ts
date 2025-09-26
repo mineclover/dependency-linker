@@ -76,7 +76,10 @@ describe("LinkDependencyInterpreter", () => {
 				}),
 			];
 
-			const result = await interpreter.interpret(dependencies, createMockContext());
+			const result = await interpreter.interpret(
+				dependencies,
+				createMockContext(),
+			);
 
 			expect(result.summary.totalLinks).toBe(2);
 			expect(result.summary.externalLinks).toBe(1);
@@ -109,7 +112,10 @@ describe("LinkDependencyInterpreter", () => {
 				}),
 			];
 
-			const result = await interpreter.interpret(dependencies, createMockContext());
+			const result = await interpreter.interpret(
+				dependencies,
+				createMockContext(),
+			);
 
 			expect(result.dependencies[0].category).toBe(DependencyCategory.EMAIL);
 			expect(result.dependencies[1].category).toBe(DependencyCategory.ANCHOR);
@@ -141,7 +147,10 @@ describe("LinkDependencyInterpreter", () => {
 			const interpreter = new LinkDependencyInterpreter({
 				validateFiles: true,
 			});
-			const result = await interpreter.interpret(dependencies, createMockContext());
+			const result = await interpreter.interpret(
+				dependencies,
+				createMockContext(),
+			);
 
 			expect(result.dependencies[0].status).toBe(LinkStatus.VALID);
 			expect(result.dependencies[0].fileExists).toBe(true);
@@ -162,7 +171,10 @@ describe("LinkDependencyInterpreter", () => {
 			const interpreter = new LinkDependencyInterpreter({
 				validateFiles: true,
 			});
-			const result = await interpreter.interpret(dependencies, createMockContext());
+			const result = await interpreter.interpret(
+				dependencies,
+				createMockContext(),
+			);
 
 			expect(result.issues).toHaveLength(2); // BROKEN_LINK + MISSING_FILE
 			expect(result.issues.some((i) => i.type === IssueType.BROKEN_LINK)).toBe(
@@ -185,7 +197,10 @@ describe("LinkDependencyInterpreter", () => {
 				securityChecks: true,
 				blockedDomains: ["suspicious-domain.com"],
 			});
-			const result = await interpreter.interpret(dependencies, createMockContext());
+			const result = await interpreter.interpret(
+				dependencies,
+				createMockContext(),
+			);
 
 			expect(result.dependencies[0].status).toBe(LinkStatus.SUSPICIOUS);
 			expect(
@@ -212,7 +227,10 @@ describe("LinkDependencyInterpreter", () => {
 				performanceChecks: true,
 				maxFileSizeWarning: 1024 * 1024, // 1MB
 			});
-			const result = await interpreter.interpret(dependencies, createMockContext());
+			const result = await interpreter.interpret(
+				dependencies,
+				createMockContext(),
+			);
 
 			expect(
 				result.issues.some((i) => i.type === IssueType.PERFORMANCE_ISSUE),
@@ -241,7 +259,10 @@ describe("LinkDependencyInterpreter", () => {
 			const interpreter = new LinkDependencyInterpreter({
 				accessibilityChecks: true,
 			});
-			const result = await interpreter.interpret(dependencies, createMockContext());
+			const result = await interpreter.interpret(
+				dependencies,
+				createMockContext(),
+			);
 
 			const accessibilityIssues = result.issues.filter(
 				(i) => i.type === IssueType.ACCESSIBILITY_ISSUE,
@@ -271,7 +292,10 @@ describe("LinkDependencyInterpreter", () => {
 				validateFiles: true,
 				accessibilityChecks: true,
 			});
-			const result = await interpreter.interpret(dependencies, createMockContext());
+			const result = await interpreter.interpret(
+				dependencies,
+				createMockContext(),
+			);
 
 			expect(result.recommendations).toContain("Fix 1 broken link");
 			expect(
@@ -287,7 +311,10 @@ describe("LinkDependencyInterpreter", () => {
 				createMockDependency({ source: "https://docs.github.com/guide" }),
 			];
 
-			const result = await interpreter.interpret(dependencies, createMockContext());
+			const result = await interpreter.interpret(
+				dependencies,
+				createMockContext(),
+			);
 
 			expect(result.summary.uniqueDomains).toBe(2); // example.com, github.com (docs.github.com counts as github.com)
 		});
@@ -299,7 +326,10 @@ describe("LinkDependencyInterpreter", () => {
 				createMockDependency({ line: 10 }),
 			];
 
-			const result = await interpreter.interpret(dependencies, createMockContext());
+			const result = await interpreter.interpret(
+				dependencies,
+				createMockContext(),
+			);
 
 			expect(result.summary.linkDensity).toBe(3 / 10); // 3 links over 10 lines
 		});
@@ -313,7 +343,10 @@ describe("LinkDependencyInterpreter", () => {
 			const interpreter = new LinkDependencyInterpreter({
 				allowedDomains: ["allowed.com"],
 			});
-			const result = await interpreter.interpret(dependencies, createMockContext());
+			const result = await interpreter.interpret(
+				dependencies,
+				createMockContext(),
+			);
 
 			expect(result.dependencies[0].status).toBe(LinkStatus.VALID);
 			expect(result.dependencies[1].status).toBe(LinkStatus.UNREACHABLE);
@@ -321,7 +354,10 @@ describe("LinkDependencyInterpreter", () => {
 
 		it("should include timing information", async () => {
 			const dependencies = [createMockDependency()];
-			const result = await interpreter.interpret(dependencies, createMockContext());
+			const result = await interpreter.interpret(
+				dependencies,
+				createMockContext(),
+			);
 
 			expect(result.metadata.analysisTime).toBeGreaterThan(0);
 			expect(typeof result.metadata.analysisTime).toBe("number");
@@ -353,7 +389,10 @@ describe("LinkDependencyInterpreter", () => {
 					}),
 				];
 
-				const result = await interpreter.interpret(dependencies, createMockContext());
+				const result = await interpreter.interpret(
+					dependencies,
+					createMockContext(),
+				);
 				expect(result.dependencies[0].mimeType).toBe(testCase.expected);
 
 				// Clean up
@@ -395,7 +434,9 @@ describe("LinkDependencyInterpreter", () => {
 			expect(config.defaultOptions?.custom.validateFiles).toBe(false);
 			expect(config.defaultOptions?.custom.checkExternalLinks).toBe(true);
 			expect(config.defaultOptions?.custom.securityChecks).toBe(false);
-			expect(config.defaultOptions?.custom.maxFileSizeWarning).toBe(5 * 1024 * 1024);
+			expect(config.defaultOptions?.custom.maxFileSizeWarning).toBe(
+				5 * 1024 * 1024,
+			);
 		});
 
 		it("should merge options with defaults", () => {

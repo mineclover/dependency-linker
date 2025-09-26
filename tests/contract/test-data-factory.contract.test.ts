@@ -3,7 +3,15 @@
  * Validates test data factory implementations for mock creation and temp file management
  */
 
-import { existsSync, writeFileSync, unlinkSync, mkdirSync, mkdtempSync, rmSync, readFileSync } from "node:fs";
+import {
+	existsSync,
+	writeFileSync,
+	unlinkSync,
+	mkdirSync,
+	mkdtempSync,
+	rmSync,
+	readFileSync,
+} from "node:fs";
 import { join, dirname } from "node:path";
 import { tmpdir } from "node:os";
 import { createPathInfo } from "../../src/models/PathInfo";

@@ -3,8 +3,16 @@
  * Handles path normalization, validation, and platform-specific operations
  */
 
-import { existsSync, readdirSync } from "node:fs";
-import { basename, dirname, extname, isAbsolute as pathIsAbsolute, relative, resolve, sep, normalize, join } from "node:path";
+import { existsSync } from "node:fs";
+import {
+	basename,
+	extname,
+	join,
+	normalize,
+	isAbsolute as pathIsAbsolute,
+	relative,
+	resolve,
+} from "node:path";
 import type { Logger } from "../api/types";
 import { createLogger } from "./logger";
 
@@ -169,9 +177,7 @@ function handleSpecialCharacters(
 			// Handle reserved names
 			const windowsReserved = /^(CON|PRN|AUX|NUL|COM[1-9]|LPT[1-9])(\.|$)/i;
 			if (windowsReserved.test(basename(processed))) {
-				logger.warn(
-					`Windows reserved name detected: ${basename(processed)}`,
-				);
+				logger.warn(`Windows reserved name detected: ${basename(processed)}`);
 			}
 			break;
 		}
