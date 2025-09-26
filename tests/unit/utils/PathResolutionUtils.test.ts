@@ -20,6 +20,7 @@ import {
 import * as fs from "node:fs";
 import * as path from "node:path";
 import { jest } from "@jest/globals";
+import type { PathLike } from "node:fs";
 
 // Mock fs module
 jest.mock("node:fs", () => ({
@@ -56,7 +57,7 @@ describe("PathResolutionUtils", () => {
 		});
 
 		it("should resolve relative paths", async () => {
-			mockFs.promises.access.mockImplementation(async (filePath: string) => {
+			mockFs.promises.access.mockImplementation(async (filePath: PathLike) => {
 				if (filePath === "/Users/test/project/src/components/utils/helper.ts") {
 					return Promise.resolve();
 				}
@@ -69,7 +70,7 @@ describe("PathResolutionUtils", () => {
 		});
 
 		it("should try extensions when file not found", async () => {
-			mockFs.promises.access.mockImplementation(async (filePath: string) => {
+			mockFs.promises.access.mockImplementation(async (filePath: PathLike) => {
 				if (filePath === "/Users/test/project/src/components/api.tsx") {
 					return Promise.resolve();
 				}
@@ -90,7 +91,7 @@ describe("PathResolutionUtils", () => {
 				},
 			};
 
-			mockFs.promises.access.mockImplementation(async (filePath: string) => {
+			mockFs.promises.access.mockImplementation(async (filePath: PathLike) => {
 				if (filePath === "/Users/test/project/src/components/Button.ts") {
 					return Promise.resolve();
 				}
@@ -124,7 +125,7 @@ describe("PathResolutionUtils", () => {
 
 			const sources = ["./utils/a", "./utils/b", "./utils/c"];
 
-			mockFs.promises.access.mockImplementation(async (filePath: string) => {
+			mockFs.promises.access.mockImplementation(async (filePath: PathLike) => {
 				const validPaths = [
 					"/Users/test/project/src/components/utils/a.ts",
 					"/Users/test/project/src/components/utils/b.ts",
@@ -190,7 +191,7 @@ describe("PathResolutionUtils", () => {
 
 	describe("tryResolveWithExtensions", () => {
 		it("should return exact path if exists", async () => {
-			mockFs.promises.access.mockImplementation(async (filePath: string) => {
+			mockFs.promises.access.mockImplementation(async (filePath: PathLike) => {
 				if (filePath === "/Users/test/project/exact.ts") {
 					return Promise.resolve();
 				}
@@ -204,7 +205,7 @@ describe("PathResolutionUtils", () => {
 		});
 
 		it("should try with extensions", async () => {
-			mockFs.promises.access.mockImplementation(async (filePath: string) => {
+			mockFs.promises.access.mockImplementation(async (filePath: PathLike) => {
 				if (filePath === "/Users/test/project/file.tsx") {
 					return Promise.resolve();
 				}
@@ -219,7 +220,7 @@ describe("PathResolutionUtils", () => {
 		});
 
 		it("should try index files", async () => {
-			mockFs.promises.access.mockImplementation(async (filePath: string) => {
+			mockFs.promises.access.mockImplementation(async (filePath: PathLike) => {
 				if (filePath === "/Users/test/project/dir/index.ts") {
 					return Promise.resolve();
 				}

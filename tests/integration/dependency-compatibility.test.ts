@@ -69,10 +69,10 @@ describe("Dependency Analysis Compatibility", () => {
 			if (newDependencies && legacyDependencies) {
 				const legacyDepsArray = Array.isArray(legacyDependencies)
 					? legacyDependencies
-					: legacyDependencies.imports || [];
+					: legacyDependencies.dependencies || legacyDependencies.imports || [];
 				const newDepsArray = Array.isArray(newDependencies)
 					? newDependencies
-					: newDependencies.imports || [];
+					: newDependencies.dependencies || newDependencies.imports || [];
 
 				if (legacyDepsArray.length > 0 && newDepsArray.length > 0) {
 					expect(newDepsArray.length).toBeGreaterThan(0);

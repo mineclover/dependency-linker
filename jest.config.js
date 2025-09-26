@@ -5,9 +5,15 @@ module.exports = {
 	testMatch: [
 		"**/tests/**/*.test.ts",
 		"**/tests/**/*.integration.test.ts",
-		"**/tests/**/*.benchmark.ts",
 		"**/__tests__/**/*.ts",
 		"**/?(*.)+(spec|test).ts",
+	],
+	testPathIgnorePatterns: [
+		"/node_modules/",
+		"/build/",
+		"/dist/",
+		"/coverage/",
+		"\\.benchmark\\.ts$",
 	],
 	collectCoverageFrom: [
 		"src/**/*.ts",

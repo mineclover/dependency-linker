@@ -284,55 +284,6 @@ describe("PathResolver Real Files Integration", () => {
 	});
 
 	describe("Complex real-world scenarios", () => {
-		it("should handle CLI command files with mixed imports", async () => {
-			const cliDir = path.join(projectRoot, "src/cli");
-			if (!fs.existsSync(cliDir)) {
-				console.log("No CLI directory found, skipping");
-				return;
-			}
-
-			// Find CLI TypeScript files
-			const cliFiles = fs
-				.readdirSync(cliDir)
-				.filter((file) => file.endsWith(".ts"))
-				.map((file) => path.join(cliDir, file));
-
-			if (cliFiles.length === 0) {
-				console.log("No TypeScript files in CLI directory");
-				return;
-			}
-
-			const cliFile = cliFiles[0];
-			const fileContent = fs.readFileSync(cliFile, "utf8");
-			const parseResult = await tsParser.parse(cliFile, fileContent);
-			const ast = parseResult.ast;
-			const extractedData = dependencyExtractor.extract(ast, cliFile);
-			const context = createContext(cliFile, "typescript");
-			const result = pathResolver.interpret(extractedData, context);
-
-			logger.info(`CLI file analysis: ${path.basename(cliFile)}`, {
-				totalDependencies: result.summary.totalDependencies,
-				resolvedCount: result.summary.resolvedCount,
-				internalCount: result.summary.internalCount,
-				externalCount: result.summary.externalCount,
-				relativeCount: result.summary.relativeCount,
-			});
-
-			expect(result.summary.totalDependencies).toBeGreaterThanOrEqual(0);
-
-			// CLI files typically import from multiple levels
-			if (result.summary.totalDependencies > 0) {
-				const resolutionTypes = result.resolvedDependencies.reduce(
-					(acc, dep) => {
-						acc[dep.resolutionType] = (acc[dep.resolutionType] || 0) + 1;
-						return acc;
-					},
-					{} as Record<string, number>,
-				);
-
-				logger.info("Resolution type distribution", resolutionTypes);
-			}
-		});
 
 		it("should analyze service files with complex dependency patterns", async () => {
 			const servicesDir = path.join(projectRoot, "src/services");

@@ -5,6 +5,9 @@
  * Focuses on solving parser registration issues and setup/teardown complexity.
  */
 
+// Import real types from implementation
+import type { AnalysisResult } from "../../../src/models/AnalysisResult";
+
 // Type definitions for missing types
 export interface AnalysisEngine {
 	analyze(filePath: string): Promise<AnalysisResult>;
@@ -29,13 +32,6 @@ export interface Tree {
 	getLanguage(): string;
 }
 
-export interface AnalysisResult {
-	filePath: string;
-	dependencies: any[];
-	exports: any[];
-	parseTime: number;
-	errors?: string[];
-}
 
 export interface LanguageParser {
 	supports(language: string): boolean;

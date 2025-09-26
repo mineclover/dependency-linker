@@ -23,8 +23,10 @@ import {
 	UTILITY_CONTRACT_SCENARIOS,
 	FileAnalysisRequest,
 	Tree,
-	AnalysisResult,
 } from "../../specs/005-test-optimization/contracts/test-utilities.contract";
+import { AnalysisResult, AnalysisMetadata } from "../../src/models/AnalysisResult";
+import { AnalysisError } from "../../src/models/AnalysisError";
+import { PerformanceMetrics } from "../../src/models/PerformanceMetrics";
 
 // Using types from contract interface
 
@@ -210,14 +212,21 @@ describe("ITestDataFactory Contract Tests", () => {
 			const result = factory.createMockAnalysisResult();
 
 			expect(result).toHaveProperty("filePath");
-			expect(result).toHaveProperty("dependencies");
-			expect(result).toHaveProperty("exports");
-			expect(result).toHaveProperty("parseTime");
+			expect(result).toHaveProperty("pathInfo");
+			expect(result).toHaveProperty("language");
+			expect(result).toHaveProperty("extractedData");
+			expect(result).toHaveProperty("interpretedData");
+			expect(result).toHaveProperty("performanceMetrics");
+			expect(result).toHaveProperty("errors");
+			expect(result).toHaveProperty("metadata");
 
 			expect(typeof result.filePath).toBe("string");
-			expect(Array.isArray(result.dependencies)).toBe(true);
-			expect(Array.isArray(result.exports)).toBe(true);
-			expect(typeof result.parseTime).toBe("number");
+			expect(typeof result.language).toBe("string");
+			expect(typeof result.extractedData).toBe("object");
+			expect(typeof result.interpretedData).toBe("object");
+			expect(typeof result.performanceMetrics).toBe("object");
+			expect(Array.isArray(result.errors)).toBe(true);
+			expect(typeof result.metadata).toBe("object");
 		});
 
 		test("createTempFiles should return valid context structure", async () => {
@@ -273,13 +282,16 @@ describe("ITestDataFactory Contract Tests", () => {
 		test("should support overrides in analysis result", () => {
 			const customResult = factory.createMockAnalysisResult({
 				filePath: "/custom.ts",
-				dependencies: ["react", "lodash"],
-				errors: ["syntax error"],
+				extractedData: {
+					dependency: {
+						dependencies: ["react", "lodash"]
+					}
+				}
 			});
 
 			expect(customResult.filePath).toBe("/custom.ts");
-			expect(customResult.dependencies).toEqual(["react", "lodash"]);
-			expect(customResult.errors).toEqual(["syntax error"]);
+			expect(customResult.extractedData.dependency.dependencies).toEqual(["react", "lodash"]);
+			expect(Array.isArray(customResult.errors)).toBe(true);
 		});
 	});
 
@@ -412,7 +424,7 @@ describe("ITestDataFactory Contract Tests", () => {
 
 			// Manually delete one file
 			const file1Path = context.files.get("test1.ts");
-			if (file1Path && fs.existsSync(file1Path)) {
+			if (file1Path && existsSync(file1Path)) {
 				unlinkSync(file1Path);
 			}
 
