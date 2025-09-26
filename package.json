@@ -1,6 +1,6 @@
 {
 	"name": "@context-action/dependency-linker",
-	"version": "2.3.0",
+	"version": "2.3.1",
 	"description": "Multi-language AST-based code analysis framework with extensible plugin architecture. Supports TypeScript, Go, Java, Markdown, and custom analysis types through tree-sitter parsers.",
 	"main": "dist/index.js",
 	"types": "dist/index.d.ts",
@@ -14,6 +14,10 @@
 		"test": "jest",
 		"test:watch": "jest --watch",
 		"test:coverage": "jest --coverage",
+		"test:unit": "jest tests/unit/",
+		"test:integration": "jest tests/integration/",
+		"test:contract": "jest tests/contract/",
+		"test:performance": "jest tests/performance/",
 		"lint": "biome check src/",
 		"lint:fix": "biome check --write src/",
 		"format": "biome format --write .",
