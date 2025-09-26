@@ -4,9 +4,9 @@
  */
 
 import { describe, test, expect, beforeEach, afterEach } from "@jest/globals";
-import { promises as fs } from "fs";
-import * as path from "path";
-import * as os from "os";
+import { promises as fs } from "node:fs";
+import { join } from "node:path";
+import { tmpdir } from "node:os";
 
 describe("Multi-Language Analysis Integration", () => {
 	let testDir: string;
@@ -14,7 +14,7 @@ describe("Multi-Language Analysis Integration", () => {
 
 	beforeEach(async () => {
 		// Create temporary test directory
-		testDir = await fs.mkdtemp(path.join(os.tmpdir(), "multi-lang-test-"));
+		testDir = await fs.mkdtemp(join(tmpdir(), "multi-lang-test-"));
 
 		// Mock analysis engine - will be replaced with real implementation
 		analysisEngine = {

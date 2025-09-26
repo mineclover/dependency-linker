@@ -7,6 +7,7 @@ import { describe, test, expect, beforeEach, afterEach } from "@jest/globals";
 import { CacheManager } from "../../../src/services/CacheManager";
 import type { CacheEntry } from "../../../src/models/CacheEntry";
 import type { AnalysisResult } from "../../../src/models/AnalysisResult";
+import { createPathInfo } from "../../../src/models/PathInfo";
 
 describe("CacheManager", () => {
 	let cacheManager: CacheManager;
@@ -131,7 +132,6 @@ describe("CacheManager", () => {
 				extractors: ["dependency"],
 				interpreters: ["dependency-analysis"],
 			};
-			const { createPathInfo } = require("../../../src/models/PathInfo");
 			const result: AnalysisResult = {
 				filePath,
 				pathInfo: createPathInfo(filePath),
@@ -164,7 +164,6 @@ describe("CacheManager", () => {
 			const filePath = "config-test.ts";
 			const config1 = { extractors: ["dependency"] };
 			const config2 = { extractors: ["identifier"] };
-			const { createPathInfo } = require("../../../src/models/PathInfo");
 			const result: AnalysisResult = {
 				filePath,
 				pathInfo: createPathInfo(filePath),

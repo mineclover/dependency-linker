@@ -3,8 +3,9 @@
  * Tests complete analysis pipeline from directory scanning to optimization identification
  */
 
-import * as fs from "fs";
-import * as path from "path";
+import { existsSync, mkdirSync, writeFileSync, mkdtempSync } from "node:fs";
+import { join, dirname } from "node:path";
+import { tmpdir } from "node:os";
 import { TestOptimizationUtils } from "../../helpers/optimization";
 import { BenchmarkSuite } from "../../helpers/benchmark";
 import { TestDataFactory } from "../../helpers/factories";
@@ -13,18 +14,17 @@ import { TestDataFactory } from "../../helpers/factories";
 async function createTempFiles(
 	files: Array<{ path: string; content: string }>,
 ): Promise<{ cleanup: () => Promise<void>; rootDir: string }> {
-	const os = require("os");
-	const tempDir = fs.mkdtempSync(path.join(os.tmpdir(), "test-optimization-"));
+	const tempDir = mkdtempSync(join(tmpdir(), "test-optimization-"));
 
 	for (const file of files) {
-		const filePath = path.join(tempDir, file.path);
-		const dirPath = path.dirname(filePath);
+		const filePath = join(tempDir, file.path);
+		const dirPath = dirname(filePath);
 
-		if (!fs.existsSync(dirPath)) {
-			fs.mkdirSync(dirPath, { recursive: true });
+		if (!existsSync(dirPath)) {
+			mkdirSync(dirPath, { recursive: true });
 		}
 
-		fs.writeFileSync(filePath, file.content);
+		writeFileSync(filePath, file.content);
 	}
 
 	return {

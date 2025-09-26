@@ -4,6 +4,7 @@
  */
 
 import { describe, test, expect } from "@jest/globals";
+import { LogLevel } from "../../../src/api/types";
 
 describe("API Compatibility Layer", () => {
 	describe("Main Module Exports", () => {
@@ -48,13 +49,11 @@ describe("API Compatibility Layer", () => {
 
 		test("should maintain TypeScript types compatibility", () => {
 			// Import types to verify they exist and are properly exported
-			const types = require("../../../src/api/types");
-
-			expect(types.LogLevel).toBeDefined();
-			expect(types.LogLevel.ERROR).toBe("error");
-			expect(types.LogLevel.WARN).toBe("warn");
-			expect(types.LogLevel.INFO).toBe("info");
-			expect(types.LogLevel.DEBUG).toBe("debug");
+			expect(LogLevel).toBeDefined();
+			expect(LogLevel.ERROR).toBe("error");
+			expect(LogLevel.WARN).toBe("warn");
+			expect(LogLevel.INFO).toBe("info");
+			expect(LogLevel.DEBUG).toBe("debug");
 		});
 	});
 

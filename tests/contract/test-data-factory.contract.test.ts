@@ -3,9 +3,10 @@
  * Validates test data factory implementations for mock creation and temp file management
  */
 
-import * as fs from "fs";
-import * as path from "path";
-import * as os from "os";
+import { existsSync, writeFileSync, unlinkSync, mkdirSync, mkdtempSync, rmSync, readFileSync } from "node:fs";
+import { join, dirname } from "node:path";
+import { tmpdir } from "node:os";
+import { createPathInfo } from "../../src/models/PathInfo";
 import {
 	ITestDataFactory,
 	TempFileSpec,
@@ -61,7 +62,6 @@ class MockTestDataFactory implements ITestDataFactory {
 	createMockAnalysisResult(
 		overrides: Partial<AnalysisResult> = {},
 	): AnalysisResult {
-		const { createPathInfo } = require("../../src/models/PathInfo");
 		const filePath = overrides.filePath || "/mock/test.ts";
 
 		return {
@@ -95,19 +95,19 @@ class MockTestDataFactory implements ITestDataFactory {
 			throw new Error("At least one file specification is required");
 		}
 
-		const tempDir = fs.mkdtempSync(path.join(os.tmpdir(), "test-factory-"));
+		const tempDir = mkdtempSync(join(tmpdir(), "test-factory-"));
 		const fileMap = new Map<string, string>();
 
 		try {
 			for (const fileSpec of files) {
-				const fullPath = path.join(tempDir, fileSpec.path);
-				const dir = path.dirname(fullPath);
+				const fullPath = join(tempDir, fileSpec.path);
+				const dir = dirname(fullPath);
 
 				// Ensure directory exists
-				fs.mkdirSync(dir, { recursive: true });
+				mkdirSync(dir, { recursive: true });
 
 				// Write file
-				fs.writeFileSync(fullPath, fileSpec.content, "utf8");
+				writeFileSync(fullPath, fileSpec.content, "utf8");
 				fileMap.set(fileSpec.path, fullPath);
 			}
 
@@ -116,8 +116,8 @@ class MockTestDataFactory implements ITestDataFactory {
 				files: fileMap,
 				cleanup: async () => {
 					try {
-						if (fs.existsSync(tempDir)) {
-							fs.rmSync(tempDir, { recursive: true, force: true });
+						if (existsSync(tempDir)) {
+							rmSync(tempDir, { recursive: true, force: true });
 						}
 					} catch (error) {
 						console.warn(`Failed to cleanup temp directory ${tempDir}:`, error);
@@ -136,8 +136,8 @@ class MockTestDataFactory implements ITestDataFactory {
 		} catch (error) {
 			// Clean up on error
 			try {
-				if (fs.existsSync(tempDir)) {
-					fs.rmSync(tempDir, { recursive: true, force: true });
+				if (existsSync(tempDir)) {
+					rmSync(tempDir, { recursive: true, force: true });
 				}
 			} catch (cleanupError) {
 				console.warn(
@@ -310,19 +310,19 @@ describe("ITestDataFactory Contract Tests", () => {
 
 			expect(file1Path).toBeDefined();
 			expect(file2Path).toBeDefined();
-			expect(fs.existsSync(file1Path!)).toBe(true);
-			expect(fs.existsSync(file2Path!)).toBe(true);
+			expect(existsSync(file1Path!)).toBe(true);
+			expect(existsSync(file2Path!)).toBe(true);
 
 			// Content should match
-			expect(fs.readFileSync(file1Path!, "utf8")).toBe("const a = 1;");
-			expect(fs.readFileSync(file2Path!, "utf8")).toBe("const b = 2;");
+			expect(readFileSync(file1Path!, "utf8")).toBe("const a = 1;");
+			expect(readFileSync(file2Path!, "utf8")).toBe("const b = 2;");
 
 			await context.cleanup();
 
 			// Files should be cleaned up
-			expect(fs.existsSync(file1Path!)).toBe(false);
-			expect(fs.existsSync(file2Path!)).toBe(false);
-			expect(fs.existsSync(context.rootDir)).toBe(false);
+			expect(existsSync(file1Path!)).toBe(false);
+			expect(existsSync(file2Path!)).toBe(false);
+			expect(existsSync(context.rootDir)).toBe(false);
 		});
 
 		test("should handle nested directory structures", async () => {
@@ -344,14 +344,14 @@ describe("ITestDataFactory Contract Tests", () => {
 			files.forEach((file) => {
 				const fullPath = context.files.get(file.path);
 				expect(fullPath).toBeDefined();
-				expect(fs.existsSync(fullPath!)).toBe(true);
-				expect(fs.readFileSync(fullPath!, "utf8")).toBe(file.content);
+				expect(existsSync(fullPath!)).toBe(true);
+				expect(readFileSync(fullPath!, "utf8")).toBe(file.content);
 			});
 
 			await context.cleanup();
 
 			// Everything should be cleaned up
-			expect(fs.existsSync(context.rootDir)).toBe(false);
+			expect(existsSync(context.rootDir)).toBe(false);
 		});
 
 		test("should support language specification for files", async () => {
@@ -371,7 +371,7 @@ describe("ITestDataFactory Contract Tests", () => {
 			files.forEach((file) => {
 				const fullPath = context.files.get(file.path);
 				expect(fullPath).toBeDefined();
-				expect(fs.existsSync(fullPath!)).toBe(true);
+				expect(existsSync(fullPath!)).toBe(true);
 			});
 
 			await context.cleanup();
@@ -388,7 +388,7 @@ describe("ITestDataFactory Contract Tests", () => {
 			const rootDir = context.rootDir;
 
 			await context.cleanup();
-			expect(fs.existsSync(rootDir)).toBe(false);
+			expect(existsSync(rootDir)).toBe(false);
 
 			// Second cleanup should not throw
 			await expect(context.cleanup()).resolves.not.toThrow();
@@ -405,12 +405,12 @@ describe("ITestDataFactory Contract Tests", () => {
 			// Manually delete one file
 			const file1Path = context.files.get("test1.ts");
 			if (file1Path && fs.existsSync(file1Path)) {
-				fs.unlinkSync(file1Path);
+				unlinkSync(file1Path);
 			}
 
 			// Cleanup should still work
 			await expect(context.cleanup()).resolves.not.toThrow();
-			expect(fs.existsSync(context.rootDir)).toBe(false);
+			expect(existsSync(context.rootDir)).toBe(false);
 		});
 
 		test("should handle permission errors gracefully", async () => {
@@ -440,7 +440,7 @@ describe("ITestDataFactory Contract Tests", () => {
 
 			// All contexts should have created directories
 			contexts.forEach((context) => {
-				expect(fs.existsSync(context.rootDir)).toBe(true);
+				expect(existsSync(context.rootDir)).toBe(true);
 			});
 
 			// Cleanup all
@@ -448,7 +448,7 @@ describe("ITestDataFactory Contract Tests", () => {
 
 			// All should be cleaned up
 			contexts.forEach((context) => {
-				expect(fs.existsSync(context.rootDir)).toBe(false);
+				expect(existsSync(context.rootDir)).toBe(false);
 			});
 		});
 	});

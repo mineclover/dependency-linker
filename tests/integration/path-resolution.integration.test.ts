@@ -11,11 +11,12 @@ import {
 } from "../../src/utils/PathUtils";
 
 import { analyzeMarkdownFile, analyzeTypeScriptFile } from "../../src/lib/index";
+import { isAbsolute } from "node:path";
 
-async function testPathResolution() {
-	console.log("🔧 Testing Path Resolution Utilities\n");
+describe("Path Resolution Integration", () => {
+	test("should resolve paths correctly", async () => {
+		console.log("🔧 Testing Path Resolution Utilities\n");
 
-	try {
 		// Test 1: Basic path resolution
 		console.log("📄 Test 1: Basic Path Resolution");
 
@@ -101,7 +102,7 @@ async function testPathResolution() {
 		const mdResult = await analyzeMarkdownFile("./README.md");
 		console.log(`   Markdown file path: ${mdResult.filePath}`);
 		console.log(
-			`   Is absolute: ${require("node:path").isAbsolute(mdResult.filePath) ? "✅" : "❌"}`,
+			`   Is absolute: ${isAbsolute(mdResult.filePath) ? "✅" : "❌"}`,
 		);
 		console.log(
 			`   Relative to project: ${toProjectRelativePath(mdResult.filePath)}`,
@@ -112,7 +113,7 @@ async function testPathResolution() {
 		const tsResult = await analyzeTypeScriptFile("./src/lib/index.ts");
 		console.log(`   TypeScript file path: ${tsResult.filePath}`);
 		console.log(
-			`   Is absolute: ${require("node:path").isAbsolute(tsResult.filePath) ? "✅" : "❌"}`,
+			`   Is absolute: ${isAbsolute(tsResult.filePath) ? "✅" : "❌"}`,
 		);
 		console.log(
 			`   Relative to project: ${toProjectRelativePath(tsResult.filePath)}`,
@@ -148,14 +149,5 @@ async function testPathResolution() {
 		console.log("✅ batchResolveAnalysisPaths() - Batch processing");
 		console.log("✅ Integration with AnalysisResult interface");
 		console.log("✅ Cross-platform path handling");
-	} catch (error) {
-		console.error("❌ Test failed:", error);
-		process.exit(1);
-	}
-}
-
-// Run the test
-testPathResolution().catch((error) => {
-	console.error("❌ Test execution failed:", error);
-	process.exit(1);
+	});
 });
