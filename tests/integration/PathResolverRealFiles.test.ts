@@ -30,20 +30,26 @@ describe("PathResolver Real Files Integration", () => {
 	});
 
 	// Helper function to create context
-	const createContext = (filePath: string, language: string): InterpreterContext => ({
+	const createContext = (
+		filePath: string,
+		language: string,
+	): InterpreterContext => ({
 		filePath,
 		language,
 		metadata: {},
 		timestamp: new Date(),
 		projectContext: {
 			rootPath: projectRoot,
-			projectType: "library"
-		}
+			projectType: "library",
+		},
 	});
 
 	describe("TypeScript files", () => {
 		it("should resolve paths in PathResolverInterpreter.ts", async () => {
-			const filePath = path.join(projectRoot, "src/interpreters/PathResolverInterpreter.ts");
+			const filePath = path.join(
+				projectRoot,
+				"src/interpreters/PathResolverInterpreter.ts",
+			);
 
 			// Skip if file doesn't exist
 			if (!fs.existsSync(filePath)) {
@@ -75,31 +81,37 @@ describe("PathResolver Real Files Integration", () => {
 				totalDependencies: result.summary.totalDependencies,
 				resolvedCount: result.summary.resolvedCount,
 				internalCount: result.summary.internalCount,
-				externalCount: result.summary.externalCount
+				externalCount: result.summary.externalCount,
 			});
 
 			expect(result.resolvedDependencies.length).toBeGreaterThan(0);
 			expect(result.summary.totalDependencies).toBeGreaterThan(0);
 
 			// Check for specific expected imports
-			const importSources = result.resolvedDependencies.map(dep => dep.originalSource);
+			const importSources = result.resolvedDependencies.map(
+				(dep) => dep.originalSource,
+			);
 			expect(importSources).toContain("node:path");
 			expect(importSources).toContain("node:fs");
 
 			// Verify resolution types
-			const builtinImports = result.resolvedDependencies.filter(dep => dep.resolutionType === "builtin");
-			const relativeImports = result.resolvedDependencies.filter(dep => dep.resolutionType === "relative");
+			const builtinImports = result.resolvedDependencies.filter(
+				(dep) => dep.resolutionType === "builtin",
+			);
+			const relativeImports = result.resolvedDependencies.filter(
+				(dep) => dep.resolutionType === "relative",
+			);
 
 			expect(builtinImports.length).toBeGreaterThan(0);
 			expect(relativeImports.length).toBeGreaterThan(0);
 
 			// Log some examples
-			result.resolvedDependencies.slice(0, 5).forEach(dep => {
+			result.resolvedDependencies.slice(0, 5).forEach((dep) => {
 				logger.debug("Dependency resolution", {
 					source: dep.originalSource,
 					resolved: dep.resolvedPath,
 					type: dep.resolutionType,
-					exists: dep.exists
+					exists: dep.exists,
 				});
 			});
 		});
@@ -121,20 +133,24 @@ describe("PathResolver Real Files Integration", () => {
 
 			logger.info("AnalysisResult.ts analysis", {
 				totalDependencies: result.summary.totalDependencies,
-				resolvedCount: result.summary.resolvedCount
+				resolvedCount: result.summary.resolvedCount,
 			});
 
 			expect(result.summary.totalDependencies).toBeGreaterThan(0);
 
 			// Should have relative imports to other models
-			const relativeImports = result.resolvedDependencies.filter(dep =>
-				dep.resolutionType === "relative" && dep.originalSource.includes("./")
+			const relativeImports = result.resolvedDependencies.filter(
+				(dep) =>
+					dep.resolutionType === "relative" &&
+					dep.originalSource.includes("./"),
 			);
 			expect(relativeImports.length).toBeGreaterThan(0);
 
 			// Check that model imports resolve correctly
-			const modelImports = result.resolvedDependencies.filter(dep =>
-				dep.originalSource.includes("./") && dep.resolvedPath?.includes("/models/")
+			const modelImports = result.resolvedDependencies.filter(
+				(dep) =>
+					dep.originalSource.includes("./") &&
+					dep.resolvedPath?.includes("/models/"),
 			);
 			expect(modelImports.length).toBeGreaterThan(0);
 		});
@@ -159,7 +175,7 @@ describe("PathResolver Real Files Integration", () => {
 						const stat = fs.statSync(fullPath);
 						if (stat.isDirectory()) {
 							files.push(...findJSFiles(fullPath));
-						} else if (entry.endsWith('.js') && !entry.includes('.d.ts')) {
+						} else if (entry.endsWith(".js") && !entry.includes(".d.ts")) {
 							files.push(fullPath);
 						}
 					}
@@ -187,7 +203,7 @@ describe("PathResolver Real Files Integration", () => {
 
 				logger.info(`JS file analysis: ${path.basename(jsFile)}`, {
 					totalDependencies: result.summary.totalDependencies,
-					resolvedCount: result.summary.resolvedCount
+					resolvedCount: result.summary.resolvedCount,
 				});
 
 				expect(result.summary.totalDependencies).toBeGreaterThanOrEqual(0);
@@ -202,7 +218,7 @@ describe("PathResolver Real Files Integration", () => {
 		it("should load project configuration correctly", () => {
 			const context = createContext(
 				path.join(projectRoot, "src/index.ts"),
-				"typescript"
+				"typescript",
 			);
 
 			// Test with empty dependency data to focus on config loading
@@ -212,7 +228,7 @@ describe("PathResolver Real Files Integration", () => {
 				importCount: 0,
 				exportCount: 0,
 				dynamicImportCount: 0,
-				typeOnlyImportCount: 0
+				typeOnlyImportCount: 0,
 			};
 
 			const result = pathResolver.interpret(emptyData, context);
@@ -220,13 +236,13 @@ describe("PathResolver Real Files Integration", () => {
 			// Check resolution base
 			expect(result.resolutionBase.projectRoot).toBe(projectRoot);
 			expect(result.resolutionBase.nodeModulesPath).toContain(
-				path.join(projectRoot, "node_modules")
+				path.join(projectRoot, "node_modules"),
 			);
 
 			logger.info("Configuration loaded", {
 				projectRoot: result.resolutionBase.projectRoot,
 				pathMappings: Object.keys(result.pathMappings),
-				nodeModulesPath: result.resolutionBase.nodeModulesPath.length
+				nodeModulesPath: result.resolutionBase.nodeModulesPath.length,
 			});
 		});
 
@@ -238,7 +254,7 @@ describe("PathResolver Real Files Integration", () => {
 					const tsconfig = JSON.parse(fs.readFileSync(tsconfigPath, "utf8"));
 					const context = createContext(
 						path.join(projectRoot, "src/index.ts"),
-						"typescript"
+						"typescript",
 					);
 
 					const emptyData = {
@@ -247,7 +263,7 @@ describe("PathResolver Real Files Integration", () => {
 						importCount: 0,
 						exportCount: 0,
 						dynamicImportCount: 0,
-						typeOnlyImportCount: 0
+						typeOnlyImportCount: 0,
 					};
 
 					const result = pathResolver.interpret(emptyData, context);
@@ -276,9 +292,10 @@ describe("PathResolver Real Files Integration", () => {
 			}
 
 			// Find CLI TypeScript files
-			const cliFiles = fs.readdirSync(cliDir)
-				.filter(file => file.endsWith('.ts'))
-				.map(file => path.join(cliDir, file));
+			const cliFiles = fs
+				.readdirSync(cliDir)
+				.filter((file) => file.endsWith(".ts"))
+				.map((file) => path.join(cliDir, file));
 
 			if (cliFiles.length === 0) {
 				console.log("No TypeScript files in CLI directory");
@@ -298,17 +315,20 @@ describe("PathResolver Real Files Integration", () => {
 				resolvedCount: result.summary.resolvedCount,
 				internalCount: result.summary.internalCount,
 				externalCount: result.summary.externalCount,
-				relativeCount: result.summary.relativeCount
+				relativeCount: result.summary.relativeCount,
 			});
 
 			expect(result.summary.totalDependencies).toBeGreaterThanOrEqual(0);
 
 			// CLI files typically import from multiple levels
 			if (result.summary.totalDependencies > 0) {
-				const resolutionTypes = result.resolvedDependencies.reduce((acc, dep) => {
-					acc[dep.resolutionType] = (acc[dep.resolutionType] || 0) + 1;
-					return acc;
-				}, {} as Record<string, number>);
+				const resolutionTypes = result.resolvedDependencies.reduce(
+					(acc, dep) => {
+						acc[dep.resolutionType] = (acc[dep.resolutionType] || 0) + 1;
+						return acc;
+					},
+					{} as Record<string, number>,
+				);
 
 				logger.info("Resolution type distribution", resolutionTypes);
 			}
@@ -321,9 +341,10 @@ describe("PathResolver Real Files Integration", () => {
 				return;
 			}
 
-			const serviceFiles = fs.readdirSync(servicesDir)
-				.filter(file => file.endsWith('.ts') && !file.includes('.test.'))
-				.map(file => path.join(servicesDir, file));
+			const serviceFiles = fs
+				.readdirSync(servicesDir)
+				.filter((file) => file.endsWith(".ts") && !file.includes(".test."))
+				.map((file) => path.join(servicesDir, file));
 
 			if (serviceFiles.length === 0) {
 				console.log("No service TypeScript files found");
@@ -342,14 +363,14 @@ describe("PathResolver Real Files Integration", () => {
 				totalDependencies: result.summary.totalDependencies,
 				resolvedCount: result.summary.resolvedCount,
 				internalCount: result.summary.internalCount,
-				externalCount: result.summary.externalCount
+				externalCount: result.summary.externalCount,
 			});
 
 			// Service files should have various types of imports
 			if (result.summary.totalDependencies > 0) {
 				const internalPaths = result.resolvedDependencies
-					.filter(dep => dep.resolutionType === "relative" && dep.exists)
-					.map(dep => dep.projectRelativePath);
+					.filter((dep) => dep.resolutionType === "relative" && dep.exists)
+					.map((dep) => dep.projectRelativePath);
 
 				logger.info("Internal dependencies found", internalPaths.slice(0, 5));
 			}
@@ -374,12 +395,16 @@ describe("PathResolver Real Files Integration", () => {
 
 			logger.info("Index file analysis", {
 				totalDependencies: result.summary.totalDependencies,
-				resolvedCount: result.summary.resolvedCount
+				resolvedCount: result.summary.resolvedCount,
 			});
 
 			// Check file existence accuracy
-			const existingFiles = result.resolvedDependencies.filter(dep => dep.exists && dep.resolvedPath);
-			const nonExistingFiles = result.resolvedDependencies.filter(dep => !dep.exists && dep.resolvedPath);
+			const existingFiles = result.resolvedDependencies.filter(
+				(dep) => dep.exists && dep.resolvedPath,
+			);
+			const nonExistingFiles = result.resolvedDependencies.filter(
+				(dep) => !dep.exists && dep.resolvedPath,
+			);
 
 			// Verify some existing files actually exist
 			for (const dep of existingFiles.slice(0, 3)) {
@@ -391,7 +416,9 @@ describe("PathResolver Real Files Integration", () => {
 			logger.info("File existence check", {
 				existingFiles: existingFiles.length,
 				nonExistingFiles: nonExistingFiles.length,
-				totalWithPaths: result.resolvedDependencies.filter(dep => dep.resolvedPath).length
+				totalWithPaths: result.resolvedDependencies.filter(
+					(dep) => dep.resolvedPath,
+				).length,
 			});
 		});
 	});
@@ -401,7 +428,7 @@ describe("PathResolver Real Files Integration", () => {
 			const largeFiles = [
 				path.join(projectRoot, "src/index.ts"),
 				path.join(projectRoot, "src/services/AnalysisEngine.ts"),
-				path.join(projectRoot, "src/parsers/TypeScriptParser.ts")
+				path.join(projectRoot, "src/parsers/TypeScriptParser.ts"),
 			].filter(fs.existsSync);
 
 			if (largeFiles.length === 0) {
@@ -428,14 +455,14 @@ describe("PathResolver Real Files Integration", () => {
 					fileSize: fileContent.length,
 					dependencies: result.summary.totalDependencies,
 					resolved: result.summary.resolvedCount,
-					duration
+					duration,
 				});
 			}
 
 			logger.info("Performance analysis", results);
 
 			// All files should process in reasonable time (< 1 second)
-			results.forEach(result => {
+			results.forEach((result) => {
 				expect(result.duration).toBeLessThan(1000);
 			});
 		});

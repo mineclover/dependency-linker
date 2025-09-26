@@ -1,56 +1,50 @@
 {
-  "rootFile": "src/models/AnalysisResult.ts",
-  "totalFiles": 4,
-  "maxDepth": 1,
-  "dependencies": {
-    "src/models/PathInfo.ts": {
-      "filePath": "src/models/PathInfo.ts",
-      "relativePath": "src/models/PathInfo.ts",
-      "dependencies": [],
-      "dependents": [
-        "src/models/AnalysisResult.ts"
-      ],
-      "depth": 1,
-      "type": "import"
-    },
-    "src/models/AnalysisError.ts": {
-      "filePath": "src/models/AnalysisError.ts",
-      "relativePath": "src/models/AnalysisError.ts",
-      "dependencies": [],
-      "dependents": [
-        "src/models/AnalysisResult.ts"
-      ],
-      "depth": 1,
-      "type": "import"
-    },
-    "src/models/PerformanceMetrics.ts": {
-      "filePath": "src/models/PerformanceMetrics.ts",
-      "relativePath": "src/models/PerformanceMetrics.ts",
-      "dependencies": [],
-      "dependents": [
-        "src/models/AnalysisResult.ts"
-      ],
-      "depth": 1,
-      "type": "import"
-    },
-    "src/models/AnalysisResult.ts": {
-      "filePath": "src/models/AnalysisResult.ts",
-      "relativePath": "src/models/AnalysisResult.ts",
-      "dependencies": [
-        "src/models/PathInfo.ts",
-        "src/models/AnalysisError.ts",
-        "src/models/PerformanceMetrics.ts"
-      ],
-      "dependents": [],
-      "depth": 0,
-      "type": "import"
-    }
-  },
-  "dependencyTree": [
-    "📄 src/models/AnalysisResult.ts (의존성: 3개)",
-    "  📄 src/models/PathInfo.ts (의존성: 0개)",
-    "  📄 src/models/AnalysisError.ts (의존성: 0개)",
-    "  📄 src/models/PerformanceMetrics.ts (의존성: 0개)"
-  ],
-  "circularDependencies": []
+	"rootFile": "src/models/AnalysisResult.ts",
+	"totalFiles": 4,
+	"maxDepth": 1,
+	"dependencies": {
+		"src/models/PathInfo.ts": {
+			"filePath": "src/models/PathInfo.ts",
+			"relativePath": "src/models/PathInfo.ts",
+			"dependencies": [],
+			"dependents": ["src/models/AnalysisResult.ts"],
+			"depth": 1,
+			"type": "import"
+		},
+		"src/models/AnalysisError.ts": {
+			"filePath": "src/models/AnalysisError.ts",
+			"relativePath": "src/models/AnalysisError.ts",
+			"dependencies": [],
+			"dependents": ["src/models/AnalysisResult.ts"],
+			"depth": 1,
+			"type": "import"
+		},
+		"src/models/PerformanceMetrics.ts": {
+			"filePath": "src/models/PerformanceMetrics.ts",
+			"relativePath": "src/models/PerformanceMetrics.ts",
+			"dependencies": [],
+			"dependents": ["src/models/AnalysisResult.ts"],
+			"depth": 1,
+			"type": "import"
+		},
+		"src/models/AnalysisResult.ts": {
+			"filePath": "src/models/AnalysisResult.ts",
+			"relativePath": "src/models/AnalysisResult.ts",
+			"dependencies": [
+				"src/models/PathInfo.ts",
+				"src/models/AnalysisError.ts",
+				"src/models/PerformanceMetrics.ts"
+			],
+			"dependents": [],
+			"depth": 0,
+			"type": "import"
+		}
+	},
+	"dependencyTree": [
+		"📄 src/models/AnalysisResult.ts (의존성: 3개)",
+		"  📄 src/models/PathInfo.ts (의존성: 0개)",
+		"  📄 src/models/AnalysisError.ts (의존성: 0개)",
+		"  📄 src/models/PerformanceMetrics.ts (의존성: 0개)"
+	],
+	"circularDependencies": []
 }

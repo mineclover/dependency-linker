@@ -1,410 +1,410 @@
 {
-  "filePath": "demo/examples/complex-app.tsx",
-  "success": true,
-  "dependencies": [
-    {
-      "source": "react",
-      "type": "external",
-      "location": {
-        "line": 1,
-        "column": 0,
-        "offset": 0
-      },
-      "isNodeBuiltin": false,
-      "isScopedPackage": false,
-      "packageName": "react"
-    },
-    {
-      "source": "@mui/material",
-      "type": "external",
-      "location": {
-        "line": 2,
-        "column": 0,
-        "offset": 65
-      },
-      "isNodeBuiltin": false,
-      "isScopedPackage": true,
-      "packageName": "@mui/material"
-    },
-    {
-      "source": "axios",
-      "type": "external",
-      "location": {
-        "line": 3,
-        "column": 0,
-        "offset": 139
-      },
-      "isNodeBuiltin": false,
-      "isScopedPackage": false,
-      "packageName": "axios"
-    },
-    {
-      "source": "lodash",
-      "type": "external",
-      "location": {
-        "line": 4,
-        "column": 0,
-        "offset": 166
-      },
-      "isNodeBuiltin": false,
-      "isScopedPackage": false,
-      "packageName": "lodash"
-    },
-    {
-      "source": "date-fns",
-      "type": "external",
-      "location": {
-        "line": 5,
-        "column": 0,
-        "offset": 201
-      },
-      "isNodeBuiltin": false,
-      "isScopedPackage": false,
-      "packageName": "date-fns"
-    },
-    {
-      "source": "react-toastify",
-      "type": "external",
-      "location": {
-        "line": 6,
-        "column": 0,
-        "offset": 246
-      },
-      "isNodeBuiltin": false,
-      "isScopedPackage": false,
-      "packageName": "react-toastify"
-    },
-    {
-      "source": "./styles.css",
-      "type": "relative",
-      "location": {
-        "line": 7,
-        "column": 0,
-        "offset": 286
-      },
-      "isNodeBuiltin": false,
-      "isScopedPackage": false,
-      "packageName": ".",
-      "extension": ".css"
-    },
-    {
-      "source": "../services/ApiClient",
-      "type": "relative",
-      "location": {
-        "line": 8,
-        "column": 0,
-        "offset": 309
-      },
-      "isNodeBuiltin": false,
-      "isScopedPackage": false,
-      "packageName": ".."
-    },
-    {
-      "source": "../services/UserService",
-      "type": "relative",
-      "location": {
-        "line": 9,
-        "column": 0,
-        "offset": 360
-      },
-      "isNodeBuiltin": false,
-      "isScopedPackage": false,
-      "packageName": ".."
-    },
-    {
-      "source": "./utils/validators",
-      "type": "relative",
-      "location": {
-        "line": 10,
-        "column": 0,
-        "offset": 415
-      },
-      "isNodeBuiltin": false,
-      "isScopedPackage": false,
-      "packageName": "."
-    },
-    {
-      "source": "../config/app.config.json",
-      "type": "relative",
-      "location": {
-        "line": 11,
-        "column": 0,
-        "offset": 479
-      },
-      "isNodeBuiltin": false,
-      "isScopedPackage": false,
-      "packageName": "..",
-      "extension": ".json"
-    }
-  ],
-  "imports": [
-    {
-      "source": "react",
-      "specifiers": [
-        {
-          "type": "named",
-          "imported": "useState",
-          "local": "useState"
-        },
-        {
-          "type": "named",
-          "imported": "useEffect",
-          "local": "useEffect"
-        },
-        {
-          "type": "named",
-          "imported": "useCallback",
-          "local": "useCallback"
-        },
-        {
-          "type": "default",
-          "imported": "default",
-          "local": "React"
-        }
-      ],
-      "location": {
-        "line": 1,
-        "column": 0,
-        "offset": 0
-      },
-      "isTypeOnly": false
-    },
-    {
-      "source": "@mui/material",
-      "specifiers": [
-        {
-          "type": "named",
-          "imported": "Button",
-          "local": "Button"
-        },
-        {
-          "type": "named",
-          "imported": "TextField",
-          "local": "TextField"
-        },
-        {
-          "type": "named",
-          "imported": "Card",
-          "local": "Card"
-        },
-        {
-          "type": "named",
-          "imported": "Typography",
-          "local": "Typography"
-        },
-        {
-          "type": "named",
-          "imported": "Box",
-          "local": "Box"
-        }
-      ],
-      "location": {
-        "line": 2,
-        "column": 0,
-        "offset": 65
-      },
-      "isTypeOnly": false
-    },
-    {
-      "source": "axios",
-      "specifiers": [
-        {
-          "type": "default",
-          "imported": "default",
-          "local": "axios"
-        }
-      ],
-      "location": {
-        "line": 3,
-        "column": 0,
-        "offset": 139
-      },
-      "isTypeOnly": false
-    },
-    {
-      "source": "lodash",
-      "specifiers": [
-        {
-          "type": "named",
-          "imported": "debounce",
-          "local": "debounce"
-        }
-      ],
-      "location": {
-        "line": 4,
-        "column": 0,
-        "offset": 166
-      },
-      "isTypeOnly": false
-    },
-    {
-      "source": "date-fns",
-      "specifiers": [
-        {
-          "type": "named",
-          "imported": "format",
-          "local": "format"
-        },
-        {
-          "type": "named",
-          "imported": "parseISO",
-          "local": "parseISO"
-        }
-      ],
-      "location": {
-        "line": 5,
-        "column": 0,
-        "offset": 201
-      },
-      "isTypeOnly": false
-    },
-    {
-      "source": "react-toastify",
-      "specifiers": [
-        {
-          "type": "named",
-          "imported": "toast",
-          "local": "toast"
-        }
-      ],
-      "location": {
-        "line": 6,
-        "column": 0,
-        "offset": 246
-      },
-      "isTypeOnly": false
-    },
-    {
-      "source": "./styles.css",
-      "specifiers": [],
-      "location": {
-        "line": 7,
-        "column": 0,
-        "offset": 286
-      },
-      "isTypeOnly": false
-    },
-    {
-      "source": "../services/ApiClient",
-      "specifiers": [
-        {
-          "type": "named",
-          "imported": "ApiClient",
-          "local": "ApiClient"
-        }
-      ],
-      "location": {
-        "line": 8,
-        "column": 0,
-        "offset": 309
-      },
-      "isTypeOnly": false
-    },
-    {
-      "source": "../services/UserService",
-      "specifiers": [
-        {
-          "type": "named",
-          "imported": "UserService",
-          "local": "UserService"
-        }
-      ],
-      "location": {
-        "line": 9,
-        "column": 0,
-        "offset": 360
-      },
-      "isTypeOnly": false
-    },
-    {
-      "source": "./utils/validators",
-      "specifiers": [
-        {
-          "type": "named",
-          "imported": "validateEmail",
-          "local": "validateEmail"
-        },
-        {
-          "type": "named",
-          "imported": "formatName",
-          "local": "formatName"
-        }
-      ],
-      "location": {
-        "line": 10,
-        "column": 0,
-        "offset": 415
-      },
-      "isTypeOnly": false
-    },
-    {
-      "source": "../config/app.config.json",
-      "specifiers": [
-        {
-          "type": "default",
-          "imported": "default",
-          "local": "config"
-        }
-      ],
-      "location": {
-        "line": 11,
-        "column": 0,
-        "offset": 479
-      },
-      "isTypeOnly": false
-    }
-  ],
-  "exports": [
-    {
-      "name": "User",
-      "type": "named",
-      "location": {
-        "line": 21,
-        "column": 0,
-        "offset": 630
-      },
-      "isTypeOnly": true
-    },
-    {
-      "name": "AppProps",
-      "type": "named",
-      "location": {
-        "line": 28,
-        "column": 0,
-        "offset": 721
-      },
-      "isTypeOnly": true
-    },
-    {
-      "name": "userUtils",
-      "type": "named",
-      "location": {
-        "line": 231,
-        "column": 0,
-        "offset": 5365
-      },
-      "isTypeOnly": false
-    },
-    {
-      "name": "ApiResponse",
-      "type": "named",
-      "location": {
-        "line": 256,
-        "column": 0,
-        "offset": 5970
-      },
-      "isTypeOnly": true
-    },
-    {
-      "name": "default",
-      "type": "default",
-      "location": {
-        "line": 258,
-        "column": 0,
-        "offset": 6000
-      },
-      "isTypeOnly": false
-    }
-  ],
-  "parseTime": 11
+	"filePath": "demo/examples/complex-app.tsx",
+	"success": true,
+	"dependencies": [
+		{
+			"source": "react",
+			"type": "external",
+			"location": {
+				"line": 1,
+				"column": 0,
+				"offset": 0
+			},
+			"isNodeBuiltin": false,
+			"isScopedPackage": false,
+			"packageName": "react"
+		},
+		{
+			"source": "@mui/material",
+			"type": "external",
+			"location": {
+				"line": 2,
+				"column": 0,
+				"offset": 65
+			},
+			"isNodeBuiltin": false,
+			"isScopedPackage": true,
+			"packageName": "@mui/material"
+		},
+		{
+			"source": "axios",
+			"type": "external",
+			"location": {
+				"line": 3,
+				"column": 0,
+				"offset": 139
+			},
+			"isNodeBuiltin": false,
+			"isScopedPackage": false,
+			"packageName": "axios"
+		},
+		{
+			"source": "lodash",
+			"type": "external",
+			"location": {
+				"line": 4,
+				"column": 0,
+				"offset": 166
+			},
+			"isNodeBuiltin": false,
+			"isScopedPackage": false,
+			"packageName": "lodash"
+		},
+		{
+			"source": "date-fns",
+			"type": "external",
+			"location": {
+				"line": 5,
+				"column": 0,
+				"offset": 201
+			},
+			"isNodeBuiltin": false,
+			"isScopedPackage": false,
+			"packageName": "date-fns"
+		},
+		{
+			"source": "react-toastify",
+			"type": "external",
+			"location": {
+				"line": 6,
+				"column": 0,
+				"offset": 246
+			},
+			"isNodeBuiltin": false,
+			"isScopedPackage": false,
+			"packageName": "react-toastify"
+		},
+		{
+			"source": "./styles.css",
+			"type": "relative",
+			"location": {
+				"line": 7,
+				"column": 0,
+				"offset": 286
+			},
+			"isNodeBuiltin": false,
+			"isScopedPackage": false,
+			"packageName": ".",
+			"extension": ".css"
+		},
+		{
+			"source": "../services/ApiClient",
+			"type": "relative",
+			"location": {
+				"line": 8,
+				"column": 0,
+				"offset": 309
+			},
+			"isNodeBuiltin": false,
+			"isScopedPackage": false,
+			"packageName": ".."
+		},
+		{
+			"source": "../services/UserService",
+			"type": "relative",
+			"location": {
+				"line": 9,
+				"column": 0,
+				"offset": 360
+			},
+			"isNodeBuiltin": false,
+			"isScopedPackage": false,
+			"packageName": ".."
+		},
+		{
+			"source": "./utils/validators",
+			"type": "relative",
+			"location": {
+				"line": 10,
+				"column": 0,
+				"offset": 415
+			},
+			"isNodeBuiltin": false,
+			"isScopedPackage": false,
+			"packageName": "."
+		},
+		{
+			"source": "../config/app.config.json",
+			"type": "relative",
+			"location": {
+				"line": 11,
+				"column": 0,
+				"offset": 479
+			},
+			"isNodeBuiltin": false,
+			"isScopedPackage": false,
+			"packageName": "..",
+			"extension": ".json"
+		}
+	],
+	"imports": [
+		{
+			"source": "react",
+			"specifiers": [
+				{
+					"type": "named",
+					"imported": "useState",
+					"local": "useState"
+				},
+				{
+					"type": "named",
+					"imported": "useEffect",
+					"local": "useEffect"
+				},
+				{
+					"type": "named",
+					"imported": "useCallback",
+					"local": "useCallback"
+				},
+				{
+					"type": "default",
+					"imported": "default",
+					"local": "React"
+				}
+			],
+			"location": {
+				"line": 1,
+				"column": 0,
+				"offset": 0
+			},
+			"isTypeOnly": false
+		},
+		{
+			"source": "@mui/material",
+			"specifiers": [
+				{
+					"type": "named",
+					"imported": "Button",
+					"local": "Button"
+				},
+				{
+					"type": "named",
+					"imported": "TextField",
+					"local": "TextField"
+				},
+				{
+					"type": "named",
+					"imported": "Card",
+					"local": "Card"
+				},
+				{
+					"type": "named",
+					"imported": "Typography",
+					"local": "Typography"
+				},
+				{
+					"type": "named",
+					"imported": "Box",
+					"local": "Box"
+				}
+			],
+			"location": {
+				"line": 2,
+				"column": 0,
+				"offset": 65
+			},
+			"isTypeOnly": false
+		},
+		{
+			"source": "axios",
+			"specifiers": [
+				{
+					"type": "default",
+					"imported": "default",
+					"local": "axios"
+				}
+			],
+			"location": {
+				"line": 3,
+				"column": 0,
+				"offset": 139
+			},
+			"isTypeOnly": false
+		},
+		{
+			"source": "lodash",
+			"specifiers": [
+				{
+					"type": "named",
+					"imported": "debounce",
+					"local": "debounce"
+				}
+			],
+			"location": {
+				"line": 4,
+				"column": 0,
+				"offset": 166
+			},
+			"isTypeOnly": false
+		},
+		{
+			"source": "date-fns",
+			"specifiers": [
+				{
+					"type": "named",
+					"imported": "format",
+					"local": "format"
+				},
+				{
+					"type": "named",
+					"imported": "parseISO",
+					"local": "parseISO"
+				}
+			],
+			"location": {
+				"line": 5,
+				"column": 0,
+				"offset": 201
+			},
+			"isTypeOnly": false
+		},
+		{
+			"source": "react-toastify",
+			"specifiers": [
+				{
+					"type": "named",
+					"imported": "toast",
+					"local": "toast"
+				}
+			],
+			"location": {
+				"line": 6,
+				"column": 0,
+				"offset": 246
+			},
+			"isTypeOnly": false
+		},
+		{
+			"source": "./styles.css",
+			"specifiers": [],
+			"location": {
+				"line": 7,
+				"column": 0,
+				"offset": 286
+			},
+			"isTypeOnly": false
+		},
+		{
+			"source": "../services/ApiClient",
+			"specifiers": [
+				{
+					"type": "named",
+					"imported": "ApiClient",
+					"local": "ApiClient"
+				}
+			],
+			"location": {
+				"line": 8,
+				"column": 0,
+				"offset": 309
+			},
+			"isTypeOnly": false
+		},
+		{
+			"source": "../services/UserService",
+			"specifiers": [
+				{
+					"type": "named",
+					"imported": "UserService",
+					"local": "UserService"
+				}
+			],
+			"location": {
+				"line": 9,
+				"column": 0,
+				"offset": 360
+			},
+			"isTypeOnly": false
+		},
+		{
+			"source": "./utils/validators",
+			"specifiers": [
+				{
+					"type": "named",
+					"imported": "validateEmail",
+					"local": "validateEmail"
+				},
+				{
+					"type": "named",
+					"imported": "formatName",
+					"local": "formatName"
+				}
+			],
+			"location": {
+				"line": 10,
+				"column": 0,
+				"offset": 415
+			},
+			"isTypeOnly": false
+		},
+		{
+			"source": "../config/app.config.json",
+			"specifiers": [
+				{
+					"type": "default",
+					"imported": "default",
+					"local": "config"
+				}
+			],
+			"location": {
+				"line": 11,
+				"column": 0,
+				"offset": 479
+			},
+			"isTypeOnly": false
+		}
+	],
+	"exports": [
+		{
+			"name": "User",
+			"type": "named",
+			"location": {
+				"line": 21,
+				"column": 0,
+				"offset": 630
+			},
+			"isTypeOnly": true
+		},
+		{
+			"name": "AppProps",
+			"type": "named",
+			"location": {
+				"line": 28,
+				"column": 0,
+				"offset": 721
+			},
+			"isTypeOnly": true
+		},
+		{
+			"name": "userUtils",
+			"type": "named",
+			"location": {
+				"line": 231,
+				"column": 0,
+				"offset": 5365
+			},
+			"isTypeOnly": false
+		},
+		{
+			"name": "ApiResponse",
+			"type": "named",
+			"location": {
+				"line": 256,
+				"column": 0,
+				"offset": 5970
+			},
+			"isTypeOnly": true
+		},
+		{
+			"name": "default",
+			"type": "default",
+			"location": {
+				"line": 258,
+				"column": 0,
+				"offset": 6000
+			},
+			"isTypeOnly": false
+		}
+	],
+	"parseTime": 11
 }

@@ -1,1 +1,2 @@
-import fs from "fs"; export const test = 123;
+import fs from "fs";
+export const test = 123;

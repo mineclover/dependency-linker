@@ -1,32 +1,28 @@
 {
-  "rootFile": "src/extractors/IDataExtractor.ts",
-  "totalFiles": 2,
-  "maxDepth": 1,
-  "dependencies": {
-    "src/models/ExtractedData.ts": {
-      "filePath": "src/models/ExtractedData.ts",
-      "relativePath": "src/models/ExtractedData.ts",
-      "dependencies": [],
-      "dependents": [
-        "src/extractors/IDataExtractor.ts"
-      ],
-      "depth": 1,
-      "type": "import"
-    },
-    "src/extractors/IDataExtractor.ts": {
-      "filePath": "src/extractors/IDataExtractor.ts",
-      "relativePath": "src/extractors/IDataExtractor.ts",
-      "dependencies": [
-        "src/models/ExtractedData.ts"
-      ],
-      "dependents": [],
-      "depth": 0,
-      "type": "import"
-    }
-  },
-  "dependencyTree": [
-    "📄 src/extractors/IDataExtractor.ts (의존성: 1개)",
-    "  📄 src/models/ExtractedData.ts (의존성: 0개)"
-  ],
-  "circularDependencies": []
+	"rootFile": "src/extractors/IDataExtractor.ts",
+	"totalFiles": 2,
+	"maxDepth": 1,
+	"dependencies": {
+		"src/models/ExtractedData.ts": {
+			"filePath": "src/models/ExtractedData.ts",
+			"relativePath": "src/models/ExtractedData.ts",
+			"dependencies": [],
+			"dependents": ["src/extractors/IDataExtractor.ts"],
+			"depth": 1,
+			"type": "import"
+		},
+		"src/extractors/IDataExtractor.ts": {
+			"filePath": "src/extractors/IDataExtractor.ts",
+			"relativePath": "src/extractors/IDataExtractor.ts",
+			"dependencies": ["src/models/ExtractedData.ts"],
+			"dependents": [],
+			"depth": 0,
+			"type": "import"
+		}
+	},
+	"dependencyTree": [
+		"📄 src/extractors/IDataExtractor.ts (의존성: 1개)",
+		"  📄 src/models/ExtractedData.ts (의존성: 0개)"
+	],
+	"circularDependencies": []
 }

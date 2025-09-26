@@ -2,7 +2,11 @@
  * PathResolverInterpreter Tests
  */
 
-import { PathResolverInterpreter, type PathResolutionResult, type ResolvedDependency } from "../../../src/interpreters/PathResolverInterpreter";
+import {
+	PathResolverInterpreter,
+	type PathResolutionResult,
+	type ResolvedDependency,
+} from "../../../src/interpreters/PathResolverInterpreter";
 import type { DependencyExtractionResult } from "../../../src/extractors/DependencyExtractor";
 import type { InterpreterContext } from "../../../src/interpreters/IDataInterpreter";
 import type { AnalysisResult } from "../../../src/models/AnalysisResult";
@@ -43,8 +47,8 @@ describe("PathResolverInterpreter", () => {
 			timestamp: new Date(),
 			projectContext: {
 				rootPath: mockProjectRoot,
-				projectType: "application"
-			}
+				projectType: "application",
+			},
 		};
 	});
 
@@ -57,28 +61,28 @@ describe("PathResolverInterpreter", () => {
 						specifiers: [],
 						type: "import",
 						isTypeOnly: false,
-						location: { line: 1, column: 0, endLine: 1, endColumn: 20 }
+						location: { line: 1, column: 0, endLine: 1, endColumn: 20 },
 					},
 					{
 						source: "../shared/constants",
 						specifiers: [],
 						type: "import",
 						isTypeOnly: false,
-						location: { line: 2, column: 0, endLine: 2, endColumn: 25 }
-					}
+						location: { line: 2, column: 0, endLine: 2, endColumn: 25 },
+					},
 				],
 				totalCount: 2,
 				importCount: 2,
 				exportCount: 0,
 				dynamicImportCount: 0,
-				typeOnlyImportCount: 0
+				typeOnlyImportCount: 0,
 			};
 
 			// Mock file existence
 			mockFs.promises.access.mockImplementation(async (filePath: any) => {
 				const resolvedPaths = [
 					"/Users/test/project/src/components/utils/helpers.ts",
-					"/Users/test/project/src/shared/constants.ts"
+					"/Users/test/project/src/shared/constants.ts",
 				];
 				if (resolvedPaths.includes(filePath as string)) {
 					return Promise.resolve();
@@ -89,14 +93,22 @@ describe("PathResolverInterpreter", () => {
 			const result = await interpreter.interpret(extractedData, mockContext);
 
 			expect(result.resolvedDependencies).toHaveLength(2);
-			expect(result.resolvedDependencies[0].originalSource).toBe("./utils/helpers");
+			expect(result.resolvedDependencies[0].originalSource).toBe(
+				"./utils/helpers",
+			);
 			expect(result.resolvedDependencies[0].resolutionType).toBe("relative");
-			expect(result.resolvedDependencies[0].resolvedPath).toBe("/Users/test/project/src/components/utils/helpers.ts");
+			expect(result.resolvedDependencies[0].resolvedPath).toBe(
+				"/Users/test/project/src/components/utils/helpers.ts",
+			);
 			expect(result.resolvedDependencies[0].exists).toBe(true);
 
-			expect(result.resolvedDependencies[1].originalSource).toBe("../shared/constants");
+			expect(result.resolvedDependencies[1].originalSource).toBe(
+				"../shared/constants",
+			);
 			expect(result.resolvedDependencies[1].resolutionType).toBe("relative");
-			expect(result.resolvedDependencies[1].resolvedPath).toBe("/Users/test/project/src/shared/constants.ts");
+			expect(result.resolvedDependencies[1].resolvedPath).toBe(
+				"/Users/test/project/src/shared/constants.ts",
+			);
 		});
 
 		it("should identify Node.js built-in modules", async () => {
@@ -107,21 +119,21 @@ describe("PathResolverInterpreter", () => {
 						specifiers: [],
 						type: "import",
 						isTypeOnly: false,
-						location: { line: 1, column: 0, endLine: 1, endColumn: 10 }
+						location: { line: 1, column: 0, endLine: 1, endColumn: 10 },
 					},
 					{
 						source: "node:path",
 						specifiers: [],
 						type: "import",
 						isTypeOnly: false,
-						location: { line: 2, column: 0, endLine: 2, endColumn: 15 }
-					}
+						location: { line: 2, column: 0, endLine: 2, endColumn: 15 },
+					},
 				],
 				totalCount: 2,
 				importCount: 2,
 				exportCount: 0,
 				dynamicImportCount: 0,
-				typeOnlyImportCount: 0
+				typeOnlyImportCount: 0,
 			};
 
 			const result = await interpreter.interpret(extractedData, mockContext);
@@ -140,28 +152,32 @@ describe("PathResolverInterpreter", () => {
 						specifiers: [],
 						type: "import",
 						isTypeOnly: false,
-						location: { line: 1, column: 0, endLine: 1, endColumn: 12 }
+						location: { line: 1, column: 0, endLine: 1, endColumn: 12 },
 					},
 					{
 						source: "@types/node",
 						specifiers: [],
 						type: "import",
 						isTypeOnly: true,
-						location: { line: 2, column: 0, endLine: 2, endColumn: 18 }
-					}
+						location: { line: 2, column: 0, endLine: 2, endColumn: 18 },
+					},
 				],
 				totalCount: 2,
 				importCount: 2,
 				exportCount: 0,
 				dynamicImportCount: 0,
-				typeOnlyImportCount: 1
+				typeOnlyImportCount: 1,
 			};
 
 			const result = await interpreter.interpret(extractedData, mockContext);
 
 			expect(result.resolvedDependencies).toHaveLength(2);
-			expect(result.resolvedDependencies[0].resolutionType).toBe("node_modules");
-			expect(result.resolvedDependencies[1].resolutionType).toBe("node_modules");
+			expect(result.resolvedDependencies[0].resolutionType).toBe(
+				"node_modules",
+			);
+			expect(result.resolvedDependencies[1].resolutionType).toBe(
+				"node_modules",
+			);
 			expect(result.summary.externalCount).toBe(2);
 		});
 	});
@@ -175,21 +191,21 @@ describe("PathResolverInterpreter", () => {
 						specifiers: [],
 						type: "import",
 						isTypeOnly: false,
-						location: { line: 1, column: 0, endLine: 1, endColumn: 25 }
+						location: { line: 1, column: 0, endLine: 1, endColumn: 25 },
 					},
 					{
 						source: "@utils/format",
 						specifiers: [],
 						type: "import",
 						isTypeOnly: false,
-						location: { line: 2, column: 0, endLine: 2, endColumn: 20 }
-					}
+						location: { line: 2, column: 0, endLine: 2, endColumn: 20 },
+					},
 				],
 				totalCount: 2,
 				importCount: 2,
 				exportCount: 0,
 				dynamicImportCount: 0,
-				typeOnlyImportCount: 0
+				typeOnlyImportCount: 0,
 			};
 
 			// Mock tsconfig.json
@@ -197,23 +213,25 @@ describe("PathResolverInterpreter", () => {
 				compilerOptions: {
 					paths: {
 						"@/*": ["src/*"],
-						"@utils/*": ["src/utils/*"]
-					}
-				}
+						"@utils/*": ["src/utils/*"],
+					},
+				},
 			};
 
-			(mockFs.promises.readFile as jest.Mock).mockImplementation(async (filePath: any) => {
-				if (filePath === "/Users/test/project/tsconfig.json") {
-					return JSON.stringify(mockTsconfig);
-				}
-				throw new Error("File not found");
-			});
+			(mockFs.promises.readFile as jest.Mock).mockImplementation(
+				async (filePath: any) => {
+					if (filePath === "/Users/test/project/tsconfig.json") {
+						return JSON.stringify(mockTsconfig);
+					}
+					throw new Error("File not found");
+				},
+			);
 
 			mockFs.promises.access.mockImplementation(async (filePath: any) => {
 				const validPaths = [
 					"/Users/test/project/tsconfig.json",
 					"/Users/test/project/src/components/Header.tsx",
-					"/Users/test/project/src/utils/format.ts"
+					"/Users/test/project/src/utils/format.ts",
 				];
 				if (validPaths.includes(filePath as string)) {
 					return Promise.resolve();
@@ -225,13 +243,17 @@ describe("PathResolverInterpreter", () => {
 
 			expect(result.resolvedDependencies).toHaveLength(2);
 			expect(result.resolvedDependencies[0].resolutionType).toBe("alias");
-			expect(result.resolvedDependencies[0].resolvedPath).toBe("/Users/test/project/src/components/Header.tsx");
+			expect(result.resolvedDependencies[0].resolvedPath).toBe(
+				"/Users/test/project/src/components/Header.tsx",
+			);
 			expect(result.resolvedDependencies[1].resolutionType).toBe("alias");
-			expect(result.resolvedDependencies[1].resolvedPath).toBe("/Users/test/project/src/utils/format.ts");
+			expect(result.resolvedDependencies[1].resolvedPath).toBe(
+				"/Users/test/project/src/utils/format.ts",
+			);
 
 			expect(result.pathMappings).toEqual({
 				"@": "src",
-				"@utils": "src/utils"
+				"@utils": "src/utils",
 			});
 		});
 	});
@@ -245,14 +267,14 @@ describe("PathResolverInterpreter", () => {
 						specifiers: [],
 						type: "import",
 						isTypeOnly: false,
-						location: { line: 1, column: 0, endLine: 1, endColumn: 15 }
-					}
+						location: { line: 1, column: 0, endLine: 1, endColumn: 15 },
+					},
 				],
 				totalCount: 1,
 				importCount: 1,
 				exportCount: 0,
 				dynamicImportCount: 0,
-				typeOnlyImportCount: 0
+				typeOnlyImportCount: 0,
 			};
 
 			mockFs.promises.access.mockImplementation(async (filePath: any) => {
@@ -266,7 +288,9 @@ describe("PathResolverInterpreter", () => {
 			const result = await interpreter.interpret(extractedData, mockContext);
 
 			expect(result.resolvedDependencies).toHaveLength(1);
-			expect(result.resolvedDependencies[0].resolvedPath).toBe("/Users/test/project/src/components/utils/api.ts");
+			expect(result.resolvedDependencies[0].resolvedPath).toBe(
+				"/Users/test/project/src/components/utils/api.ts",
+			);
 			expect(result.resolvedDependencies[0].extension).toBe(".ts");
 			expect(result.resolvedDependencies[0].exists).toBe(true);
 		});
@@ -279,14 +303,14 @@ describe("PathResolverInterpreter", () => {
 						specifiers: [],
 						type: "import",
 						isTypeOnly: false,
-						location: { line: 1, column: 0, endLine: 1, endColumn: 12 }
-					}
+						location: { line: 1, column: 0, endLine: 1, endColumn: 12 },
+					},
 				],
 				totalCount: 1,
 				importCount: 1,
 				exportCount: 0,
 				dynamicImportCount: 0,
-				typeOnlyImportCount: 0
+				typeOnlyImportCount: 0,
 			};
 
 			mockFs.promises.access.mockImplementation(async (filePath: any) => {
@@ -300,7 +324,9 @@ describe("PathResolverInterpreter", () => {
 			const result = await interpreter.interpret(extractedData, mockContext);
 
 			expect(result.resolvedDependencies).toHaveLength(1);
-			expect(result.resolvedDependencies[0].resolvedPath).toBe("/Users/test/project/src/components/utils/index.ts");
+			expect(result.resolvedDependencies[0].resolvedPath).toBe(
+				"/Users/test/project/src/components/utils/index.ts",
+			);
 			expect(result.resolvedDependencies[0].exists).toBe(true);
 		});
 	});
@@ -314,35 +340,35 @@ describe("PathResolverInterpreter", () => {
 						specifiers: [],
 						type: "import",
 						isTypeOnly: false,
-						location: { line: 1, column: 0, endLine: 1, endColumn: 15 }
+						location: { line: 1, column: 0, endLine: 1, endColumn: 15 },
 					},
 					{
 						source: "react",
 						specifiers: [],
 						type: "import",
 						isTypeOnly: false,
-						location: { line: 2, column: 0, endLine: 2, endColumn: 12 }
+						location: { line: 2, column: 0, endLine: 2, endColumn: 12 },
 					},
 					{
 						source: "fs",
 						specifiers: [],
 						type: "import",
 						isTypeOnly: false,
-						location: { line: 3, column: 0, endLine: 3, endColumn: 10 }
+						location: { line: 3, column: 0, endLine: 3, endColumn: 10 },
 					},
 					{
 						source: "./nonexistent",
 						specifiers: [],
 						type: "import",
 						isTypeOnly: false,
-						location: { line: 4, column: 0, endLine: 4, endColumn: 18 }
-					}
+						location: { line: 4, column: 0, endLine: 4, endColumn: 18 },
+					},
 				],
 				totalCount: 4,
 				importCount: 4,
 				exportCount: 0,
 				dynamicImportCount: 0,
-				typeOnlyImportCount: 0
+				typeOnlyImportCount: 0,
 			};
 
 			mockFs.promises.access.mockImplementation(async (filePath: any) => {
@@ -372,22 +398,24 @@ describe("PathResolverInterpreter", () => {
 						specifiers: [],
 						type: "import",
 						isTypeOnly: false,
-						location: { line: 1, column: 0, endLine: 1, endColumn: 10 }
-					}
+						location: { line: 1, column: 0, endLine: 1, endColumn: 10 },
+					},
 				],
 				totalCount: 1,
 				importCount: 1,
 				exportCount: 0,
 				dynamicImportCount: 0,
-				typeOnlyImportCount: 0
+				typeOnlyImportCount: 0,
 			};
 
-			(mockFs.promises.readFile as jest.Mock).mockImplementation(async (filePath: any) => {
-				if (filePath === "/Users/test/project/tsconfig.json") {
-					return "{ invalid json }";
-				}
-				throw new Error("File not found");
-			});
+			(mockFs.promises.readFile as jest.Mock).mockImplementation(
+				async (filePath: any) => {
+					if (filePath === "/Users/test/project/tsconfig.json") {
+						return "{ invalid json }";
+					}
+					throw new Error("File not found");
+				},
+			);
 
 			mockFs.promises.access.mockImplementation(async () => {
 				return Promise.resolve();
@@ -407,14 +435,14 @@ describe("PathResolverInterpreter", () => {
 						specifiers: [],
 						type: "import",
 						isTypeOnly: false,
-						location: { line: 1, column: 0, endLine: 1, endColumn: 15 }
-					}
+						location: { line: 1, column: 0, endLine: 1, endColumn: 15 },
+					},
 				],
 				totalCount: 1,
 				importCount: 1,
 				exportCount: 0,
 				dynamicImportCount: 0,
-				typeOnlyImportCount: 0
+				typeOnlyImportCount: 0,
 			};
 
 			mockFs.promises.access.mockRejectedValue(new Error("Permission denied"));
@@ -433,9 +461,9 @@ describe("PathResolverInterpreter", () => {
 			mockContext.options = {
 				interpreterOptions: {
 					"path-resolver": {
-						extensions: [".vue", ".js"]
-					}
-				}
+						extensions: [".vue", ".js"],
+					},
+				},
 			};
 
 			const extractedData: DependencyExtractionResult = {
@@ -445,14 +473,14 @@ describe("PathResolverInterpreter", () => {
 						specifiers: [],
 						type: "import",
 						isTypeOnly: false,
-						location: { line: 1, column: 0, endLine: 1, endColumn: 15 }
-					}
+						location: { line: 1, column: 0, endLine: 1, endColumn: 15 },
+					},
 				],
 				totalCount: 1,
 				importCount: 1,
 				exportCount: 0,
 				dynamicImportCount: 0,
-				typeOnlyImportCount: 0
+				typeOnlyImportCount: 0,
 			};
 
 			mockFs.promises.access.mockImplementation(async (filePath: any) => {
@@ -464,7 +492,9 @@ describe("PathResolverInterpreter", () => {
 
 			const result = await interpreter.interpret(extractedData, mockContext);
 
-			expect(result.resolvedDependencies[0].resolvedPath).toBe("/Users/test/project/src/components/component.vue");
+			expect(result.resolvedDependencies[0].resolvedPath).toBe(
+				"/Users/test/project/src/components/component.vue",
+			);
 			expect(result.resolvedDependencies[0].extension).toBe(".vue");
 		});
 
@@ -472,9 +502,9 @@ describe("PathResolverInterpreter", () => {
 			mockContext.options = {
 				interpreterOptions: {
 					"path-resolver": {
-						resolveNodeModules: false
-					}
-				}
+						resolveNodeModules: false,
+					},
+				},
 			};
 
 			const extractedData: DependencyExtractionResult = {
@@ -484,19 +514,21 @@ describe("PathResolverInterpreter", () => {
 						specifiers: [],
 						type: "import",
 						isTypeOnly: false,
-						location: { line: 1, column: 0, endLine: 1, endColumn: 12 }
-					}
+						location: { line: 1, column: 0, endLine: 1, endColumn: 12 },
+					},
 				],
 				totalCount: 1,
 				importCount: 1,
 				exportCount: 0,
 				dynamicImportCount: 0,
-				typeOnlyImportCount: 0
+				typeOnlyImportCount: 0,
 			};
 
 			const result = await interpreter.interpret(extractedData, mockContext);
 
-			expect(result.resolvedDependencies[0].resolutionType).toBe("node_modules");
+			expect(result.resolvedDependencies[0].resolutionType).toBe(
+				"node_modules",
+			);
 			expect(result.resolvedDependencies[0].resolvedPath).toBeNull(); // Should not resolve when disabled
 		});
 	});

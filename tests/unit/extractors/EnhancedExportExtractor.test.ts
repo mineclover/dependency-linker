@@ -7,12 +7,12 @@ import {
 	type EnhancedExportExtractionResult,
 	type ExportMethodInfo,
 	type ExportStatistics,
-	type ClassExportInfo
-} from '../../../src/extractors/EnhancedExportExtractor';
-import { TypeScriptParser } from '../../../src/parsers/TypeScriptParser';
-import type { AST } from '../../../src/extractors/IDataExtractor';
+	type ClassExportInfo,
+} from "../../../src/extractors/EnhancedExportExtractor";
+import { TypeScriptParser } from "../../../src/parsers/TypeScriptParser";
+import type { AST } from "../../../src/extractors/IDataExtractor";
 
-describe('EnhancedExportExtractor', () => {
+describe("EnhancedExportExtractor", () => {
 	let extractor: EnhancedExportExtractor;
 	let parser: TypeScriptParser;
 
@@ -24,7 +24,10 @@ describe('EnhancedExportExtractor', () => {
 	/**
 	 * Helper function to parse code and extract exports
 	 */
-	const parseAndExtract = async (code: string, filename = '/test.ts'): Promise<EnhancedExportExtractionResult | null> => {
+	const parseAndExtract = async (
+		code: string,
+		filename = "/test.ts",
+	): Promise<EnhancedExportExtractionResult | null> => {
 		try {
 			const parseResult = await parser.parse(filename, code);
 			if (!parseResult.ast || parseResult.errors.length > 0) {
@@ -36,34 +39,34 @@ describe('EnhancedExportExtractor', () => {
 		}
 	};
 
-	describe('Basic Interface Implementation', () => {
-		it('should implement IDataExtractor interface', () => {
-			expect(extractor.getName()).toBe('EnhancedExportExtractor');
-			expect(extractor.getVersion()).toBe('1.0.0');
-			expect(extractor.supports('typescript')).toBe(true);
-			expect(extractor.supports('javascript')).toBe(true);
-			expect(extractor.supports('python')).toBe(false);
+	describe("Basic Interface Implementation", () => {
+		it("should implement IDataExtractor interface", () => {
+			expect(extractor.getName()).toBe("EnhancedExportExtractor");
+			expect(extractor.getVersion()).toBe("1.0.0");
+			expect(extractor.supports("typescript")).toBe(true);
+			expect(extractor.supports("javascript")).toBe(true);
+			expect(extractor.supports("python")).toBe(false);
 		});
 
-		it('should provide metadata', () => {
+		it("should provide metadata", () => {
 			const metadata = extractor.getMetadata();
-			expect(metadata.name).toBe('EnhancedExportExtractor');
-			expect(metadata.version).toBe('1.0.0');
-			expect(metadata.supportedLanguages).toContain('typescript');
-			expect(metadata.supportedLanguages).toContain('javascript');
+			expect(metadata.name).toBe("EnhancedExportExtractor");
+			expect(metadata.version).toBe("1.0.0");
+			expect(metadata.supportedLanguages).toContain("typescript");
+			expect(metadata.supportedLanguages).toContain("javascript");
 		});
 
-		it('should provide output schema', () => {
+		it("should provide output schema", () => {
 			const schema = extractor.getOutputSchema();
-			expect(schema.type).toBe('object');
-			expect(schema.properties).toHaveProperty('exportMethods');
-			expect(schema.properties).toHaveProperty('statistics');
-			expect(schema.properties).toHaveProperty('classes');
+			expect(schema.type).toBe("object");
+			expect(schema.properties).toHaveProperty("exportMethods");
+			expect(schema.properties).toHaveProperty("statistics");
+			expect(schema.properties).toHaveProperty("classes");
 		});
 	});
 
-	describe('Function Export Detection', () => {
-		it('should extract simple function exports', async () => {
+	describe("Function Export Detection", () => {
+		it("should extract simple function exports", async () => {
 			const code = `
 export function greet(name: string): string {
   return \`Hello, \${name}!\`;
@@ -79,21 +82,23 @@ export async function fetchData(url: string): Promise<any> {
 			expect(result!.statistics.functionExports).toBe(2);
 			expect(result!.statistics.totalExports).toBe(2);
 
-			const functions = result!.exportMethods.filter(exp => exp.exportType === 'function');
+			const functions = result!.exportMethods.filter(
+				(exp) => exp.exportType === "function",
+			);
 			expect(functions).toHaveLength(2);
 
-			const greet = functions.find(fn => fn.name === 'greet');
+			const greet = functions.find((fn) => fn.name === "greet");
 			expect(greet).toBeDefined();
 			expect(greet!.isAsync).toBe(false);
 			expect(greet!.parameters).toHaveLength(1);
-			expect(greet!.parameters![0].name).toBe('name');
+			expect(greet!.parameters![0].name).toBe("name");
 
-			const fetchData = functions.find(fn => fn.name === 'fetchData');
+			const fetchData = functions.find((fn) => fn.name === "fetchData");
 			expect(fetchData).toBeDefined();
 			expect(fetchData!.isAsync).toBe(true);
 		});
 
-		it('should handle function parameters correctly', async () => {
+		it("should handle function parameters correctly", async () => {
 			const code = `
 export function complexFunction(
   required: string,
@@ -106,15 +111,17 @@ export function complexFunction(
 			const result = await parseAndExtract(code);
 			expect(result).not.toBeNull();
 
-			const func = result!.exportMethods.find(exp => exp.name === 'complexFunction');
+			const func = result!.exportMethods.find(
+				(exp) => exp.name === "complexFunction",
+			);
 			expect(func).toBeDefined();
 			expect(func!.parameters).toHaveLength(4);
 			expect(func!.parameters![1].optional).toBe(true);
 		});
 	});
 
-	describe('Class Export Detection', () => {
-		it('should extract class exports with methods and properties', async () => {
+	describe("Class Export Detection", () => {
+		it("should extract class exports with methods and properties", async () => {
 			const code = `
 export class Calculator {
   private value: number = 0;
@@ -148,34 +155,38 @@ export class Calculator {
 			expect(result!.statistics.classMethodsExports).toBeGreaterThan(0);
 			expect(result!.statistics.classPropertiesExports).toBeGreaterThan(0);
 
-			const classExport = result!.exportMethods.find(exp => exp.exportType === 'class');
+			const classExport = result!.exportMethods.find(
+				(exp) => exp.exportType === "class",
+			);
 			expect(classExport).toBeDefined();
-			expect(classExport!.name).toBe('Calculator');
+			expect(classExport!.name).toBe("Calculator");
 
-			const methods = result!.exportMethods.filter(exp => exp.exportType === 'class_method');
-			const addMethod = methods.find(m => m.name === 'add');
+			const methods = result!.exportMethods.filter(
+				(exp) => exp.exportType === "class_method",
+			);
+			const addMethod = methods.find((m) => m.name === "add");
 			expect(addMethod).toBeDefined();
-			expect(addMethod!.parentClass).toBe('Calculator');
-			expect(addMethod!.visibility).toBe('public');
+			expect(addMethod!.parentClass).toBe("Calculator");
+			expect(addMethod!.visibility).toBe("public");
 			expect(addMethod!.isStatic).toBe(false);
 
-			const multiplyMethod = methods.find(m => m.name === 'multiply');
+			const multiplyMethod = methods.find((m) => m.name === "multiply");
 			expect(multiplyMethod).toBeDefined();
 			expect(multiplyMethod!.isStatic).toBe(true);
 
-			const validateMethod = methods.find(m => m.name === 'validate');
+			const validateMethod = methods.find((m) => m.name === "validate");
 			expect(validateMethod).toBeDefined();
-			expect(validateMethod!.visibility).toBe('private');
+			expect(validateMethod!.visibility).toBe("private");
 
 			// Check class details
 			expect(result!.classes).toHaveLength(1);
 			const classInfo = result!.classes[0];
-			expect(classInfo.className).toBe('Calculator');
+			expect(classInfo.className).toBe("Calculator");
 			expect(classInfo.methods.length).toBeGreaterThan(0);
 			expect(classInfo.properties.length).toBeGreaterThan(0);
 		});
 
-		it('should handle class inheritance', async () => {
+		it("should handle class inheritance", async () => {
 			const code = `
 export abstract class BaseService {
   protected name: string;
@@ -202,14 +213,16 @@ export class UserService extends BaseService {
 			expect(result).not.toBeNull();
 			expect(result!.statistics.classExports).toBe(2);
 
-			const userServiceClass = result!.classes.find(cls => cls.className === 'UserService');
+			const userServiceClass = result!.classes.find(
+				(cls) => cls.className === "UserService",
+			);
 			expect(userServiceClass).toBeDefined();
-			expect(userServiceClass!.superClass).toBe('BaseService');
+			expect(userServiceClass!.superClass).toBe("BaseService");
 		});
 	});
 
-	describe('Variable Export Detection', () => {
-		it('should extract variable exports', async () => {
+	describe("Variable Export Detection", () => {
+		it("should extract variable exports", async () => {
 			const code = `
 export const API_URL = 'https://api.example.com';
 export let counter = 0;
@@ -223,15 +236,17 @@ export { internal as publicInternal };
 			expect(result).not.toBeNull();
 			expect(result!.statistics.variableExports).toBeGreaterThanOrEqual(3);
 
-			const variables = result!.exportMethods.filter(exp => exp.exportType === 'variable');
-			const apiUrl = variables.find(v => v.name === 'API_URL');
+			const variables = result!.exportMethods.filter(
+				(exp) => exp.exportType === "variable",
+			);
+			const apiUrl = variables.find((v) => v.name === "API_URL");
 			expect(apiUrl).toBeDefined();
-			expect(apiUrl!.declarationType).toBe('named_export');
+			expect(apiUrl!.declarationType).toBe("named_export");
 		});
 	});
 
-	describe('Type Export Detection', () => {
-		it('should extract type and interface exports', async () => {
+	describe("Type Export Detection", () => {
+		it("should extract type and interface exports", async () => {
 			const code = `
 export interface User {
   id: string;
@@ -251,19 +266,21 @@ export enum Status {
 			expect(result).not.toBeNull();
 			expect(result!.statistics.typeExports).toBeGreaterThanOrEqual(2);
 
-			const types = result!.exportMethods.filter(exp => exp.exportType === 'type');
+			const types = result!.exportMethods.filter(
+				(exp) => exp.exportType === "type",
+			);
 			expect(types.length).toBeGreaterThanOrEqual(2);
 
-			const userInterface = types.find(t => t.name === 'User');
+			const userInterface = types.find((t) => t.name === "User");
 			expect(userInterface).toBeDefined();
 
-			const userTypeAlias = types.find(t => t.name === 'UserFilter');
+			const userTypeAlias = types.find((t) => t.name === "UserFilter");
 			expect(userTypeAlias).toBeDefined();
 		});
 	});
 
-	describe('Default Export Detection', () => {
-		it('should extract default exports', async () => {
+	describe("Default Export Detection", () => {
+		it("should extract default exports", async () => {
 			const code = `
 class DefaultService {
   process() {
@@ -278,11 +295,13 @@ export default DefaultService;
 			expect(result).not.toBeNull();
 			expect(result!.statistics.defaultExports).toBe(1);
 
-			const defaultExport = result!.exportMethods.find(exp => exp.exportType === 'default');
+			const defaultExport = result!.exportMethods.find(
+				(exp) => exp.exportType === "default",
+			);
 			expect(defaultExport).toBeDefined();
 		});
 
-		it('should handle inline default exports', async () => {
+		it("should handle inline default exports", async () => {
 			const code = `
 export default class InlineDefault {
   method() {
@@ -298,8 +317,8 @@ export default class InlineDefault {
 		});
 	});
 
-	describe('Re-export Detection', () => {
-		it('should detect re-exports', async () => {
+	describe("Re-export Detection", () => {
+		it("should detect re-exports", async () => {
 			const code = `
 export { UserService, ApiService } from './services';
 export * from './types';
@@ -309,13 +328,15 @@ export { default as DefaultLogger } from './logger';
 			const result = await parseAndExtract(code);
 			expect(result).not.toBeNull();
 
-			const reExports = result!.exportMethods.filter(exp => exp.exportType === 're_export');
+			const reExports = result!.exportMethods.filter(
+				(exp) => exp.exportType === "re_export",
+			);
 			expect(reExports.length).toBeGreaterThan(0);
 		});
 	});
 
-	describe('Complex Scenarios', () => {
-		it('should handle mixed export types in single file', async () => {
+	describe("Complex Scenarios", () => {
+		it("should handle mixed export types in single file", async () => {
 			const code = `
 // Function exports
 export function utils() {}
@@ -368,8 +389,8 @@ export { ExternalType } from './external';
 		});
 	});
 
-	describe('Location Information', () => {
-		it('should provide accurate location information', async () => {
+	describe("Location Information", () => {
+		it("should provide accurate location information", async () => {
 			const code = `
 export function firstFunction() {}
 
@@ -383,28 +404,30 @@ export const variable = 'value';
 			const result = await parseAndExtract(code);
 			expect(result).not.toBeNull();
 
-			result!.exportMethods.forEach(exp => {
+			result!.exportMethods.forEach((exp) => {
 				expect(exp.location.line).toBeGreaterThan(0);
 				expect(exp.location.column).toBeGreaterThanOrEqual(0);
 			});
 
 			// First function should be on line 2
-			const firstFunc = result!.exportMethods.find(exp => exp.name === 'firstFunction');
+			const firstFunc = result!.exportMethods.find(
+				(exp) => exp.name === "firstFunction",
+			);
 			expect(firstFunc).toBeDefined();
 			expect(firstFunc!.location.line).toBe(2);
 		});
 	});
 
-	describe('Edge Cases', () => {
-		it('should handle empty files', async () => {
-			const result = await parseAndExtract('');
+	describe("Edge Cases", () => {
+		it("should handle empty files", async () => {
+			const result = await parseAndExtract("");
 			expect(result).not.toBeNull();
 			expect(result!.statistics.totalExports).toBe(0);
 			expect(result!.exportMethods).toHaveLength(0);
 			expect(result!.classes).toHaveLength(0);
 		});
 
-		it('should handle files with no exports', async () => {
+		it("should handle files with no exports", async () => {
 			const code = `
 function internalFunction() {}
 class InternalClass {}
@@ -416,7 +439,7 @@ const internal = 'value';
 			expect(result!.statistics.totalExports).toBe(0);
 		});
 
-		it('should handle syntax errors gracefully', async () => {
+		it("should handle syntax errors gracefully", async () => {
 			const brokenCode = `
 export function broken(
 // missing closing parenthesis and brace
@@ -427,7 +450,7 @@ export function broken(
 			expect(result).toBeNull();
 		});
 
-		it('should handle complex generic types', async () => {
+		it("should handle complex generic types", async () => {
 			const code = `
 export function genericFunction<T extends Record<string, any>>(
   param: T
@@ -449,8 +472,8 @@ export class GenericClass<T, U = string> {
 		});
 	});
 
-	describe('Validation', () => {
-		it('should validate extraction results', async () => {
+	describe("Validation", () => {
+		it("should validate extraction results", async () => {
 			const code = `export function test() {}`;
 			const result = await parseAndExtract(code);
 			expect(result).not.toBeNull();
@@ -460,11 +483,11 @@ export class GenericClass<T, U = string> {
 			expect(validation.errors).toHaveLength(0);
 		});
 
-		it('should detect invalid results', () => {
+		it("should detect invalid results", () => {
 			const invalidResult = {
 				exportMethods: null as any,
 				statistics: {} as any,
-				classes: [] as any
+				classes: [] as any,
 			};
 
 			const validation = extractor.validate(invalidResult);
@@ -473,13 +496,13 @@ export class GenericClass<T, U = string> {
 		});
 	});
 
-	describe('Configuration', () => {
-		it('should allow configuration changes', () => {
+	describe("Configuration", () => {
+		it("should allow configuration changes", () => {
 			const originalConfig = extractor.getConfiguration();
 
 			extractor.configure({
 				timeout: 5000,
-				memoryLimit: 25 * 1024 * 1024
+				memoryLimit: 25 * 1024 * 1024,
 			});
 
 			const newConfig = extractor.getConfiguration();
@@ -491,22 +514,31 @@ export class GenericClass<T, U = string> {
 		});
 	});
 
-	describe('Performance', () => {
-		it('should handle moderately large files', async () => {
+	describe("Performance", () => {
+		it("should handle moderately large files", async () => {
 			// Generate a file with many exports
-			const functions = Array(50).fill(0).map((_, i) =>
-				`export function func${i}(param: number): number { return param * ${i}; }`
-			).join('\n');
+			const functions = Array(50)
+				.fill(0)
+				.map(
+					(_, i) =>
+						`export function func${i}(param: number): number { return param * ${i}; }`,
+				)
+				.join("\n");
 
-			const classes = Array(10).fill(0).map((_, i) => `
+			const classes = Array(10)
+				.fill(0)
+				.map(
+					(_, i) => `
 export class Class${i} {
   private value${i} = ${i};
   public method${i}(): number { return this.value${i}; }
   public static staticMethod${i}(): void {}
 }
-			`).join('\n');
+			`,
+				)
+				.join("\n");
 
-			const code = functions + '\n' + classes;
+			const code = functions + "\n" + classes;
 
 			const startTime = Date.now();
 			const result = await parseAndExtract(code);
@@ -518,9 +550,9 @@ export class Class${i} {
 		});
 	});
 
-	describe('Memory Management', () => {
-		it('should clean up resources on dispose', () => {
-			const spy = jest.spyOn(extractor, 'dispose');
+	describe("Memory Management", () => {
+		it("should clean up resources on dispose", () => {
+			const spy = jest.spyOn(extractor, "dispose");
 			extractor.dispose();
 			expect(spy).toHaveBeenCalled();
 		});

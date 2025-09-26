@@ -1,32 +1,32 @@
 {
-  "timestamp": "2025-09-20T22:43:18.820Z",
-  "totalExecutionTime": 3.2,
-  "totalTests": 0,
-  "failedTests": 0,
-  "failedSuites": 0,
-  "passRate": 0,
-  "coveragePercentage": 0,
-  "memoryUsage": 0,
-  "workerIssues": false,
-  "parserWarnings": 0,
-  "environment": {
-    "nodeVersion": "v22.17.1",
-    "jestVersion": "^29.0.0",
-    "platform": "darwin",
-    "arch": "arm64",
-    "cpuCount": 12,
-    "totalMemory": 18432,
-    "availableMemory": 87.640625
-  },
-  "metadata": {
-    "measurementDuration": 17,
-    "retries": 0,
-    "confidence": 0.875,
-    "notes": "Baseline established with 5 measurement runs",
-    "gitCommit": "6a727243ca55c85f138b1ab55c46d1d569827886",
-    "branch": "005-test-optimization"
-  },
-  "duration": 3.2,
-  "executionTime": 3.2,
-  "id": "baseline-1758408198837"
+	"timestamp": "2025-09-20T22:43:18.820Z",
+	"totalExecutionTime": 3.2,
+	"totalTests": 0,
+	"failedTests": 0,
+	"failedSuites": 0,
+	"passRate": 0,
+	"coveragePercentage": 0,
+	"memoryUsage": 0,
+	"workerIssues": false,
+	"parserWarnings": 0,
+	"environment": {
+		"nodeVersion": "v22.17.1",
+		"jestVersion": "^29.0.0",
+		"platform": "darwin",
+		"arch": "arm64",
+		"cpuCount": 12,
+		"totalMemory": 18432,
+		"availableMemory": 87.640625
+	},
+	"metadata": {
+		"measurementDuration": 17,
+		"retries": 0,
+		"confidence": 0.875,
+		"notes": "Baseline established with 5 measurement runs",
+		"gitCommit": "6a727243ca55c85f138b1ab55c46d1d569827886",
+		"branch": "005-test-optimization"
+	},
+	"duration": 3.2,
+	"executionTime": 3.2,
+	"id": "baseline-1758408198837"
 }

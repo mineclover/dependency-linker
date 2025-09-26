@@ -1,19 +1,17 @@
 {
-  "rootFile": "src/parsers/ILanguageParser.ts",
-  "totalFiles": 1,
-  "maxDepth": 0,
-  "dependencies": {
-    "src/parsers/ILanguageParser.ts": {
-      "filePath": "src/parsers/ILanguageParser.ts",
-      "relativePath": "src/parsers/ILanguageParser.ts",
-      "dependencies": [],
-      "dependents": [],
-      "depth": 0,
-      "type": "import"
-    }
-  },
-  "dependencyTree": [
-    "📄 src/parsers/ILanguageParser.ts (의존성: 0개)"
-  ],
-  "circularDependencies": []
+	"rootFile": "src/parsers/ILanguageParser.ts",
+	"totalFiles": 1,
+	"maxDepth": 0,
+	"dependencies": {
+		"src/parsers/ILanguageParser.ts": {
+			"filePath": "src/parsers/ILanguageParser.ts",
+			"relativePath": "src/parsers/ILanguageParser.ts",
+			"dependencies": [],
+			"dependents": [],
+			"depth": 0,
+			"type": "import"
+		}
+	},
+	"dependencyTree": ["📄 src/parsers/ILanguageParser.ts (의존성: 0개)"],
+	"circularDependencies": []
 }

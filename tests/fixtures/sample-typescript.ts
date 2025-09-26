@@ -1,21 +1,21 @@
-import { Service } from './service';
+import { Service } from "./service";
 
 export interface ComponentProps {
-  message?: string;
+	message?: string;
 }
 
 export class SampleComponent {
-  private service: Service;
+	private service: Service;
 
-  constructor(props: ComponentProps = {}) {
-    this.service = new Service();
-  }
+	constructor(props: ComponentProps = {}) {
+		this.service = new Service();
+	}
 
-  render(): string {
-    return 'Hello World';
-  }
+	render(): string {
+		return "Hello World";
+	}
 
-  getMessage(): string {
-    return this.service.getData();
-  }
+	getMessage(): string {
+		return this.service.getData();
+	}
 }

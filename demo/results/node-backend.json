@@ -1,627 +1,627 @@
 {
-  "filePath": "demo/examples/node-backend.ts",
-  "success": true,
-  "dependencies": [
-    {
-      "source": "express",
-      "type": "external",
-      "location": {
-        "line": 1,
-        "column": 0,
-        "offset": 0
-      },
-      "isNodeBuiltin": false,
-      "isScopedPackage": false,
-      "packageName": "express"
-    },
-    {
-      "source": "cors",
-      "type": "external",
-      "location": {
-        "line": 2,
-        "column": 0,
-        "offset": 68
-      },
-      "isNodeBuiltin": false,
-      "isScopedPackage": false,
-      "packageName": "cors"
-    },
-    {
-      "source": "helmet",
-      "type": "external",
-      "location": {
-        "line": 3,
-        "column": 0,
-        "offset": 93
-      },
-      "isNodeBuiltin": false,
-      "isScopedPackage": false,
-      "packageName": "helmet"
-    },
-    {
-      "source": "express-rate-limit",
-      "type": "external",
-      "location": {
-        "line": 4,
-        "column": 0,
-        "offset": 122
-      },
-      "isNodeBuiltin": false,
-      "isScopedPackage": false,
-      "packageName": "express-rate-limit"
-    },
-    {
-      "source": "pg",
-      "type": "external",
-      "location": {
-        "line": 5,
-        "column": 0,
-        "offset": 166
-      },
-      "isNodeBuiltin": false,
-      "isScopedPackage": false,
-      "packageName": "pg"
-    },
-    {
-      "source": "ioredis",
-      "type": "external",
-      "location": {
-        "line": 6,
-        "column": 0,
-        "offset": 193
-      },
-      "isNodeBuiltin": false,
-      "isScopedPackage": false,
-      "packageName": "ioredis"
-    },
-    {
-      "source": "jsonwebtoken",
-      "type": "external",
-      "location": {
-        "line": 7,
-        "column": 0,
-        "offset": 222
-      },
-      "isNodeBuiltin": false,
-      "isScopedPackage": false,
-      "packageName": "jsonwebtoken"
-    },
-    {
-      "source": "bcrypt",
-      "type": "external",
-      "location": {
-        "line": 8,
-        "column": 0,
-        "offset": 254
-      },
-      "isNodeBuiltin": false,
-      "isScopedPackage": false,
-      "packageName": "bcrypt"
-    },
-    {
-      "source": "express-validator",
-      "type": "external",
-      "location": {
-        "line": 9,
-        "column": 0,
-        "offset": 283
-      },
-      "isNodeBuiltin": false,
-      "isScopedPackage": false,
-      "packageName": "express-validator"
-    },
-    {
-      "source": "winston",
-      "type": "external",
-      "location": {
-        "line": 10,
-        "column": 0,
-        "offset": 343
-      },
-      "isNodeBuiltin": false,
-      "isScopedPackage": false,
-      "packageName": "winston"
-    },
-    {
-      "source": "http-proxy-middleware",
-      "type": "external",
-      "location": {
-        "line": 11,
-        "column": 0,
-        "offset": 374
-      },
-      "isNodeBuiltin": false,
-      "isScopedPackage": false,
-      "packageName": "http-proxy-middleware"
-    },
-    {
-      "source": "../database/connection",
-      "type": "relative",
-      "location": {
-        "line": 13,
-        "column": 0,
-        "offset": 438
-      },
-      "isNodeBuiltin": false,
-      "isScopedPackage": false,
-      "packageName": ".."
-    },
-    {
-      "source": "../repositories/UserRepository",
-      "type": "relative",
-      "location": {
-        "line": 14,
-        "column": 0,
-        "offset": 499
-      },
-      "isNodeBuiltin": false,
-      "isScopedPackage": false,
-      "packageName": ".."
-    },
-    {
-      "source": "../services/AuthService",
-      "type": "relative",
-      "location": {
-        "line": 15,
-        "column": 0,
-        "offset": 564
-      },
-      "isNodeBuiltin": false,
-      "isScopedPackage": false,
-      "packageName": ".."
-    },
-    {
-      "source": "../services/EmailService",
-      "type": "relative",
-      "location": {
-        "line": 16,
-        "column": 0,
-        "offset": 619
-      },
-      "isNodeBuiltin": false,
-      "isScopedPackage": false,
-      "packageName": ".."
-    },
-    {
-      "source": "../services/CacheService",
-      "type": "relative",
-      "location": {
-        "line": 17,
-        "column": 0,
-        "offset": 676
-      },
-      "isNodeBuiltin": false,
-      "isScopedPackage": false,
-      "packageName": ".."
-    },
-    {
-      "source": "../config/production.json",
-      "type": "relative",
-      "location": {
-        "line": 18,
-        "column": 0,
-        "offset": 733
-      },
-      "isNodeBuiltin": false,
-      "isScopedPackage": false,
-      "packageName": "..",
-      "extension": ".json"
-    },
-    {
-      "source": "../utils/logger",
-      "type": "relative",
-      "location": {
-        "line": 19,
-        "column": 0,
-        "offset": 781
-      },
-      "isNodeBuiltin": false,
-      "isScopedPackage": false,
-      "packageName": ".."
-    },
-    {
-      "source": "../middleware/auth",
-      "type": "relative",
-      "location": {
-        "line": 20,
-        "column": 0,
-        "offset": 823
-      },
-      "isNodeBuiltin": false,
-      "isScopedPackage": false,
-      "packageName": ".."
-    },
-    {
-      "source": "../middleware/errorHandler",
-      "type": "relative",
-      "location": {
-        "line": 21,
-        "column": 0,
-        "offset": 894
-      },
-      "isNodeBuiltin": false,
-      "isScopedPackage": false,
-      "packageName": ".."
-    }
-  ],
-  "imports": [
-    {
-      "source": "express",
-      "specifiers": [
-        {
-          "type": "named",
-          "imported": "Request",
-          "local": "Request"
-        },
-        {
-          "type": "named",
-          "imported": "Response",
-          "local": "Response"
-        },
-        {
-          "type": "named",
-          "imported": "NextFunction",
-          "local": "NextFunction"
-        },
-        {
-          "type": "default",
-          "imported": "default",
-          "local": "express"
-        }
-      ],
-      "location": {
-        "line": 1,
-        "column": 0,
-        "offset": 0
-      },
-      "isTypeOnly": false
-    },
-    {
-      "source": "cors",
-      "specifiers": [
-        {
-          "type": "default",
-          "imported": "default",
-          "local": "cors"
-        }
-      ],
-      "location": {
-        "line": 2,
-        "column": 0,
-        "offset": 68
-      },
-      "isTypeOnly": false
-    },
-    {
-      "source": "helmet",
-      "specifiers": [
-        {
-          "type": "default",
-          "imported": "default",
-          "local": "helmet"
-        }
-      ],
-      "location": {
-        "line": 3,
-        "column": 0,
-        "offset": 93
-      },
-      "isTypeOnly": false
-    },
-    {
-      "source": "express-rate-limit",
-      "specifiers": [
-        {
-          "type": "default",
-          "imported": "default",
-          "local": "rateLimit"
-        }
-      ],
-      "location": {
-        "line": 4,
-        "column": 0,
-        "offset": 122
-      },
-      "isTypeOnly": false
-    },
-    {
-      "source": "pg",
-      "specifiers": [
-        {
-          "type": "named",
-          "imported": "Pool",
-          "local": "Pool"
-        }
-      ],
-      "location": {
-        "line": 5,
-        "column": 0,
-        "offset": 166
-      },
-      "isTypeOnly": false
-    },
-    {
-      "source": "ioredis",
-      "specifiers": [
-        {
-          "type": "default",
-          "imported": "default",
-          "local": "Redis"
-        }
-      ],
-      "location": {
-        "line": 6,
-        "column": 0,
-        "offset": 193
-      },
-      "isTypeOnly": false
-    },
-    {
-      "source": "jsonwebtoken",
-      "specifiers": [
-        {
-          "type": "default",
-          "imported": "default",
-          "local": "jwt"
-        }
-      ],
-      "location": {
-        "line": 7,
-        "column": 0,
-        "offset": 222
-      },
-      "isTypeOnly": false
-    },
-    {
-      "source": "bcrypt",
-      "specifiers": [
-        {
-          "type": "default",
-          "imported": "default",
-          "local": "bcrypt"
-        }
-      ],
-      "location": {
-        "line": 8,
-        "column": 0,
-        "offset": 254
-      },
-      "isTypeOnly": false
-    },
-    {
-      "source": "express-validator",
-      "specifiers": [
-        {
-          "type": "named",
-          "imported": "body",
-          "local": "body"
-        },
-        {
-          "type": "named",
-          "imported": "validationResult",
-          "local": "validationResult"
-        }
-      ],
-      "location": {
-        "line": 9,
-        "column": 0,
-        "offset": 283
-      },
-      "isTypeOnly": false
-    },
-    {
-      "source": "winston",
-      "specifiers": [
-        {
-          "type": "default",
-          "imported": "default",
-          "local": "winston"
-        }
-      ],
-      "location": {
-        "line": 10,
-        "column": 0,
-        "offset": 343
-      },
-      "isTypeOnly": false
-    },
-    {
-      "source": "http-proxy-middleware",
-      "specifiers": [
-        {
-          "type": "named",
-          "imported": "createProxyMiddleware",
-          "local": "createProxyMiddleware"
-        }
-      ],
-      "location": {
-        "line": 11,
-        "column": 0,
-        "offset": 374
-      },
-      "isTypeOnly": false
-    },
-    {
-      "source": "../database/connection",
-      "specifiers": [
-        {
-          "type": "named",
-          "imported": "DatabaseConnection",
-          "local": "DatabaseConnection"
-        }
-      ],
-      "location": {
-        "line": 13,
-        "column": 0,
-        "offset": 438
-      },
-      "isTypeOnly": false
-    },
-    {
-      "source": "../repositories/UserRepository",
-      "specifiers": [
-        {
-          "type": "named",
-          "imported": "UserRepository",
-          "local": "UserRepository"
-        }
-      ],
-      "location": {
-        "line": 14,
-        "column": 0,
-        "offset": 499
-      },
-      "isTypeOnly": false
-    },
-    {
-      "source": "../services/AuthService",
-      "specifiers": [
-        {
-          "type": "named",
-          "imported": "AuthService",
-          "local": "AuthService"
-        }
-      ],
-      "location": {
-        "line": 15,
-        "column": 0,
-        "offset": 564
-      },
-      "isTypeOnly": false
-    },
-    {
-      "source": "../services/EmailService",
-      "specifiers": [
-        {
-          "type": "named",
-          "imported": "EmailService",
-          "local": "EmailService"
-        }
-      ],
-      "location": {
-        "line": 16,
-        "column": 0,
-        "offset": 619
-      },
-      "isTypeOnly": false
-    },
-    {
-      "source": "../services/CacheService",
-      "specifiers": [
-        {
-          "type": "named",
-          "imported": "CacheService",
-          "local": "CacheService"
-        }
-      ],
-      "location": {
-        "line": 17,
-        "column": 0,
-        "offset": 676
-      },
-      "isTypeOnly": false
-    },
-    {
-      "source": "../config/production.json",
-      "specifiers": [
-        {
-          "type": "default",
-          "imported": "default",
-          "local": "config"
-        }
-      ],
-      "location": {
-        "line": 18,
-        "column": 0,
-        "offset": 733
-      },
-      "isTypeOnly": false
-    },
-    {
-      "source": "../utils/logger",
-      "specifiers": [
-        {
-          "type": "named",
-          "imported": "logger",
-          "local": "logger"
-        }
-      ],
-      "location": {
-        "line": 19,
-        "column": 0,
-        "offset": 781
-      },
-      "isTypeOnly": false
-    },
-    {
-      "source": "../middleware/auth",
-      "specifiers": [
-        {
-          "type": "named",
-          "imported": "validateApiKey",
-          "local": "validateApiKey"
-        },
-        {
-          "type": "named",
-          "imported": "validateUserRole",
-          "local": "validateUserRole"
-        }
-      ],
-      "location": {
-        "line": 20,
-        "column": 0,
-        "offset": 823
-      },
-      "isTypeOnly": false
-    },
-    {
-      "source": "../middleware/errorHandler",
-      "specifiers": [
-        {
-          "type": "named",
-          "imported": "errorHandler",
-          "local": "errorHandler"
-        }
-      ],
-      "location": {
-        "line": 21,
-        "column": 0,
-        "offset": 894
-      },
-      "isTypeOnly": false
-    }
-  ],
-  "exports": [
-    {
-      "name": "default",
-      "type": "default",
-      "location": {
-        "line": 426,
-        "column": 0,
-        "offset": 9872
-      },
-      "isTypeOnly": false
-    },
-    {
-      "name": "ApiServer",
-      "type": "named",
-      "location": {
-        "line": 427,
-        "column": 0,
-        "offset": 9895
-      },
-      "isTypeOnly": false
-    },
-    {
-      "name": "User",
-      "type": "named",
-      "location": {
-        "line": 428,
-        "column": 0,
-        "offset": 9917
-      },
-      "isTypeOnly": true
-    }
-  ],
-  "parseTime": 13
+	"filePath": "demo/examples/node-backend.ts",
+	"success": true,
+	"dependencies": [
+		{
+			"source": "express",
+			"type": "external",
+			"location": {
+				"line": 1,
+				"column": 0,
+				"offset": 0
+			},
+			"isNodeBuiltin": false,
+			"isScopedPackage": false,
+			"packageName": "express"
+		},
+		{
+			"source": "cors",
+			"type": "external",
+			"location": {
+				"line": 2,
+				"column": 0,
+				"offset": 68
+			},
+			"isNodeBuiltin": false,
+			"isScopedPackage": false,
+			"packageName": "cors"
+		},
+		{
+			"source": "helmet",
+			"type": "external",
+			"location": {
+				"line": 3,
+				"column": 0,
+				"offset": 93
+			},
+			"isNodeBuiltin": false,
+			"isScopedPackage": false,
+			"packageName": "helmet"
+		},
+		{
+			"source": "express-rate-limit",
+			"type": "external",
+			"location": {
+				"line": 4,
+				"column": 0,
+				"offset": 122
+			},
+			"isNodeBuiltin": false,
+			"isScopedPackage": false,
+			"packageName": "express-rate-limit"
+		},
+		{
+			"source": "pg",
+			"type": "external",
+			"location": {
+				"line": 5,
+				"column": 0,
+				"offset": 166
+			},
+			"isNodeBuiltin": false,
+			"isScopedPackage": false,
+			"packageName": "pg"
+		},
+		{
+			"source": "ioredis",
+			"type": "external",
+			"location": {
+				"line": 6,
+				"column": 0,
+				"offset": 193
+			},
+			"isNodeBuiltin": false,
+			"isScopedPackage": false,
+			"packageName": "ioredis"
+		},
+		{
+			"source": "jsonwebtoken",
+			"type": "external",
+			"location": {
+				"line": 7,
+				"column": 0,
+				"offset": 222
+			},
+			"isNodeBuiltin": false,
+			"isScopedPackage": false,
+			"packageName": "jsonwebtoken"
+		},
+		{
+			"source": "bcrypt",
+			"type": "external",
+			"location": {
+				"line": 8,
+				"column": 0,
+				"offset": 254
+			},
+			"isNodeBuiltin": false,
+			"isScopedPackage": false,
+			"packageName": "bcrypt"
+		},
+		{
+			"source": "express-validator",
+			"type": "external",
+			"location": {
+				"line": 9,
+				"column": 0,
+				"offset": 283
+			},
+			"isNodeBuiltin": false,
+			"isScopedPackage": false,
+			"packageName": "express-validator"
+		},
+		{
+			"source": "winston",
+			"type": "external",
+			"location": {
+				"line": 10,
+				"column": 0,
+				"offset": 343
+			},
+			"isNodeBuiltin": false,
+			"isScopedPackage": false,
+			"packageName": "winston"
+		},
+		{
+			"source": "http-proxy-middleware",
+			"type": "external",
+			"location": {
+				"line": 11,
+				"column": 0,
+				"offset": 374
+			},
+			"isNodeBuiltin": false,
+			"isScopedPackage": false,
+			"packageName": "http-proxy-middleware"
+		},
+		{
+			"source": "../database/connection",
+			"type": "relative",
+			"location": {
+				"line": 13,
+				"column": 0,
+				"offset": 438
+			},
+			"isNodeBuiltin": false,
+			"isScopedPackage": false,
+			"packageName": ".."
+		},
+		{
+			"source": "../repositories/UserRepository",
+			"type": "relative",
+			"location": {
+				"line": 14,
+				"column": 0,
+				"offset": 499
+			},
+			"isNodeBuiltin": false,
+			"isScopedPackage": false,
+			"packageName": ".."
+		},
+		{
+			"source": "../services/AuthService",
+			"type": "relative",
+			"location": {
+				"line": 15,
+				"column": 0,
+				"offset": 564
+			},
+			"isNodeBuiltin": false,
+			"isScopedPackage": false,
+			"packageName": ".."
+		},
+		{
+			"source": "../services/EmailService",
+			"type": "relative",
+			"location": {
+				"line": 16,
+				"column": 0,
+				"offset": 619
+			},
+			"isNodeBuiltin": false,
+			"isScopedPackage": false,
+			"packageName": ".."
+		},
+		{
+			"source": "../services/CacheService",
+			"type": "relative",
+			"location": {
+				"line": 17,
+				"column": 0,
+				"offset": 676
+			},
+			"isNodeBuiltin": false,
+			"isScopedPackage": false,
+			"packageName": ".."
+		},
+		{
+			"source": "../config/production.json",
+			"type": "relative",
+			"location": {
+				"line": 18,
+				"column": 0,
+				"offset": 733
+			},
+			"isNodeBuiltin": false,
+			"isScopedPackage": false,
+			"packageName": "..",
+			"extension": ".json"
+		},
+		{
+			"source": "../utils/logger",
+			"type": "relative",
+			"location": {
+				"line": 19,
+				"column": 0,
+				"offset": 781
+			},
+			"isNodeBuiltin": false,
+			"isScopedPackage": false,
+			"packageName": ".."
+		},
+		{
+			"source": "../middleware/auth",
+			"type": "relative",
+			"location": {
+				"line": 20,
+				"column": 0,
+				"offset": 823
+			},
+			"isNodeBuiltin": false,
+			"isScopedPackage": false,
+			"packageName": ".."
+		},
+		{
+			"source": "../middleware/errorHandler",
+			"type": "relative",
+			"location": {
+				"line": 21,
+				"column": 0,
+				"offset": 894
+			},
+			"isNodeBuiltin": false,
+			"isScopedPackage": false,
+			"packageName": ".."
+		}
+	],
+	"imports": [
+		{
+			"source": "express",
+			"specifiers": [
+				{
+					"type": "named",
+					"imported": "Request",
+					"local": "Request"
+				},
+				{
+					"type": "named",
+					"imported": "Response",
+					"local": "Response"
+				},
+				{
+					"type": "named",
+					"imported": "NextFunction",
+					"local": "NextFunction"
+				},
+				{
+					"type": "default",
+					"imported": "default",
+					"local": "express"
+				}
+			],
+			"location": {
+				"line": 1,
+				"column": 0,
+				"offset": 0
+			},
+			"isTypeOnly": false
+		},
+		{
+			"source": "cors",
+			"specifiers": [
+				{
+					"type": "default",
+					"imported": "default",
+					"local": "cors"
+				}
+			],
+			"location": {
+				"line": 2,
+				"column": 0,
+				"offset": 68
+			},
+			"isTypeOnly": false
+		},
+		{
+			"source": "helmet",
+			"specifiers": [
+				{
+					"type": "default",
+					"imported": "default",
+					"local": "helmet"
+				}
+			],
+			"location": {
+				"line": 3,
+				"column": 0,
+				"offset": 93
+			},
+			"isTypeOnly": false
+		},
+		{
+			"source": "express-rate-limit",
+			"specifiers": [
+				{
+					"type": "default",
+					"imported": "default",
+					"local": "rateLimit"
+				}
+			],
+			"location": {
+				"line": 4,
+				"column": 0,
+				"offset": 122
+			},
+			"isTypeOnly": false
+		},
+		{
+			"source": "pg",
+			"specifiers": [
+				{
+					"type": "named",
+					"imported": "Pool",
+					"local": "Pool"
+				}
+			],
+			"location": {
+				"line": 5,
+				"column": 0,
+				"offset": 166
+			},
+			"isTypeOnly": false
+		},
+		{
+			"source": "ioredis",
+			"specifiers": [
+				{
+					"type": "default",
+					"imported": "default",
+					"local": "Redis"
+				}
+			],
+			"location": {
+				"line": 6,
+				"column": 0,
+				"offset": 193
+			},
+			"isTypeOnly": false
+		},
+		{
+			"source": "jsonwebtoken",
+			"specifiers": [
+				{
+					"type": "default",
+					"imported": "default",
+					"local": "jwt"
+				}
+			],
+			"location": {
+				"line": 7,
+				"column": 0,
+				"offset": 222
+			},
+			"isTypeOnly": false
+		},
+		{
+			"source": "bcrypt",
+			"specifiers": [
+				{
+					"type": "default",
+					"imported": "default",
+					"local": "bcrypt"
+				}
+			],
+			"location": {
+				"line": 8,
+				"column": 0,
+				"offset": 254
+			},
+			"isTypeOnly": false
+		},
+		{
+			"source": "express-validator",
+			"specifiers": [
+				{
+					"type": "named",
+					"imported": "body",
+					"local": "body"
+				},
+				{
+					"type": "named",
+					"imported": "validationResult",
+					"local": "validationResult"
+				}
+			],
+			"location": {
+				"line": 9,
+				"column": 0,
+				"offset": 283
+			},
+			"isTypeOnly": false
+		},
+		{
+			"source": "winston",
+			"specifiers": [
+				{
+					"type": "default",
+					"imported": "default",
+					"local": "winston"
+				}
+			],
+			"location": {
+				"line": 10,
+				"column": 0,
+				"offset": 343
+			},
+			"isTypeOnly": false
+		},
+		{
+			"source": "http-proxy-middleware",
+			"specifiers": [
+				{
+					"type": "named",
+					"imported": "createProxyMiddleware",
+					"local": "createProxyMiddleware"
+				}
+			],
+			"location": {
+				"line": 11,
+				"column": 0,
+				"offset": 374
+			},
+			"isTypeOnly": false
+		},
+		{
+			"source": "../database/connection",
+			"specifiers": [
+				{
+					"type": "named",
+					"imported": "DatabaseConnection",
+					"local": "DatabaseConnection"
+				}
+			],
+			"location": {
+				"line": 13,
+				"column": 0,
+				"offset": 438
+			},
+			"isTypeOnly": false
+		},
+		{
+			"source": "../repositories/UserRepository",
+			"specifiers": [
+				{
+					"type": "named",
+					"imported": "UserRepository",
+					"local": "UserRepository"
+				}
+			],
+			"location": {
+				"line": 14,
+				"column": 0,
+				"offset": 499
+			},
+			"isTypeOnly": false
+		},
+		{
+			"source": "../services/AuthService",
+			"specifiers": [
+				{
+					"type": "named",
+					"imported": "AuthService",
+					"local": "AuthService"
+				}
+			],
+			"location": {
+				"line": 15,
+				"column": 0,
+				"offset": 564
+			},
+			"isTypeOnly": false
+		},
+		{
+			"source": "../services/EmailService",
+			"specifiers": [
+				{
+					"type": "named",
+					"imported": "EmailService",
+					"local": "EmailService"
+				}
+			],
+			"location": {
+				"line": 16,
+				"column": 0,
+				"offset": 619
+			},
+			"isTypeOnly": false
+		},
+		{
+			"source": "../services/CacheService",
+			"specifiers": [
+				{
+					"type": "named",
+					"imported": "CacheService",
+					"local": "CacheService"
+				}
+			],
+			"location": {
+				"line": 17,
+				"column": 0,
+				"offset": 676
+			},
+			"isTypeOnly": false
+		},
+		{
+			"source": "../config/production.json",
+			"specifiers": [
+				{
+					"type": "default",
+					"imported": "default",
+					"local": "config"
+				}
+			],
+			"location": {
+				"line": 18,
+				"column": 0,
+				"offset": 733
+			},
+			"isTypeOnly": false
+		},
+		{
+			"source": "../utils/logger",
+			"specifiers": [
+				{
+					"type": "named",
+					"imported": "logger",
+					"local": "logger"
+				}
+			],
+			"location": {
+				"line": 19,
+				"column": 0,
+				"offset": 781
+			},
+			"isTypeOnly": false
+		},
+		{
+			"source": "../middleware/auth",
+			"specifiers": [
+				{
+					"type": "named",
+					"imported": "validateApiKey",
+					"local": "validateApiKey"
+				},
+				{
+					"type": "named",
+					"imported": "validateUserRole",
+					"local": "validateUserRole"
+				}
+			],
+			"location": {
+				"line": 20,
+				"column": 0,
+				"offset": 823
+			},
+			"isTypeOnly": false
+		},
+		{
+			"source": "../middleware/errorHandler",
+			"specifiers": [
+				{
+					"type": "named",
+					"imported": "errorHandler",
+					"local": "errorHandler"
+				}
+			],
+			"location": {
+				"line": 21,
+				"column": 0,
+				"offset": 894
+			},
+			"isTypeOnly": false
+		}
+	],
+	"exports": [
+		{
+			"name": "default",
+			"type": "default",
+			"location": {
+				"line": 426,
+				"column": 0,
+				"offset": 9872
+			},
+			"isTypeOnly": false
+		},
+		{
+			"name": "ApiServer",
+			"type": "named",
+			"location": {
+				"line": 427,
+				"column": 0,
+				"offset": 9895
+			},
+			"isTypeOnly": false
+		},
+		{
+			"name": "User",
+			"type": "named",
+			"location": {
+				"line": 428,
+				"column": 0,
+				"offset": 9917
+			},
+			"isTypeOnly": true
+		}
+	],
+	"parseTime": 13
 }

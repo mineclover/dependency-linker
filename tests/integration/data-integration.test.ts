@@ -20,7 +20,10 @@ describe("Data Integration Tests", () => {
 			interpreters: ["dependency-analysis", "identifier-analysis"],
 		});
 		dataIntegrator = new DataIntegrator();
-		testFile = path.join(__dirname, "../fixtures/typescript/simple-component.tsx");
+		testFile = path.join(
+			__dirname,
+			"../fixtures/typescript/simple-component.tsx",
+		);
 	});
 
 	describe("Basic Integration", () => {
@@ -39,8 +42,8 @@ describe("Data Integration Tests", () => {
 				sizeLimits: {
 					maxStringLength: 1000,
 					maxArrayLength: 100,
-					maxDepth: 10
-				}
+					maxDepth: 10,
+				},
 			};
 
 			const integratedData = await dataIntegrator.integrate(result, config);
@@ -67,8 +70,8 @@ describe("Data Integration Tests", () => {
 				sizeLimits: {
 					maxStringLength: 1000,
 					maxArrayLength: 100,
-					maxDepth: 10
-				}
+					maxDepth: 10,
+				},
 			};
 
 			const integratedData = await dataIntegrator.integrate(result, config);
@@ -94,16 +97,18 @@ describe("Data Integration Tests", () => {
 				detailLevel: "standard",
 				optimizationMode: "speed",
 				sizeLimits: {
-					maxStringLength: 50,  // Very small limit
-					maxArrayLength: 5,    // Very small limit
-					maxDepth: 3          // Shallow depth
-				}
+					maxStringLength: 50, // Very small limit
+					maxArrayLength: 5, // Very small limit
+					maxDepth: 3, // Shallow depth
+				},
 			};
 
 			const integratedData = await dataIntegrator.integrate(result, config);
 
 			// Check that strings are truncated
-			expect(integratedData.views.summary.fileName.length).toBeLessThanOrEqual(50);
+			expect(integratedData.views.summary.fileName.length).toBeLessThanOrEqual(
+				50,
+			);
 
 			// Verify that the integration completed despite limits (allow "error" status in size-limited scenarios)
 			expect(integratedData.core.status).toBeDefined();
@@ -126,14 +131,16 @@ describe("Data Integration Tests", () => {
 				sizeLimits: {
 					maxStringLength: 500,
 					maxArrayLength: 50,
-					maxDepth: 5
-				}
+					maxDepth: 5,
+				},
 			};
 
 			const integratedData = await dataIntegrator.integrate(result, config);
 
 			expect(integratedData.metadata.integrationOptions).toBeDefined();
-			expect(integratedData.detailed.recommendations.length).toBeLessThanOrEqual(3);
+			expect(
+				integratedData.detailed.recommendations.length,
+			).toBeLessThanOrEqual(3);
 		});
 
 		it("should handle comprehensive detail level", async () => {
@@ -151,8 +158,8 @@ describe("Data Integration Tests", () => {
 				sizeLimits: {
 					maxStringLength: 2000,
 					maxArrayLength: 200,
-					maxDepth: 15
-				}
+					maxDepth: 15,
+				},
 			};
 
 			const integratedData = await dataIntegrator.integrate(result, config);
@@ -180,8 +187,8 @@ describe("Data Integration Tests", () => {
 					sizeLimits: {
 						maxStringLength: 1000,
 						maxArrayLength: 100,
-						maxDepth: 10
-					}
+						maxDepth: 10,
+					},
 				};
 
 				const integratedData = await dataIntegrator.integrate(result, config);
@@ -220,12 +227,14 @@ describe("Data Integration Tests", () => {
 				sizeLimits: {
 					maxStringLength: 1000,
 					maxArrayLength: 100,
-					maxDepth: 10
-				}
+					maxDepth: 10,
+				},
 			};
 
 			// Should not throw an error, but handle gracefully
-			await expect(dataIntegrator.integrate(badResult, config)).resolves.toBeDefined();
+			await expect(
+				dataIntegrator.integrate(badResult, config),
+			).resolves.toBeDefined();
 		});
 
 		it("should validate configuration", async () => {
@@ -234,26 +243,40 @@ describe("Data Integration Tests", () => {
 					enabledViews: [], // Empty views
 					detailLevel: "comprehensive",
 					optimizationMode: "balanced",
-					sizeLimits: { maxStringLength: 1000, maxArrayLength: 100, maxDepth: 10 }
+					sizeLimits: {
+						maxStringLength: 1000,
+						maxArrayLength: 100,
+						maxDepth: 10,
+					},
 				},
 				{
 					enabledViews: ["summary"],
 					detailLevel: "invalid" as any, // Invalid detail level
 					optimizationMode: "balanced",
-					sizeLimits: { maxStringLength: 1000, maxArrayLength: 100, maxDepth: 10 }
+					sizeLimits: {
+						maxStringLength: 1000,
+						maxArrayLength: 100,
+						maxDepth: 10,
+					},
 				},
 				{
 					enabledViews: ["summary"],
 					detailLevel: "standard",
 					optimizationMode: "balanced",
-					sizeLimits: { maxStringLength: -1, maxArrayLength: 100, maxDepth: 10 } // Invalid size
-				}
+					sizeLimits: {
+						maxStringLength: -1,
+						maxArrayLength: 100,
+						maxDepth: 10,
+					}, // Invalid size
+				},
 			] as DataIntegrationConfig[];
 
 			for (const config of invalidConfigs) {
 				// DataIntegrator should handle invalid configs gracefully
 				// The validation would happen during integration
-				await expect(dataIntegrator.integrate({} as any, config)).rejects.toThrow();
+				await expect(
+					dataIntegrator.integrate({} as any, config),
+				).rejects.toThrow();
 			}
 		});
 	});
@@ -274,8 +297,8 @@ describe("Data Integration Tests", () => {
 				sizeLimits: {
 					maxStringLength: 1000,
 					maxArrayLength: 100,
-					maxDepth: 10
-				}
+					maxDepth: 10,
+				},
 			};
 
 			const startTime = performance.now();
@@ -301,8 +324,8 @@ describe("Data Integration Tests", () => {
 				sizeLimits: {
 					maxStringLength: 1000,
 					maxArrayLength: 100,
-					maxDepth: 10
-				}
+					maxDepth: 10,
+				},
 			};
 
 			const integratedData = await dataIntegrator.integrate(result, config);
@@ -330,14 +353,16 @@ describe("Data Integration Tests", () => {
 				sizeLimits: {
 					maxStringLength: 1000,
 					maxArrayLength: 100,
-					maxDepth: 10
-				}
+					maxDepth: 10,
+				},
 			};
 
 			const integratedData = await dataIntegrator.integrate(result, config);
 
 			// Verify language-specific data is properly integrated (allow for language detection variance)
-			expect(integratedData.core.language.detected).toMatch(/typescript|tsx|javascript|unknown/);
+			expect(integratedData.core.language.detected).toMatch(
+				/typescript|tsx|javascript|unknown/,
+			);
 			expect(integratedData.core.language.parser).toBe("tree-sitter");
 			expect(integratedData.views.summary.fileName).toContain(".tsx");
 		});

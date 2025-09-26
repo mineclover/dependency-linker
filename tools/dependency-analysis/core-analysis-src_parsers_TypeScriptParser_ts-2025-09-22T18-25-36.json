@@ -1,136 +1,114 @@
 {
-  "rootFile": "src/parsers/TypeScriptParser.ts",
-  "totalFiles": 10,
-  "maxDepth": 2,
-  "dependencies": {
-    "src/models/PathInfo.ts": {
-      "filePath": "src/models/PathInfo.ts",
-      "relativePath": "src/models/PathInfo.ts",
-      "dependencies": [],
-      "dependents": [
-        "src/models/AnalysisResult.ts"
-      ],
-      "depth": 2,
-      "type": "import"
-    },
-    "src/models/AnalysisError.ts": {
-      "filePath": "src/models/AnalysisError.ts",
-      "relativePath": "src/models/AnalysisError.ts",
-      "dependencies": [],
-      "dependents": [
-        "src/models/AnalysisResult.ts"
-      ],
-      "depth": 2,
-      "type": "import"
-    },
-    "src/models/PerformanceMetrics.ts": {
-      "filePath": "src/models/PerformanceMetrics.ts",
-      "relativePath": "src/models/PerformanceMetrics.ts",
-      "dependencies": [],
-      "dependents": [
-        "src/models/AnalysisResult.ts"
-      ],
-      "depth": 2,
-      "type": "import"
-    },
-    "src/models/AnalysisResult.ts": {
-      "filePath": "src/models/AnalysisResult.ts",
-      "relativePath": "src/models/AnalysisResult.ts",
-      "dependencies": [
-        "src/models/PathInfo.ts",
-        "src/models/AnalysisError.ts",
-        "src/models/PerformanceMetrics.ts"
-      ],
-      "dependents": [
-        "src/parsers/TypeScriptParser.ts"
-      ],
-      "depth": 1,
-      "type": "import"
-    },
-    "src/models/SourceLocation.ts": {
-      "filePath": "src/models/SourceLocation.ts",
-      "relativePath": "src/models/SourceLocation.ts",
-      "dependencies": [],
-      "dependents": [
-        "src/models/DependencyInfo.ts",
-        "src/models/ExportInfo.ts",
-        "src/models/ImportInfo.ts"
-      ],
-      "depth": 2,
-      "type": "import"
-    },
-    "src/models/DependencyInfo.ts": {
-      "filePath": "src/models/DependencyInfo.ts",
-      "relativePath": "src/models/DependencyInfo.ts",
-      "dependencies": [
-        "src/models/SourceLocation.ts"
-      ],
-      "dependents": [
-        "src/parsers/TypeScriptParser.ts"
-      ],
-      "depth": 1,
-      "type": "import"
-    },
-    "src/models/ExportInfo.ts": {
-      "filePath": "src/models/ExportInfo.ts",
-      "relativePath": "src/models/ExportInfo.ts",
-      "dependencies": [
-        "src/models/SourceLocation.ts"
-      ],
-      "dependents": [
-        "src/parsers/TypeScriptParser.ts"
-      ],
-      "depth": 1,
-      "type": "import"
-    },
-    "src/models/ImportInfo.ts": {
-      "filePath": "src/models/ImportInfo.ts",
-      "relativePath": "src/models/ImportInfo.ts",
-      "dependencies": [
-        "src/models/SourceLocation.ts"
-      ],
-      "dependents": [
-        "src/parsers/TypeScriptParser.ts"
-      ],
-      "depth": 1,
-      "type": "import"
-    },
-    "src/parsers/ILanguageParser.ts": {
-      "filePath": "src/parsers/ILanguageParser.ts",
-      "relativePath": "src/parsers/ILanguageParser.ts",
-      "dependencies": [],
-      "dependents": [
-        "src/parsers/TypeScriptParser.ts"
-      ],
-      "depth": 1,
-      "type": "import"
-    },
-    "src/parsers/TypeScriptParser.ts": {
-      "filePath": "src/parsers/TypeScriptParser.ts",
-      "relativePath": "src/parsers/TypeScriptParser.ts",
-      "dependencies": [
-        "src/models/AnalysisResult.ts",
-        "src/models/DependencyInfo.ts",
-        "src/models/ExportInfo.ts",
-        "src/models/ImportInfo.ts",
-        "src/parsers/ILanguageParser.ts"
-      ],
-      "dependents": [],
-      "depth": 0,
-      "type": "import"
-    }
-  },
-  "dependencyTree": [
-    "📄 src/parsers/TypeScriptParser.ts (의존성: 5개)",
-    "  📄 src/models/AnalysisResult.ts (의존성: 3개)",
-    "    📄 src/models/PathInfo.ts (의존성: 0개)",
-    "    📄 src/models/AnalysisError.ts (의존성: 0개)",
-    "    📄 src/models/PerformanceMetrics.ts (의존성: 0개)",
-    "  📄 src/models/DependencyInfo.ts (의존성: 1개)",
-    "    📄 src/models/SourceLocation.ts (의존성: 0개)",
-    "  📄 src/models/ExportInfo.ts (의존성: 1개)",
-    "  📄 src/models/ImportInfo.ts (의존성: 1개)",
-    "  📄 src/parsers/ILanguageParser.ts (의존성: 0개)"
-  ],
-  "circularDependencies": []
+	"rootFile": "src/parsers/TypeScriptParser.ts",
+	"totalFiles": 10,
+	"maxDepth": 2,
+	"dependencies": {
+		"src/models/PathInfo.ts": {
+			"filePath": "src/models/PathInfo.ts",
+			"relativePath": "src/models/PathInfo.ts",
+			"dependencies": [],
+			"dependents": ["src/models/AnalysisResult.ts"],
+			"depth": 2,
+			"type": "import"
+		},
+		"src/models/AnalysisError.ts": {
+			"filePath": "src/models/AnalysisError.ts",
+			"relativePath": "src/models/AnalysisError.ts",
+			"dependencies": [],
+			"dependents": ["src/models/AnalysisResult.ts"],
+			"depth": 2,
+			"type": "import"
+		},
+		"src/models/PerformanceMetrics.ts": {
+			"filePath": "src/models/PerformanceMetrics.ts",
+			"relativePath": "src/models/PerformanceMetrics.ts",
+			"dependencies": [],
+			"dependents": ["src/models/AnalysisResult.ts"],
+			"depth": 2,
+			"type": "import"
+		},
+		"src/models/AnalysisResult.ts": {
+			"filePath": "src/models/AnalysisResult.ts",
+			"relativePath": "src/models/AnalysisResult.ts",
+			"dependencies": [
+				"src/models/PathInfo.ts",
+				"src/models/AnalysisError.ts",
+				"src/models/PerformanceMetrics.ts"
+			],
+			"dependents": ["src/parsers/TypeScriptParser.ts"],
+			"depth": 1,
+			"type": "import"
+		},
+		"src/models/SourceLocation.ts": {
+			"filePath": "src/models/SourceLocation.ts",
+			"relativePath": "src/models/SourceLocation.ts",
+			"dependencies": [],
+			"dependents": [
+				"src/models/DependencyInfo.ts",
+				"src/models/ExportInfo.ts",
+				"src/models/ImportInfo.ts"
+			],
+			"depth": 2,
+			"type": "import"
+		},
+		"src/models/DependencyInfo.ts": {
+			"filePath": "src/models/DependencyInfo.ts",
+			"relativePath": "src/models/DependencyInfo.ts",
+			"dependencies": ["src/models/SourceLocation.ts"],
+			"dependents": ["src/parsers/TypeScriptParser.ts"],
+			"depth": 1,
+			"type": "import"
+		},
+		"src/models/ExportInfo.ts": {
+			"filePath": "src/models/ExportInfo.ts",
+			"relativePath": "src/models/ExportInfo.ts",
+			"dependencies": ["src/models/SourceLocation.ts"],
+			"dependents": ["src/parsers/TypeScriptParser.ts"],
+			"depth": 1,
+			"type": "import"
+		},
+		"src/models/ImportInfo.ts": {
+			"filePath": "src/models/ImportInfo.ts",
+			"relativePath": "src/models/ImportInfo.ts",
+			"dependencies": ["src/models/SourceLocation.ts"],
+			"dependents": ["src/parsers/TypeScriptParser.ts"],
+			"depth": 1,
+			"type": "import"
+		},
+		"src/parsers/ILanguageParser.ts": {
+			"filePath": "src/parsers/ILanguageParser.ts",
+			"relativePath": "src/parsers/ILanguageParser.ts",
+			"dependencies": [],
+			"dependents": ["src/parsers/TypeScriptParser.ts"],
+			"depth": 1,
+			"type": "import"
+		},
+		"src/parsers/TypeScriptParser.ts": {
+			"filePath": "src/parsers/TypeScriptParser.ts",
+			"relativePath": "src/parsers/TypeScriptParser.ts",
+			"dependencies": [
+				"src/models/AnalysisResult.ts",
+				"src/models/DependencyInfo.ts",
+				"src/models/ExportInfo.ts",
+				"src/models/ImportInfo.ts",
+				"src/parsers/ILanguageParser.ts"
+			],
+			"dependents": [],
+			"depth": 0,
+			"type": "import"
+		}
+	},
+	"dependencyTree": [
+		"📄 src/parsers/TypeScriptParser.ts (의존성: 5개)",
+		"  📄 src/models/AnalysisResult.ts (의존성: 3개)",
+		"    📄 src/models/PathInfo.ts (의존성: 0개)",
+		"    📄 src/models/AnalysisError.ts (의존성: 0개)",
+		"    📄 src/models/PerformanceMetrics.ts (의존성: 0개)",
+		"  📄 src/models/DependencyInfo.ts (의존성: 1개)",
+		"    📄 src/models/SourceLocation.ts (의존성: 0개)",
+		"  📄 src/models/ExportInfo.ts (의존성: 1개)",
+		"  📄 src/models/ImportInfo.ts (의존성: 1개)",
+		"  📄 src/parsers/ILanguageParser.ts (의존성: 0개)"
+	],
+	"circularDependencies": []
 }

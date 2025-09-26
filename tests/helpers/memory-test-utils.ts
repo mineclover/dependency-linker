@@ -68,7 +68,7 @@ export class MemoryMonitor {
 	public startMonitoring(): void {
 		this.startTime = Date.now();
 		this.samples = [];
-		
+
 		this.intervalId = setInterval(() => {
 			if (this.samples.length >= this.options.maxSamples) {
 				this.stopMonitoring();
@@ -80,7 +80,9 @@ export class MemoryMonitor {
 
 			// Check for memory warnings
 			if (snapshot.heapUsed > this.options.warnThreshold) {
-				console.warn(`Memory usage warning: ${Math.round(snapshot.heapUsed / 1024 / 1024)}MB heap used`);
+				console.warn(
+					`Memory usage warning: ${Math.round(snapshot.heapUsed / 1024 / 1024)}MB heap used`,
+				);
 			}
 		}, this.options.sampleInterval);
 	}
@@ -101,16 +103,16 @@ export class MemoryMonitor {
 	 */
 	public getStats(): {
 		peak: MemorySnapshot;
-		average: Omit<MemorySnapshot, 'timestamp'>;
+		average: Omit<MemorySnapshot, "timestamp">;
 		samples: number;
 		duration: number;
 	} {
 		if (this.samples.length === 0) {
-			throw new Error('No samples collected. Start monitoring first.');
+			throw new Error("No samples collected. Start monitoring first.");
 		}
 
-		const peak = this.samples.reduce((max, sample) => 
-			sample.heapUsed > max.heapUsed ? sample : max
+		const peak = this.samples.reduce((max, sample) =>
+			sample.heapUsed > max.heapUsed ? sample : max,
 		);
 
 		const totals = this.samples.reduce(
@@ -121,7 +123,7 @@ export class MemoryMonitor {
 				external: acc.external + sample.external,
 				arrayBuffers: acc.arrayBuffers + sample.arrayBuffers,
 			}),
-			{ rss: 0, heapTotal: 0, heapUsed: 0, external: 0, arrayBuffers: 0 }
+			{ rss: 0, heapTotal: 0, heapUsed: 0, external: 0, arrayBuffers: 0 },
 		);
 
 		const count = this.samples.length;
@@ -150,7 +152,7 @@ export class MemoryMonitor {
  */
 export async function measureMemory<T>(
 	fn: () => Promise<T>,
-	label?: string
+	label?: string,
 ): Promise<{ result: T; memory: MemoryTestResult }> {
 	// Force garbage collection if available (--expose-gc flag)
 	if (global.gc) {
@@ -159,12 +161,12 @@ export async function measureMemory<T>(
 
 	const before = takeMemorySnapshot();
 	const startTime = process.hrtime.bigint();
-	
+
 	try {
 		const result = await fn();
 		const endTime = process.hrtime.bigint();
 		const after = takeMemorySnapshot();
-		
+
 		const memory: MemoryTestResult = {
 			before,
 			after,
@@ -189,7 +191,7 @@ export async function measureMemory<T>(
 	} catch (error) {
 		const endTime = process.hrtime.bigint();
 		const after = takeMemorySnapshot();
-		
+
 		const memory: MemoryTestResult = {
 			before,
 			after,
@@ -232,15 +234,15 @@ export function takeMemorySnapshot(): MemorySnapshot {
  * Format bytes into human-readable string
  */
 export function formatBytes(bytes: number): string {
-	if (bytes === 0) return '0 B';
-	
+	if (bytes === 0) return "0 B";
+
 	const k = 1024;
-	const sizes = ['B', 'KB', 'MB', 'GB'];
+	const sizes = ["B", "KB", "MB", "GB"];
 	const i = Math.floor(Math.log(Math.abs(bytes)) / Math.log(k));
-	
+
 	const value = bytes / Math.pow(k, i);
-	const sign = bytes < 0 ? '-' : '';
-	
+	const sign = bytes < 0 ? "-" : "";
+
 	return `${sign}${value.toFixed(2)} ${sizes[i]}`;
 }
 
@@ -253,29 +255,29 @@ export function expectMemoryUsage(
 		maxHeapDelta?: number;
 		maxRssDelta?: number;
 		maxDuration?: number;
-	} = {}
+	} = {},
 ) {
 	const {
 		maxHeapDelta = 100 * 1024 * 1024, // 100MB default
-		maxRssDelta = 200 * 1024 * 1024,  // 200MB default
-		maxDuration = 30000,              // 30s default
+		maxRssDelta = 200 * 1024 * 1024, // 200MB default
+		maxDuration = 30000, // 30s default
 	} = options;
 
 	if (memory.delta.heapUsed > maxHeapDelta) {
 		throw new Error(
-			`Heap usage exceeded limit: ${formatBytes(memory.delta.heapUsed)} > ${formatBytes(maxHeapDelta)}`
+			`Heap usage exceeded limit: ${formatBytes(memory.delta.heapUsed)} > ${formatBytes(maxHeapDelta)}`,
 		);
 	}
 
 	if (memory.delta.rss > maxRssDelta) {
 		throw new Error(
-			`RSS usage exceeded limit: ${formatBytes(memory.delta.rss)} > ${formatBytes(maxRssDelta)}`
+			`RSS usage exceeded limit: ${formatBytes(memory.delta.rss)} > ${formatBytes(maxRssDelta)}`,
 		);
 	}
 
 	if (memory.duration > maxDuration) {
 		throw new Error(
-			`Duration exceeded limit: ${memory.duration.toFixed(2)}ms > ${maxDuration}ms`
+			`Duration exceeded limit: ${memory.duration.toFixed(2)}ms > ${maxDuration}ms`,
 		);
 	}
 }
@@ -296,17 +298,20 @@ declare global {
 }
 
 // Add custom matcher if Jest is available
-if (typeof expect !== 'undefined') {
+if (typeof expect !== "undefined") {
 	expect.extend({
-		toHaveMemoryUsageWithin(memory: MemoryTestResult, bounds: {
-			maxHeapDelta?: number;
-			maxRssDelta?: number;
-			maxDuration?: number;
-		}) {
+		toHaveMemoryUsageWithin(
+			memory: MemoryTestResult,
+			bounds: {
+				maxHeapDelta?: number;
+				maxRssDelta?: number;
+				maxDuration?: number;
+			},
+		) {
 			try {
 				expectMemoryUsage(memory, bounds);
 				return {
-					message: () => 'Memory usage is within expected bounds',
+					message: () => "Memory usage is within expected bounds",
 					pass: true,
 				};
 			} catch (error) {

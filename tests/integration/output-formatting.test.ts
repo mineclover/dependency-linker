@@ -26,7 +26,10 @@ describe("Output Formatting Integration Tests", () => {
 		dataIntegrator = new DataIntegrator();
 		universalFormatter = new UniversalFormatter();
 		integratedFormatter = new IntegratedOutputFormatter();
-		testFile = path.join(__dirname, "../fixtures/typescript/simple-component.tsx");
+		testFile = path.join(
+			__dirname,
+			"../fixtures/typescript/simple-component.tsx",
+		);
 	});
 
 	describe("Universal Formatter", () => {
@@ -38,10 +41,20 @@ describe("Output Formatting Integration Tests", () => {
 				interpreters: ["dependency-analysis"],
 			});
 
-			const formats = ["summary", "table", "tree", "csv", "json", "minimal", "report"];
+			const formats = [
+				"summary",
+				"table",
+				"tree",
+				"csv",
+				"json",
+				"minimal",
+				"report",
+			];
 
 			for (const format of formats) {
-				const output = universalFormatter.format(result, { format: format as any });
+				const output = universalFormatter.format(result, {
+					format: format as any,
+				});
 				expect(output).toBeDefined();
 				expect(typeof output).toBe("string");
 				expect(output.length).toBeGreaterThan(0);
@@ -74,15 +87,25 @@ describe("Output Formatting Integration Tests", () => {
 				sizeLimits: {
 					maxStringLength: 1000,
 					maxArrayLength: 100,
-					maxDepth: 10
-				}
+					maxDepth: 10,
+				},
 			};
 
 			const integratedData = await dataIntegrator.integrate(result, config);
-			const formats = ["summary", "table", "tree", "csv", "json", "minimal", "report"];
+			const formats = [
+				"summary",
+				"table",
+				"tree",
+				"csv",
+				"json",
+				"minimal",
+				"report",
+			];
 
 			for (const format of formats) {
-				const output = universalFormatter.format(integratedData, { format: format as any });
+				const output = universalFormatter.format(integratedData, {
+					format: format as any,
+				});
 				expect(output).toBeDefined();
 				expect(typeof output).toBe("string");
 				expect(output.length).toBeGreaterThan(0);
@@ -127,12 +150,20 @@ describe("Output Formatting Integration Tests", () => {
 
 			// Single result
 			const singleSuggestion = universalFormatter.suggestFormat(result);
-			expect(["json", "summary", "report", "table"].includes(singleSuggestion.recommended)).toBe(true);
+			expect(
+				["json", "summary", "report", "table"].includes(
+					singleSuggestion.recommended,
+				),
+			).toBe(true);
 			expect(singleSuggestion.alternatives).toContain("json");
 			expect(singleSuggestion.reason.toLowerCase()).toContain("single file");
 
 			// Multiple results
-			const multiSuggestion = universalFormatter.suggestFormat([result, result, result]);
+			const multiSuggestion = universalFormatter.suggestFormat([
+				result,
+				result,
+				result,
+			]);
 			expect(multiSuggestion.recommended).toBe("table");
 			expect(multiSuggestion.alternatives).toContain("summary");
 		});
@@ -148,7 +179,11 @@ describe("Output Formatting Integration Tests", () => {
 			// Create a large dataset simulation
 			const largeDataset = Array(150).fill(result);
 
-			const optimized = universalFormatter.formatOptimized(largeDataset, "report", 5000);
+			const optimized = universalFormatter.formatOptimized(
+				largeDataset,
+				"report",
+				5000,
+			);
 			expect(optimized.optimized).toBeDefined();
 			expect(optimized.actualFormat).toBeDefined();
 			expect(optimized.content.length).toBeLessThanOrEqual(10000);
@@ -162,7 +197,9 @@ describe("Output Formatting Integration Tests", () => {
 				interpreters: ["dependency-analysis"],
 			});
 
-			const withMetadata = universalFormatter.formatWithMetadata(result, { format: "json" });
+			const withMetadata = universalFormatter.formatWithMetadata(result, {
+				format: "json",
+			});
 			expect(withMetadata.content).toBeDefined();
 			expect(withMetadata.metadata.format).toBe("json");
 			expect(withMetadata.metadata.dataType).toBe("AnalysisResult");
@@ -188,18 +225,26 @@ describe("Output Formatting Integration Tests", () => {
 				sizeLimits: {
 					maxStringLength: 1000,
 					maxArrayLength: 100,
-					maxDepth: 10
-				}
+					maxDepth: 10,
+				},
 			};
 
 			const integratedData = await dataIntegrator.integrate(result, config);
-			const formats = ["summary", "table", "tree", "csv", "json", "minimal", "report"];
+			const formats = [
+				"summary",
+				"table",
+				"tree",
+				"csv",
+				"json",
+				"minimal",
+				"report",
+			];
 
 			for (const format of formats) {
 				const output = integratedFormatter.format(integratedData, {
 					format: format as any,
 					includeHeaders: true,
-					showMetrics: true
+					showMetrics: true,
 				});
 				expect(output).toBeDefined();
 				expect(typeof output).toBe("string");
@@ -222,8 +267,8 @@ describe("Output Formatting Integration Tests", () => {
 				sizeLimits: {
 					maxStringLength: 1000,
 					maxArrayLength: 100,
-					maxDepth: 10
-				}
+					maxDepth: 10,
+				},
 			};
 
 			const integratedData = await dataIntegrator.integrate(result, config);
@@ -231,11 +276,11 @@ describe("Output Formatting Integration Tests", () => {
 			// Test CSV with and without headers
 			const csvWithHeaders = integratedFormatter.format(integratedData, {
 				format: "csv",
-				includeHeaders: true
+				includeHeaders: true,
 			});
 			const csvWithoutHeaders = integratedFormatter.format(integratedData, {
 				format: "csv",
-				includeHeaders: false
+				includeHeaders: false,
 			});
 
 			expect(csvWithHeaders).toContain("File,Language,Dependencies");
@@ -244,11 +289,11 @@ describe("Output Formatting Integration Tests", () => {
 			// Test JSON compact vs pretty
 			const jsonCompact = integratedFormatter.format(integratedData, {
 				format: "json",
-				compact: true
+				compact: true,
 			});
 			const jsonPretty = integratedFormatter.format(integratedData, {
 				format: "json",
-				compact: false
+				compact: false,
 			});
 
 			expect(jsonCompact.length).toBeLessThan(jsonPretty.length);
@@ -270,8 +315,8 @@ describe("Output Formatting Integration Tests", () => {
 				sizeLimits: {
 					maxStringLength: 1000,
 					maxArrayLength: 100,
-					maxDepth: 10
-				}
+					maxDepth: 10,
+				},
 			};
 
 			const integratedData1 = await dataIntegrator.integrate(result, config);
@@ -280,14 +325,20 @@ describe("Output Formatting Integration Tests", () => {
 			const multipleData = [integratedData1, integratedData2];
 
 			// Test different formats with multiple items
-			const summaryOutput = integratedFormatter.format(multipleData, { format: "summary" });
+			const summaryOutput = integratedFormatter.format(multipleData, {
+				format: "summary",
+			});
 			expect(summaryOutput.split("\n").length).toBeGreaterThanOrEqual(2);
 
-			const tableOutput = integratedFormatter.format(multipleData, { format: "table" });
+			const tableOutput = integratedFormatter.format(multipleData, {
+				format: "table",
+			});
 			expect(tableOutput).toContain("┌"); // ASCII table borders
 			expect(tableOutput).toContain("│"); // ASCII table separators
 
-			const reportOutput = integratedFormatter.format(multipleData, { format: "report" });
+			const reportOutput = integratedFormatter.format(multipleData, {
+				format: "report",
+			});
 			expect(reportOutput).toContain("Report 1 of 2");
 			expect(reportOutput).toContain("Report 2 of 2");
 		});
@@ -307,24 +358,24 @@ describe("Output Formatting Integration Tests", () => {
 				sizeLimits: {
 					maxStringLength: 1000,
 					maxArrayLength: 100,
-					maxDepth: 10
-				}
+					maxDepth: 10,
+				},
 			};
 
 			const integratedData = await dataIntegrator.integrate(result, config);
 
 			const tableOutput = integratedFormatter.format(integratedData, {
 				format: "table",
-				maxWidth: 100
+				maxWidth: 100,
 			});
 
 			// Verify ASCII table structure
-			expect(tableOutput).toContain("┌");  // Top left corner
-			expect(tableOutput).toContain("┐");  // Top right corner
-			expect(tableOutput).toContain("└");  // Bottom left corner
-			expect(tableOutput).toContain("┘");  // Bottom right corner
-			expect(tableOutput).toContain("│");  // Vertical separators
-			expect(tableOutput).toContain("─");  // Horizontal separators
+			expect(tableOutput).toContain("┌"); // Top left corner
+			expect(tableOutput).toContain("┐"); // Top right corner
+			expect(tableOutput).toContain("└"); // Bottom left corner
+			expect(tableOutput).toContain("┘"); // Bottom right corner
+			expect(tableOutput).toContain("│"); // Vertical separators
+			expect(tableOutput).toContain("─"); // Horizontal separators
 		});
 
 		it("should format tree structures correctly", async () => {
@@ -342,17 +393,19 @@ describe("Output Formatting Integration Tests", () => {
 				sizeLimits: {
 					maxStringLength: 1000,
 					maxArrayLength: 100,
-					maxDepth: 10
-				}
+					maxDepth: 10,
+				},
 			};
 
 			const integratedData = await dataIntegrator.integrate(result, config);
 
-			const treeOutput = integratedFormatter.format(integratedData, { format: "tree" });
+			const treeOutput = integratedFormatter.format(integratedData, {
+				format: "tree",
+			});
 
 			// Verify tree structure characters
-			expect(treeOutput).toContain("└──");  // Last item connector
-			expect(treeOutput).toContain("├──");  // Middle item connector
+			expect(treeOutput).toContain("└──"); // Last item connector
+			expect(treeOutput).toContain("├──"); // Middle item connector
 		});
 	});
 
@@ -403,8 +456,8 @@ describe("Output Formatting Integration Tests", () => {
 				sizeLimits: {
 					maxStringLength: 100,
 					maxArrayLength: 20,
-					maxDepth: 5
-				}
+					maxDepth: 5,
+				},
 			};
 
 			const integratedData = await dataIntegrator.integrate(result, config);
@@ -413,7 +466,9 @@ describe("Output Formatting Integration Tests", () => {
 			const largeDataset = Array(100).fill(integratedData);
 
 			const startTime = performance.now();
-			const output = universalFormatter.format(largeDataset, { format: "minimal" });
+			const output = universalFormatter.format(largeDataset, {
+				format: "minimal",
+			});
 			const endTime = performance.now();
 
 			expect(output).toBeDefined();
@@ -434,16 +489,18 @@ describe("Output Formatting Integration Tests", () => {
 				detailLevel: "standard",
 				optimizationMode: "speed",
 				sizeLimits: {
-					maxStringLength: 50,   // Very restrictive
-					maxArrayLength: 5,     // Very restrictive
-					maxDepth: 2           // Very shallow
-				}
+					maxStringLength: 50, // Very restrictive
+					maxArrayLength: 5, // Very restrictive
+					maxDepth: 2, // Very shallow
+				},
 			};
 
 			const integratedData = await dataIntegrator.integrate(result, config);
 
 			// Should not throw errors even with very restrictive limits
-			const output = universalFormatter.format(integratedData, { format: "json" });
+			const output = universalFormatter.format(integratedData, {
+				format: "json",
+			});
 			expect(output).toBeDefined();
 			expect(() => JSON.parse(output)).not.toThrow();
 		});

@@ -15,7 +15,7 @@ import {
 	createResolutionContext,
 	loadTsconfigPaths,
 	loadPackageDependencies,
-	type PathResolutionContext
+	type PathResolutionContext,
 } from "../../../src/utils/PathResolutionUtils";
 import * as fs from "node:fs";
 import * as path from "node:path";
@@ -44,7 +44,7 @@ describe("PathResolutionUtils", () => {
 		const context: PathResolutionContext = {
 			projectRoot: mockProjectRoot,
 			sourceFileDir: mockSourceFileDir,
-			extensions: [".ts", ".tsx", ".js"]
+			extensions: [".ts", ".tsx", ".js"],
 		};
 
 		it("should resolve absolute paths", async () => {
@@ -86,8 +86,8 @@ describe("PathResolutionUtils", () => {
 				...context,
 				aliases: {
 					"@": "src",
-					"@utils": "src/utils"
-				}
+					"@utils": "src/utils",
+				},
 			};
 
 			mockFs.promises.access.mockImplementation(async (filePath: string) => {
@@ -97,7 +97,10 @@ describe("PathResolutionUtils", () => {
 				throw new Error("File not found");
 			});
 
-			const result = await resolveDependencyPath("@/components/Button", contextWithAlias);
+			const result = await resolveDependencyPath(
+				"@/components/Button",
+				contextWithAlias,
+			);
 
 			expect(result).toBe("/Users/test/project/src/components/Button.ts");
 		});
@@ -116,7 +119,7 @@ describe("PathResolutionUtils", () => {
 			const context: PathResolutionContext = {
 				projectRoot: mockProjectRoot,
 				sourceFileDir: mockSourceFileDir,
-				extensions: [".ts"]
+				extensions: [".ts"],
 			};
 
 			const sources = ["./utils/a", "./utils/b", "./utils/c"];
@@ -124,7 +127,7 @@ describe("PathResolutionUtils", () => {
 			mockFs.promises.access.mockImplementation(async (filePath: string) => {
 				const validPaths = [
 					"/Users/test/project/src/components/utils/a.ts",
-					"/Users/test/project/src/components/utils/b.ts"
+					"/Users/test/project/src/components/utils/b.ts",
 				];
 				if (validPaths.includes(filePath as string)) {
 					return Promise.resolve();
@@ -135,8 +138,12 @@ describe("PathResolutionUtils", () => {
 			const result = await batchResolvePaths(sources, context);
 
 			expect(result.size).toBe(3);
-			expect(result.get("./utils/a")).toBe("/Users/test/project/src/components/utils/a.ts");
-			expect(result.get("./utils/b")).toBe("/Users/test/project/src/components/utils/b.ts");
+			expect(result.get("./utils/a")).toBe(
+				"/Users/test/project/src/components/utils/a.ts",
+			);
+			expect(result.get("./utils/b")).toBe(
+				"/Users/test/project/src/components/utils/b.ts",
+			);
 			expect(result.get("./utils/c")).toBeNull();
 		});
 	});
@@ -145,7 +152,7 @@ describe("PathResolutionUtils", () => {
 		const aliases = {
 			"@": "src",
 			"@utils": "src/utils",
-			"@components/*": "src/components/*"
+			"@components/*": "src/components/*",
 		};
 
 		it("should resolve exact alias match", () => {
@@ -154,17 +161,29 @@ describe("PathResolutionUtils", () => {
 		});
 
 		it("should resolve alias with path", () => {
-			const result = tryResolveWithAlias("@/components/Button", aliases, mockProjectRoot);
+			const result = tryResolveWithAlias(
+				"@/components/Button",
+				aliases,
+				mockProjectRoot,
+			);
 			expect(result).toBe("/Users/test/project/src/components/Button");
 		});
 
 		it("should resolve wildcard aliases", () => {
-			const result = tryResolveWithAlias("@components/shared/Modal", aliases, mockProjectRoot);
+			const result = tryResolveWithAlias(
+				"@components/shared/Modal",
+				aliases,
+				mockProjectRoot,
+			);
 			expect(result).toBe("/Users/test/project/src/components/shared/Modal");
 		});
 
 		it("should return null for no match", () => {
-			const result = tryResolveWithAlias("unknown/path", aliases, mockProjectRoot);
+			const result = tryResolveWithAlias(
+				"unknown/path",
+				aliases,
+				mockProjectRoot,
+			);
 			expect(result).toBeNull();
 		});
 	});
@@ -178,7 +197,9 @@ describe("PathResolutionUtils", () => {
 				throw new Error("File not found");
 			});
 
-			const result = await tryResolveWithExtensions("/Users/test/project/exact.ts");
+			const result = await tryResolveWithExtensions(
+				"/Users/test/project/exact.ts",
+			);
 			expect(result).toBe("/Users/test/project/exact.ts");
 		});
 
@@ -190,7 +211,10 @@ describe("PathResolutionUtils", () => {
 				throw new Error("File not found");
 			});
 
-			const result = await tryResolveWithExtensions("/Users/test/project/file", [".ts", ".tsx"]);
+			const result = await tryResolveWithExtensions(
+				"/Users/test/project/file",
+				[".ts", ".tsx"],
+			);
 			expect(result).toBe("/Users/test/project/file.tsx");
 		});
 
@@ -202,14 +226,18 @@ describe("PathResolutionUtils", () => {
 				throw new Error("File not found");
 			});
 
-			const result = await tryResolveWithExtensions("/Users/test/project/dir", [".ts"]);
+			const result = await tryResolveWithExtensions("/Users/test/project/dir", [
+				".ts",
+			]);
 			expect(result).toBe("/Users/test/project/dir/index.ts");
 		});
 
 		it("should return null if no resolution", async () => {
 			mockFs.promises.access.mockRejectedValue(new Error("File not found"));
 
-			const result = await tryResolveWithExtensions("/Users/test/project/nonexistent");
+			const result = await tryResolveWithExtensions(
+				"/Users/test/project/nonexistent",
+			);
 			expect(result).toBeNull();
 		});
 	});
@@ -220,11 +248,14 @@ describe("PathResolutionUtils", () => {
 				source: "/Users/test/project/src/utils/helper.ts",
 				dependencies: [
 					{ path: "/Users/test/project/src/components/Button.tsx" },
-					{ external: "react" }
-				]
+					{ external: "react" },
+				],
 			};
 
-			const result = convertToProjectRelativePaths(data, mockProjectRoot, ["source", "path"]);
+			const result = convertToProjectRelativePaths(data, mockProjectRoot, [
+				"source",
+				"path",
+			]);
 
 			expect(result.source).toBe("src/utils/helper.ts");
 			expect(result.dependencies[0].path).toBe("src/components/Button.tsx");
@@ -235,11 +266,13 @@ describe("PathResolutionUtils", () => {
 			const data = {
 				nested: {
 					source: "/Users/test/project/src/index.ts",
-					other: "value"
-				}
+					other: "value",
+				},
 			};
 
-			const result = convertToProjectRelativePaths(data, mockProjectRoot, ["source"]);
+			const result = convertToProjectRelativePaths(data, mockProjectRoot, [
+				"source",
+			]);
 
 			expect(result.nested.source).toBe("src/index.ts");
 			expect(result.nested.other).toBe("value");
@@ -253,7 +286,7 @@ describe("PathResolutionUtils", () => {
 				"./component.tsx",
 				"./style.css",
 				"./another.ts",
-				"no-extension"
+				"no-extension",
 			];
 
 			const result = extractFileExtensions(sources);
@@ -271,7 +304,7 @@ describe("PathResolutionUtils", () => {
 				"react",
 				"@types/node",
 				"fs",
-				"node:path"
+				"node:path",
 			];
 
 			const result = groupDependenciesByType(sources);
@@ -285,12 +318,18 @@ describe("PathResolutionUtils", () => {
 
 	describe("isWithinProject", () => {
 		it("should return true for paths within project", () => {
-			const result = isWithinProject("/Users/test/project/src/index.ts", mockProjectRoot);
+			const result = isWithinProject(
+				"/Users/test/project/src/index.ts",
+				mockProjectRoot,
+			);
 			expect(result).toBe(true);
 		});
 
 		it("should return false for paths outside project", () => {
-			const result = isWithinProject("/Users/other/project/index.ts", mockProjectRoot);
+			const result = isWithinProject(
+				"/Users/other/project/index.ts",
+				mockProjectRoot,
+			);
 			expect(result).toBe(false);
 		});
 
@@ -305,7 +344,7 @@ describe("PathResolutionUtils", () => {
 			const paths = [
 				"/Users/test/project/src/components/Button.tsx",
 				"/Users/test/project/src/components/Modal.tsx",
-				"/Users/test/project/src/utils/helper.ts"
+				"/Users/test/project/src/utils/helper.ts",
 			];
 
 			const result = findCommonBasePath(paths);
@@ -329,29 +368,41 @@ describe("PathResolutionUtils", () => {
 			const analysisResult = {
 				pathInfo: {
 					projectRoot: mockProjectRoot,
-					absolute: "/Users/test/project/src/components/Button.tsx"
-				}
+					absolute: "/Users/test/project/src/components/Button.tsx",
+				},
 			};
 
 			const result = createResolutionContext(analysisResult);
 
 			expect(result.projectRoot).toBe(mockProjectRoot);
 			expect(result.sourceFileDir).toBe("/Users/test/project/src/components");
-			expect(result.extensions).toEqual([".ts", ".tsx", ".js", ".jsx", ".mjs", ".cjs", ".json"]);
+			expect(result.extensions).toEqual([
+				".ts",
+				".tsx",
+				".js",
+				".jsx",
+				".mjs",
+				".cjs",
+				".json",
+			]);
 		});
 
 		it("should accept custom aliases and extensions", () => {
 			const analysisResult = {
 				pathInfo: {
 					projectRoot: mockProjectRoot,
-					absolute: "/Users/test/project/src/index.ts"
-				}
+					absolute: "/Users/test/project/src/index.ts",
+				},
 			};
 
 			const aliases = { "@": "src" };
 			const extensions = [".vue", ".js"];
 
-			const result = createResolutionContext(analysisResult, aliases, extensions);
+			const result = createResolutionContext(
+				analysisResult,
+				aliases,
+				extensions,
+			);
 
 			expect(result.aliases).toBe(aliases);
 			expect(result.extensions).toBe(extensions);
@@ -365,9 +416,9 @@ describe("PathResolutionUtils", () => {
 					paths: {
 						"@/*": ["src/*"],
 						"@utils/*": ["src/utils/*"],
-						"@components": ["src/components"]
-					}
-				}
+						"@components": ["src/components"],
+					},
+				},
 			};
 
 			mockFs.promises.access.mockResolvedValue(undefined);
@@ -378,7 +429,7 @@ describe("PathResolutionUtils", () => {
 			expect(result).toEqual({
 				"@": "src",
 				"@utils": "src/utils",
-				"@components": "src/components"
+				"@components": "src/components",
 			});
 		});
 
@@ -404,20 +455,22 @@ describe("PathResolutionUtils", () => {
 		it("should load dependencies from package.json", async () => {
 			const mockPackageJson = {
 				dependencies: {
-					"react": "^18.0.0",
-					"lodash": "^4.17.21"
+					react: "^18.0.0",
+					lodash: "^4.17.21",
 				},
 				devDependencies: {
 					"@types/react": "^18.0.0",
-					"typescript": "^5.0.0"
+					typescript: "^5.0.0",
 				},
 				peerDependencies: {
-					"react-dom": "^18.0.0"
-				}
+					"react-dom": "^18.0.0",
+				},
 			};
 
 			mockFs.promises.access.mockResolvedValue(undefined);
-			mockFs.promises.readFile.mockResolvedValue(JSON.stringify(mockPackageJson));
+			mockFs.promises.readFile.mockResolvedValue(
+				JSON.stringify(mockPackageJson),
+			);
 
 			const result = await loadPackageDependencies(mockProjectRoot);
 

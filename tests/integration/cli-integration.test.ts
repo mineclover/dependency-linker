@@ -14,7 +14,10 @@ describe("CLI Integration Tests", () => {
 	beforeEach(() => {
 		cliAdapter = new CLIAdapter();
 		commandParser = new CommandParser();
-		testFile = path.join(__dirname, "../fixtures/typescript/simple-component.tsx");
+		testFile = path.join(
+			__dirname,
+			"../fixtures/typescript/simple-component.tsx",
+		);
 	});
 
 	afterEach(() => {
@@ -24,9 +27,11 @@ describe("CLI Integration Tests", () => {
 	describe("New CLI Options", () => {
 		it("should parse --use-integrated option", () => {
 			const result = commandParser.parse([
-				"--file", testFile,
+				"--file",
+				testFile,
 				"--use-integrated",
-				"--format", "report"
+				"--format",
+				"report",
 			]);
 
 			expect(result.error).toBeUndefined();
@@ -36,9 +41,11 @@ describe("CLI Integration Tests", () => {
 
 		it("should parse --optimize-output option", () => {
 			const result = commandParser.parse([
-				"--file", testFile,
+				"--file",
+				testFile,
 				"--optimize-output",
-				"--format", "minimal"
+				"--format",
+				"minimal",
 			]);
 
 			expect(result.error).toBeUndefined();
@@ -51,8 +58,10 @@ describe("CLI Integration Tests", () => {
 
 			for (const format of formats) {
 				const result = commandParser.parse([
-					"--file", testFile,
-					"--format", format
+					"--file",
+					testFile,
+					"--format",
+					format,
 				]);
 
 				expect(result.error).toBeUndefined();
@@ -140,10 +149,21 @@ describe("CLI Integration Tests", () => {
 			const integratedData = await cliAdapter.analyzeFileIntegrated(options);
 
 			// Test all output formats with integrated data
-			const formats = ["summary", "table", "tree", "csv", "json", "minimal", "report"];
+			const formats = [
+				"summary",
+				"table",
+				"tree",
+				"csv",
+				"json",
+				"minimal",
+				"report",
+			];
 
 			for (const format of formats) {
-				const output = cliAdapter.formatIntegratedResult(integratedData, format);
+				const output = cliAdapter.formatIntegratedResult(
+					integratedData,
+					format,
+				);
 				expect(output).toBeDefined();
 				expect(typeof output).toBe("string");
 				expect(output.length).toBeGreaterThan(0);
@@ -163,7 +183,8 @@ describe("CLI Integration Tests", () => {
 			const optimizedOptions = { ...baseOptions, optimizeOutput: true };
 
 			const baseData = await cliAdapter.analyzeFileIntegrated(baseOptions);
-			const optimizedData = await cliAdapter.analyzeFileIntegrated(optimizedOptions);
+			const optimizedData =
+				await cliAdapter.analyzeFileIntegrated(optimizedOptions);
 
 			// Both should succeed but optimized might have different detail levels
 			expect(baseData).toBeDefined();
@@ -189,7 +210,9 @@ describe("CLI Integration Tests", () => {
 
 			const validation = await cliAdapter.validateOptions(options);
 			expect(validation.isValid).toBe(false);
-			expect(validation.errors).toContain("File not found: /nonexistent/file.ts");
+			expect(validation.errors).toContain(
+				"File not found: /nonexistent/file.ts",
+			);
 		});
 
 		it("should handle unsupported file extensions", async () => {
@@ -204,7 +227,9 @@ describe("CLI Integration Tests", () => {
 
 			const validation = await cliAdapter.validateOptions(options);
 			expect(validation.isValid).toBe(false);
-			expect(validation.errors.some(err => err.includes("extension"))).toBe(true);
+			expect(validation.errors.some((err) => err.includes("extension"))).toBe(
+				true,
+			);
 		});
 
 		it("should format errors appropriately", () => {
@@ -258,12 +283,22 @@ describe("CLI Integration Tests", () => {
 		});
 
 		it("should support all legacy output formats", async () => {
-			const legacyFormats = ["json", "text", "compact", "summary", "csv", "deps-only", "table"];
+			const legacyFormats = [
+				"json",
+				"text",
+				"compact",
+				"summary",
+				"csv",
+				"deps-only",
+				"table",
+			];
 
 			for (const format of legacyFormats) {
 				const result = commandParser.parse([
-					"--file", testFile,
-					"--format", format
+					"--file",
+					testFile,
+					"--format",
+					format,
 				]);
 
 				expect(result.error).toBeUndefined();

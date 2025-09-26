@@ -1,49 +1,49 @@
 {
-  "filePath": "demo/examples/simple-component.tsx",
-  "success": true,
-  "dependencies": [
-    {
-      "source": "react",
-      "type": "external",
-      "location": {
-        "line": 1,
-        "column": 0,
-        "offset": 0
-      },
-      "isNodeBuiltin": false,
-      "isScopedPackage": false,
-      "packageName": "react"
-    }
-  ],
-  "imports": [
-    {
-      "source": "react",
-      "specifiers": [
-        {
-          "type": "default",
-          "imported": "default",
-          "local": "React"
-        }
-      ],
-      "location": {
-        "line": 1,
-        "column": 0,
-        "offset": 0
-      },
-      "isTypeOnly": false
-    }
-  ],
-  "exports": [
-    {
-      "name": "default",
-      "type": "default",
-      "location": {
-        "line": 17,
-        "column": 0,
-        "offset": 226
-      },
-      "isTypeOnly": false
-    }
-  ],
-  "parseTime": 4
+	"filePath": "demo/examples/simple-component.tsx",
+	"success": true,
+	"dependencies": [
+		{
+			"source": "react",
+			"type": "external",
+			"location": {
+				"line": 1,
+				"column": 0,
+				"offset": 0
+			},
+			"isNodeBuiltin": false,
+			"isScopedPackage": false,
+			"packageName": "react"
+		}
+	],
+	"imports": [
+		{
+			"source": "react",
+			"specifiers": [
+				{
+					"type": "default",
+					"imported": "default",
+					"local": "React"
+				}
+			],
+			"location": {
+				"line": 1,
+				"column": 0,
+				"offset": 0
+			},
+			"isTypeOnly": false
+		}
+	],
+	"exports": [
+		{
+			"name": "default",
+			"type": "default",
+			"location": {
+				"line": 17,
+				"column": 0,
+				"offset": 226
+			},
+			"isTypeOnly": false
+		}
+	],
+	"parseTime": 4
 }

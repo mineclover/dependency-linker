@@ -3,26 +3,33 @@
  * Provides controlled test doubles for analyzer components
  */
 
-import type { AnalysisResult, AnalysisError } from '../../src/models/AnalysisResult';
-import type { AnalysisOptions, BatchAnalysisOptions, DirectoryOptions } from '../../src/api/types';
-import type { ParseResult } from '../../src/core/types/ParseTypes';
-import type { ITypeScriptParser } from '../../src/core/interfaces/ITypeScriptParser';
-import { TypeScriptAnalyzer } from '../../src/api/TypeScriptAnalyzer';
-import type { DependencyInfo } from '../../src/models/DependencyInfo';
-import type { ImportInfo } from '../../src/models/ImportInfo';
-import type { ExportInfo } from '../../src/models/ExportInfo';
+import type {
+	AnalysisResult,
+	AnalysisError,
+} from "../../src/models/AnalysisResult";
+import type {
+	AnalysisOptions,
+	BatchAnalysisOptions,
+	DirectoryOptions,
+} from "../../src/api/types";
+import type { ParseResult } from "../../src/core/types/ParseTypes";
+import type { ITypeScriptParser } from "../../src/core/interfaces/ITypeScriptParser";
+import { TypeScriptAnalyzer } from "../../src/api/TypeScriptAnalyzer";
+import type { DependencyInfo } from "../../src/models/DependencyInfo";
+import type { ImportInfo } from "../../src/models/ImportInfo";
+import type { ExportInfo } from "../../src/models/ExportInfo";
 
 /**
  * Mock analysis results for different test scenarios
  */
 export const mockAnalysisResults = {
 	simple: (() => {
-		const { createPathInfo } = require('../../src/models/PathInfo');
-		const filePath = '/test/simple.ts';
+		const { createPathInfo } = require("../../src/models/PathInfo");
+		const filePath = "/test/simple.ts";
 		return {
 			filePath,
 			pathInfo: createPathInfo(filePath),
-			language: 'typescript',
+			language: "typescript",
 			extractedData: {
 				dependencies: [] as DependencyInfo[],
 				imports: [] as ImportInfo[],
@@ -34,24 +41,24 @@ export const mockAnalysisResults = {
 				extractionTime: 10,
 				interpretationTime: 5,
 				totalTime: 30,
-				memoryUsage: 1.2
+				memoryUsage: 1.2,
 			},
 			errors: [],
 			metadata: {
 				timestamp: new Date(),
-				version: '2.0.0',
-				config: {}
-			}
+				version: "2.0.0",
+				config: {},
+			},
 		} as AnalysisResult;
 	})(),
 
 	complex: (() => {
-		const { createPathInfo } = require('../../src/models/PathInfo');
-		const filePath = '/test/complex.ts';
+		const { createPathInfo } = require("../../src/models/PathInfo");
+		const filePath = "/test/complex.ts";
 		return {
 			filePath,
 			pathInfo: createPathInfo(filePath),
-			language: 'typescript',
+			language: "typescript",
 			extractedData: {
 				dependencies: [] as DependencyInfo[],
 				imports: [] as ImportInfo[],
@@ -63,24 +70,24 @@ export const mockAnalysisResults = {
 				extractionTime: 30,
 				interpretationTime: 15,
 				totalTime: 90,
-				memoryUsage: 3.5
+				memoryUsage: 3.5,
 			},
 			errors: [],
 			metadata: {
 				timestamp: new Date(),
-				version: '2.0.0',
-				config: {}
-			}
+				version: "2.0.0",
+				config: {},
+			},
 		} as AnalysisResult;
 	})(),
 
 	withErrors: (() => {
-		const { createPathInfo } = require('../../src/models/PathInfo');
-		const filePath = '/test/with-errors.ts';
+		const { createPathInfo } = require("../../src/models/PathInfo");
+		const filePath = "/test/with-errors.ts";
 		return {
 			filePath,
 			pathInfo: createPathInfo(filePath),
-			language: 'typescript',
+			language: "typescript",
 			extractedData: {
 				dependencies: [] as DependencyInfo[],
 				imports: [] as ImportInfo[],
@@ -92,25 +99,27 @@ export const mockAnalysisResults = {
 				extractionTime: 20,
 				interpretationTime: 10,
 				totalTime: 65,
-				memoryUsage: 2.1
+				memoryUsage: 2.1,
 			},
-			errors: [{
-				type: 'ParseError',
-				message: 'Syntax errors found in file',
-				severity: 'error',
-				source: 'parser',
-				context: {
-					operation: 'parsing',
-					details: ['Expected ":" after property name at line 5']
+			errors: [
+				{
+					type: "ParseError",
+					message: "Syntax errors found in file",
+					severity: "error",
+					source: "parser",
+					context: {
+						operation: "parsing",
+						details: ['Expected ":" after property name at line 5'],
+					},
+					timestamp: new Date(),
+					id: "parse-error-1",
 				},
-				timestamp: new Date(),
-				id: 'parse-error-1'
-			}],
+			],
 			metadata: {
 				timestamp: new Date(),
-				version: '2.0.0',
-				config: {}
-			}
+				version: "2.0.0",
+				config: {},
+			},
 		} as AnalysisResult;
 	})(),
 };
@@ -168,10 +177,10 @@ export class MockTypeScriptParser implements ITypeScriptParser {
 
 	public async parseSource(source: string): Promise<ParseResult> {
 		// Simulate parsing delay
-		await new Promise(resolve => setTimeout(resolve, 10));
+		await new Promise((resolve) => setTimeout(resolve, 10));
 
 		if (this.shouldFail) {
-			throw new Error('Mock parser configured to fail');
+			throw new Error("Mock parser configured to fail");
 		}
 
 		// Return custom result if set
@@ -180,11 +189,11 @@ export class MockTypeScriptParser implements ITypeScriptParser {
 		}
 
 		// Return appropriate mock result based on source content
-		if (source.includes('non-existent-package')) {
+		if (source.includes("non-existent-package")) {
 			return mockParseResults.withSyntaxError;
 		}
 
-		if (source.includes('ComplexClass')) {
+		if (source.includes("ComplexClass")) {
 			return mockParseResults.complex;
 		}
 
@@ -193,18 +202,18 @@ export class MockTypeScriptParser implements ITypeScriptParser {
 
 	public async parseFile(filePath: string): Promise<ParseResult> {
 		// Simulate file reading delay
-		await new Promise(resolve => setTimeout(resolve, 5));
+		await new Promise((resolve) => setTimeout(resolve, 5));
 
 		if (this.shouldFail) {
 			throw new Error(`Mock parser failed to read file: ${filePath}`);
 		}
 
 		// Return appropriate result based on file name
-		if (filePath.includes('with-errors')) {
+		if (filePath.includes("with-errors")) {
 			return mockParseResults.withSyntaxError;
 		}
 
-		if (filePath.includes('complex')) {
+		if (filePath.includes("complex")) {
 			return mockParseResults.complex;
 		}
 
@@ -217,16 +226,18 @@ export class MockTypeScriptParser implements ITypeScriptParser {
  */
 export class MockAnalyzerFactory {
 	private static instances: Map<string, TypeScriptAnalyzer> = new Map();
-	
+
 	/**
 	 * Create a mock analyzer with configurable behavior
 	 */
-	public static createMockAnalyzer(options: {
-		shouldFail?: boolean;
-		customResults?: Map<string, AnalysisResult>;
-		parseDelay?: number;
-		analysisDelay?: number;
-	} = {}): TypeScriptAnalyzer {
+	public static createMockAnalyzer(
+		options: {
+			shouldFail?: boolean;
+			customResults?: Map<string, AnalysisResult>;
+			parseDelay?: number;
+			analysisDelay?: number;
+		} = {},
+	): TypeScriptAnalyzer {
 		const {
 			shouldFail = false,
 			customResults = new Map(),
@@ -243,9 +254,14 @@ export class MockAnalyzerFactory {
 
 		// Mock the analyzeFile method using prototype manipulation
 		const originalAnalyzeFile = (analyzer as any).analyzeFile?.bind(analyzer);
-		(analyzer as any).analyzeFile = async (filePath: string, options?: AnalysisOptions): Promise<AnalysisResult> => {
+		(analyzer as any).analyzeFile = async (
+			filePath: string,
+			options?: AnalysisOptions,
+		): Promise<AnalysisResult> => {
 			// Simulate delays
-			await new Promise(resolve => setTimeout(resolve, parseDelay + analysisDelay));
+			await new Promise((resolve) =>
+				setTimeout(resolve, parseDelay + analysisDelay),
+			);
 
 			if (shouldFail) {
 				throw new Error(`Mock analyzer configured to fail for: ${filePath}`);
@@ -257,11 +273,11 @@ export class MockAnalyzerFactory {
 			}
 
 			// Return appropriate mock result based on file path
-			if (filePath.includes('with-errors')) {
+			if (filePath.includes("with-errors")) {
 				return mockAnalysisResults.withErrors;
 			}
 
-			if (filePath.includes('complex')) {
+			if (filePath.includes("complex")) {
 				return mockAnalysisResults.complex;
 			}
 
@@ -274,26 +290,24 @@ export class MockAnalyzerFactory {
 	/**
 	 * Create mock analyzer for batch processing
 	 */
-	public static createBatchMockAnalyzer(options: {
-		resultsPerFile?: number;
-		shouldFailOnFile?: string;
-		batchDelay?: number;
-	} = {}): TypeScriptAnalyzer {
-		const {
-			resultsPerFile = 1,
-			shouldFailOnFile,
-			batchDelay = 50,
-		} = options;
+	public static createBatchMockAnalyzer(
+		options: {
+			resultsPerFile?: number;
+			shouldFailOnFile?: string;
+			batchDelay?: number;
+		} = {},
+	): TypeScriptAnalyzer {
+		const { resultsPerFile = 1, shouldFailOnFile, batchDelay = 50 } = options;
 
 		const analyzer = this.createMockAnalyzer();
 
 		// Mock batch processing methods if they exist
 		(analyzer as any).analyzeDirectory = async (
 			dirPath: string,
-			options?: DirectoryOptions
+			options?: DirectoryOptions,
 		): Promise<AnalysisResult[]> => {
 			// Simulate batch processing delay
-			await new Promise(resolve => setTimeout(resolve, batchDelay));
+			await new Promise((resolve) => setTimeout(resolve, batchDelay));
 
 			if (shouldFailOnFile && dirPath.includes(shouldFailOnFile)) {
 				throw new Error(`Batch analysis failed on: ${shouldFailOnFile}`);
@@ -317,11 +331,13 @@ export class MockAnalyzerFactory {
 	/**
 	 * Create analyzer that simulates memory/performance issues
 	 */
-	public static createPerformanceMockAnalyzer(options: {
-		memoryLeakSize?: number;
-		cpuIntensiveWork?: boolean;
-		slowAnalysis?: boolean;
-	} = {}): TypeScriptAnalyzer {
+	public static createPerformanceMockAnalyzer(
+		options: {
+			memoryLeakSize?: number;
+			cpuIntensiveWork?: boolean;
+			slowAnalysis?: boolean;
+		} = {},
+	): TypeScriptAnalyzer {
 		const {
 			memoryLeakSize = 0,
 			cpuIntensiveWork = false,
@@ -331,12 +347,17 @@ export class MockAnalyzerFactory {
 		const analyzer = this.createMockAnalyzer();
 		const originalAnalyzeFile = (analyzer as any).analyzeFile?.bind(analyzer);
 
-		(analyzer as any).analyzeFile = async (filePath: string, options?: AnalysisOptions): Promise<AnalysisResult> => {
+		(analyzer as any).analyzeFile = async (
+			filePath: string,
+			options?: AnalysisOptions,
+		): Promise<AnalysisResult> => {
 			// Simulate memory leak
 			if (memoryLeakSize > 0) {
-				const leak = new Array(memoryLeakSize).fill('x'.repeat(1000));
+				const leak = new Array(memoryLeakSize).fill("x".repeat(1000));
 				// Keep reference to prevent GC
-				(global as any).__testMemoryLeak = ((global as any).__testMemoryLeak || []).concat(leak);
+				(global as any).__testMemoryLeak = (
+					(global as any).__testMemoryLeak || []
+				).concat(leak);
 			}
 
 			// Simulate CPU intensive work
@@ -349,7 +370,7 @@ export class MockAnalyzerFactory {
 
 			// Simulate slow analysis
 			if (slowAnalysis) {
-				await new Promise(resolve => setTimeout(resolve, 2000));
+				await new Promise((resolve) => setTimeout(resolve, 2000));
 			}
 
 			if (originalAnalyzeFile) {
@@ -381,73 +402,88 @@ export const mockFactoryFunctions = {
 	/**
 	 * Mock analyzeTypeScriptFile function
 	 */
-	analyzeTypeScriptFile: jest.fn().mockImplementation(
-		async (filePath: string, options?: AnalysisOptions): Promise<AnalysisResult> => {
-			// Simulate delay
-			await new Promise(resolve => setTimeout(resolve, 10));
+	analyzeTypeScriptFile: jest
+		.fn()
+		.mockImplementation(
+			async (
+				filePath: string,
+				options?: AnalysisOptions,
+			): Promise<AnalysisResult> => {
+				// Simulate delay
+				await new Promise((resolve) => setTimeout(resolve, 10));
 
-			if (filePath.includes('non-existent')) {
-				throw new Error('File not found');
-			}
+				if (filePath.includes("non-existent")) {
+					throw new Error("File not found");
+				}
 
-			if (filePath.includes('complex')) {
-				return mockAnalysisResults.complex;
-			}
+				if (filePath.includes("complex")) {
+					return mockAnalysisResults.complex;
+				}
 
-			return mockAnalysisResults.simple;
-		}
-	),
+				return mockAnalysisResults.simple;
+			},
+		),
 
 	/**
 	 * Mock extractDependencies function
 	 */
-	extractDependencies: jest.fn().mockImplementation(
-		async (source: string): Promise<DependencyInfo[]> => {
-			await new Promise(resolve => setTimeout(resolve, 5));
+	extractDependencies: jest
+		.fn()
+		.mockImplementation(async (source: string): Promise<DependencyInfo[]> => {
+			await new Promise((resolve) => setTimeout(resolve, 5));
 
-			if (source.includes('ComplexClass')) {
+			if (source.includes("ComplexClass")) {
 				return mockAnalysisResults.complex.dependencies;
 			}
 
 			return mockAnalysisResults.simple.dependencies;
-		}
-	),
+		}),
 
 	/**
 	 * Mock getBatchAnalysis function
 	 */
-	getBatchAnalysis: jest.fn().mockImplementation(
-		async (filePaths: string[], options?: BatchAnalysisOptions): Promise<AnalysisResult[]> => {
-			await new Promise(resolve => setTimeout(resolve, 20));
+	getBatchAnalysis: jest
+		.fn()
+		.mockImplementation(
+			async (
+				filePaths: string[],
+				options?: BatchAnalysisOptions,
+			): Promise<AnalysisResult[]> => {
+				await new Promise((resolve) => setTimeout(resolve, 20));
 
-			return filePaths.map((filePath, index) => ({
-				...mockAnalysisResults.simple,
-				filePath,
-			}));
-		}
-	),
+				return filePaths.map((filePath, index) => ({
+					...mockAnalysisResults.simple,
+					filePath,
+				}));
+			},
+		),
 
 	/**
 	 * Mock analyzeDirectory function
 	 */
-	analyzeDirectory: jest.fn().mockImplementation(
-		async (dirPath: string, options?: DirectoryOptions): Promise<AnalysisResult[]> => {
-			await new Promise(resolve => setTimeout(resolve, 30));
+	analyzeDirectory: jest
+		.fn()
+		.mockImplementation(
+			async (
+				dirPath: string,
+				options?: DirectoryOptions,
+			): Promise<AnalysisResult[]> => {
+				await new Promise((resolve) => setTimeout(resolve, 30));
 
-			const fileCount = 3;
-			return Array.from({ length: fileCount }, (_, index) => ({
-				...mockAnalysisResults.simple,
-				filePath: `${dirPath}/file-${index}.ts`,
-			}));
-		}
-	),
+				const fileCount = 3;
+				return Array.from({ length: fileCount }, (_, index) => ({
+					...mockAnalysisResults.simple,
+					filePath: `${dirPath}/file-${index}.ts`,
+				}));
+			},
+		),
 
 	/**
 	 * Reset all mocks
 	 */
 	resetAll: (): void => {
-		Object.values(mockFactoryFunctions).forEach(mock => {
-			if (typeof mock === 'function' && 'mockReset' in mock) {
+		Object.values(mockFactoryFunctions).forEach((mock) => {
+			if (typeof mock === "function" && "mockReset" in mock) {
 				mock.mockReset();
 			}
 		});

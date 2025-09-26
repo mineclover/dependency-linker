@@ -17,7 +17,10 @@ describe("Configuration Management Integration Tests", () => {
 		configManager = new IntegrationConfigManager();
 		cliAdapter = new CLIAdapter();
 		commandParser = new CommandParser();
-		testFile = path.join(__dirname, "../fixtures/typescript/simple-component.tsx");
+		testFile = path.join(
+			__dirname,
+			"../fixtures/typescript/simple-component.tsx",
+		);
 	});
 
 	afterEach(() => {
@@ -46,7 +49,7 @@ describe("Configuration Management Integration Tests", () => {
 			const config = configManager.getConfigForCLI({
 				preset: "fast",
 				detailLevel: "comprehensive",
-				maxStringLength: 500
+				maxStringLength: 500,
 			});
 
 			expect(config).toBeDefined();
@@ -71,40 +74,45 @@ describe("Configuration Management Integration Tests", () => {
 				sizeLimits: {
 					maxStringLength: -1, // Negative should be invalid
 					maxArrayLength: 100,
-					maxDepth: 10
-				}
+					maxDepth: 10,
+				},
 			};
 
 			const validation = configManager.validateConfig(invalidConfig);
 
 			expect(validation.isValid).toBe(false);
 			expect(validation.errors.length).toBeGreaterThan(0);
-			expect(validation.errors.some(e => e.includes("view"))).toBe(true);
-			expect(validation.errors.some(e => e.includes("positive"))).toBe(true);
+			expect(validation.errors.some((e) => e.includes("view"))).toBe(true);
+			expect(validation.errors.some((e) => e.includes("positive"))).toBe(true);
 		});
 
 		it("should generate warnings for performance issues", () => {
 			const config = configManager.getConfigForCLI({
 				detailLevel: "comprehensive",
 				enabledViews: ["summary", "table", "tree", "csv", "minimal"],
-				maxStringLength: 15000 // Very large
+				maxStringLength: 15000, // Very large
 			});
 
 			const validation = configManager.validateConfig(config);
 
 			expect(validation.isValid).toBe(true);
 			expect(validation.warnings.length).toBeGreaterThan(0);
-			expect(validation.warnings.some(w => w.includes("performance"))).toBe(true);
+			expect(validation.warnings.some((w) => w.includes("performance"))).toBe(
+				true,
+			);
 		});
 	});
 
 	describe("CLI Integration", () => {
 		it("should parse preset option", () => {
 			const result = commandParser.parse([
-				"--file", testFile,
+				"--file",
+				testFile,
 				"--use-integrated",
-				"--preset", "fast",
-				"--format", "json"
+				"--preset",
+				"fast",
+				"--format",
+				"json",
 			]);
 
 			expect(result.error).toBeUndefined();
@@ -114,20 +122,31 @@ describe("Configuration Management Integration Tests", () => {
 
 		it("should parse detailed configuration options", () => {
 			const result = commandParser.parse([
-				"--file", testFile,
+				"--file",
+				testFile,
 				"--use-integrated",
-				"--detail-level", "comprehensive",
-				"--optimization-mode", "accuracy",
-				"--enabled-views", "summary,table,tree",
-				"--max-string-length", "2000",
-				"--max-array-length", "200",
-				"--max-depth", "15"
+				"--detail-level",
+				"comprehensive",
+				"--optimization-mode",
+				"accuracy",
+				"--enabled-views",
+				"summary,table,tree",
+				"--max-string-length",
+				"2000",
+				"--max-array-length",
+				"200",
+				"--max-depth",
+				"15",
 			]);
 
 			expect(result.error).toBeUndefined();
 			expect(result.options?.detailLevel).toBe("comprehensive");
 			expect(result.options?.optimizationMode).toBe("accuracy");
-			expect(result.options?.enabledViews).toEqual(["summary", "table", "tree"]);
+			expect(result.options?.enabledViews).toEqual([
+				"summary",
+				"table",
+				"tree",
+			]);
 			expect(result.options?.maxStringLength).toBe(2000);
 			expect(result.options?.maxArrayLength).toBe(200);
 			expect(result.options?.maxDepth).toBe(15);
@@ -136,10 +155,20 @@ describe("Configuration Management Integration Tests", () => {
 		it("should validate invalid CLI options", () => {
 			const invalidResults = [
 				commandParser.parse(["--file", testFile, "--detail-level", "invalid"]),
-				commandParser.parse(["--file", testFile, "--optimization-mode", "invalid"]),
-				commandParser.parse(["--file", testFile, "--enabled-views", "invalid,views"]),
+				commandParser.parse([
+					"--file",
+					testFile,
+					"--optimization-mode",
+					"invalid",
+				]),
+				commandParser.parse([
+					"--file",
+					testFile,
+					"--enabled-views",
+					"invalid,views",
+				]),
 				commandParser.parse(["--file", testFile, "--max-string-length", "0"]),
-				commandParser.parse(["--file", testFile, "--max-array-length", "-5"])
+				commandParser.parse(["--file", testFile, "--max-array-length", "-5"]),
 			];
 
 			for (const result of invalidResults) {
@@ -153,7 +182,7 @@ describe("Configuration Management Integration Tests", () => {
 				file: testFile,
 				format: "json",
 				useIntegrated: true,
-				preset: "fast"
+				preset: "fast",
 			};
 
 			const validation = cliAdapter.validateConfiguration(options);
@@ -186,7 +215,7 @@ describe("Configuration Management Integration Tests", () => {
 				file: testFile,
 				format: "json",
 				useIntegrated: true,
-				preset: "fast"
+				preset: "fast",
 			};
 
 			const result = await cliAdapter.analyzeFileIntegrated(options);
@@ -206,7 +235,7 @@ describe("Configuration Management Integration Tests", () => {
 				file: testFile,
 				format: "json",
 				useIntegrated: true,
-				preset: "comprehensive"
+				preset: "comprehensive",
 			};
 
 			const result = await cliAdapter.analyzeFileIntegrated(options);
@@ -230,7 +259,7 @@ describe("Configuration Management Integration Tests", () => {
 				useIntegrated: true,
 				enabledViews: ["summary", "table"],
 				detailLevel: "standard" as const,
-				maxStringLength: 500
+				maxStringLength: 500,
 			};
 
 			const result = await cliAdapter.analyzeFileIntegrated(options);
@@ -249,14 +278,16 @@ describe("Configuration Management Integration Tests", () => {
 				format: "json",
 				useIntegrated: true,
 				enabledViews: [], // Invalid: empty views
-				maxStringLength: -1 // Invalid: negative
+				maxStringLength: -1, // Invalid: negative
 			};
 
 			await expect(cliAdapter.analyzeFileIntegrated(options)).rejects.toThrow();
 		});
 
 		it("should show configuration warnings", async () => {
-			const consoleSpy = jest.spyOn(console, "warn").mockImplementation(() => {});
+			const consoleSpy = jest
+				.spyOn(console, "warn")
+				.mockImplementation(() => {});
 
 			const options = {
 				file: testFile,
@@ -264,7 +295,7 @@ describe("Configuration Management Integration Tests", () => {
 				useIntegrated: true,
 				detailLevel: "comprehensive" as const,
 				enabledViews: ["summary", "table", "tree", "csv", "minimal"], // Many views
-				maxStringLength: 15000 // Very large
+				maxStringLength: 15000, // Very large
 			};
 
 			const result = await cliAdapter.analyzeFileIntegrated(options);
@@ -272,7 +303,7 @@ describe("Configuration Management Integration Tests", () => {
 			expect(result).toBeDefined();
 			expect(consoleSpy).toHaveBeenCalledWith(
 				expect.stringContaining("Configuration warnings:"),
-				expect.stringContaining("performance")
+				expect.stringContaining("performance"),
 			);
 
 			consoleSpy.mockRestore();
@@ -313,7 +344,7 @@ describe("Configuration Management Integration Tests", () => {
 				useIntegrated: false,
 				optimizeOutput: false,
 				help: false,
-				version: false
+				version: false,
 			};
 
 			const merged = commandParser.mergeWithEnvironment(cliOptions);

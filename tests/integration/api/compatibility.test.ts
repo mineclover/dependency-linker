@@ -3,289 +3,320 @@
  * Ensures the new architecture maintains the same API surface as the existing system
  */
 
-import { describe, test, expect } from '@jest/globals';
+import { describe, test, expect } from "@jest/globals";
 
-describe('API Compatibility Layer', () => {
-  describe('Main Module Exports', () => {
-    test('should export core API components', async () => {
-      // Test main index exports
-      const mainModule = await import('../../../src/index');
+describe("API Compatibility Layer", () => {
+	describe("Main Module Exports", () => {
+		test("should export core API components", async () => {
+			// Test main index exports
+			const mainModule = await import("../../../src/index");
 
-      // Core API classes
-      expect(mainModule.TypeScriptAnalyzer).toBeDefined();
-      expect(mainModule.AnalysisEngine).toBeDefined();
-      expect(mainModule.BatchAnalyzer).toBeDefined();
+			// Core API classes
+			expect(mainModule.TypeScriptAnalyzer).toBeDefined();
+			expect(mainModule.AnalysisEngine).toBeDefined();
+			expect(mainModule.BatchAnalyzer).toBeDefined();
 
-      // Services
-      expect(mainModule.CacheManager).toBeDefined();
-      expect(mainModule.ExtractorRegistry).toBeDefined();
-      expect(mainModule.InterpreterRegistry).toBeDefined();
-      expect(mainModule.ParserRegistry).toBeDefined();
+			// Services
+			expect(mainModule.CacheManager).toBeDefined();
+			expect(mainModule.ExtractorRegistry).toBeDefined();
+			expect(mainModule.InterpreterRegistry).toBeDefined();
+			expect(mainModule.ParserRegistry).toBeDefined();
 
-      // Language parsers
-      expect(mainModule.TypeScriptParser).toBeDefined();
-      expect(mainModule.JavaScriptParser).toBeDefined();
-      expect(mainModule.GoParser).toBeDefined();
-      expect(mainModule.JavaParser).toBeDefined();
+			// Language parsers
+			expect(mainModule.TypeScriptParser).toBeDefined();
+			expect(mainModule.JavaScriptParser).toBeDefined();
+			expect(mainModule.GoParser).toBeDefined();
+			expect(mainModule.JavaParser).toBeDefined();
 
-      // Core models that should be available - testing what actually exists
-      expect(typeof mainModule.TypeScriptAnalyzer).toBe('function');
-      expect(typeof mainModule.AnalysisEngine).toBe('function');
-      expect(typeof mainModule.BatchAnalyzer).toBe('function');
-    });
+			// Core models that should be available - testing what actually exists
+			expect(typeof mainModule.TypeScriptAnalyzer).toBe("function");
+			expect(typeof mainModule.AnalysisEngine).toBe("function");
+			expect(typeof mainModule.BatchAnalyzer).toBe("function");
+		});
 
-    test('should export factory functions from API', async () => {
-      const apiModule = await import('../../../src/api');
+		test("should export factory functions from API", async () => {
+			const apiModule = await import("../../../src/api");
 
-      // Factory functions
-      expect(typeof apiModule.analyzeTypeScriptFile).toBe('function');
-      expect(typeof apiModule.extractDependencies).toBe('function');
-      expect(typeof apiModule.analyzeDirectory).toBe('function');
-      expect(typeof apiModule.getBatchAnalysis).toBe('function');
-      expect(typeof apiModule.clearFactoryCache).toBe('function');
-      expect(typeof apiModule.resetFactoryAnalyzer).toBe('function');
-    });
+			// Factory functions
+			expect(typeof apiModule.analyzeTypeScriptFile).toBe("function");
+			expect(typeof apiModule.extractDependencies).toBe("function");
+			expect(typeof apiModule.analyzeDirectory).toBe("function");
+			expect(typeof apiModule.getBatchAnalysis).toBe("function");
+			expect(typeof apiModule.clearFactoryCache).toBe("function");
+			expect(typeof apiModule.resetFactoryAnalyzer).toBe("function");
+		});
 
-    test('should maintain TypeScript types compatibility', () => {
-      // Import types to verify they exist and are properly exported
-      const types = require('../../../src/api/types');
+		test("should maintain TypeScript types compatibility", () => {
+			// Import types to verify they exist and are properly exported
+			const types = require("../../../src/api/types");
 
-      expect(types.LogLevel).toBeDefined();
-      expect(types.LogLevel.ERROR).toBe("error");
-      expect(types.LogLevel.WARN).toBe("warn");
-      expect(types.LogLevel.INFO).toBe("info");
-      expect(types.LogLevel.DEBUG).toBe("debug");
-    });
-  });
+			expect(types.LogLevel).toBeDefined();
+			expect(types.LogLevel.ERROR).toBe("error");
+			expect(types.LogLevel.WARN).toBe("warn");
+			expect(types.LogLevel.INFO).toBe("info");
+			expect(types.LogLevel.DEBUG).toBe("debug");
+		});
+	});
 
-  describe('API Class Instantiation', () => {
-    test('should create TypeScriptAnalyzer instance', async () => {
-      const { TypeScriptAnalyzer } = await import('../../../src/api/TypeScriptAnalyzer');
+	describe("API Class Instantiation", () => {
+		test("should create TypeScriptAnalyzer instance", async () => {
+			const { TypeScriptAnalyzer } = await import(
+				"../../../src/api/TypeScriptAnalyzer"
+			);
 
-      const analyzer = new TypeScriptAnalyzer();
-      expect(analyzer).toBeDefined();
-      expect(typeof analyzer.analyzeFile).toBe('function');
-      expect(typeof analyzer.clearCache).toBe('function');
-    });
+			const analyzer = new TypeScriptAnalyzer();
+			expect(analyzer).toBeDefined();
+			expect(typeof analyzer.analyzeFile).toBe("function");
+			expect(typeof analyzer.clearCache).toBe("function");
+		});
 
-    test('should create AnalysisEngine instance', async () => {
-      const { AnalysisEngine } = await import('../../../src/services/AnalysisEngine');
+		test("should create AnalysisEngine instance", async () => {
+			const { AnalysisEngine } = await import(
+				"../../../src/services/AnalysisEngine"
+			);
 
-      const engine = new AnalysisEngine();
-      expect(engine).toBeDefined();
-      expect(typeof engine.analyzeFile).toBe('function');
-      expect(typeof engine.registerExtractor).toBe('function');
-      expect(typeof engine.registerInterpreter).toBe('function');
-    });
+			const engine = new AnalysisEngine();
+			expect(engine).toBeDefined();
+			expect(typeof engine.analyzeFile).toBe("function");
+			expect(typeof engine.registerExtractor).toBe("function");
+			expect(typeof engine.registerInterpreter).toBe("function");
+		});
 
-    test('should create BatchAnalyzer instance', async () => {
-      const { BatchAnalyzer } = await import('../../../src/api/BatchAnalyzer');
-      const { TypeScriptAnalyzer } = await import('../../../src/api/TypeScriptAnalyzer');
+		test("should create BatchAnalyzer instance", async () => {
+			const { BatchAnalyzer } = await import("../../../src/api/BatchAnalyzer");
+			const { TypeScriptAnalyzer } = await import(
+				"../../../src/api/TypeScriptAnalyzer"
+			);
 
-      const analyzer = new TypeScriptAnalyzer();
-      const batchAnalyzer = new BatchAnalyzer(analyzer);
+			const analyzer = new TypeScriptAnalyzer();
+			const batchAnalyzer = new BatchAnalyzer(analyzer);
 
-      expect(batchAnalyzer).toBeDefined();
-      expect(typeof batchAnalyzer.processBatch).toBe('function');
-    });
-  });
+			expect(batchAnalyzer).toBeDefined();
+			expect(typeof batchAnalyzer.processBatch).toBe("function");
+		});
+	});
 
-  describe('Registry System Compatibility', () => {
-    test('should create and use ExtractorRegistry', async () => {
-      const { ExtractorRegistry } = await import('../../../src/services/ExtractorRegistry');
+	describe("Registry System Compatibility", () => {
+		test("should create and use ExtractorRegistry", async () => {
+			const { ExtractorRegistry } = await import(
+				"../../../src/services/ExtractorRegistry"
+			);
 
-      const registry = new ExtractorRegistry();
-      expect(registry).toBeDefined();
-      expect(typeof registry.register).toBe('function');
-      expect(typeof registry.getExtractor).toBe('function');
-      expect(typeof registry.getAllExtractors).toBe('function');
-    });
+			const registry = new ExtractorRegistry();
+			expect(registry).toBeDefined();
+			expect(typeof registry.register).toBe("function");
+			expect(typeof registry.getExtractor).toBe("function");
+			expect(typeof registry.getAllExtractors).toBe("function");
+		});
 
-    test('should create and use InterpreterRegistry', async () => {
-      const { InterpreterRegistry } = await import('../../../src/services/InterpreterRegistry');
+		test("should create and use InterpreterRegistry", async () => {
+			const { InterpreterRegistry } = await import(
+				"../../../src/services/InterpreterRegistry"
+			);
 
-      const registry = new InterpreterRegistry();
-      expect(registry).toBeDefined();
-      expect(typeof registry.register).toBe('function');
-      expect(typeof registry.getInterpreter).toBe('function');
-      expect(typeof registry.getAllInterpreters).toBe('function');
-    });
+			const registry = new InterpreterRegistry();
+			expect(registry).toBeDefined();
+			expect(typeof registry.register).toBe("function");
+			expect(typeof registry.getInterpreter).toBe("function");
+			expect(typeof registry.getAllInterpreters).toBe("function");
+		});
 
-    test('should create and use ParserRegistry', async () => {
-      const { ParserRegistry } = await import('../../../src/services/ParserRegistry');
+		test("should create and use ParserRegistry", async () => {
+			const { ParserRegistry } = await import(
+				"../../../src/services/ParserRegistry"
+			);
 
-      const registry = new ParserRegistry();
-      expect(registry).toBeDefined();
-      expect(typeof registry.register).toBe('function');
-      expect(typeof registry.getParser).toBe('function');
-      expect(typeof registry.getSupportedLanguages).toBe('function');
-    });
-  });
+			const registry = new ParserRegistry();
+			expect(registry).toBeDefined();
+			expect(typeof registry.register).toBe("function");
+			expect(typeof registry.getParser).toBe("function");
+			expect(typeof registry.getSupportedLanguages).toBe("function");
+		});
+	});
 
-  describe('Factory Functions Compatibility', () => {
-    test('should support analyzeTypeScriptFile function', async () => {
-      const { analyzeTypeScriptFile } = await import('../../../src/api/factory-functions');
+	describe("Factory Functions Compatibility", () => {
+		test("should support analyzeTypeScriptFile function", async () => {
+			const { analyzeTypeScriptFile } = await import(
+				"../../../src/api/factory-functions"
+			);
 
-      expect(typeof analyzeTypeScriptFile).toBe('function');
+			expect(typeof analyzeTypeScriptFile).toBe("function");
 
-      // Test function signature by calling with invalid file (should handle gracefully)
-      const result = await analyzeTypeScriptFile('nonexistent.ts', { format: 'json' });
-      expect(result).toBeDefined();
-      // Result has filePath property indicating it was processed
-      expect(result.filePath).toBe('nonexistent.ts');
-    });
+			// Test function signature by calling with invalid file (should handle gracefully)
+			const result = await analyzeTypeScriptFile("nonexistent.ts", {
+				format: "json",
+			});
+			expect(result).toBeDefined();
+			// Result has filePath property indicating it was processed
+			expect(result.filePath).toBe("nonexistent.ts");
+		});
 
-    test('should support extractDependencies function', async () => {
-      const { extractDependencies } = await import('../../../src/api/factory-functions');
+		test("should support extractDependencies function", async () => {
+			const { extractDependencies } = await import(
+				"../../../src/api/factory-functions"
+			);
 
-      expect(typeof extractDependencies).toBe('function');
+			expect(typeof extractDependencies).toBe("function");
 
-      // Test function signature with a valid test file
-      try {
-        const result = await extractDependencies('tests/fixtures/sample-typescript.ts');
-        expect(result).toBeDefined();
-        // Should return array of dependencies
-        expect(Array.isArray(result)).toBe(true);
-      } catch (error) {
-        // If file doesn't exist or has parsing issues, function should still be callable
-        expect(error).toBeDefined();
-      }
-    });
+			// Test function signature with a valid test file
+			try {
+				const result = await extractDependencies(
+					"tests/fixtures/sample-typescript.ts",
+				);
+				expect(result).toBeDefined();
+				// Should return array of dependencies
+				expect(Array.isArray(result)).toBe(true);
+			} catch (error) {
+				// If file doesn't exist or has parsing issues, function should still be callable
+				expect(error).toBeDefined();
+			}
+		});
 
-    test('should support cache management functions', async () => {
-      const { clearFactoryCache, resetFactoryAnalyzer } = await import('../../../src/api/factory-functions');
+		test("should support cache management functions", async () => {
+			const { clearFactoryCache, resetFactoryAnalyzer } = await import(
+				"../../../src/api/factory-functions"
+			);
 
-      expect(typeof clearFactoryCache).toBe('function');
-      expect(typeof resetFactoryAnalyzer).toBe('function');
+			expect(typeof clearFactoryCache).toBe("function");
+			expect(typeof resetFactoryAnalyzer).toBe("function");
 
-      // Test that functions can be called without errors
-      clearFactoryCache();
-      resetFactoryAnalyzer();
-    });
-  });
+			// Test that functions can be called without errors
+			clearFactoryCache();
+			resetFactoryAnalyzer();
+		});
+	});
 
-  describe('Error Handling Compatibility', () => {
-    test('should export error system', async () => {
-      const errorsModule = await import('../../../src/api/errors');
-      expect(errorsModule).toBeDefined();
-    });
+	describe("Error Handling Compatibility", () => {
+		test("should export error system", async () => {
+			const errorsModule = await import("../../../src/api/errors");
+			expect(errorsModule).toBeDefined();
+		});
 
-    test('should maintain error reporter functionality', async () => {
-      const errorsModule = await import('../../../src/api/errors');
-      expect(errorsModule).toBeDefined();
-    });
-  });
+		test("should maintain error reporter functionality", async () => {
+			const errorsModule = await import("../../../src/api/errors");
+			expect(errorsModule).toBeDefined();
+		});
+	});
 
-  describe('Language Parser Compatibility', () => {
-    test('should instantiate all language parsers', async () => {
-      const { TypeScriptParser, JavaScriptParser, GoParser, JavaParser } = await import('../../../src/parsers');
+	describe("Language Parser Compatibility", () => {
+		test("should instantiate all language parsers", async () => {
+			const { TypeScriptParser, JavaScriptParser, GoParser, JavaParser } =
+				await import("../../../src/parsers");
 
-      // Check that parser classes are available
-      expect(TypeScriptParser).toBeDefined();
-      expect(JavaScriptParser).toBeDefined();
-      expect(GoParser).toBeDefined();
-      expect(JavaParser).toBeDefined();
+			// Check that parser classes are available
+			expect(TypeScriptParser).toBeDefined();
+			expect(JavaScriptParser).toBeDefined();
+			expect(GoParser).toBeDefined();
+			expect(JavaParser).toBeDefined();
 
-      // Test instantiation
-      const tsParser = new TypeScriptParser();
-      expect(tsParser).toBeDefined();
-      expect(typeof tsParser.supports).toBe('function');
-      expect(typeof tsParser.parse).toBe('function');
-    });
+			// Test instantiation
+			const tsParser = new TypeScriptParser();
+			expect(tsParser).toBeDefined();
+			expect(typeof tsParser.supports).toBe("function");
+			expect(typeof tsParser.parse).toBe("function");
+		});
 
-    test('should support language detection', async () => {
-      const { TypeScriptParser } = await import('../../../src/parsers/TypeScriptParser');
+		test("should support language detection", async () => {
+			const { TypeScriptParser } = await import(
+				"../../../src/parsers/TypeScriptParser"
+			);
 
-      const parser = new TypeScriptParser();
-      expect(parser.supports('typescript')).toBe(true);
-      expect(parser.supports('javascript')).toBe(true);
-      expect(parser.detectLanguage('test.ts')).toBe('typescript');
-      expect(parser.detectLanguage('test.js')).toBe('javascript');
-    });
-  });
+			const parser = new TypeScriptParser();
+			expect(parser.supports("typescript")).toBe(true);
+			expect(parser.supports("javascript")).toBe(true);
+			expect(parser.detectLanguage("test.ts")).toBe("typescript");
+			expect(parser.detectLanguage("test.js")).toBe("javascript");
+		});
+	});
 
-  describe('Task Management Compatibility', () => {
-    test('should export task management system', async () => {
-      const mainModule = await import('../../../src/index');
+	describe("Task Management Compatibility", () => {
+		test("should export task management system", async () => {
+			const mainModule = await import("../../../src/index");
 
-      // Task management exports
-      expect(mainModule.TaskManager).toBeDefined();
-      expect(mainModule.TaskExecutor).toBeDefined();
-      expect(mainModule.createTaskAPI).toBeDefined();
+			// Task management exports
+			expect(mainModule.TaskManager).toBeDefined();
+			expect(mainModule.TaskExecutor).toBeDefined();
+			expect(mainModule.createTaskAPI).toBeDefined();
 
-      // Task types that should be available
-      expect(mainModule.TaskManager).toBeDefined();
-      expect(mainModule.TaskExecutor).toBeDefined();
-      expect(mainModule.createTaskAPI).toBeDefined();
-    });
+			// Task types that should be available
+			expect(mainModule.TaskManager).toBeDefined();
+			expect(mainModule.TaskExecutor).toBeDefined();
+			expect(mainModule.createTaskAPI).toBeDefined();
+		});
 
-    test('should create task API instance', async () => {
-      const { createTaskAPI } = await import('../../../src/task');
+		test("should create task API instance", async () => {
+			const { createTaskAPI } = await import("../../../src/task");
 
-      expect(typeof createTaskAPI).toBe('function');
+			expect(typeof createTaskAPI).toBe("function");
 
-      const taskAPI = createTaskAPI();
-      expect(taskAPI).toBeDefined();
-      expect(typeof taskAPI.createTask).toBe('function');
-      expect(typeof taskAPI.startTask).toBe('function');
-    });
-  });
+			const taskAPI = createTaskAPI();
+			expect(taskAPI).toBeDefined();
+			expect(typeof taskAPI.createTask).toBe("function");
+			expect(typeof taskAPI.startTask).toBe("function");
+		});
+	});
 
-  describe('Backwards Compatibility', () => {
-    test('should maintain legacy API surface', async () => {
-      // Test that old API patterns still work
-      const mainModule = await import('../../../src/index');
+	describe("Backwards Compatibility", () => {
+		test("should maintain legacy API surface", async () => {
+			// Test that old API patterns still work
+			const mainModule = await import("../../../src/index");
 
-      // Legacy analyzer
-      expect(mainModule.FileAnalyzer).toBeDefined();
+			// Legacy analyzer
+			expect(mainModule.FileAnalyzer).toBeDefined();
 
-      // Legacy parser (aliased to new implementation)
-      expect(mainModule.TypeScriptParser).toBeDefined();
+			// Legacy parser (aliased to new implementation)
+			expect(mainModule.TypeScriptParser).toBeDefined();
 
-      // Test legacy compatibility by checking class existence
-      expect(mainModule.FileAnalyzer).toBeDefined();
-      expect(mainModule.TypeScriptParser).toBeDefined();
-    });
+			// Test legacy compatibility by checking class existence
+			expect(mainModule.FileAnalyzer).toBeDefined();
+			expect(mainModule.TypeScriptParser).toBeDefined();
+		});
 
-    test('should support legacy configuration patterns', async () => {
-      const { TypeScriptAnalyzer } = await import('../../../src/api/TypeScriptAnalyzer');
+		test("should support legacy configuration patterns", async () => {
+			const { TypeScriptAnalyzer } = await import(
+				"../../../src/api/TypeScriptAnalyzer"
+			);
 
-      // Test legacy config pattern
-      const analyzer = new TypeScriptAnalyzer({
-        enableCache: true,
-        logLevel: 2 as any,
-        defaultTimeout: 5000
-      });
+			// Test legacy config pattern
+			const analyzer = new TypeScriptAnalyzer({
+				enableCache: true,
+				logLevel: 2 as any,
+				defaultTimeout: 5000,
+			});
 
-      expect(analyzer).toBeDefined();
-      expect(typeof analyzer.analyzeFile).toBe('function');
-    });
-  });
+			expect(analyzer).toBeDefined();
+			expect(typeof analyzer.analyzeFile).toBe("function");
+		});
+	});
 
-  describe('Performance and Caching Compatibility', () => {
-    test('should maintain cache functionality', async () => {
-      const { CacheManager } = await import('../../../src/services/CacheManager');
+	describe("Performance and Caching Compatibility", () => {
+		test("should maintain cache functionality", async () => {
+			const { CacheManager } = await import(
+				"../../../src/services/CacheManager"
+			);
 
-      const cacheManager = new CacheManager({
-        maxSize: 100,
-        defaultTtl: 60000,
-        enablePersistence: false
-      });
+			const cacheManager = new CacheManager({
+				maxSize: 100,
+				defaultTtl: 60000,
+				enablePersistence: false,
+			});
 
-      expect(cacheManager).toBeDefined();
-      expect(typeof cacheManager.get).toBe('function');
-      expect(typeof cacheManager.set).toBe('function');
-      expect(typeof cacheManager.clear).toBe('function');
-    });
+			expect(cacheManager).toBeDefined();
+			expect(typeof cacheManager.get).toBe("function");
+			expect(typeof cacheManager.set).toBe("function");
+			expect(typeof cacheManager.clear).toBe("function");
+		});
 
-    test('should support performance metrics', async () => {
-      const PerformanceMetricsModule = await import('../../../src/models/PerformanceMetrics');
-      expect(PerformanceMetricsModule.PerformanceMonitor).toBeDefined();
+		test("should support performance metrics", async () => {
+			const PerformanceMetricsModule = await import(
+				"../../../src/models/PerformanceMetrics"
+			);
+			expect(PerformanceMetricsModule.PerformanceMonitor).toBeDefined();
 
-      const monitor = new PerformanceMetricsModule.PerformanceMonitor();
-      expect(monitor).toBeDefined();
-      expect(typeof monitor.start).toBe('function');
-      expect(typeof monitor.getMetrics).toBe('function');
-    });
-  });
+			const monitor = new PerformanceMetricsModule.PerformanceMonitor();
+			expect(monitor).toBeDefined();
+			expect(typeof monitor.start).toBe("function");
+			expect(typeof monitor.getMetrics).toBe("function");
+		});
+	});
 });
