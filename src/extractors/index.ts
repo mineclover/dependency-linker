@@ -21,6 +21,15 @@ export {
 	type EnhancedDependencyInfo,
 	type UsedMethodInfo,
 } from "./EnhancedDependencyExtractor";
+export {
+	type EnhancedExportExtractionResult,
+	type ExportMethodInfo,
+	type ExportStatistics,
+	type ClassExportInfo,
+	type ClassMethodInfo,
+	type ClassPropertyInfo,
+	EnhancedExportExtractor,
+} from "./EnhancedExportExtractor";
 // ===== BASE INTERFACE =====
 export { IDataExtractor } from "./IDataExtractor";
 export {
