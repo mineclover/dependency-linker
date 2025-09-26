@@ -932,170 +932,112 @@ type ExportType =
 - **[Usage Examples](examples/enhanced-export-usage-examples.ts)**: 5 practical usage examples with error handling
 - **[Demo Code](examples/export-analysis-example.ts)**: Interactive analysis demonstration with sample code
 
-### 🔧 Integration Examples
+### 🔍 데이터 구조 및 활용
 
-#### Express.js API Endpoint
+#### 기본 분석 결과 구조
 
 ```typescript
-app.post('/analyze-exports', async (req, res) => {
-  try {
-    const { filePath, sourceCode } = req.body;
+// 분석 결과 예시
+const exportData = extractor.extractExports(parseResult.ast, filePath);
 
-    const parser = new TypeScriptParser();
-    const extractor = new EnhancedExportExtractor();
-
-    const parseResult = await parser.parse(filePath || 'input.ts', sourceCode);
-    if (!parseResult.ast) {
-      return res.status(400).json({
-        error: 'Failed to parse code',
-        details: parseResult.errors
-      });
+// 반환되는 데이터 구조:
+{
+  exportMethods: [
+    {
+      name: "getUserData",
+      exportType: "function",
+      declarationType: "named_export",
+      location: { line: 4, column: 0 },
+      isAsync: true,
+      parameters: [{ name: "id", optional: false, type: "string" }],
+      returnType: "Promise<User>"
+    },
+    {
+      name: "UserService",
+      exportType: "class",
+      declarationType: "named_export",
+      location: { line: 15, column: 0 }
+    },
+    {
+      name: "getUser",
+      exportType: "class_method",
+      declarationType: "class_member",
+      location: { line: 20, column: 2 },
+      parentClass: "UserService",
+      visibility: "public",
+      isAsync: true,
+      isStatic: false
     }
+  ],
+  statistics: {
+    totalExports: 8,
+    functionExports: 2,
+    classExports: 1,
+    variableExports: 2,
+    typeExports: 2,
+    defaultExports: 1,
+    classMethodsExports: 3,
+    classPropertiesExports: 1
+  },
+  classes: [
+    {
+      className: "UserService",
+      location: { line: 15, column: 0 },
+      methods: [
+        {
+          name: "getUser",
+          visibility: "public",
+          isStatic: false,
+          isAsync: true,
+          parameters: [{ name: "id", optional: false }]
+        }
+      ],
+      properties: [
+        {
+          name: "apiUrl",
+          visibility: "private",
+          isStatic: false,
+          type: "string"
+        }
+      ],
+      isDefaultExport: false,
+      superClass: "BaseService"
+    }
+  ]
+}
+```
 
-    const result = extractor.extractExports(parseResult.ast, filePath || 'input.ts');
-    res.json({ success: true, data: result });
-  } catch (error) {
-    res.status(500).json({ error: error.message });
+#### 데이터 활용 패턴
+
+```typescript
+// 1. 통계 기반 분석
+const { statistics } = exportData;
+console.log(`API 복잡도: ${statistics.totalExports}개 export`);
+console.log(`클래스 중심도: ${statistics.classMethodsExports}개 메서드`);
+
+// 2. Export 유형별 필터링
+const publicAPI = exportData.exportMethods.filter(exp =>
+  exp.exportType === 'function' ||
+  (exp.exportType === 'class_method' && exp.visibility === 'public')
+);
+
+// 3. 클래스 구조 분석
+exportData.classes.forEach(cls => {
+  console.log(`클래스 ${cls.className}:`);
+  console.log(`- 메서드 ${cls.methods.length}개`);
+  console.log(`- 프로퍼티 ${cls.properties.length}개`);
+  if (cls.superClass) {
+    console.log(`- ${cls.superClass} 상속`);
   }
 });
-```
 
-#### CLI Tool Integration
+// 4. 위치 정보 활용
+const exportsByLine = exportData.exportMethods
+  .sort((a, b) => a.location.line - b.location.line);
 
-```typescript
-#!/usr/bin/env node
-import { program } from 'commander';
-import { EnhancedExportExtractor, TypeScriptParser } from '@context-action/dependency-linker';
-import fs from 'fs/promises';
-
-program
-  .argument('<file>', 'File to analyze')
-  .option('-j, --json', 'Output as JSON')
-  .option('-s, --summary', 'Show summary only')
-  .option('-v, --verbose', 'Verbose output')
-  .action(async (file, options) => {
-    try {
-      const parser = new TypeScriptParser();
-      const extractor = new EnhancedExportExtractor();
-
-      const sourceCode = await fs.readFile(file, 'utf-8');
-      const parseResult = await parser.parse(file, sourceCode);
-
-      if (!parseResult.ast) {
-        console.error('❌ Failed to parse file:', parseResult.errors);
-        process.exit(1);
-      }
-
-      const result = extractor.extractExports(parseResult.ast, file);
-
-      if (options.json) {
-        console.log(JSON.stringify(result, null, 2));
-      } else if (options.summary) {
-        console.log('📊 Export Summary:');
-        Object.entries(result.statistics).forEach(([key, value]) => {
-          console.log(`  ${key}: ${value}`);
-        });
-      } else {
-        console.log(`📁 Analysis of ${file}:`);
-        console.log('\n📊 Statistics:');
-        Object.entries(result.statistics).forEach(([key, value]) => {
-          if (value > 0) {
-            console.log(`  ${key}: ${value}`);
-          }
-        });
-
-        if (options.verbose && result.exportMethods.length > 0) {
-          console.log('\n📋 Detailed Exports:');
-          result.exportMethods.forEach((exp, index) => {
-            console.log(`  ${index + 1}. ${exp.name} (${exp.exportType})`);
-            if (exp.parentClass) {
-              console.log(`     └─ Class: ${exp.parentClass}`);
-            }
-          });
-        }
-      }
-    } catch (error) {
-      console.error('❌ Error:', error.message);
-      process.exit(1);
-    }
-  });
-
-program.parse();
-```
-
-#### React Component Integration
-
-```typescript
-import React, { useState, useCallback } from 'react';
-import { EnhancedExportExtractor, TypeScriptParser } from '@context-action/dependency-linker';
-
-const ExportAnalyzerComponent: React.FC = () => {
-  const [sourceCode, setSourceCode] = useState('');
-  const [result, setResult] = useState(null);
-  const [loading, setLoading] = useState(false);
-
-  const analyzer = new EnhancedExportExtractor();
-  const parser = new TypeScriptParser();
-
-  const analyzeCode = useCallback(async () => {
-    if (!sourceCode.trim()) return;
-
-    setLoading(true);
-    try {
-      const parseResult = await parser.parse('input.ts', sourceCode);
-
-      if (parseResult.ast) {
-        const exportData = analyzer.extractExports(parseResult.ast, 'input.ts');
-        setResult(exportData);
-      }
-    } catch (error) {
-      console.error('Analysis failed:', error);
-    } finally {
-      setLoading(false);
-    }
-  }, [sourceCode]);
-
-  return (
-    <div className="export-analyzer">
-      <textarea
-        value={sourceCode}
-        onChange={(e) => setSourceCode(e.target.value)}
-        placeholder="Paste your TypeScript code here..."
-        rows={10}
-        cols={80}
-      />
-
-      <button onClick={analyzeCode} disabled={loading}>
-        {loading ? 'Analyzing...' : 'Analyze Exports'}
-      </button>
-
-      {result && (
-        <div className="results">
-          <h3>Export Statistics</h3>
-          <ul>
-            <li>Total Exports: {result.statistics.totalExports}</li>
-            <li>Functions: {result.statistics.functionExports}</li>
-            <li>Classes: {result.statistics.classExports}</li>
-            <li>Variables: {result.statistics.variableExports}</li>
-            <li>Types: {result.statistics.typeExports}</li>
-          </ul>
-
-          <h3>Export Details</h3>
-          <ul>
-            {result.exportMethods.map((exp, index) => (
-              <li key={index}>
-                <strong>{exp.name}</strong> ({exp.exportType})
-                {exp.parentClass && <em> in {exp.parentClass}</em>}
-              </li>
-            ))}
-          </ul>
-        </div>
-      )}
-    </div>
-  );
-};
-
-export default ExportAnalyzerComponent;
+// 5. 비동기 함수 찾기
+const asyncFunctions = exportData.exportMethods.filter(exp => exp.isAsync);
+console.log(`비동기 함수: ${asyncFunctions.length}개`);
 ```
 
 ### ⚡ Performance & Testing
