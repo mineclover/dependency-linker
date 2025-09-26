@@ -1,4 +1,3 @@
-#!/usr/bin/env npx tsx
 
 /**
  * Test script for integrated Markdown analysis using unified API
@@ -8,7 +7,7 @@ import {
 	analyzeMarkdownFile,
 	extractMarkdownLinks,
 	getBatchMarkdownAnalysis,
-} from "./src/lib/index";
+} from "../../src/lib/index";
 
 async function testIntegratedMarkdownAnalysis() {
 	console.log("🔍 Testing Integrated Markdown Analysis API\n");

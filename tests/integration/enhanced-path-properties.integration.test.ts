@@ -1,4 +1,3 @@
-#!/usr/bin/env npx tsx
 
 /**
  * Test script for enhanced path properties in AnalysisResult
@@ -15,7 +14,7 @@ import {
 	comparePathInfo,
 	groupPathInfoByDirectory,
 	filterPathInfo,
-} from "./src/lib/index";
+} from "../../src/lib/index";
 
 async function testEnhancedPathProperties() {
 	console.log("🎯 Testing Enhanced Path Properties in AnalysisResult\n");

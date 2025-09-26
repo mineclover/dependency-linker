@@ -1,4 +1,3 @@
-#!/usr/bin/env npx tsx
 
 /**
  * Test script for path resolution utilities in AnalysisResult
@@ -9,9 +8,9 @@ import {
 	toProjectRelativePath,
 	validateAndResolveAnalysisPath,
 	batchResolveAnalysisPaths,
-} from "./src/utils/PathUtils";
+} from "../../src/utils/PathUtils";
 
-import { analyzeMarkdownFile, analyzeTypeScriptFile } from "./src/lib/index";
+import { analyzeMarkdownFile, analyzeTypeScriptFile } from "../../src/lib/index";
 
 async function testPathResolution() {
 	console.log("🔧 Testing Path Resolution Utilities\n");

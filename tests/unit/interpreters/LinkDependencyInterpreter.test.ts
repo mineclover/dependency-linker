@@ -10,6 +10,7 @@ import {
 	IssueSeverity,
 } from "../../../src/interpreters/LinkDependencyInterpreter";
 import type { MarkdownLinkDependency } from "../../../src/extractors/MarkdownLinkExtractor";
+import type { InterpreterContext } from "../../../src/interpreters/IDataInterpreter";
 import { LinkType } from "../../../src/parsers/MarkdownParser";
 import { join } from "node:path";
 import { writeFileSync, unlinkSync, mkdirSync, existsSync } from "node:fs";
@@ -54,6 +55,14 @@ describe("LinkDependencyInterpreter", () => {
 		...overrides,
 	});
 
+	const createMockContext = (): InterpreterContext => ({
+		filePath: "/test/file.md",
+		language: "markdown",
+		metadata: {},
+		options: {},
+		timestamp: new Date(),
+	});
+
 	describe("interpret", () => {
 		it("should analyze basic link dependencies", async () => {
 			const dependencies = [
@@ -67,7 +76,7 @@ describe("LinkDependencyInterpreter", () => {
 				}),
 			];
 
-			const result = await interpreter.interpret(dependencies);
+			const result = await interpreter.interpret(dependencies, createMockContext());
 
 			expect(result.summary.totalLinks).toBe(2);
 			expect(result.summary.externalLinks).toBe(1);
@@ -100,7 +109,7 @@ describe("LinkDependencyInterpreter", () => {
 				}),
 			];
 
-			const result = await interpreter.interpret(dependencies);
+			const result = await interpreter.interpret(dependencies, createMockContext());
 
 			expect(result.dependencies[0].category).toBe(DependencyCategory.EMAIL);
 			expect(result.dependencies[1].category).toBe(DependencyCategory.ANCHOR);
@@ -132,7 +141,7 @@ describe("LinkDependencyInterpreter", () => {
 			const interpreter = new LinkDependencyInterpreter({
 				validateFiles: true,
 			});
-			const result = await interpreter.interpret(dependencies);
+			const result = await interpreter.interpret(dependencies, createMockContext());
 
 			expect(result.dependencies[0].status).toBe(LinkStatus.VALID);
 			expect(result.dependencies[0].fileExists).toBe(true);
@@ -153,7 +162,7 @@ describe("LinkDependencyInterpreter", () => {
 			const interpreter = new LinkDependencyInterpreter({
 				validateFiles: true,
 			});
-			const result = await interpreter.interpret(dependencies);
+			const result = await interpreter.interpret(dependencies, createMockContext());
 
 			expect(result.issues).toHaveLength(2); // BROKEN_LINK + MISSING_FILE
 			expect(result.issues.some((i) => i.type === IssueType.BROKEN_LINK)).toBe(
@@ -176,7 +185,7 @@ describe("LinkDependencyInterpreter", () => {
 				securityChecks: true,
 				blockedDomains: ["suspicious-domain.com"],
 			});
-			const result = await interpreter.interpret(dependencies);
+			const result = await interpreter.interpret(dependencies, createMockContext());
 
 			expect(result.dependencies[0].status).toBe(LinkStatus.SUSPICIOUS);
 			expect(
@@ -203,7 +212,7 @@ describe("LinkDependencyInterpreter", () => {
 				performanceChecks: true,
 				maxFileSizeWarning: 1024 * 1024, // 1MB
 			});
-			const result = await interpreter.interpret(dependencies);
+			const result = await interpreter.interpret(dependencies, createMockContext());
 
 			expect(
 				result.issues.some((i) => i.type === IssueType.PERFORMANCE_ISSUE),
@@ -232,7 +241,7 @@ describe("LinkDependencyInterpreter", () => {
 			const interpreter = new LinkDependencyInterpreter({
 				accessibilityChecks: true,
 			});
-			const result = await interpreter.interpret(dependencies);
+			const result = await interpreter.interpret(dependencies, createMockContext());
 
 			const accessibilityIssues = result.issues.filter(
 				(i) => i.type === IssueType.ACCESSIBILITY_ISSUE,
@@ -262,7 +271,7 @@ describe("LinkDependencyInterpreter", () => {
 				validateFiles: true,
 				accessibilityChecks: true,
 			});
-			const result = await interpreter.interpret(dependencies);
+			const result = await interpreter.interpret(dependencies, createMockContext());
 
 			expect(result.recommendations).toContain("Fix 1 broken link");
 			expect(
@@ -278,7 +287,7 @@ describe("LinkDependencyInterpreter", () => {
 				createMockDependency({ source: "https://docs.github.com/guide" }),
 			];
 
-			const result = await interpreter.interpret(dependencies);
+			const result = await interpreter.interpret(dependencies, createMockContext());
 
 			expect(result.summary.uniqueDomains).toBe(2); // example.com, github.com (docs.github.com counts as github.com)
 		});
@@ -290,7 +299,7 @@ describe("LinkDependencyInterpreter", () => {
 				createMockDependency({ line: 10 }),
 			];
 
-			const result = await interpreter.interpret(dependencies);
+			const result = await interpreter.interpret(dependencies, createMockContext());
 
 			expect(result.summary.linkDensity).toBe(3 / 10); // 3 links over 10 lines
 		});
@@ -304,7 +313,7 @@ describe("LinkDependencyInterpreter", () => {
 			const interpreter = new LinkDependencyInterpreter({
 				allowedDomains: ["allowed.com"],
 			});
-			const result = await interpreter.interpret(dependencies);
+			const result = await interpreter.interpret(dependencies, createMockContext());
 
 			expect(result.dependencies[0].status).toBe(LinkStatus.VALID);
 			expect(result.dependencies[1].status).toBe(LinkStatus.UNREACHABLE);
@@ -312,7 +321,7 @@ describe("LinkDependencyInterpreter", () => {
 
 		it("should include timing information", async () => {
 			const dependencies = [createMockDependency()];
-			const result = await interpreter.interpret(dependencies);
+			const result = await interpreter.interpret(dependencies, createMockContext());
 
 			expect(result.metadata.analysisTime).toBeGreaterThan(0);
 			expect(typeof result.metadata.analysisTime).toBe("number");
@@ -344,7 +353,7 @@ describe("LinkDependencyInterpreter", () => {
 					}),
 				];
 
-				const result = await interpreter.interpret(dependencies);
+				const result = await interpreter.interpret(dependencies, createMockContext());
 				expect(result.dependencies[0].mimeType).toBe(testCase.expected);
 
 				// Clean up
@@ -359,37 +368,47 @@ describe("LinkDependencyInterpreter", () => {
 
 			expect(metadata.name).toBe("LinkDependencyInterpreter");
 			expect(metadata.version).toBe("1.0.0");
-			expect(metadata.inputType).toBe("MarkdownLinkDependency[]");
+			expect(metadata.supportedDataTypes).toContain("MarkdownLinkDependency[]");
 			expect(metadata.outputType).toBe("LinkDependencyAnalysis");
-			expect(metadata.features).toContain("link_validation");
-			expect(metadata.features).toContain("security_analysis");
+			expect(metadata.description).toContain("broken links");
+			expect(metadata.description).toContain("security issues");
 		});
 	});
 
 	describe("configuration", () => {
 		it("should configure interpreter options", () => {
 			const options = {
-				validateFiles: false,
-				checkExternalLinks: true,
-				securityChecks: false,
-				maxFileSizeWarning: 5 * 1024 * 1024,
+				enabled: true,
+				defaultOptions: {
+					custom: {
+						validateFiles: false,
+						checkExternalLinks: true,
+						securityChecks: false,
+						maxFileSizeWarning: 5 * 1024 * 1024,
+					},
+				},
 			};
 
 			interpreter.configure(options);
 			const config = interpreter.getConfiguration();
 
-			expect(config.validateFiles).toBe(false);
-			expect(config.checkExternalLinks).toBe(true);
-			expect(config.securityChecks).toBe(false);
-			expect(config.maxFileSizeWarning).toBe(5 * 1024 * 1024);
+			expect(config.defaultOptions?.custom.validateFiles).toBe(false);
+			expect(config.defaultOptions?.custom.checkExternalLinks).toBe(true);
+			expect(config.defaultOptions?.custom.securityChecks).toBe(false);
+			expect(config.defaultOptions?.custom.maxFileSizeWarning).toBe(5 * 1024 * 1024);
 		});
 
 		it("should merge options with defaults", () => {
-			interpreter.configure({ validateFiles: false });
+			interpreter.configure({
+				enabled: true,
+				defaultOptions: {
+					custom: { validateFiles: false },
+				},
+			});
 			const config = interpreter.getConfiguration();
 
-			expect(config.validateFiles).toBe(false);
-			expect(config.securityChecks).toBe(true); // Default preserved
+			expect(config.defaultOptions?.custom.validateFiles).toBe(false);
+			expect(config.defaultOptions?.custom.securityChecks).toBe(true); // Default preserved
 		});
 	});
 });

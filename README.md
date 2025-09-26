@@ -465,6 +465,239 @@ const result: ParseResult = await parser.parse('file.ts');
 
 ## 🎯 Enhanced Dependency Analysis
 
+### 🔗 LinkDependencyInterpreter - Comprehensive Markdown Link Analysis
+
+The `LinkDependencyInterpreter` provides comprehensive analysis of Markdown link dependencies with security, performance, and accessibility checks. Recently enhanced with improved categorization, validation, and issue detection capabilities.
+
+#### 🚀 Key Features
+
+- **🏷️ Smart Categorization**: Email, anchor, image, documentation, and external resource classification
+- **🔍 Link Validation**: File existence checks for internal links with precise status reporting
+- **🛡️ Security Analysis**: Blocked domain detection and suspicious link identification
+- **⚡ Performance Monitoring**: Large file detection and performance impact warnings
+- **♿ Accessibility Checks**: Image alt text validation and accessibility compliance
+- **📊 Domain Analytics**: Intelligent domain grouping and unique domain counting
+- **📈 Link Density Analysis**: Content-to-link ratio calculation for quality assessment
+- **🔧 MIME Type Detection**: Automatic file type identification based on extensions
+- **⏱️ High-Resolution Timing**: Precise analysis performance measurement
+
+#### 📦 Import and Usage
+
+```javascript
+// ES6/TypeScript import
+import { LinkDependencyInterpreter } from '@context-action/dependency-linker';
+
+// CommonJS import
+const { LinkDependencyInterpreter } = require('@context-action/dependency-linker');
+
+// Tree-shaking optimized import
+import { LinkDependencyInterpreter } from '@context-action/dependency-linker/dist/interpreters/LinkDependencyInterpreter';
+```
+
+#### 💡 Basic Usage Example
+
+```javascript
+import { LinkDependencyInterpreter, MarkdownLinkExtractor, MarkdownParser } from '@context-action/dependency-linker';
+
+async function analyzeMarkdownLinks() {
+  const markdownContent = `
+# Documentation
+
+Check out our [API docs](./api/README.md) and visit [our website](https://example.com).
+
+![Company Logo](./images/logo.png "Our Logo")
+
+For support, email us at [support@example.com](mailto:support@example.com).
+
+See also:
+- [Internal guide](./internal.md)
+- [External resource](https://docs.example.com)
+- [Missing file](./nonexistent.md)
+`;
+
+  // Parse markdown
+  const parser = new MarkdownParser();
+  const parseResult = await parser.parse('/docs/README.md', markdownContent);
+
+  // Extract link dependencies
+  const extractor = new MarkdownLinkExtractor({
+    includeImages: true,
+    includeExternalLinks: true,
+    resolveRelativePaths: true
+  });
+  const dependencies = extractor.extract(parseResult.ast, '/docs/README.md');
+
+  // Analyze with comprehensive checks
+  const interpreter = new LinkDependencyInterpreter({
+    validateFiles: true,
+    securityChecks: true,
+    performanceChecks: true,
+    accessibilityChecks: true,
+    blockedDomains: ['malicious-site.com'],
+    maxFileSizeWarning: 1024 * 1024 // 1MB
+  });
+
+  const analysis = interpreter.interpret(dependencies, {
+    filePath: '/docs/README.md',
+    language: 'markdown',
+    metadata: {},
+    timestamp: new Date()
+  });
+
+  console.log('📊 Link Analysis Results:');
+  console.log(`Total links: ${analysis.summary.totalLinks}`);
+  console.log(`External links: ${analysis.summary.externalLinks}`);
+  console.log(`Internal links: ${analysis.summary.internalLinks}`);
+  console.log(`Broken links: ${analysis.summary.brokenLinks}`);
+  console.log(`Unique domains: ${analysis.summary.uniqueDomains}`);
+  console.log(`Link density: ${analysis.summary.linkDensity.toFixed(2)} links/line`);
+
+  // Category breakdown
+  analysis.dependencies.forEach(dep => {
+    console.log(`${dep.source} → ${dep.category} (${dep.status})`);
+    if (dep.mimeType) {
+      console.log(`  MIME: ${dep.mimeType}`);
+    }
+  });
+
+  // Issues and warnings
+  if (analysis.issues.length > 0) {
+    console.log('\n⚠️ Issues found:');
+    analysis.issues.forEach(issue => {
+      console.log(`${issue.severity.toUpperCase()}: ${issue.message}`);
+      if (issue.suggestion) {
+        console.log(`  💡 ${issue.suggestion}`);
+      }
+    });
+  }
+
+  // Recommendations
+  if (analysis.recommendations.length > 0) {
+    console.log('\n📋 Recommendations:');
+    analysis.recommendations.forEach(rec => console.log(`• ${rec}`));
+  }
+
+  console.log(`\n⏱️ Analysis completed in ${analysis.metadata.analysisTime}ms`);
+}
+```
+
+#### 🔍 Advanced Configuration
+
+```javascript
+// Security-focused configuration
+const secureInterpreter = new LinkDependencyInterpreter({
+  securityChecks: true,
+  blockedDomains: [
+    'malicious-site.com',
+    'suspicious-domain.net',
+    'blocked-tracker.io'
+  ],
+  allowedDomains: [
+    'github.com',
+    'stackoverflow.com',
+    'developer.mozilla.org'
+  ],
+  checkExternalLinks: true
+});
+
+// Performance-focused configuration
+const performanceInterpreter = new LinkDependencyInterpreter({
+  performanceChecks: true,
+  maxFileSizeWarning: 512 * 1024, // 512KB warning threshold
+  validateFiles: true
+});
+
+// Accessibility-focused configuration
+const accessibilityInterpreter = new LinkDependencyInterpreter({
+  accessibilityChecks: true,
+  validateFiles: true
+});
+
+// Comprehensive configuration
+const comprehensiveInterpreter = new LinkDependencyInterpreter({
+  validateFiles: true,
+  checkExternalLinks: true,
+  securityChecks: true,
+  performanceChecks: true,
+  accessibilityChecks: true,
+  baseDir: '/project/docs',
+  allowedDomains: ['github.com', 'npm.js'],
+  blockedDomains: ['malicious.com'],
+  maxFileSizeWarning: 1024 * 1024
+});
+```
+
+#### 📋 Analysis Results Structure
+
+```typescript
+interface LinkDependencyAnalysis {
+  summary: {
+    totalLinks: number;
+    externalLinks: number;
+    internalLinks: number;
+    brokenLinks: number;
+    imageLinks: number;
+    referenceLinks: number;
+    uniqueDomains: number;
+    linkDensity: number;
+  };
+  dependencies: Array<{
+    source: string;
+    type: 'inline' | 'image' | 'reference';
+    category: 'documentation' | 'image' | 'external_resource' | 'internal_file' | 'anchor' | 'email' | 'unknown';
+    status: 'valid' | 'broken' | 'unreachable' | 'suspicious' | 'unknown';
+    resolvedPath?: string;
+    fileExists?: boolean;
+    fileSize?: number;
+    mimeType?: string;
+    domain?: string;
+    line: number;
+    column: number;
+  }>;
+  issues: Array<{
+    type: 'broken_link' | 'missing_file' | 'security_risk' | 'performance_issue' | 'accessibility_issue';
+    severity: 'error' | 'warning' | 'info';
+    message: string;
+    suggestion?: string;
+  }>;
+  recommendations: string[];
+  metadata: {
+    analysisTime: number;
+    checkedFiles: number;
+    unreachableLinks: number;
+    securityWarnings: number;
+    performanceWarnings: number;
+  };
+}
+```
+
+#### 🎯 Use Cases
+
+1. **Documentation Quality Assurance**
+   - Validate all internal links in documentation
+   - Identify broken references and missing files
+   - Ensure consistent link formatting
+
+2. **Security Auditing**
+   - Detect suspicious external links
+   - Enforce domain allowlists/blocklists
+   - Identify insecure HTTP links
+
+3. **Performance Optimization**
+   - Find large files that slow page loading
+   - Calculate link density for content optimization
+   - Optimize resource references
+
+4. **Accessibility Compliance**
+   - Validate image alt text presence
+   - Ensure proper link descriptions
+   - Check accessibility best practices
+
+5. **Content Management**
+   - Track external dependencies
+   - Monitor domain usage patterns
+   - Automate link health checking
+
 ### 📊 EnhancedDependencyExtractor - Named Import Usage Tracking
 
 The `EnhancedDependencyExtractor` extends the basic dependency analysis to provide detailed insights into named import usage, dead code detection, and tree-shaking optimization opportunities.

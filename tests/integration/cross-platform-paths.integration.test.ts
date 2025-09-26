@@ -1,4 +1,3 @@
-#!/usr/bin/env npx tsx
 
 /**
  * Cross-platform path compatibility tests
@@ -11,7 +10,7 @@ import {
 	filterPathInfo,
 	groupPathInfoByDirectory,
 	comparePathInfo,
-} from "./src/lib/index";
+} from "../../src/lib/index";
 
 // Mock different platform scenarios
 const originalPlatform = process.platform;

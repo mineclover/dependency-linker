@@ -1,12 +1,11 @@
-#!/usr/bin/env npx tsx
 
 /**
  * Test script for Markdown analyzer on current project documentation
  */
 
-import { MarkdownParser } from "./src/parsers/MarkdownParser";
-import { MarkdownLinkExtractor } from "./src/extractors/MarkdownLinkExtractor";
-import { LinkDependencyInterpreter } from "./src/interpreters/LinkDependencyInterpreter";
+import { MarkdownParser } from "../../src/parsers/MarkdownParser";
+import { MarkdownLinkExtractor } from "../../src/extractors/MarkdownLinkExtractor";
+import { LinkDependencyInterpreter } from "../../src/interpreters/LinkDependencyInterpreter";
 import { glob } from "glob";
 import { join } from "node:path";
 
