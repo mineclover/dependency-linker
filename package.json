@@ -25,6 +25,7 @@
 		"validate-types": "node scripts/validate-types.js",
 		"benchmark": "node scripts/benchmark.js",
 		"benchmark:quick": "node -e \"require('./scripts/benchmark.js').runBenchmark('Single File Analysis (Medium)', require('./scripts/benchmark.js').benchmarks['Single File Analysis (Medium)'], 1)\"",
+		"benchmark:export-extractor": "node -r ts-node/register tests/performance/EnhancedExportExtractor.benchmark.ts",
 		"diagnostic": "node scripts/diagnostic-cli.js",
 		"optimize-tests": "node -r ts-node/register src/cli/commands/optimize-tests.ts",
 		"optimize-tests-simple": "node -r ts-node/register src/cli/commands/optimize-tests-simple.ts",
