@@ -42,12 +42,39 @@ export class TestIsolationManager {
 		}
 		this.timers.length = 0;
 
-		// Shutdown engines
+		// Shutdown engines and clear their registries
 		for (const engine of this.engines) {
 			try {
+				// Clear engine caches and state - CRITICAL for test isolation
+				engine.clearCache();
+
+				// Reset engine performance metrics
+				engine.resetPerformanceMetrics();
+
+				// Force clear all internal registries
+				const extractorRegistry = (engine as any).extractorRegistry;
+				const interpreterRegistry = (engine as any).interpreterRegistry;
+				const cacheManager = (engine as any).cacheManager;
+				const cacheModule = (engine as any).cacheModule;
+
+				if (extractorRegistry && typeof extractorRegistry.clear === 'function') {
+					extractorRegistry.clear();
+				}
+				if (interpreterRegistry && typeof interpreterRegistry.clear === 'function') {
+					interpreterRegistry.clear();
+				}
+				if (cacheManager && typeof cacheManager.clear === 'function') {
+					cacheManager.clear();
+				}
+				if (cacheModule && typeof cacheModule.clearAll === 'function') {
+					await cacheModule.clearAll();
+				}
+
+				// Shutdown engine
 				await engine.shutdown();
 			} catch (error) {
 				// Ignore shutdown errors
+				console.warn("Engine cleanup error:", error);
 			}
 		}
 		this.engines.length = 0;
@@ -58,9 +85,13 @@ export class TestIsolationManager {
 				analyzer.clearCache();
 			} catch (error) {
 				// Ignore cache clear errors
+				console.warn("Analyzer cleanup error:", error);
 			}
 		}
 		this.analyzers.length = 0;
+
+		// Additional cleanup for better isolation
+		await this.clearGlobalState();
 
 		// Force garbage collection if available
 		if (global.gc) {
@@ -70,6 +101,23 @@ export class TestIsolationManager {
 				// Ignore GC errors
 			}
 		}
+	}
+
+	/**
+	 * Clear global state that might interfere with tests
+	 */
+	private static async clearGlobalState(): Promise<void> {
+		// Clear any cached modules or singletons
+		try {
+			// Force module cache clearing for key modules
+			delete require.cache[require.resolve("../../src/services/analysis-engine")];
+			delete require.cache[require.resolve("../../src/api/TypeScriptAnalyzer")];
+		} catch {
+			// Ignore module cache errors
+		}
+
+		// Small delay to ensure async cleanup completes
+		await new Promise(resolve => setTimeout(resolve, 10));
 	}
 
 	/**

@@ -149,42 +149,51 @@ export class ExtractorRegistry implements IExtractorRegistry {
 	 * Executes specific extractors
 	 */
 	executeSelected(
-		extractorNames: string[],
-		ast: AST,
-		filePath: string,
-		options?: ExtractorOptions,
-	): Record<string, unknown> {
-		const results: Record<string, unknown> = {};
+	extractorNames: string[],
+	ast: AST,
+	filePath: string,
+	options?: ExtractorOptions,
+): Record<string, unknown> {
+	const results: Record<string, unknown> = {};
 
-		for (const name of extractorNames) {
-			const extractor = this.extractors.get(name);
-			if (!extractor) {
-				console.warn(`Extractor '${name}' not found`);
-				results[name] = null;
-				continue;
-			}
+	console.log(`ExtractorRegistry.executeSelected called with extractors: ${extractorNames.join(', ')}`);
+	console.log(`Available extractors: ${Array.from(this.extractors.keys()).join(', ')}`);
 
-			try {
-				const result = extractor.extract(ast, filePath, options);
-				const validation = extractor.validate(result);
-
-				if (validation.isValid) {
-					results[name] = result;
-				} else {
-					console.warn(
-						`Extractor '${name}' produced invalid data:`,
-						validation.errors,
-					);
-					results[name] = null;
-				}
-			} catch (error) {
-				console.error(`Error executing extractor '${name}':`, error);
-				results[name] = null;
-			}
+	for (const name of extractorNames) {
+		const extractor = this.extractors.get(name);
+		if (!extractor) {
+			console.warn(`Extractor '${name}' not found`);
+			results[name] = null;
+			continue;
 		}
 
-		return results;
+		try {
+			console.log(`Executing extractor '${name}'`);
+			const result = extractor.extract(ast, filePath, options);
+			console.log(`Extractor '${name}' result:`, result);
+			
+			const validation = extractor.validate(result);
+			console.log(`Extractor '${name}' validation:`, validation);
+
+			if (validation.isValid) {
+				results[name] = result;
+				console.log(`Extractor '${name}' successful, result stored`);
+			} else {
+				console.warn(
+					`Extractor '${name}' produced invalid data:`,
+					validation.errors,
+				);
+				results[name] = null;
+			}
+		} catch (error) {
+			console.error(`Error executing extractor '${name}':`, error);
+			results[name] = null;
+		}
 	}
+
+	console.log(`Final results keys: ${Object.keys(results).join(', ')}`);
+	return results;
+}
 
 	/**
 	 * Clears all registered extractors

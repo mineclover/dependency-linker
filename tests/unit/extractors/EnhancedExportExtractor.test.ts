@@ -11,6 +11,7 @@ import {
 } from "../../../src/extractors/EnhancedExportExtractor";
 import { TypeScriptParser } from "../../../src/parsers/TypeScriptParser";
 import type { AST } from "../../../src/extractors/IDataExtractor";
+import { TestIsolationManager } from "../../helpers/test-isolation";
 
 describe("EnhancedExportExtractor", () => {
 	let extractor: EnhancedExportExtractor;
@@ -19,6 +20,10 @@ describe("EnhancedExportExtractor", () => {
 	beforeEach(() => {
 		extractor = new EnhancedExportExtractor();
 		parser = new TypeScriptParser();
+	});
+
+	afterEach(async () => {
+		await TestIsolationManager.cleanup();
 	});
 
 	/**

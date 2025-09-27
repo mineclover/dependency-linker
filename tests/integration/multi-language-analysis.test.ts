@@ -6,6 +6,7 @@
 import { describe, test, expect, beforeEach, afterEach } from "@jest/globals";
 import { promises as fs } from "node:fs";
 import { join } from "node:path";
+import * as path from "node:path";
 import { tmpdir } from "node:os";
 
 describe("Multi-Language Analysis Integration", () => {

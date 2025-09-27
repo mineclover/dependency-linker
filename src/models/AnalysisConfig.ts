@@ -275,35 +275,6 @@ export function createProductionAnalysisConfig(): AnalysisConfig {
 	};
 }
 
-/**
- * Security-focused analysis
- */
-export function createSecurityAnalysisConfig(): AnalysisConfig {
-	return {
-		depth: 4,
-		useCache: true,
-		extractors: ["dependencies", "identifiers"],
-		interpreters: ["security-analysis", "vulnerability-scan"],
-		includeDebugInfo: true,
-		performance: {
-			enableParallelProcessing: false, // Security analysis may need sequential processing
-			maxConcurrency: 1,
-		},
-		output: {
-			format: "json",
-			includeMetrics: true,
-			includeErrors: true,
-			includeInterpretedData: true,
-		},
-		plugins: {
-			security: {
-				allowedExtractors: ["dependencies", "identifiers"],
-				allowedInterpreters: ["security-analysis", "vulnerability-scan"],
-				sandboxed: true,
-			},
-		},
-	};
-}
 
 /**
  * Configuration validation and utilities

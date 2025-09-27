@@ -86,7 +86,4 @@ module.exports = {
 	resetMocks: false,
 	restoreMocks: true,
 
-	// Global setup and teardown for optimization
-	globalSetup: "<rootDir>/tests/helpers/optimization/globalSetup.ts",
-	globalTeardown: "<rootDir>/tests/helpers/optimization/globalTeardown.ts",
 };

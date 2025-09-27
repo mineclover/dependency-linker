@@ -4,20 +4,25 @@
  * and ensures new plugin architecture maintains API compatibility
  */
 
-import { describe, test, expect, beforeEach } from "@jest/globals";
+import { describe, test, expect, beforeEach, afterEach } from "@jest/globals";
 import { AnalysisEngine } from "../../src/services/analysis-engine";
 import { TypeScriptAnalyzer } from "../../src/api/TypeScriptAnalyzer";
 import type { AnalysisConfig } from "../../src/models/AnalysisConfig";
 import type { AnalysisResult } from "../../src/models/AnalysisResult";
 import type { IDataExtractor } from "../../src/extractors/IDataExtractor";
+import { TestIsolationManager } from "../helpers/test-isolation";
 
 describe("Dependency Analysis Compatibility", () => {
 	let engine: AnalysisEngine;
 	let legacyAnalyzer: TypeScriptAnalyzer;
 
 	beforeEach(() => {
-		engine = new AnalysisEngine();
-		legacyAnalyzer = new TypeScriptAnalyzer();
+		engine = TestIsolationManager.createEngine();
+		legacyAnalyzer = TestIsolationManager.createAnalyzer();
+	});
+
+	afterEach(async () => {
+		await TestIsolationManager.cleanup();
 	});
 
 	describe("Legacy API Compatibility", () => {

@@ -135,4 +135,25 @@ export class AnalysisEngineCache {
 				cacheStats.totalHits / (cacheStats.totalHits + cacheStats.totalMisses);
 		}
 	}
+
+	/**
+	 * Clears all cache data including internal state for test isolation
+	 * @example
+	 * ```typescript
+	 * await cache.clearAll();
+	 * ```
+	 */
+	async clearAll(): Promise<void> {
+		// Clear all cache data
+		await this.cacheManager.clear();
+
+		// Force optimization to ensure all expired entries are removed
+		await this.cacheManager.optimize();
+
+		// Clear any internal state that might interfere with tests
+		const stats = this.cacheManager.getStats();
+		if (stats.totalEntries > 0) {
+			console.warn(`Cache still has ${stats.totalEntries} entries after clearAll`);
+		}
+	}
 }

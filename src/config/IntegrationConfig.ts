@@ -4,7 +4,16 @@
  */
 
 import type { DataIntegrationConfig } from "../models/IntegratedData";
-import type { OptimizationStrategy } from "../services/optimization/PerformanceOptimizer";
+
+// Simple optimization strategy interface
+export interface OptimizationStrategy {
+	enableLazyLoading: boolean;
+	enableViewCaching: boolean;
+	enableDataCompression: boolean;
+	enableMemoryPooling: boolean;
+	maxConcurrency: number;
+	batchSize: number;
+}
 
 export interface IntegrationPreset {
 	name: string;

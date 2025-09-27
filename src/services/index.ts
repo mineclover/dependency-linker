@@ -18,8 +18,6 @@ export { ICacheManager } from "./ICacheManager";
 export { InterpreterRegistry } from "./InterpreterRegistry";
 // ===== INTEGRATION SERVICES =====
 export * from "./integration";
-// ===== OPTIMIZATION SERVICES =====
-export * from "./optimization";
 export { ParserRegistry } from "./ParserRegistry";
 // ===== LEGACY SERVICES =====
 export { TypeScriptParser } from "./TypeScriptParser";

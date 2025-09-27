@@ -24,7 +24,7 @@ import type {
 	TreeNode,
 	TreeView,
 } from "../../models/IntegratedData";
-import type { OptimizationStrategy } from "../optimization/PerformanceOptimizer";
+import type { OptimizationStrategy } from "../../config/IntegrationConfig";
 
 export interface IDataIntegrator {
 	/**

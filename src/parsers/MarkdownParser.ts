@@ -496,66 +496,82 @@ export class MarkdownParser implements ILanguageParser {
 	 * Parse a single line of markdown
 	 */
 	private parseLine(
-		line: string,
-		lineNumber: number,
-		startOffset: number,
-		endOffset: number,
-	): MarkdownNode[] {
-		const nodes: MarkdownNode[] = [];
+	line: string,
+	lineNumber: number,
+	startOffset: number,
+	endOffset: number,
+): MarkdownNode[] {
+	const nodes: MarkdownNode[] = [];
 
-		// Headers
-		const headerMatch = line.match(/^(#{1,6})\s+(.+)$/);
-		if (headerMatch) {
-			nodes.push({
-				type: "heading",
-				value: headerMatch[2],
-				children: this.parseInlineElements(
-					headerMatch[2],
-					lineNumber,
-					startOffset + headerMatch[1].length + 1,
-				),
-				position: {
-					start: { line: lineNumber, column: 1, offset: startOffset },
-					end: { line: lineNumber, column: line.length + 1, offset: endOffset },
-				},
-			});
-			return nodes;
-		}
-
-		// Lists
-		const listMatch = line.match(/^(\s*)([*\-+]|\d+\.)\s+(.+)$/);
-		if (listMatch) {
-			nodes.push({
-				type: "list_item",
-				value: listMatch[3],
-				children: this.parseInlineElements(
-					listMatch[3],
-					lineNumber,
-					startOffset + listMatch[0].length - listMatch[3].length,
-				),
-				position: {
-					start: { line: lineNumber, column: 1, offset: startOffset },
-					end: { line: lineNumber, column: line.length + 1, offset: endOffset },
-				},
-			});
-			return nodes;
-		}
-
-		// Regular paragraph
-		if (line.trim()) {
-			nodes.push({
-				type: "paragraph",
-				value: line,
-				children: this.parseInlineElements(line, lineNumber, startOffset),
-				position: {
-					start: { line: lineNumber, column: 1, offset: startOffset },
-					end: { line: lineNumber, column: line.length + 1, offset: endOffset },
-				},
-			});
-		}
-
+	// Headers
+	const headerMatch = line.match(/^(#{1,6})\s+(.+)$/);
+	if (headerMatch) {
+		nodes.push({
+			type: "heading",
+			value: headerMatch[2],
+			children: this.parseInlineElements(
+				headerMatch[2],
+				lineNumber,
+				startOffset + headerMatch[1].length + 1,
+			),
+			position: {
+				start: { line: lineNumber, column: 1, offset: startOffset },
+				end: { line: lineNumber, column: line.length + 1, offset: endOffset },
+			},
+		});
 		return nodes;
 	}
+
+	// Reference definitions: [id]: url "title"
+	const refDefMatch = line.match(/^\s*\[([^\]]+)\]:\s+([^\s]+)(?:\s+"([^"]*)")?/);
+	if (refDefMatch) {
+		nodes.push({
+			type: "definition",
+			identifier: refDefMatch[1],
+			url: refDefMatch[2],
+			title: refDefMatch[3],
+			position: {
+				start: { line: lineNumber, column: 1, offset: startOffset },
+				end: { line: lineNumber, column: line.length + 1, offset: endOffset },
+			},
+		});
+		return nodes;
+	}
+
+	// Lists
+	const listMatch = line.match(/^(\s*)([*\-+]|\d+\.)\s+(.+)$/);
+	if (listMatch) {
+		nodes.push({
+			type: "list_item",
+			value: listMatch[3],
+			children: this.parseInlineElements(
+				listMatch[3],
+				lineNumber,
+				startOffset + listMatch[0].length - listMatch[3].length,
+			),
+			position: {
+				start: { line: lineNumber, column: 1, offset: startOffset },
+				end: { line: lineNumber, column: line.length + 1, offset: endOffset },
+			},
+		});
+		return nodes;
+	}
+
+	// Regular paragraph
+	if (line.trim()) {
+		nodes.push({
+			type: "paragraph",
+			value: line,
+			children: this.parseInlineElements(line, lineNumber, startOffset),
+			position: {
+				start: { line: lineNumber, column: 1, offset: startOffset },
+				end: { line: lineNumber, column: line.length + 1, offset: endOffset },
+			},
+		});
+	}
+
+	return nodes;
+}
 
 	/**
 	 * Parse inline elements (links, images, etc.)

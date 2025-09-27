@@ -105,7 +105,12 @@ Check out our [main docs][docs] and [API guide][api].
 			expect(images.length).toBeGreaterThan(0);
 
 			// Step 3: Analyze dependencies
-			const analysisResult = await interpreter.interpret(dependencies);
+			const analysisResult = await interpreter.interpret(dependencies, {
+			filePath: "test.md",
+			language: "markdown",
+			metadata: {},
+			timestamp: new Date(),
+		});
 
 			// Verify analysis results
 			expect(analysisResult.summary.totalLinks).toBe(dependencies.length);
@@ -135,7 +140,12 @@ Check out our [main docs][docs] and [API guide][api].
 
 			const parseResult = await parser.parse(filePath);
 			const dependencies = await extractor.extract(parseResult.ast, filePath);
-			const analysisResult = await interpreter.interpret(dependencies);
+			const analysisResult = await interpreter.interpret(dependencies, {
+			filePath: "test.md",
+			language: "markdown",
+			metadata: {},
+			timestamp: new Date(),
+		});
 
 			expect(analysisResult.summary.externalLinks).toBe(3);
 			expect(analysisResult.summary.internalLinks).toBe(0);
@@ -157,7 +167,12 @@ Check out our [main docs][docs] and [API guide][api].
 
 			const parseResult = await parser.parse(filePath);
 			const dependencies = await extractor.extract(parseResult.ast, filePath);
-			const analysisResult = await interpreter.interpret(dependencies);
+			const analysisResult = await interpreter.interpret(dependencies, {
+			filePath: "test.md",
+			language: "markdown",
+			metadata: {},
+			timestamp: new Date(),
+		});
 
 			expect(analysisResult.summary.internalLinks).toBeGreaterThan(0);
 			expect(analysisResult.summary.externalLinks).toBe(0);
@@ -186,8 +201,12 @@ Also see our [documentation][docs].
 
 			const parseResult = await parser.parse(filePath);
 			const dependencies = await extractor.extract(parseResult.ast, filePath);
-			const analysisResult = await interpreter.interpret(dependencies);
-
+			const analysisResult = await interpreter.interpret(dependencies, {
+				filePath: "test.md",
+				language: "markdown",
+				metadata: {},
+				timestamp: new Date(),
+			});
 			expect(analysisResult.summary.referenceLinks).toBeGreaterThan(0);
 			expect(analysisResult.summary.externalLinks).toBe(2);
 			expect(analysisResult.summary.internalLinks).toBe(1);
@@ -213,7 +232,12 @@ Also see our [documentation][docs].
 				validateFiles: false,
 			});
 			const analysisResult =
-				await interpreterWithAccessibility.interpret(dependencies);
+				await interpreterWithAccessibility.interpret(dependencies, {
+					filePath: "accessibility.md",
+					language: "markdown",
+					metadata: {},
+					timestamp: new Date(),
+				});
 
 			const accessibilityIssues = analysisResult.issues.filter(
 				(issue) => issue.type === "accessibility_issue",
@@ -244,7 +268,12 @@ Suspicious links:
 				securityChecks: true,
 				blockedDomains: ["suspicious-domain.com", "malicious-site.evil"],
 			});
-			const analysisResult = await secureInterpreter.interpret(dependencies);
+			const analysisResult = await secureInterpreter.interpret(dependencies, {
+				filePath: "security.md",
+				language: "markdown",
+				metadata: {},
+				timestamp: new Date(),
+			});
 
 			expect(analysisResult.metadata.securityWarnings).toBeGreaterThan(0);
 			const securityIssues = analysisResult.issues.filter(
@@ -289,7 +318,12 @@ Regular [text link](./text.md) should be extracted.
 
 			const parseResult = await parser.parse(filePath);
 			const dependencies = await extractor.extract(parseResult.ast, filePath);
-			const analysisResult = await interpreter.interpret(dependencies);
+			const analysisResult = await interpreter.interpret(dependencies, {
+			filePath: "test.md",
+			language: "markdown",
+			metadata: {},
+			timestamp: new Date(),
+		});
 
 			// Should extract links from various contexts but not from code blocks
 			expect(dependencies.length).toBeGreaterThan(5);
@@ -330,7 +364,12 @@ Line 13: [Link 5](./another.md)
 
 			const parseResult = await parser.parse(filePath);
 			const dependencies = await extractor.extract(parseResult.ast, filePath);
-			const analysisResult = await interpreter.interpret(dependencies);
+			const analysisResult = await interpreter.interpret(dependencies, {
+			filePath: "test.md",
+			language: "markdown",
+			metadata: {},
+			timestamp: new Date(),
+		});
 
 			// Check comprehensive metrics
 			expect(analysisResult.metadata.analysisTime).toBeGreaterThan(0);
@@ -357,7 +396,12 @@ Line 13: [Link 5](./another.md)
 
 			const parseResult = await parser.parse(filePath);
 			const dependencies = await extractor.extract(parseResult.ast, filePath);
-			const analysisResult = await interpreter.interpret(dependencies);
+			const analysisResult = await interpreter.interpret(dependencies, {
+			filePath: "test.md",
+			language: "markdown",
+			metadata: {},
+			timestamp: new Date(),
+		});
 
 			// Should handle gracefully without crashing
 			expect(analysisResult).toBeDefined();
@@ -372,7 +416,12 @@ Line 13: [Link 5](./another.md)
 
 			const parseResult = await parser.parse(filePath);
 			const dependencies = await extractor.extract(parseResult.ast, filePath);
-			const analysisResult = await interpreter.interpret(dependencies);
+			const analysisResult = await interpreter.interpret(dependencies, {
+			filePath: "test.md",
+			language: "markdown",
+			metadata: {},
+			timestamp: new Date(),
+		});
 
 			expect(analysisResult.summary.totalLinks).toBe(0);
 			expect(analysisResult.dependencies).toHaveLength(0);
@@ -386,7 +435,12 @@ Line 13: [Link 5](./another.md)
 
 			const parseResult = await parser.parse(filePath);
 			const dependencies = await extractor.extract(parseResult.ast, filePath);
-			const analysisResult = await interpreter.interpret(dependencies);
+			const analysisResult = await interpreter.interpret(dependencies, {
+			filePath: "test.md",
+			language: "markdown",
+			metadata: {},
+			timestamp: new Date(),
+		});
 
 			expect(analysisResult.summary.totalLinks).toBe(0);
 			expect(analysisResult.dependencies).toHaveLength(0);
@@ -417,7 +471,12 @@ Line 13: [Link 5](./another.md)
 
 			const parseResult = await parser.parse(filePath);
 			const dependencies = await extractor.extract(parseResult.ast, filePath);
-			const analysisResult = await interpreter.interpret(dependencies);
+			const analysisResult = await interpreter.interpret(dependencies, {
+			filePath: "test.md",
+			language: "markdown",
+			metadata: {},
+			timestamp: new Date(),
+		});
 
 			const totalTime = Date.now() - startTime;
 

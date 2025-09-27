@@ -31,9 +31,9 @@ export { GoParser } from "./parsers/GoParser";
 export { ILanguageParser } from "./parsers/ILanguageParser";
 export { JavaParser } from "./parsers/JavaParser";
 export { JavaScriptParser } from "./parsers/JavaScriptParser";
-export { TypeScriptParser as NewTypeScriptParser } from "./parsers/TypeScriptParser";
+export { TypeScriptParser } from "./parsers/TypeScriptParser";
 // ===== CORE SERVICES =====
-export { AnalysisEngine } from "./services/AnalysisEngine";
+export { AnalysisEngine } from "./services/analysis-engine";
 export { AnalysisEngineFactory } from "./services/AnalysisEngineFactory";
 export { CacheManager } from "./services/CacheManager";
 export { DependencyAnalyzer } from "./services/DependencyAnalyzer";
@@ -47,7 +47,7 @@ export { InterpreterRegistry } from "./services/InterpreterRegistry";
 // ===== INTEGRATION SERVICES =====
 export { DataIntegrator } from "./services/integration/DataIntegrator";
 export { ParserRegistry } from "./services/ParserRegistry";
-export { TypeScriptParser } from "./services/TypeScriptParser"; // Legacy parser
+export { TypeScriptParser as LegacyTypeScriptParser } from "./services/TypeScriptParser"; // Legacy parser
 export * from "./types/ASTWrappers";
 // ===== TYPE SYSTEM =====
 export * from "./types/TreeSitterTypes";

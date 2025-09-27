@@ -666,6 +666,9 @@ export class TypeScriptParser implements ILanguageParser {
 		const errors: ParseError[] = [];
 
 		const visit = (node: TreeSitterNode): void => {
+			// Add null check to prevent errors
+			if (!node) return;
+			
 			if (node.hasError) {
 				errors.push({
 					type: "syntax",
@@ -688,7 +691,10 @@ export class TypeScriptParser implements ILanguageParser {
 			}
 		};
 
-		visit(ast.rootNode);
+		// Add null check for ast and rootNode
+		if (ast && ast.rootNode) {
+			visit(ast.rootNode);
+		}
 		return errors;
 	}
 

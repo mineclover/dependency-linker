@@ -13,7 +13,6 @@ import {
 	createDevelopmentAnalysisConfig,
 	createFastAnalysisConfig,
 	createProductionAnalysisConfig,
-	createSecurityAnalysisConfig,
 	mergeAnalysisConfigs,
 } from "../models/AnalysisConfig";
 import { AnalysisEngine } from "./AnalysisEngine";
@@ -29,7 +28,6 @@ export class AnalysisEngineFactory implements IAnalysisEngineFactory {
 		comprehensive: () => createComprehensiveAnalysisConfig(),
 		development: () => createDevelopmentAnalysisConfig(),
 		production: () => createProductionAnalysisConfig(),
-		security: () => createSecurityAnalysisConfig(),
 	};
 
 	/**
@@ -57,8 +55,7 @@ export class AnalysisEngineFactory implements IAnalysisEngineFactory {
 			| "fast"
 			| "comprehensive"
 			| "development"
-			| "production"
-			| "security",
+			| "production",
 		events?: IAnalysisEngineEvents,
 	): AnalysisEngine {
 		const presetConfig = AnalysisEngineFactory.PRESETS[preset];
@@ -156,17 +153,17 @@ export class AnalysisEngineFactory implements IAnalysisEngineFactory {
 			case "typescript":
 			case "javascript":
 				config.extractors = ["dependency", "identifier", "complexity"];
-				config.interpreters = ["dependency-analyzer", "code-quality"];
+				config.interpreters = ["dependency-analysis"];
 				break;
 
 			case "go":
 				config.extractors = ["dependency", "identifier"];
-				config.interpreters = ["dependency-analyzer"];
+				config.interpreters = ["dependency-analysis"];
 				break;
 
 			case "java":
 				config.extractors = ["dependency", "identifier", "complexity"];
-				config.interpreters = ["dependency-analyzer", "security-analyzer"];
+				config.interpreters = ["dependency-analysis"];
 				break;
 
 			default:
@@ -273,8 +270,7 @@ export class AnalysisEngineBuilder implements IAnalysisEngineBuilder {
 			| "fast"
 			| "comprehensive"
 			| "development"
-			| "production"
-			| "security",
+			| "production",
 	): IAnalysisEngineBuilder {
 		const factory = new AnalysisEngineFactory();
 		const presetConfig = factory.createWithPreset(preset).getDefaultConfig();
