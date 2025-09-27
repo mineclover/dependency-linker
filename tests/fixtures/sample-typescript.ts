@@ -1,14 +1,14 @@
-import { Service } from "./service";
+// import { Service } from "./service"; // Commented out to avoid missing dependency issues
 
 export interface ComponentProps {
 	message?: string;
 }
 
 export class SampleComponent {
-	private service: Service;
+	private data: string = "default";
 
 	constructor(props: ComponentProps = {}) {
-		this.service = new Service();
+		this.data = props.message || "default";
 	}
 
 	render(): string {
@@ -16,6 +16,6 @@ export class SampleComponent {
 	}
 
 	getMessage(): string {
-		return this.service.getData();
+		return this.data;
 	}
 }

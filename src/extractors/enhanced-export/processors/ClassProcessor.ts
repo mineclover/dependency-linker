@@ -305,27 +305,28 @@ export class ClassProcessor extends BaseNodeProcessor {
 	private extractSuperClass(classNode: Parser.SyntaxNode): string | undefined {
 		// Look for class_heritage node
 		const heritageNode = classNode.children.find(
-			child => child.type === "class_heritage"
+			(child) => child.type === "class_heritage",
 		);
-		
+
 		if (!heritageNode) {
 			return undefined;
 		}
 
 		// Look for extends_clause within class_heritage
 		const extendsClause = heritageNode.children.find(
-			child => child.type === "extends_clause"
+			(child) => child.type === "extends_clause",
 		);
-		
+
 		if (!extendsClause) {
 			return undefined;
 		}
 
 		// Find the identifier (superclass name) within extends_clause
 		const identifierNode = extendsClause.children.find(
-			child => child.type === "identifier" || child.type === "type_identifier"
+			(child) =>
+				child.type === "identifier" || child.type === "type_identifier",
 		);
-		
+
 		if (identifierNode) {
 			return identifierNode.text;
 		}

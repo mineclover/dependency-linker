@@ -396,7 +396,6 @@ export interface IDependencyAnalysisInterpreter
 	): OptimizationRecommendation[];
 }
 
-
 /**
  * Common data types for interpreters
  */

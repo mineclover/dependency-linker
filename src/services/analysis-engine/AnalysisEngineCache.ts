@@ -1,7 +1,7 @@
-import type { AnalysisConfig } from '../../models/AnalysisConfig';
-import type { AnalysisResult } from '../../models/AnalysisResult';
-import type { ICacheManager } from '../CacheManager';
-import type { EnginePerformanceMetrics } from '../IAnalysisEngine';
+import type { AnalysisConfig } from "../../models/AnalysisConfig";
+import type { AnalysisResult } from "../../models/AnalysisResult";
+import type { ICacheManager } from "../CacheManager";
+import type { EnginePerformanceMetrics } from "../IAnalysisEngine";
 
 /**
  * Cache management module for AnalysisEngine
@@ -71,7 +71,10 @@ export class AnalysisEngineCache {
 	async warmupCache(
 		filePaths: string[],
 		config: AnalysisConfig,
-		analyzeFileFunc: (filePath: string, config: AnalysisConfig) => Promise<AnalysisResult>
+		analyzeFileFunc: (
+			filePath: string,
+			config: AnalysisConfig,
+		) => Promise<AnalysisResult>,
 	): Promise<void> {
 		console.log(`Warming up cache with ${filePaths.length} files...`);
 
@@ -89,7 +92,7 @@ export class AnalysisEngineCache {
 		});
 
 		await Promise.all(promises);
-		console.log('Cache warmup completed');
+		console.log("Cache warmup completed");
 	}
 
 	/**
@@ -107,7 +110,10 @@ export class AnalysisEngineCache {
 	 * @param cacheKey - Cache key to store under
 	 * @param result - Analysis result to cache
 	 */
-	async setCachedResult(cacheKey: string, result: AnalysisResult): Promise<void> {
+	async setCachedResult(
+		cacheKey: string,
+		result: AnalysisResult,
+	): Promise<void> {
 		await this.cacheManager.set(cacheKey, result);
 	}
 
@@ -120,7 +126,7 @@ export class AnalysisEngineCache {
 	updateCacheMetrics(
 		cacheHit: boolean,
 		startTime: number,
-		performanceMetrics: EnginePerformanceMetrics
+		performanceMetrics: EnginePerformanceMetrics,
 	): void {
 		const cacheTime = Date.now() - startTime;
 
@@ -153,7 +159,9 @@ export class AnalysisEngineCache {
 		// Clear any internal state that might interfere with tests
 		const stats = this.cacheManager.getStats();
 		if (stats.totalEntries > 0) {
-			console.warn(`Cache still has ${stats.totalEntries} entries after clearAll`);
+			console.warn(
+				`Cache still has ${stats.totalEntries} entries after clearAll`,
+			);
 		}
 	}
 }

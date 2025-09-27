@@ -1,6 +1,6 @@
-import type { AnalysisResult } from '../../models/AnalysisResult';
-import type { EnginePerformanceMetrics } from '../IAnalysisEngine';
-import { SyntaxNode } from 'tree-sitter';
+import type { SyntaxNode } from "tree-sitter";
+import type { AnalysisResult } from "../../models/AnalysisResult";
+import type { EnginePerformanceMetrics } from "../IAnalysisEngine";
 
 /**
  * Performance metrics and monitoring module for AnalysisEngine
@@ -146,7 +146,8 @@ export class AnalysisEngineMetrics {
 	 * @param totalTime - Total analysis time (will be distributed)
 	 */
 	updateExtractorMetrics(extractorName: string, totalTime: number): void {
-		const existing = this.performanceMetrics.extractorMetrics.get(extractorName);
+		const existing =
+			this.performanceMetrics.extractorMetrics.get(extractorName);
 
 		if (existing) {
 			existing.executions++;
@@ -170,7 +171,8 @@ export class AnalysisEngineMetrics {
 	 * @param totalTime - Total analysis time (will be distributed)
 	 */
 	updateInterpreterMetrics(interpreterName: string, totalTime: number): void {
-		const existing = this.performanceMetrics.interpreterMetrics.get(interpreterName);
+		const existing =
+			this.performanceMetrics.interpreterMetrics.get(interpreterName);
 
 		if (existing) {
 			existing.executions++;
@@ -214,7 +216,7 @@ export class AnalysisEngineMetrics {
 	 * @returns Confidence score between 0 and 1
 	 */
 	calculateExtractionConfidence(extractedData: any, ast: SyntaxNode): number {
-		if (!extractedData || typeof extractedData !== 'object') {
+		if (!extractedData || typeof extractedData !== "object") {
 			return 0;
 		}
 

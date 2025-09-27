@@ -149,51 +149,55 @@ export class ExtractorRegistry implements IExtractorRegistry {
 	 * Executes specific extractors
 	 */
 	executeSelected(
-	extractorNames: string[],
-	ast: AST,
-	filePath: string,
-	options?: ExtractorOptions,
-): Record<string, unknown> {
-	const results: Record<string, unknown> = {};
+		extractorNames: string[],
+		ast: AST,
+		filePath: string,
+		options?: ExtractorOptions,
+	): Record<string, unknown> {
+		const results: Record<string, unknown> = {};
 
-	console.log(`ExtractorRegistry.executeSelected called with extractors: ${extractorNames.join(', ')}`);
-	console.log(`Available extractors: ${Array.from(this.extractors.keys()).join(', ')}`);
+		console.log(
+			`ExtractorRegistry.executeSelected called with extractors: ${extractorNames.join(", ")}`,
+		);
+		console.log(
+			`Available extractors: ${Array.from(this.extractors.keys()).join(", ")}`,
+		);
 
-	for (const name of extractorNames) {
-		const extractor = this.extractors.get(name);
-		if (!extractor) {
-			console.warn(`Extractor '${name}' not found`);
-			results[name] = null;
-			continue;
-		}
+		for (const name of extractorNames) {
+			const extractor = this.extractors.get(name);
+			if (!extractor) {
+				console.warn(`Extractor '${name}' not found`);
+				results[name] = null;
+				continue;
+			}
 
-		try {
-			console.log(`Executing extractor '${name}'`);
-			const result = extractor.extract(ast, filePath, options);
-			console.log(`Extractor '${name}' result:`, result);
-			
-			const validation = extractor.validate(result);
-			console.log(`Extractor '${name}' validation:`, validation);
+			try {
+				console.log(`Executing extractor '${name}'`);
+				const result = extractor.extract(ast, filePath, options);
+				console.log(`Extractor '${name}' result:`, result);
 
-			if (validation.isValid) {
-				results[name] = result;
-				console.log(`Extractor '${name}' successful, result stored`);
-			} else {
-				console.warn(
-					`Extractor '${name}' produced invalid data:`,
-					validation.errors,
-				);
+				const validation = extractor.validate(result);
+				console.log(`Extractor '${name}' validation:`, validation);
+
+				if (validation.isValid) {
+					results[name] = result;
+					console.log(`Extractor '${name}' successful, result stored`);
+				} else {
+					console.warn(
+						`Extractor '${name}' produced invalid data:`,
+						validation.errors,
+					);
+					results[name] = null;
+				}
+			} catch (error) {
+				console.error(`Error executing extractor '${name}':`, error);
 				results[name] = null;
 			}
-		} catch (error) {
-			console.error(`Error executing extractor '${name}':`, error);
-			results[name] = null;
 		}
-	}
 
-	console.log(`Final results keys: ${Object.keys(results).join(', ')}`);
-	return results;
-}
+		console.log(`Final results keys: ${Object.keys(results).join(", ")}`);
+		return results;
+	}
 
 	/**
 	 * Clears all registered extractors

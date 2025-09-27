@@ -417,12 +417,10 @@ export class CacheManager implements ICacheManager {
 	private updateStats(): void {
 		this.stats.totalEntries = this.cache.size;
 		const totalOperations = this.stats.totalHits + this.stats.totalMisses;
-		this.stats.hitRate = totalOperations > 0 
-			? this.stats.totalHits / totalOperations 
-			: 0;
-		this.stats.missRate = totalOperations > 0 
-			? this.stats.totalMisses / totalOperations 
-			: 0;
+		this.stats.hitRate =
+			totalOperations > 0 ? this.stats.totalHits / totalOperations : 0;
+		this.stats.missRate =
+			totalOperations > 0 ? this.stats.totalMisses / totalOperations : 0;
 	}
 
 	private updateAvgAccessTime(accessTime: number): void {

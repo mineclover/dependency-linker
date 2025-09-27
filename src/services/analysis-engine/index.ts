@@ -1,49 +1,58 @@
-import type {
-	IAnalysisEngine,
-	CacheValidationResult,
-	CacheWarmupResult,
-} from '../IAnalysisEngine';
+import { ComplexityExtractor } from "../../extractors/ComplexityExtractor";
+import { DependencyExtractor } from "../../extractors/DependencyExtractor";
+import type { IDataExtractor } from "../../extractors/IDataExtractor";
+import { IdentifierExtractor } from "../../extractors/IdentifierExtractor";
+import { DependencyAnalysisInterpreter } from "../../interpreters/DependencyAnalysisInterpreter";
+import type { IDataInterpreter } from "../../interpreters/IDataInterpreter";
+import { IdentifierAnalysisInterpreter } from "../../interpreters/IdentifierAnalysisInterpreter";
 import {
 	type AnalysisConfig,
 	createDefaultAnalysisConfig,
 	mergeAnalysisConfigs,
-} from '../../models/AnalysisConfig';
+} from "../../models/AnalysisConfig";
+import {
+	createEngineDisabledError,
+	createErrorFromParseError,
+	createParseError,
+	createUnknownError,
+	createUnsupportedLanguageError,
+	isAnalysisError,
+} from "../../models/AnalysisError";
 import {
 	type AnalysisResult,
 	createAnalysisResult,
 	createErrorAnalysisResult,
-} from '../../models/AnalysisResult';
+} from "../../models/AnalysisResult";
 import type {
 	DataIntegrationConfig,
 	IntegratedAnalysisData,
-} from '../../models/IntegratedData';
-import type { IDataExtractor } from '../../extractors/IDataExtractor';
-import type { IDataInterpreter } from '../../interpreters/IDataInterpreter';
-import { ParserRegistry } from '../ParserRegistry';
-import { ExtractorRegistry, type IExtractorRegistry } from '../ExtractorRegistry';
-import { InterpreterRegistry, type IInterpreterRegistry } from '../InterpreterRegistry';
-import { CacheManager, type ICacheManager } from '../CacheManager';
-import { DataIntegrator, type IDataIntegrator } from '../integration/DataIntegrator';
+} from "../../models/IntegratedData";
+import { PerformanceMonitor } from "../../models/PerformanceMetrics";
+import { GoParser } from "../../parsers/GoParser";
+import { JavaParser } from "../../parsers/JavaParser";
+import { JavaScriptParser } from "../../parsers/JavaScriptParser";
+import { TypeScriptParser } from "../../parsers/TypeScriptParser";
+import { CacheManager, type ICacheManager } from "../CacheManager";
 import {
-	createEngineDisabledError,
-	createUnsupportedLanguageError,
-	createParseError,
-	createUnknownError,
-	createErrorFromParseError,
-	isAnalysisError
-} from '../../models/AnalysisError';
-import { TypeScriptParser } from '../../parsers/TypeScriptParser';
-import { GoParser } from '../../parsers/GoParser';
-import { JavaParser } from '../../parsers/JavaParser';
-import { JavaScriptParser } from '../../parsers/JavaScriptParser';
-import { DependencyExtractor } from '../../extractors/DependencyExtractor';
-import { IdentifierExtractor } from '../../extractors/IdentifierExtractor';
-import { ComplexityExtractor } from '../../extractors/ComplexityExtractor';
-import { DependencyAnalysisInterpreter } from '../../interpreters/DependencyAnalysisInterpreter';
-import { IdentifierAnalysisInterpreter } from '../../interpreters/IdentifierAnalysisInterpreter';
-import { PerformanceMonitor } from '../../models/PerformanceMetrics';
-import { AnalysisEngineCache } from './AnalysisEngineCache';
-import { AnalysisEngineMetrics } from './AnalysisEngineMetrics';
+	ExtractorRegistry,
+	type IExtractorRegistry,
+} from "../ExtractorRegistry";
+import type {
+	CacheValidationResult,
+	CacheWarmupResult,
+	IAnalysisEngine,
+} from "../IAnalysisEngine";
+import {
+	type IInterpreterRegistry,
+	InterpreterRegistry,
+} from "../InterpreterRegistry";
+import {
+	DataIntegrator,
+	type IDataIntegrator,
+} from "../integration/DataIntegrator";
+import { ParserRegistry } from "../ParserRegistry";
+import { AnalysisEngineCache } from "./AnalysisEngineCache";
+import { AnalysisEngineMetrics } from "./AnalysisEngineMetrics";
 
 /**
  * Refactored Analysis Engine with modular architecture
@@ -114,7 +123,10 @@ export class AnalysisEngine implements IAnalysisEngine {
 
 		try {
 			// Check cache first using cache module
-			const cacheKey = this.cacheModule.generateCacheKey(filePath, analysisConfig);
+			const cacheKey = this.cacheModule.generateCacheKey(
+				filePath,
+				analysisConfig,
+			);
 
 			if (analysisConfig.useCache !== false) {
 				const cachedResult = await this.cacheModule.getCachedResult(cacheKey);
@@ -128,9 +140,12 @@ export class AnalysisEngine implements IAnalysisEngine {
 						...cachedResult,
 						performanceMetrics: {
 							...cachedResult.performanceMetrics,
-							parseTime: Math.max(cachedResult.performanceMetrics.parseTime || 1, 1), // Ensure minimum parseTime
-							totalTime: Math.max(totalTime, 1) // Ensure minimum time for compatibility
-						}
+							parseTime: Math.max(
+								cachedResult.performanceMetrics.parseTime || 1,
+								1,
+							), // Ensure minimum parseTime
+							totalTime: Math.max(totalTime, 1), // Ensure minimum time for compatibility
+						},
 					};
 
 					const cacheStats = this.cacheModule.getCacheStats();
@@ -142,13 +157,21 @@ export class AnalysisEngine implements IAnalysisEngine {
 					);
 
 					const performanceMetrics = this.metricsModule.getPerformanceMetrics();
-					this.cacheModule.updateCacheMetrics(true, startTime, performanceMetrics);
+					this.cacheModule.updateCacheMetrics(
+						true,
+						startTime,
+						performanceMetrics,
+					);
 					return resultCopy;
 				}
 			}
 
 			// Parse the file
-			const result = await this.performAnalysis(filePath, analysisConfig, undefined);
+			const result = await this.performAnalysis(
+				filePath,
+				analysisConfig,
+				undefined,
+			);
 
 			// Cache the result using cache module
 			if (analysisConfig.useCache !== false) {
@@ -193,7 +216,11 @@ export class AnalysisEngine implements IAnalysisEngine {
 		}
 
 		try {
-			const result = await this.performAnalysis(filePath, analysisConfig, content);
+			const result = await this.performAnalysis(
+				filePath,
+				analysisConfig,
+				content,
+			);
 			const totalTime = Date.now() - startTime;
 			result.performanceMetrics.totalTime = totalTime;
 			this.metricsModule.updateAnalysisMetrics(result, totalTime);
@@ -394,7 +421,7 @@ export class AnalysisEngine implements IAnalysisEngine {
 	private async performAnalysis(
 		filePath: string,
 		config: AnalysisConfig,
-		content?: string
+		content?: string,
 	): Promise<AnalysisResult> {
 		const result = createAnalysisResult(filePath, "unknown");
 		const parseStartTime = Date.now();
@@ -436,11 +463,16 @@ export class AnalysisEngine implements IAnalysisEngine {
 
 		// Record parsing performance
 		const nodeCount = this.metricsModule.countASTNodes(parseResult.ast);
-		this.performanceMonitor.recordParsing(parseTime, nodeCount, parseMemoryUsed);
+		this.performanceMonitor.recordParsing(
+			parseTime,
+			nodeCount,
+			parseMemoryUsed,
+		);
 
 		// Step 2: Extract data
 		const extractionStartTime = Date.now();
-		const extractorsToRun = config.extractors ||
+		const extractorsToRun =
+			config.extractors ||
 			Array.from(this.extractorRegistry.getAllExtractors().keys());
 
 		if (extractorsToRun.length > 0) {
@@ -457,7 +489,8 @@ export class AnalysisEngine implements IAnalysisEngine {
 		result.performanceMetrics.extractionTime = extractionTime;
 
 		// Step 3: Interpret data
-		const interpretersToRun = config.interpreters ||
+		const interpretersToRun =
+			config.interpreters ||
 			Array.from(this.interpreterRegistry.getAllInterpreters().keys());
 
 		if (interpretersToRun.length > 0) {
@@ -479,13 +512,17 @@ export class AnalysisEngine implements IAnalysisEngine {
 		return result;
 	}
 
-	private handleAnalysisError(error: unknown, filePath: string, startTime: number): AnalysisResult {
+	private handleAnalysisError(
+		error: unknown,
+		filePath: string,
+		startTime: number,
+	): AnalysisResult {
 		const analysisError = isAnalysisError(error)
 			? error
 			: createUnknownError(
-				filePath,
-				(error as Error)?.message || "Unknown error",
-			);
+					filePath,
+					(error as Error)?.message || "Unknown error",
+				);
 
 		const result = createErrorAnalysisResult(filePath, analysisError);
 		result.performanceMetrics.totalTime = Date.now() - startTime;

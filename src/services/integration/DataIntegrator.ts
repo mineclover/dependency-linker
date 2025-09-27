@@ -3,6 +3,7 @@
  * 데이터 통합 및 출력 최적화를 위한 통합 서비스
  */
 
+import type { OptimizationStrategy } from "../../config/IntegrationConfig";
 import type { AnalysisResult } from "../../models/AnalysisResult";
 import type {
 	AnalysisInsights,
@@ -24,7 +25,6 @@ import type {
 	TreeNode,
 	TreeView,
 } from "../../models/IntegratedData";
-import type { OptimizationStrategy } from "../../config/IntegrationConfig";
 
 export interface IDataIntegrator {
 	/**

@@ -668,7 +668,7 @@ export class TypeScriptParser implements ILanguageParser {
 		const visit = (node: TreeSitterNode): void => {
 			// Add null check to prevent errors
 			if (!node) return;
-			
+
 			if (node.hasError) {
 				errors.push({
 					type: "syntax",

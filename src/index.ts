@@ -32,9 +32,9 @@ export { ILanguageParser } from "./parsers/ILanguageParser";
 export { JavaParser } from "./parsers/JavaParser";
 export { JavaScriptParser } from "./parsers/JavaScriptParser";
 export { TypeScriptParser } from "./parsers/TypeScriptParser";
+export { AnalysisEngineFactory } from "./services/AnalysisEngineFactory";
 // ===== CORE SERVICES =====
 export { AnalysisEngine } from "./services/analysis-engine";
-export { AnalysisEngineFactory } from "./services/AnalysisEngineFactory";
 export { CacheManager } from "./services/CacheManager";
 export { DependencyAnalyzer } from "./services/DependencyAnalyzer";
 export { DirectoryAnalyzer } from "./services/DirectoryAnalyzer";

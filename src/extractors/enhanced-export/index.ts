@@ -163,18 +163,18 @@ export class EnhancedExportExtractor {
 		]);
 
 		const allNodes = ASTTraverser.findNodesByTypes(rootNode, exportNodeTypes);
-		
+
 		// Filter logic to prevent duplicate processing while allowing legitimate exports
-		return allNodes.filter(node => {
+		return allNodes.filter((node) => {
 			if (node.type === "export_statement") {
 				return true; // Always include export statements
 			}
-			
+
 			// For declaration nodes, only include them if they're actually exported
 			// Either by being a child of export_statement or having export keywords
 			let parent = node.parent;
 			let isExported = false;
-			
+
 			while (parent) {
 				if (parent.type === "export_statement") {
 					const exportText = parent.text;
@@ -190,7 +190,7 @@ export class EnhancedExportExtractor {
 				}
 				parent = parent.parent;
 			}
-			
+
 			// Also check if this node itself contains export keywords (standalone exports)
 			if (!isExported) {
 				// Check if this is a top-level declaration that might be exported
@@ -203,7 +203,7 @@ export class EnhancedExportExtractor {
 					return false;
 				}
 			}
-			
+
 			return isExported;
 		});
 	}
@@ -233,18 +233,19 @@ export class EnhancedExportExtractor {
 		const existingNames = new Set(existingExports.map((e) => e.name));
 
 		// Handle named re-exports: export { ... } from '...'
-		const namedReExportPattern = /export\s*\{\s*([^}]+)\s*\}\s*from\s+['"]([^'"]+)['"]/g;
+		const namedReExportPattern =
+			/export\s*\{\s*([^}]+)\s*\}\s*from\s+['"]([^'"]+)['"]/g;
 		let match;
 		while ((match = namedReExportPattern.exec(sourceCode)) !== null) {
 			const specifiers = match[1];
 			const moduleName = match[2];
-			
+
 			// Parse the specifiers (e.g., "UserService, ApiService" or "default as DefaultLogger")
-			const specifierList = specifiers.split(',').map(s => s.trim());
-			
+			const specifierList = specifiers.split(",").map((s) => s.trim());
+
 			for (const specifier of specifierList) {
 				let exportName;
-				
+
 				// Handle "name as alias" pattern
 				const aliasMatch = specifier.match(/^(.+)\s+as\s+(.+)$/);
 				if (aliasMatch) {
@@ -252,7 +253,7 @@ export class EnhancedExportExtractor {
 				} else {
 					exportName = specifier.trim();
 				}
-				
+
 				if (!existingNames.has(exportName)) {
 					supplementaryExports.push({
 						name: exportName,
@@ -274,7 +275,7 @@ export class EnhancedExportExtractor {
 		while ((match = exportStarPattern.exec(sourceCode)) !== null) {
 			const moduleName = match[1];
 			const exportName = `* from ${moduleName}`;
-			
+
 			if (!existingNames.has(exportName)) {
 				supplementaryExports.push({
 					name: exportName,
@@ -297,11 +298,15 @@ export class EnhancedExportExtractor {
 				const namedExports = TextMatcher.parseNamedExports(
 					textMatch.groups[0] || "",
 				);
-				
+
 				// Only process if this is NOT a re-export (no 'from' in the match)
-				const matchText = sourceCode.substring(textMatch.startIndex, textMatch.endIndex);
-				const isReExport = matchText.includes(' from ') || /from\s+['"]/.test(matchText);
-				
+				const matchText = sourceCode.substring(
+					textMatch.startIndex,
+					textMatch.endIndex,
+				);
+				const isReExport =
+					matchText.includes(" from ") || /from\s+['"]/.test(matchText);
+
 				if (!isReExport) {
 					for (const namedExport of namedExports) {
 						const exportName = namedExport.alias || namedExport.name;
@@ -312,7 +317,10 @@ export class EnhancedExportExtractor {
 								declarationType: "named_export",
 								location: {
 									line: this.getLineFromIndex(sourceCode, textMatch.startIndex),
-									column: this.getColumnFromIndex(sourceCode, textMatch.startIndex),
+									column: this.getColumnFromIndex(
+										sourceCode,
+										textMatch.startIndex,
+									),
 								},
 							});
 						}
@@ -446,7 +454,10 @@ export class EnhancedExportExtractor {
 			}
 
 			// Count default exports by declaration type (only if not already counted by exportType)
-			if (exportInfo.declarationType === "default_export" && exportInfo.exportType !== "default") {
+			if (
+				exportInfo.declarationType === "default_export" &&
+				exportInfo.exportType !== "default"
+			) {
 				stats.defaultExports++;
 			}
 		}

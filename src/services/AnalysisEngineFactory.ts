@@ -51,11 +51,7 @@ export class AnalysisEngineFactory implements IAnalysisEngineFactory {
 	 * Creates an analysis engine with predefined configuration preset
 	 */
 	createWithPreset(
-		preset:
-			| "fast"
-			| "comprehensive"
-			| "development"
-			| "production",
+		preset: "fast" | "comprehensive" | "development" | "production",
 		events?: IAnalysisEngineEvents,
 	): AnalysisEngine {
 		const presetConfig = AnalysisEngineFactory.PRESETS[preset];
@@ -266,11 +262,7 @@ export class AnalysisEngineBuilder implements IAnalysisEngineBuilder {
 	 * Uses a preset configuration as base
 	 */
 	withPreset(
-		preset:
-			| "fast"
-			| "comprehensive"
-			| "development"
-			| "production",
+		preset: "fast" | "comprehensive" | "development" | "production",
 	): IAnalysisEngineBuilder {
 		const factory = new AnalysisEngineFactory();
 		const presetConfig = factory.createWithPreset(preset).getDefaultConfig();
