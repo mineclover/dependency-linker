@@ -23,13 +23,7 @@ import type {
 	ExportStatistics,
 } from "./types/result-types";
 // Utilities
-import {
-	ASTTraverser,
-	LRUCache,
-	memoize,
-	NodeUtils,
-	TextMatcher,
-} from "./utils/index";
+import { ASTTraverser, LRUCache, memoize, TextMatcher } from "./utils/index";
 
 // Validators
 import { ExportValidator } from "./validators/index";
@@ -238,7 +232,7 @@ export class EnhancedExportExtractor {
 		let match;
 		while ((match = namedReExportPattern.exec(sourceCode)) !== null) {
 			const specifiers = match[1];
-			const moduleName = match[2];
+			const _moduleName = match[2];
 
 			// Parse the specifiers (e.g., "UserService, ApiService" or "default as DefaultLogger")
 			const specifierList = specifiers.split(",").map((s) => s.trim());
@@ -355,7 +349,7 @@ export class EnhancedExportExtractor {
 	 */
 	private extractClassInformation(
 		exports: ExportMethodInfo[],
-		context: ProcessingContext,
+		_context: ProcessingContext,
 	): ClassExportInfo[] {
 		const classExports = exports.filter((e) => e.exportType === "class");
 		const classes: ClassExportInfo[] = [];
@@ -370,7 +364,7 @@ export class EnhancedExportExtractor {
 				if (!classGroups.has(exportInfo.parentClass)) {
 					classGroups.set(exportInfo.parentClass, []);
 				}
-				classGroups.get(exportInfo.parentClass)!.push(exportInfo);
+				classGroups.get(exportInfo.parentClass)?.push(exportInfo);
 			}
 		}
 

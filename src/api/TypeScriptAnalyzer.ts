@@ -18,7 +18,7 @@ import {
 import type { AnalysisResult } from "../models/AnalysisResult";
 import type { ExportInfo } from "../models/ExportInfo";
 import type { ImportInfo } from "../models/ImportInfo";
-import { AnalysisEngine } from "../services/AnalysisEngine";
+import { AnalysisEngine } from "../services/analysis-engine/index";
 import { createLogger } from "../utils/logger";
 
 import { ConfigurationError, ErrorUtils, ParseError } from "./errors";

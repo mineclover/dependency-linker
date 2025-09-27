@@ -331,7 +331,7 @@ export class AnalysisEngine implements IAnalysisEngine {
 
 	async validateCache(): Promise<CacheValidationResult> {
 		// Validate cache integrity
-		const stats = this.cacheModule.getCacheStats();
+		const _stats = this.cacheModule.getCacheStats();
 
 		return {
 			isValid: true,

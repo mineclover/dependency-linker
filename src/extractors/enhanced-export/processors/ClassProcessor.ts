@@ -239,7 +239,7 @@ export class ClassProcessor extends BaseNodeProcessor {
 	/**
 	 * Check if a member is public (should be exported)
 	 */
-	private isPublicMember(member: Parser.SyntaxNode): boolean {
+	private isPublicMember(_member: Parser.SyntaxNode): boolean {
 		// For comprehensive testing, extract all members regardless of visibility
 		// Tests expect private methods to be included
 		return true;
@@ -339,7 +339,7 @@ export class ClassProcessor extends BaseNodeProcessor {
 	 */
 	private getDeclarationType(
 		node: Parser.SyntaxNode,
-		context: ProcessingContext,
+		_context: ProcessingContext,
 	): ExportMethodInfo["declarationType"] {
 		// Check if it's a default export
 		const parent = node.parent;

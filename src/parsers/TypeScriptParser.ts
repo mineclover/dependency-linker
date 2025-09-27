@@ -546,9 +546,21 @@ export class TypeScriptParser implements ILanguageParser {
 	}
 
 	/**
+	 * Reset parser state for test isolation
+	 *
+	 * Instructs the parser to start the next parse from the beginning.
+	 * Call this method if you want to parse a different document instead of resuming.
+	 */
+	reset(): void {
+		this.parser.reset();
+	}
+
+	/**
 	 * Cleans up parser resources
 	 */
 	dispose(): void {
+		// Reset parser state before disposal
+		this.parser.reset();
 		// Tree-sitter parsers are automatically garbage collected
 		// No explicit cleanup needed for the parser itself
 	}
@@ -692,7 +704,7 @@ export class TypeScriptParser implements ILanguageParser {
 		};
 
 		// Add null check for ast and rootNode
-		if (ast && ast.rootNode) {
+		if (ast?.rootNode) {
 			visit(ast.rootNode);
 		}
 		return errors;

@@ -43,45 +43,6 @@ export class DefaultProcessor extends BaseNodeProcessor {
 	}
 
 	/**
-	 * Check if node represents a default export pattern
-	 */
-	private isDefaultExportPattern(node: Parser.SyntaxNode): boolean {
-		const text = node.text;
-		return text.includes("export default");
-	}
-
-	/**
-	 * Process an export statement
-	 */
-	private processExportStatement(
-		node: Parser.SyntaxNode,
-		context: ProcessingContext,
-	): ExportMethodInfo[] {
-		const exports: ExportMethodInfo[] = [];
-		const exportText = node.text;
-
-		// Handle different export patterns in priority order
-		if (exportText.includes("export default")) {
-			// Handle default exports
-			const defaultExport = this.processDefaultExportStatement(node, context);
-			if (defaultExport) {
-				exports.push(defaultExport);
-			}
-		} else if (exportText.includes("export *")) {
-			// Handle "export * from" re-exports
-			exports.push(...this.processReExports(node, context));
-		} else if (exportText.includes("export {")) {
-			// Handle named exports and re-exports like "export { ... } from ..."
-			exports.push(...this.processNamedExports(node, context));
-		} else {
-			// Direct exports (export const, export function, etc.)
-			exports.push(...this.processDirectExports(node, context));
-		}
-
-		return exports;
-	}
-
-	/**
 	 * Process default export statement
 	 */
 	private processDefaultExportStatement(
@@ -145,8 +106,8 @@ export class DefaultProcessor extends BaseNodeProcessor {
 	 * Extract name for default export
 	 */
 	private extractDefaultExportName(
-		exportedNode: Parser.SyntaxNode,
-		exportStatement: Parser.SyntaxNode,
+		_exportedNode: Parser.SyntaxNode,
+		_exportStatement: Parser.SyntaxNode,
 	): string {
 		// For default exports, the name should always be "default"
 		return "default";
@@ -179,7 +140,7 @@ export class DefaultProcessor extends BaseNodeProcessor {
 	 */
 	private createGenericDefaultExport(
 		node: Parser.SyntaxNode,
-		context: ProcessingContext,
+		_context: ProcessingContext,
 	): ExportMethodInfo {
 		return {
 			name: "default",
@@ -187,151 +148,6 @@ export class DefaultProcessor extends BaseNodeProcessor {
 			declarationType: "default_export",
 			location: NodeUtils.getSourceLocation(node),
 		};
-	}
-
-	/**
-	 * Process named exports (export { name1, name2 })
-	 */
-	private processNamedExports(
-		node: Parser.SyntaxNode,
-		context: ProcessingContext,
-	): ExportMethodInfo[] {
-		const exports: ExportMethodInfo[] = [];
-		const exportText = node.text;
-
-		// Extract export specifiers
-		const specifiers = this.extractExportSpecifiers(exportText);
-
-		for (const specifier of specifiers) {
-			const namedExport: ExportMethodInfo = {
-				name: specifier.external,
-				exportType: specifier.isReExport ? "re_export" : "variable", // Use re_export for re-exports
-				declarationType: specifier.isReExport ? "re_export" : "named_export",
-				location: NodeUtils.getSourceLocation(node),
-			};
-
-			exports.push(namedExport);
-		}
-
-		return exports;
-	}
-
-	/**
-	 * Extract export specifiers from export text
-	 */
-	private extractExportSpecifiers(exportText: string): Array<{
-		internal: string;
-		external: string;
-		isReExport: boolean;
-	}> {
-		const specifiers: Array<{
-			internal: string;
-			external: string;
-			isReExport: boolean;
-		}> = [];
-
-		const isReExport = exportText.includes(" from ");
-
-		// Extract the part between braces
-		const braceMatch = exportText.match(/\{([^}]+)\}/);
-		if (!braceMatch) {
-			return specifiers;
-		}
-
-		const specifierText = braceMatch[1];
-		const parts = specifierText.split(",").map((part) => part.trim());
-
-		for (const part of parts) {
-			if (!part) continue;
-
-			// Handle "name as alias" pattern
-			const aliasMatch = part.match(
-				/^([a-zA-Z_$][a-zA-Z0-9_$]*)\s+as\s+([a-zA-Z_$][a-zA-Z0-9_$]*)$/,
-			);
-			if (aliasMatch) {
-				specifiers.push({
-					internal: aliasMatch[1],
-					external: aliasMatch[2],
-					isReExport,
-				});
-			} else {
-				// Simple name
-				const nameMatch = part.match(/^([a-zA-Z_$][a-zA-Z0-9_$]*)$/);
-				if (nameMatch) {
-					specifiers.push({
-						internal: nameMatch[1],
-						external: nameMatch[1],
-						isReExport,
-					});
-				}
-			}
-		}
-
-		return specifiers;
-	}
-
-	/**
-	 * Process re-exports (export * from 'module')
-	 */
-	private processReExports(
-		node: Parser.SyntaxNode,
-		context: ProcessingContext,
-	): ExportMethodInfo[] {
-		const exportText = node.text;
-
-		// Handle different re-export patterns
-		if (exportText.includes("export *")) {
-			// Extract module name for "export * from 'module'"
-			const moduleMatch = exportText.match(/from\s+['"]([^'"]+)['"]/);
-			const moduleName = moduleMatch ? moduleMatch[1] : "unknown";
-
-			const reExport: ExportMethodInfo = {
-				name: `* from ${moduleName}`,
-				exportType: "re_export",
-				declarationType: "re_export",
-				location: NodeUtils.getSourceLocation(node),
-			};
-
-			return [reExport];
-		}
-
-		return [];
-	}
-
-	/**
-	 * Process direct exports (export const, export function, etc.)
-	 */
-	private processDirectExports(
-		node: Parser.SyntaxNode,
-		context: ProcessingContext,
-	): ExportMethodInfo[] {
-		// This should be handled by specific processors (FunctionProcessor, VariableProcessor, etc.)
-		// This is a fallback for any exports not caught by other processors
-		const exports: ExportMethodInfo[] = [];
-
-		const name = NodeUtils.getIdentifierName(node);
-		if (name) {
-			const directExport: ExportMethodInfo = {
-				name,
-				exportType: "variable", // Generic fallback
-				declarationType: "named_export",
-				location: NodeUtils.getSourceLocation(node),
-			};
-
-			exports.push(directExport);
-		}
-
-		return exports;
-	}
-
-	/**
-	 * Process default export
-	 */
-	private processDefaultExport(
-		node: Parser.SyntaxNode,
-		context: ProcessingContext,
-	): ExportMethodInfo | undefined {
-		return this.processDefaultExportStatement(node, context);
 	}
 
 	/**
@@ -564,7 +380,7 @@ export class DefaultProcessor extends BaseNodeProcessor {
 	/**
 	 * Check if a member is public (should be exported)
 	 */
-	private isPublicMember(member: Parser.SyntaxNode): boolean {
+	private isPublicMember(_member: Parser.SyntaxNode): boolean {
 		// For comprehensive testing, extract all members regardless of visibility
 		// Tests expect private methods to be included
 		return true;

@@ -46,6 +46,23 @@ function getAnalyzer(): TypeScriptAnalyzer {
 }
 
 /**
+ * Reset the shared analyzer instance for test isolation
+ * @internal Used for testing purposes only
+ */
+/**
+ * Reset the shared analyzer instance for test isolation
+ * @internal Used for testing purposes only
+ */
+export function resetSharedAnalyzer(): void {
+	if (sharedAnalyzer) {
+		// Clear caches but don't destroy the instance
+		sharedAnalyzer.clearCache();
+		// Note: We keep the analyzer instance alive to avoid recreation overhead
+		// The cache clearing should be sufficient for test isolation
+	}
+}
+
+/**
  * Get or create shared markdown analysis engine
  */
 function getMarkdownEngine(): AnalysisEngine {

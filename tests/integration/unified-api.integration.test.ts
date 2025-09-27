@@ -3,16 +3,19 @@
  */
 
 import {
-	analyzeTypeScriptFile,
 	analyzeMarkdownFile,
 } from "../../src/lib/index";
+import { TypeScriptAnalyzer } from "../../src/api/TypeScriptAnalyzer";
 
 describe("Unified API Integration Tests", () => {
 	test("should analyze TypeScript and Markdown files together", async () => {
-		// Test TypeScript analysis
-		const tsResult = await analyzeTypeScriptFile(
-			"src/api/TypeScriptAnalyzer.ts",
-		);
+		// Test TypeScript analysis with fresh analyzer to avoid shared state issues
+		const tsAnalyzer = new TypeScriptAnalyzer({
+			enableCache: false, // Disable cache to avoid state issues
+			defaultTimeout: 30000,
+		});
+		const tsResult = await tsAnalyzer.analyzeFile("src/api/TypeScriptAnalyzer.ts");
+
 
 		// Verify TypeScript analysis results
 		expect(tsResult.filePath).toContain("TypeScriptAnalyzer.ts");

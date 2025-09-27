@@ -460,6 +460,17 @@ export function batchResolveAnalysisPaths(
 }> {
 	return inputPaths.map((inputPath) => {
 		try {
+			// Basic validation for empty or invalid input
+			if (!inputPath || typeof inputPath !== "string" || inputPath.trim() === "") {
+				return {
+					input: inputPath,
+					isValid: false,
+					absolutePath: inputPath || "",
+					relativePath: inputPath || "",
+					error: "Empty or invalid input path",
+				};
+			}
+
 			const absolutePath = resolveAnalysisPath(inputPath, projectRoot);
 			const relativePath = toProjectRelativePath(absolutePath, projectRoot);
 

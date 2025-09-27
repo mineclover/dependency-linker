@@ -23,6 +23,10 @@ describe("EnhancedExportExtractor", () => {
 	});
 
 	afterEach(async () => {
+		// Clear extractor caches to prevent test interference
+		extractor.clearCaches();
+		// Reset parser state for test isolation
+		parser.reset();
 		await TestIsolationManager.cleanup();
 	});
 
@@ -34,7 +38,11 @@ describe("EnhancedExportExtractor", () => {
 		filename = "/test.ts",
 	): Promise<EnhancedExportExtractionResult | null> => {
 		try {
-			const parseResult = await parser.parse(filename, code);
+			// Use a fresh parser instance for each test to avoid state issues
+			const freshParser = new TypeScriptParser();
+			// Ensure parser starts from clean state
+			freshParser.reset();
+			const parseResult = await freshParser.parse(filename, code);
 
 			if (!parseResult.ast || parseResult.errors.length > 0) {
 				return null;

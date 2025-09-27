@@ -729,11 +729,14 @@ export class DataIntegrator implements IDataIntegrator {
 		try {
 			// Check if core counts match view counts
 			const coreDeps = data.core.counts.dependencies.total;
-			const summaryDeps = data.views.summary.depCount;
 
-			if (Math.abs(coreDeps - summaryDeps) > 1) {
-				console.warn("Dependency count inconsistency detected");
-				return false;
+			// Only validate summary view if it exists
+			if (data.views.summary) {
+				const summaryDeps = data.views.summary.depCount;
+				if (Math.abs(coreDeps - summaryDeps) > 1) {
+					console.warn("Dependency count inconsistency detected");
+					return false;
+				}
 			}
 
 			return true;

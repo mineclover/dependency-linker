@@ -305,7 +305,7 @@ export class ExportValidator {
 			}
 
 			// Check for suspicious parameter patterns
-			if (param.name && param.name.includes("...") && !param.optional) {
+			if (param.name?.includes("...") && !param.optional) {
 				warnings.push({
 					type: "warning",
 					code: "REST_PARAMETER_NOT_OPTIONAL",
@@ -321,7 +321,7 @@ export class ExportValidator {
 	 */
 	private validateStatistics(
 		result: EnhancedExportExtractionResult,
-		errors: ValidationError[],
+		_errors: ValidationError[],
 		warnings: ValidationError[],
 	): void {
 		if (!result.statistics) {
@@ -395,7 +395,7 @@ export class ExportValidator {
 	 */
 	private validateClasses(
 		result: EnhancedExportExtractionResult,
-		errors: ValidationError[],
+		_errors: ValidationError[],
 		warnings: ValidationError[],
 	): void {
 		const classExports = result.exportMethods.filter(

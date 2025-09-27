@@ -3,7 +3,7 @@ import type Parser from "tree-sitter";
 /**
  * Node visitor function type
  */
-export type NodeVisitor = (node: Parser.SyntaxNode) => void | boolean;
+export type NodeVisitor = (node: Parser.SyntaxNode) => undefined | boolean;
 
 /**
  * Node predicate function type

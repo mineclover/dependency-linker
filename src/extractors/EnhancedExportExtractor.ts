@@ -179,6 +179,13 @@ export class EnhancedExportExtractor
 	}
 
 	/**
+	 * Clear caches (useful for testing or memory management)
+	 */
+	clearCaches(): void {
+		this.modularExtractor.clearCaches();
+	}
+
+	/**
 	 * Get current configuration
 	 */
 	getConfiguration(): ExtractorConfiguration {

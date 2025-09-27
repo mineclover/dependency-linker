@@ -311,7 +311,7 @@ export class TypeProcessor extends BaseNodeProcessor {
 	 */
 	private getDeclarationType(
 		node: Parser.SyntaxNode,
-		context: ProcessingContext,
+		_context: ProcessingContext,
 	): ExportMethodInfo["declarationType"] {
 		// Check if it's a default export
 		const parent = node.parent;
