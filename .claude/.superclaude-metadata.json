@@ -1,0 +1,103 @@
+{
+  "commands": {
+    "auto_update": false,
+    "enabled": true,
+    "version": "4.1.4"
+  },
+  "components": {
+    "agents": {
+      "agents_count": 15,
+      "agents_list": [
+        "backend-architect.md",
+        "business-panel-experts.md",
+        "devops-architect.md",
+        "frontend-architect.md",
+        "learning-guide.md",
+        "performance-engineer.md",
+        "python-expert.md",
+        "quality-engineer.md",
+        "refactoring-expert.md",
+        "requirements-analyst.md",
+        "root-cause-analyst.md",
+        "security-engineer.md",
+        "socratic-mentor.md",
+        "system-architect.md",
+        "technical-writer.md"
+      ],
+      "category": "agents",
+      "installed_at": "2025-09-28T02:11:33.315250",
+      "version": "4.1.4"
+    },
+    "commands": {
+      "category": "commands",
+      "files_count": 24,
+      "installed_at": "2025-09-28T02:11:33.307454",
+      "version": "4.1.4"
+    },
+    "core": {
+      "category": "core",
+      "files_count": 5,
+      "installed_at": "2025-09-28T02:11:33.291893",
+      "version": "4.1.4"
+    },
+    "mcp": {
+      "category": "integration",
+      "installed_at": "2025-09-28T02:13:55.086532",
+      "installed_servers": [
+        "playwright",
+        "serena",
+        "sequential-thinking",
+        "magic",
+        "context7",
+        "morphllm-fast-apply"
+      ],
+      "servers_count": 6,
+      "version": "4.1.4"
+    },
+    "mcp_docs": {
+      "files_count": 6,
+      "installed": true,
+      "servers_documented": [
+        "morphllm",
+        "playwright",
+        "serena",
+        "magic",
+        "sequential-thinking",
+        "context7"
+      ],
+      "version": "4.1.4"
+    },
+    "modes": {
+      "files_count": 6,
+      "installed": true,
+      "version": "4.1.4"
+    }
+  },
+  "framework": {
+    "components": [
+      "core"
+    ],
+    "description": "AI-enhanced development framework for Claude Code",
+    "installation_type": "global",
+    "name": "SuperClaude",
+    "version": "4.1.4"
+  },
+  "mcp": {
+    "auto_update": false,
+    "enabled": true,
+    "servers": [
+      "playwright",
+      "serena",
+      "sequential-thinking",
+      "magic",
+      "context7",
+      "morphllm-fast-apply"
+    ]
+  },
+  "superclaude": {
+    "auto_update": false,
+    "enabled": true,
+    "profile": "default",
+    "version": "4.1.4"
+  }
+}
