@@ -3,7 +3,7 @@
  */
 
 import { DataIntegrator } from "../../src/services/integration/DataIntegrator";
-import { AnalysisEngine } from "../../src/services/AnalysisEngine";
+import { AnalysisEngine } from "../../src/services/analysis-engine";
 import type { DataIntegrationConfig } from "../../src/models/IntegratedData";
 import path from "node:path";
 

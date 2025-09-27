@@ -3,7 +3,7 @@
  * Provides shared utilities for better test isolation and cleanup
  */
 
-import { AnalysisEngine } from "../../src/services/AnalysisEngine";
+import { AnalysisEngine } from "../../src/services/analysis-engine";
 import { TypeScriptAnalyzer } from "../../src/api/TypeScriptAnalyzer";
 
 export class TestIsolationManager {

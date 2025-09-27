@@ -5,7 +5,7 @@
  */
 
 import { describe, test, expect, beforeEach } from "@jest/globals";
-import { AnalysisEngine } from "../../src/services/AnalysisEngine";
+import { AnalysisEngine } from "../../src/services/analysis-engine";
 import type { IDataExtractor } from "../../src/extractors/IDataExtractor";
 import type { IDataInterpreter } from "../../src/interpreters/IDataInterpreter";
 import type { AnalysisConfig } from "../../src/models/AnalysisConfig";

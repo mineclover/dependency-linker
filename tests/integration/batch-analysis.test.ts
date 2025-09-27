@@ -5,7 +5,7 @@
  */
 
 import { describe, test, expect, beforeEach, afterEach } from "@jest/globals";
-import { AnalysisEngine } from "../../src/services/AnalysisEngine";
+import { AnalysisEngine } from "../../src/services/analysis-engine";
 import type { AnalysisConfig } from "../../src/models/AnalysisConfig";
 import type { AnalysisResult } from "../../src/models/AnalysisResult";
 import * as fs from "node:fs";
