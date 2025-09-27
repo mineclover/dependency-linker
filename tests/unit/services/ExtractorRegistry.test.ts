@@ -12,6 +12,7 @@ import type {
 	ExtractorMetadata,
 	ExtractorConfiguration,
 	OutputSchema,
+	AST,
 } from "../../../src/extractors/IDataExtractor";
 
 // Mock extractor for testing

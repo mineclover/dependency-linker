@@ -61,11 +61,11 @@ import { ParserRegistry } from "./ParserRegistry";
 
 /**
  * Core analysis engine that orchestrates the complete code analysis workflow
- * 
+ *
  * The AnalysisEngine serves as the main coordinator for the dependency analysis framework,
  * managing parsers, extractors, interpreters, caching, and performance monitoring.
  * It provides a unified interface for analyzing single files, batches, and content strings.
- * 
+ *
  * Features:
  * - Multi-language parsing (TypeScript, JavaScript, Go, Java)
  * - Pluggable data extraction (dependencies, identifiers, complexity)
@@ -74,21 +74,21 @@ import { ParserRegistry } from "./ParserRegistry";
  * - Comprehensive performance monitoring and metrics
  * - Error handling and recovery
  * - Resource management and cleanup
- * 
+ *
  * @example
  * ```typescript
  * // Basic usage
  * const engine = new AnalysisEngine();
  * const result = await engine.analyzeFile("/project/src/index.ts");
- * 
+ *
  * console.log(`Language: ${result.language}`);
  * console.log(`Dependencies: ${result.extractedData.dependency?.dependencies?.length || 0}`);
  * console.log(`Analysis time: ${result.performanceMetrics.totalTime}ms`);
- * 
+ *
  * // Batch analysis
  * const files = ["/project/src/index.ts", "/project/src/utils.ts"];
  * const results = await engine.analyzeBatch(files);
- * 
+ *
  * // Custom configuration
  * const config = {
  *   extractors: ["dependency", "identifier"],
@@ -97,31 +97,31 @@ import { ParserRegistry } from "./ParserRegistry";
  * };
  * const customResult = await engine.analyzeFile("/project/src/app.ts", config);
  * ```
- * 
+ *
  * @example
  * ```typescript
  * // Advanced usage with custom plugins
  * const engine = new AnalysisEngine();
- * 
+ *
  * // Register custom extractor
  * engine.registerExtractor("custom", new CustomExtractor());
- * 
+ *
  * // Register custom interpreter
  * engine.registerInterpreter("custom-analysis", new CustomInterpreter());
- * 
+ *
  * // Performance monitoring
  * const metrics = engine.getPerformanceMetrics();
  * console.log(`Cache hit rate: ${metrics.cacheHitRate}%`);
  * console.log(`Average analysis time: ${metrics.averageAnalysisTime}ms`);
- * 
+ *
  * // Cache management
  * await engine.warmupCache(["/project/src/index.ts"]);
  * const cacheStats = engine.getCacheStats();
- * 
+ *
  * // Cleanup
  * await engine.shutdown();
  * ```
- * 
+ *
  * @implements IAnalysisEngine
  * @since 2.0.0
  */
@@ -139,17 +139,17 @@ export class AnalysisEngine implements IAnalysisEngine {
 
 	/**
 	 * Creates a new AnalysisEngine instance with optional configuration
-	 * 
+	 *
 	 * Initializes all internal registries, cache manager, and performance monitoring.
 	 * Registers default parsers, extractors, and interpreters for common languages.
-	 * 
+	 *
 	 * @param config - Optional analysis configuration to use as default
-	 * 
+	 *
 	 * @example
 	 * ```typescript
 	 * // Default configuration
 	 * const engine = new AnalysisEngine();
-	 * 
+	 *
 	 * // Custom default configuration
 	 * const engine = new AnalysisEngine({
 	 *   useCache: true,
@@ -193,36 +193,36 @@ export class AnalysisEngine implements IAnalysisEngine {
 
 	/**
 	 * Analyzes a single source file with comprehensive performance monitoring
-	 * 
+	 *
 	 * Performs the complete analysis workflow: parsing, data extraction, interpretation,
 	 * and caching. Includes detailed performance metrics and error handling.
-	 * 
+	 *
 	 * @param filePath - Absolute path to the source file to analyze
 	 * @param config - Optional analysis configuration (overrides default)
-	 * 
+	 *
 	 * @returns Promise resolving to detailed analysis result with performance metrics
-	 * 
+	 *
 	 * @example
 	 * ```typescript
 	 * // Basic file analysis
 	 * const result = await engine.analyzeFile("/project/src/index.ts");
-	 * 
+	 *
 	 * if (result.errors.length === 0) {
 	 *   console.log(`Found ${result.extractedData.dependency?.dependencies?.length} dependencies`);
 	 *   console.log(`Analysis completed in ${result.performanceMetrics.totalTime}ms`);
 	 * }
-	 * 
+	 *
 	 * // Custom configuration
 	 * const result = await engine.analyzeFile("/project/src/app.ts", {
 	 *   extractors: ["dependency"],
 	 *   useCache: false
 	 * });
 	 * ```
-	 * 
+	 *
 	 * @throws EngineDisabledError when the engine is disabled
 	 * @throws UnsupportedLanguageError when no parser supports the file
 	 * @throws ParseError when file parsing fails
-	 * 
+	 *
 	 * @since 2.0.0
 	 */
 	async analyzeFile(
@@ -444,7 +444,7 @@ export class AnalysisEngine implements IAnalysisEngine {
 				: createUnknownError(
 						filePath,
 						(error as Error)?.message || "Unknown error",
-				  );
+					);
 
 			const result = createErrorAnalysisResult(filePath, analysisError);
 			result.performanceMetrics.totalTime = Date.now() - startTime;
@@ -458,15 +458,15 @@ export class AnalysisEngine implements IAnalysisEngine {
 
 	/**
 	 * Analyzes multiple files in batch for improved efficiency
-	 * 
+	 *
 	 * Processes files sequentially to avoid overwhelming system resources.
 	 * Each file is analyzed independently with individual error handling.
-	 * 
+	 *
 	 * @param filePaths - Array of absolute file paths to analyze
 	 * @param config - Optional analysis configuration applied to all files
-	 * 
+	 *
 	 * @returns Promise resolving to array of analysis results (one per file)
-	 * 
+	 *
 	 * @example
 	 * ```typescript
 	 * const files = [
@@ -474,9 +474,9 @@ export class AnalysisEngine implements IAnalysisEngine {
 	 *   "/project/src/utils.ts",
 	 *   "/project/src/components/Button.tsx"
 	 * ];
-	 * 
+	 *
 	 * const results = await engine.analyzeBatch(files);
-	 * 
+	 *
 	 * // Process results
 	 * results.forEach((result, index) => {
 	 *   if (result.errors.length === 0) {
@@ -486,7 +486,7 @@ export class AnalysisEngine implements IAnalysisEngine {
 	 *   }
 	 * });
 	 * ```
-	 * 
+	 *
 	 * @since 2.0.0
 	 */
 	async analyzeBatch(
@@ -516,17 +516,17 @@ export class AnalysisEngine implements IAnalysisEngine {
 	 */
 	/**
 	 * Analyzes a file and returns integrated data optimized for output
-	 * 
+	 *
 	 * Performs standard file analysis and then applies data integration
 	 * to normalize and optimize the output format. Useful for generating
 	 * reports or feeding data to external systems.
-	 * 
+	 *
 	 * @param filePath - Absolute path to the source file to analyze
 	 * @param config - Optional analysis configuration
 	 * @param integrationConfig - Optional data integration configuration
-	 * 
+	 *
 	 * @returns Promise resolving to integrated analysis data
-	 * 
+	 *
 	 * @example
 	 * ```typescript
 	 * const integratedData = await engine.analyzeFileIntegrated(
@@ -535,7 +535,7 @@ export class AnalysisEngine implements IAnalysisEngine {
 	 *   { format: "normalized", includeMetrics: true }
 	 * );
 	 * ```
-	 * 
+	 *
 	 * @since 2.0.0
 	 */
 	async analyzeFileIntegrated(
@@ -552,22 +552,22 @@ export class AnalysisEngine implements IAnalysisEngine {
 	 */
 	/**
 	 * Analyzes multiple files and returns integrated data batch
-	 * 
+	 *
 	 * Combines batch analysis with data integration for efficient
 	 * processing of multiple files with normalized output.
-	 * 
+	 *
 	 * @param filePaths - Array of absolute file paths to analyze
 	 * @param config - Optional analysis configuration applied to all files
 	 * @param integrationConfig - Optional data integration configuration
-	 * 
+	 *
 	 * @returns Promise resolving to array of integrated analysis data
-	 * 
+	 *
 	 * @example
 	 * ```typescript
 	 * const files = ["/project/src/a.ts", "/project/src/b.ts"];
 	 * const integratedResults = await engine.analyzeBatchIntegrated(files);
 	 * ```
-	 * 
+	 *
 	 * @since 2.0.0
 	 */
 	async analyzeBatchIntegrated(
@@ -584,23 +584,23 @@ export class AnalysisEngine implements IAnalysisEngine {
 	 */
 	/**
 	 * Analyzes content and returns integrated data
-	 * 
+	 *
 	 * Combines content analysis with data integration for processing
 	 * code content without requiring file system access.
-	 * 
+	 *
 	 * @param content - Source code content to analyze
 	 * @param filePath - Virtual file path for context
 	 * @param config - Optional analysis configuration
 	 * @param integrationConfig - Optional data integration configuration
-	 * 
+	 *
 	 * @returns Promise resolving to integrated analysis data
-	 * 
+	 *
 	 * @example
 	 * ```typescript
 	 * const code = "export const API_URL = 'https://api.example.com';";
 	 * const integratedData = await engine.analyzeContentIntegrated(code, "config.ts");
 	 * ```
-	 * 
+	 *
 	 * @since 2.0.0
 	 */
 	async analyzeContentIntegrated(
@@ -615,16 +615,16 @@ export class AnalysisEngine implements IAnalysisEngine {
 
 	/**
 	 * Analyzes source code content without requiring a physical file
-	 * 
+	 *
 	 * Useful for analyzing dynamically generated code, editor content,
 	 * or code from external sources. Bypasses file system operations.
-	 * 
+	 *
 	 * @param content - Source code content to analyze
 	 * @param filePath - Virtual file path (used for language detection and context)
 	 * @param config - Optional analysis configuration
-	 * 
+	 *
 	 * @returns Promise resolving to analysis result
-	 * 
+	 *
 	 * @example
 	 * ```typescript
 	 * const code = `
@@ -634,11 +634,11 @@ export class AnalysisEngine implements IAnalysisEngine {
 	 *     return <div>{count}</div>;
 	 *   };
 	 * `;
-	 * 
+	 *
 	 * const result = await engine.analyzeContent(code, "Component.tsx");
 	 * console.log(`Dependencies: ${result.extractedData.dependency?.dependencies?.length}`);
 	 * ```
-	 * 
+	 *
 	 * @since 2.0.0
 	 */
 	async analyzeContent(
@@ -721,7 +721,7 @@ export class AnalysisEngine implements IAnalysisEngine {
 				: createUnknownError(
 						filePath,
 						(error as Error)?.message || "Unknown error",
-				  );
+					);
 
 			return createErrorAnalysisResult(filePath, analysisError);
 		}
@@ -732,13 +732,13 @@ export class AnalysisEngine implements IAnalysisEngine {
 	 */
 	/**
 	 * Registers a data extractor plugin with the engine
-	 * 
+	 *
 	 * Adds a custom extractor that can extract specific types of data
 	 * from ASTs during the analysis process.
-	 * 
+	 *
 	 * @param name - Unique identifier for the extractor
 	 * @param extractor - Extractor instance implementing IDataExtractor<T>
-	 * 
+	 *
 	 * @example
 	 * ```typescript
 	 * class CustomExtractor implements IDataExtractor<MyData> {
@@ -747,10 +747,10 @@ export class AnalysisEngine implements IAnalysisEngine {
 	 *     return extractedData;
 	 *   }
 	 * }
-	 * 
+	 *
 	 * engine.registerExtractor("custom", new CustomExtractor());
 	 * ```
-	 * 
+	 *
 	 * @since 2.0.0
 	 */
 	registerExtractor<T>(name: string, extractor: IDataExtractor<T>): void {
@@ -762,13 +762,13 @@ export class AnalysisEngine implements IAnalysisEngine {
 	 */
 	/**
 	 * Registers a data interpreter plugin with the engine
-	 * 
+	 *
 	 * Adds a custom interpreter that can process extracted data
 	 * and transform it into analysis-specific outputs.
-	 * 
+	 *
 	 * @param name - Unique identifier for the interpreter
 	 * @param interpreter - Interpreter instance implementing IDataInterpreter<TInput, TOutput>
-	 * 
+	 *
 	 * @example
 	 * ```typescript
 	 * class CustomInterpreter implements IDataInterpreter<InputType, OutputType> {
@@ -777,10 +777,10 @@ export class AnalysisEngine implements IAnalysisEngine {
 	 *     return processedData;
 	 *   }
 	 * }
-	 * 
+	 *
 	 * engine.registerInterpreter("custom-analysis", new CustomInterpreter());
 	 * ```
-	 * 
+	 *
 	 * @since 2.0.0
 	 */
 	registerInterpreter<TInput, TOutput>(
@@ -795,14 +795,14 @@ export class AnalysisEngine implements IAnalysisEngine {
 	 */
 	/**
 	 * Unregisters an extractor plugin from the engine
-	 * 
+	 *
 	 * Removes a previously registered extractor. The extractor will no longer
 	 * be available for use in analysis operations.
-	 * 
+	 *
 	 * @param name - Name of the extractor to remove
-	 * 
+	 *
 	 * @returns True if the extractor was found and removed, false otherwise
-	 * 
+	 *
 	 * @example
 	 * ```typescript
 	 * const removed = engine.unregisterExtractor("custom-extractor");
@@ -810,7 +810,7 @@ export class AnalysisEngine implements IAnalysisEngine {
 	 *   console.log("Extractor successfully removed");
 	 * }
 	 * ```
-	 * 
+	 *
 	 * @since 2.0.0
 	 */
 	unregisterExtractor(name: string): boolean {
@@ -822,14 +822,14 @@ export class AnalysisEngine implements IAnalysisEngine {
 	 */
 	/**
 	 * Unregisters an interpreter plugin from the engine
-	 * 
+	 *
 	 * Removes a previously registered interpreter. The interpreter will no longer
 	 * be available for use in analysis operations.
-	 * 
+	 *
 	 * @param name - Name of the interpreter to remove
-	 * 
+	 *
 	 * @returns True if the interpreter was found and removed, false otherwise
-	 * 
+	 *
 	 * @example
 	 * ```typescript
 	 * const removed = engine.unregisterInterpreter("custom-analysis");
@@ -837,7 +837,7 @@ export class AnalysisEngine implements IAnalysisEngine {
 	 *   console.log("Interpreter successfully removed");
 	 * }
 	 * ```
-	 * 
+	 *
 	 * @since 2.0.0
 	 */
 	unregisterInterpreter(name: string): boolean {
@@ -849,23 +849,23 @@ export class AnalysisEngine implements IAnalysisEngine {
 	 */
 	/**
 	 * Gets a list of all registered extractors
-	 * 
+	 *
 	 * Returns a map of all currently registered extractor plugins
 	 * with their names and instances.
-	 * 
+	 *
 	 * @returns Map containing all registered extractors (name -> extractor)
-	 * 
+	 *
 	 * @example
 	 * ```typescript
 	 * const extractors = engine.getRegisteredExtractors();
 	 * console.log(`Registered extractors: ${Array.from(extractors.keys()).join(", ")}`);
-	 * 
+	 *
 	 * // Check if specific extractor is available
 	 * if (extractors.has("dependency")) {
 	 *   console.log("Dependency extractor is available");
 	 * }
 	 * ```
-	 * 
+	 *
 	 * @since 2.0.0
 	 */
 	getRegisteredExtractors(): Map<string, IDataExtractor<unknown>> {
@@ -877,23 +877,23 @@ export class AnalysisEngine implements IAnalysisEngine {
 	 */
 	/**
 	 * Gets a list of all registered interpreters
-	 * 
+	 *
 	 * Returns a map of all currently registered interpreter plugins
 	 * with their names and instances.
-	 * 
+	 *
 	 * @returns Map containing all registered interpreters (name -> interpreter)
-	 * 
+	 *
 	 * @example
 	 * ```typescript
 	 * const interpreters = engine.getRegisteredInterpreters();
 	 * console.log(`Registered interpreters: ${Array.from(interpreters.keys()).join(", ")}`);
-	 * 
+	 *
 	 * // Check if specific interpreter is available
 	 * if (interpreters.has("dependency-analysis")) {
 	 *   console.log("Dependency analysis interpreter is available");
 	 * }
 	 * ```
-	 * 
+	 *
 	 * @since 2.0.0
 	 */
 	getRegisteredInterpreters(): Map<string, IDataInterpreter<unknown, unknown>> {
@@ -905,21 +905,21 @@ export class AnalysisEngine implements IAnalysisEngine {
 	 */
 	/**
 	 * Clears the analysis cache
-	 * 
+	 *
 	 * Removes all cached analysis results to free memory or force
 	 * fresh analysis of all files. Use when cache integrity is suspect
 	 * or when memory usage needs to be reduced.
-	 * 
+	 *
 	 * @example
 	 * ```typescript
 	 * // Clear cache to force fresh analysis
 	 * engine.clearCache();
-	 * 
+	 *
 	 * // Verify cache is empty
 	 * const stats = engine.getCacheStats();
 	 * console.log(`Cache entries: ${stats.totalEntries}`); // Should be 0
 	 * ```
-	 * 
+	 *
 	 * @since 2.0.0
 	 */
 	clearCache(): void {
@@ -931,25 +931,25 @@ export class AnalysisEngine implements IAnalysisEngine {
 	 */
 	/**
 	 * Gets cache performance statistics
-	 * 
+	 *
 	 * Returns detailed metrics about cache usage, hit rates, and performance
 	 * for monitoring and optimization purposes.
-	 * 
+	 *
 	 * @returns Cache statistics including hit rate, entries, and memory usage
-	 * 
+	 *
 	 * @example
 	 * ```typescript
 	 * const stats = engine.getCacheStats();
 	 * console.log(`Cache hit rate: ${(stats.hitRate * 100).toFixed(1)}%`);
 	 * console.log(`Total entries: ${stats.totalEntries}`);
 	 * console.log(`Memory usage: ${(stats.memoryUsage / 1024 / 1024).toFixed(1)}MB`);
-	 * 
+	 *
 	 * // Monitor cache efficiency
 	 * if (stats.hitRate < 0.5) {
 	 *   console.warn("Low cache hit rate - consider adjusting cache strategy");
 	 * }
 	 * ```
-	 * 
+	 *
 	 * @since 2.0.0
 	 */
 	getCacheStats(): CacheStats {
@@ -961,17 +961,17 @@ export class AnalysisEngine implements IAnalysisEngine {
 	 */
 	/**
 	 * Validates cache integrity and repairs if needed
-	 * 
+	 *
 	 * Performs comprehensive cache validation to detect corrupted entries,
 	 * inconsistencies, or optimization opportunities. Automatically repairs
 	 * issues when possible.
-	 * 
+	 *
 	 * @returns Promise resolving to validation results with repair statistics
-	 * 
+	 *
 	 * @example
 	 * ```typescript
 	 * const validation = await engine.validateCache();
-	 * 
+	 *
 	 * if (!validation.isValid) {
 	 *   console.log(`Found ${validation.corruptedEntries} corrupted entries`);
 	 *   console.log(`Repaired ${validation.repairedEntries} entries`);
@@ -979,13 +979,13 @@ export class AnalysisEngine implements IAnalysisEngine {
 	 * } else {
 	 *   console.log("Cache is healthy");
 	 * }
-	 * 
+	 *
 	 * // Handle validation errors
 	 * if (validation.errors.length > 0) {
 	 *   validation.errors.forEach(error => console.error(error));
 	 * }
 	 * ```
-	 * 
+	 *
 	 * @since 2.0.0
 	 */
 	async validateCache(): Promise<CacheValidationResult> {
@@ -1007,15 +1007,15 @@ export class AnalysisEngine implements IAnalysisEngine {
 	 */
 	/**
 	 * Warms up the cache with frequently used files
-	 * 
+	 *
 	 * Pre-analyzes a set of files to populate the cache, improving
 	 * performance for subsequent analysis operations. Useful for
 	 * batch operations or application startup optimization.
-	 * 
+	 *
 	 * @param filePaths - Array of file paths to pre-analyze and cache
-	 * 
+	 *
 	 * @returns Promise resolving to warmup statistics and performance metrics
-	 * 
+	 *
 	 * @example
 	 * ```typescript
 	 * const commonFiles = [
@@ -1023,14 +1023,14 @@ export class AnalysisEngine implements IAnalysisEngine {
 	 *   "/project/src/utils/helpers.ts",
 	 *   "/project/src/components/App.tsx"
 	 * ];
-	 * 
+	 *
 	 * const warmupResult = await engine.warmupCache(commonFiles);
-	 * 
+	 *
 	 * console.log(`Processed ${warmupResult.filesProcessed} files`);
 	 * console.log(`Cached ${warmupResult.filesCached} successfully`);
 	 * console.log(`Failed ${warmupResult.filesFailed} files`);
 	 * console.log(`Average time: ${warmupResult.averageTimePerFile.toFixed(1)}ms per file`);
-	 * 
+	 *
 	 * // Handle failures
 	 * if (warmupResult.failures.length > 0) {
 	 *   warmupResult.failures.forEach(failure => {
@@ -1038,7 +1038,7 @@ export class AnalysisEngine implements IAnalysisEngine {
 	 *   });
 	 * }
 	 * ```
-	 * 
+	 *
 	 * @since 2.0.0
 	 */
 	async warmupCache(filePaths: string[]): Promise<CacheWarmupResult> {
@@ -1080,13 +1080,13 @@ export class AnalysisEngine implements IAnalysisEngine {
 	 */
 	/**
 	 * Sets the analysis configuration as default
-	 * 
+	 *
 	 * Updates the default configuration used for all analysis operations
 	 * when no specific configuration is provided. This allows customizing
 	 * the engine's behavior globally.
-	 * 
+	 *
 	 * @param config - New default analysis configuration
-	 * 
+	 *
 	 * @example
 	 * ```typescript
 	 * // Set custom default configuration
@@ -1096,11 +1096,11 @@ export class AnalysisEngine implements IAnalysisEngine {
 	 *   interpreters: ["dependency-analysis"],
 	 *   extractorOptions: { includeDevDependencies: false }
 	 * });
-	 * 
+	 *
 	 * // All subsequent analyses will use this config by default
 	 * const result = await engine.analyzeFile("/project/src/app.ts");
 	 * ```
-	 * 
+	 *
 	 * @since 2.0.0
 	 */
 	setDefaultConfig(config: AnalysisConfig): void {
@@ -1112,25 +1112,25 @@ export class AnalysisEngine implements IAnalysisEngine {
 	 */
 	/**
 	 * Gets the current default configuration
-	 * 
+	 *
 	 * Returns a copy of the current default analysis configuration
 	 * used when no specific configuration is provided to analysis methods.
-	 * 
+	 *
 	 * @returns Current default analysis configuration
-	 * 
+	 *
 	 * @example
 	 * ```typescript
 	 * const currentConfig = engine.getDefaultConfig();
 	 * console.log(`Default extractors: ${currentConfig.extractors?.join(", ")}`);
 	 * console.log(`Cache enabled: ${currentConfig.useCache !== false}`);
-	 * 
+	 *
 	 * // Create modified copy for specific use case
 	 * const customConfig = {
 	 *   ...currentConfig,
 	 *   useCache: false // Disable cache for this analysis
 	 * };
 	 * ```
-	 * 
+	 *
 	 * @since 2.0.0
 	 */
 	getDefaultConfig(): AnalysisConfig {
@@ -1142,28 +1142,28 @@ export class AnalysisEngine implements IAnalysisEngine {
 	 */
 	/**
 	 * Enables or disables the analysis engine
-	 * 
+	 *
 	 * Controls whether the engine will accept analysis requests.
 	 * When disabled, all analysis methods will throw EngineDisabledError.
 	 * Useful for maintenance, testing, or resource management.
-	 * 
+	 *
 	 * @param enabled - True to enable the engine, false to disable
-	 * 
+	 *
 	 * @example
 	 * ```typescript
 	 * // Disable engine during maintenance
 	 * engine.setEnabled(false);
-	 * 
+	 *
 	 * try {
 	 *   await engine.analyzeFile("/project/src/app.ts");
 	 * } catch (error) {
 	 *   console.log("Engine is disabled"); // EngineDisabledError
 	 * }
-	 * 
+	 *
 	 * // Re-enable after maintenance
 	 * engine.setEnabled(true);
 	 * ```
-	 * 
+	 *
 	 * @since 2.0.0
 	 */
 	setEnabled(enabled: boolean): void {
@@ -1175,12 +1175,12 @@ export class AnalysisEngine implements IAnalysisEngine {
 	 */
 	/**
 	 * Checks if the analysis engine is currently enabled
-	 * 
+	 *
 	 * Returns the current enabled state of the engine. When false,
 	 * analysis operations will fail with EngineDisabledError.
-	 * 
+	 *
 	 * @returns True if the engine is enabled and accepting requests
-	 * 
+	 *
 	 * @example
 	 * ```typescript
 	 * if (engine.isEnabled()) {
@@ -1188,14 +1188,14 @@ export class AnalysisEngine implements IAnalysisEngine {
 	 * } else {
 	 *   console.log("Engine is currently disabled");
 	 * }
-	 * 
+	 *
 	 * // Check engine health before batch operation
 	 * const files = ["/a.ts", "/b.ts", "/c.ts"];
 	 * if (engine.isEnabled()) {
 	 *   const results = await engine.analyzeBatch(files);
 	 * }
 	 * ```
-	 * 
+	 *
 	 * @since 2.0.0
 	 */
 	isEnabled(): boolean {
@@ -1207,29 +1207,29 @@ export class AnalysisEngine implements IAnalysisEngine {
 	 */
 	/**
 	 * Gets engine performance metrics
-	 * 
+	 *
 	 * Returns comprehensive performance statistics including analysis times,
 	 * memory usage, cache efficiency, and component-specific metrics.
 	 * Useful for monitoring, optimization, and debugging.
-	 * 
+	 *
 	 * @returns Current engine performance metrics
-	 * 
+	 *
 	 * @example
 	 * ```typescript
 	 * const metrics = engine.getPerformanceMetrics();
-	 * 
+	 *
 	 * console.log(`Total analyses: ${metrics.totalAnalyses}`);
 	 * console.log(`Success rate: ${(metrics.successfulAnalyses / metrics.totalAnalyses * 100).toFixed(1)}%`);
 	 * console.log(`Average time: ${metrics.averageAnalysisTime.toFixed(1)}ms`);
 	 * console.log(`Cache hit rate: ${(metrics.cacheHitRate * 100).toFixed(1)}%`);
 	 * console.log(`Uptime: ${(metrics.uptime / 1000 / 60).toFixed(1)} minutes`);
-	 * 
+	 *
 	 * // Language-specific metrics
 	 * metrics.languageMetrics.forEach((stats, language) => {
 	 *   console.log(`${language}: ${stats.filesAnalyzed} files, ${stats.averageTime.toFixed(1)}ms avg`);
 	 * });
 	 * ```
-	 * 
+	 *
 	 * @since 2.0.0
 	 */
 	getPerformanceMetrics(): EnginePerformanceMetrics {
@@ -1244,24 +1244,24 @@ export class AnalysisEngine implements IAnalysisEngine {
 	 */
 	/**
 	 * Resets performance metrics to initial state
-	 * 
+	 *
 	 * Clears all accumulated performance statistics and restarts tracking
 	 * from zero. Useful for benchmarking specific operations or starting
 	 * fresh measurement periods.
-	 * 
+	 *
 	 * @example
 	 * ```typescript
 	 * // Reset metrics before benchmark
 	 * engine.resetPerformanceMetrics();
-	 * 
+	 *
 	 * // Perform operations to measure
 	 * await engine.analyzeBatch(testFiles);
-	 * 
+	 *
 	 * // Get clean metrics for the benchmark
 	 * const benchmarkMetrics = engine.getPerformanceMetrics();
 	 * console.log(`Benchmark completed: ${benchmarkMetrics.totalAnalyses} files in ${benchmarkMetrics.averageAnalysisTime}ms avg`);
 	 * ```
-	 * 
+	 *
 	 * @since 2.0.0
 	 */
 	resetPerformanceMetrics(): void {
@@ -1289,13 +1289,13 @@ export class AnalysisEngine implements IAnalysisEngine {
 	 */
 	/**
 	 * Shuts down the engine and cleans up resources
-	 * 
+	 *
 	 * Performs graceful shutdown by clearing all registries, shutting down
 	 * the cache manager, and disabling the engine. Call this method before
 	 * application termination to ensure proper resource cleanup.
-	 * 
+	 *
 	 * @returns Promise that resolves when shutdown is complete
-	 * 
+	 *
 	 * @example
 	 * ```typescript
 	 * // Graceful shutdown in application exit handler
@@ -1305,12 +1305,12 @@ export class AnalysisEngine implements IAnalysisEngine {
 	 *   console.log('Engine shutdown complete');
 	 *   process.exit(0);
 	 * });
-	 * 
+	 *
 	 * // Manual shutdown
 	 * await engine.shutdown();
 	 * console.log('Engine is now shut down and resources are cleaned up');
 	 * ```
-	 * 
+	 *
 	 * @since 2.0.0
 	 */
 	async shutdown(): Promise<void> {

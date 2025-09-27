@@ -3,7 +3,7 @@
  * Tests complete analysis pipeline from directory scanning to optimization identification
  */
 
-import { existsSync, mkdirSync, writeFileSync, mkdtempSync } from "node:fs";
+import { existsSync, mkdirSync, writeFileSync, mkdtempSync, rmSync, readdirSync, readFileSync } from "node:fs";
 import { join, dirname } from "node:path";
 import { tmpdir } from "node:os";
 import { TestOptimizationUtils } from "../../helpers/optimization";
@@ -30,7 +30,7 @@ async function createTempFiles(
 	return {
 		rootDir: tempDir,
 		cleanup: async () => {
-			fs.rmSync(tempDir, { recursive: true, force: true });
+			rmSync(tempDir, { recursive: true, force: true });
 		},
 	};
 }
@@ -197,7 +197,7 @@ describe('Heavy Setup Test', () => {
 		});
 
 		test("should analyze test file complexity", async () => {
-			const testFile = path.join(testDir, "complex/heavy-setup.test.ts");
+			const testFile = join(testDir, "complex/heavy-setup.test.ts");
 
 			const result = await benchmark.benchmark("test-analysis", async () => {
 				const analysis = await analyzeTestFile(testFile);
@@ -477,16 +477,16 @@ describe('Heavy Setup Test', () => {
 
 		test("should handle edge cases gracefully", async () => {
 			// Test with empty directory
-			const emptyDir = path.join(testDir, "empty");
-			fs.mkdirSync(emptyDir);
+			const emptyDir = join(testDir, "empty");
+			mkdirSync(emptyDir);
 
 			const emptyResult = await calculateTestSuiteMetrics(emptyDir);
 			expect(emptyResult.totalTests).toBe(0);
 			expect(emptyResult.totalSuites).toBe(0);
 
 			// Test with malformed test files
-			const malformedFile = path.join(testDir, "malformed.test.ts");
-			fs.writeFileSync(malformedFile, "invalid syntax {{{");
+			const malformedFile = join(testDir, "malformed.test.ts");
+			writeFileSync(malformedFile, "invalid syntax {{{");
 
 			const robustResult = await calculateTestSuiteMetrics(testDir);
 			expect(robustResult.totalSuites).toBeGreaterThanOrEqual(5); // Should still process valid files
@@ -499,10 +499,10 @@ async function discoverTestFiles(directory: string): Promise<string[]> {
 	const files: string[] = [];
 
 	function scanDirectory(dir: string) {
-		const entries = fs.readdirSync(dir, { withFileTypes: true });
+		const entries = readdirSync(dir, { withFileTypes: true });
 
 		for (const entry of entries) {
-			const fullPath = path.join(dir, entry.name);
+			const fullPath = join(dir, entry.name);
 
 			if (entry.isDirectory()) {
 				scanDirectory(fullPath);
@@ -517,11 +517,11 @@ async function discoverTestFiles(directory: string): Promise<string[]> {
 }
 
 async function analyzeTestFile(filePath: string): Promise<any> {
-	const content = fs.readFileSync(filePath, "utf8");
+	const content = readFileSync(filePath, "utf8");
 	const lines = content.split("\n");
 
 	const setupLines = lines.filter(
-		(line) => line.includes("beforeEach") || line.includes("beforeAll"),
+		(line: string) => line.includes("beforeEach") || line.includes("beforeAll"),
 	).length;
 
 	const testCount = (content.match(/test\(/g) || []).length;
@@ -559,8 +559,8 @@ async function identifyDuplicateTests(directory: string): Promise<any[]> {
 
 	for (let i = 0; i < testFiles.length; i++) {
 		for (let j = i + 1; j < testFiles.length; j++) {
-			const content1 = fs.readFileSync(testFiles[i], "utf8");
-			const content2 = fs.readFileSync(testFiles[j], "utf8");
+			const content1 = readFileSync(testFiles[i], "utf8");
+			const content2 = readFileSync(testFiles[j], "utf8");
 
 			// Simple similarity check
 			if (calculateSimilarity(content1, content2) > 0.5) {
@@ -580,7 +580,7 @@ async function identifyFlakyTests(directory: string): Promise<any[]> {
 	const flakyTests: any[] = [];
 
 	for (const file of testFiles) {
-		const content = fs.readFileSync(file, "utf8");
+		const content = readFileSync(file, "utf8");
 
 		if (content.includes("Math.random()") || content.includes("Date.now()")) {
 			flakyTests.push({
@@ -599,7 +599,7 @@ async function identifyComplexSetups(directory: string): Promise<any[]> {
 	const complexSetups: any[] = [];
 
 	for (const file of testFiles) {
-		const content = fs.readFileSync(file, "utf8");
+		const content = readFileSync(file, "utf8");
 		const setupLines = (content.match(/beforeEach|beforeAll/g) || []).length;
 		const awaitLines = (content.match(/await/g) || []).length;
 		const importLines = (content.match(/import/g) || []).length;
@@ -658,7 +658,7 @@ async function analyzeExecutionPatterns(directory: string): Promise<any> {
 	};
 
 	for (const file of testFiles) {
-		const content = fs.readFileSync(file, "utf8");
+		const content = readFileSync(file, "utf8");
 
 		if (content.includes("beforeEach") && content.includes("await")) {
 			patterns.heavySetupTests.push(file);
@@ -678,7 +678,7 @@ async function assessOptimizationRisks(directory: string): Promise<any> {
 	let totalTests = 0;
 
 	for (const file of testFiles) {
-		const content = fs.readFileSync(file, "utf8");
+		const content = readFileSync(file, "utf8");
 		const fileTests = (content.match(/test\(/g) || []).length;
 		totalTests += fileTests;
 
@@ -702,7 +702,7 @@ async function identifyCriticalTests(directory: string): Promise<any[]> {
 	const critical: any[] = [];
 
 	for (const file of testFiles) {
-		const content = fs.readFileSync(file, "utf8");
+		const content = readFileSync(file, "utf8");
 
 		if (content.includes("integration") || file.includes("integration")) {
 			critical.push({

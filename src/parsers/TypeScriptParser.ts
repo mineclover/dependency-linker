@@ -304,12 +304,12 @@ export class TypeScriptParser implements ILanguageParser {
 	 * @example
 	 * ```typescript
 	 * const parser = new TypeScriptParser();
-	 * 
+	 *
 	 * // Extension-based detection
 	 * parser.detectLanguage("Button.tsx");           // "tsx"
 	 * parser.detectLanguage("utils.ts");             // "typescript"
 	 * parser.detectLanguage("legacy.js");            // "javascript"
-	 * 
+	 *
 	 * // Content-based heuristics
 	 * parser.detectLanguage("unknown.txt", "interface User {}"); // "typescript"
 	 * parser.detectLanguage("unknown.txt", "const App = <div/>"); // "tsx"
@@ -376,11 +376,11 @@ export class TypeScriptParser implements ILanguageParser {
 	 * @example
 	 * ```typescript
 	 * const parser = new TypeScriptParser();
-	 * 
+	 *
 	 * // Valid syntax
 	 * const result1 = parser.validateSyntax("const x = 42;");
 	 * console.log(result1.isValid); // true
-	 * 
+	 *
 	 * // Invalid syntax
 	 * const result2 = parser.validateSyntax("const = invalid");
 	 * console.log(result2.isValid); // false
@@ -441,12 +441,12 @@ export class TypeScriptParser implements ILanguageParser {
 	 * ```typescript
 	 * const parser = new TypeScriptParser();
 	 * const metadata = parser.getMetadata();
-	 * 
+	 *
 	 * console.log(metadata.name);                    // "TypeScriptParser"
 	 * console.log(metadata.supportedLanguages);      // ["typescript", "tsx", ...]
 	 * console.log(metadata.capabilities.maxFileSize); // 10485760
 	 * console.log(metadata.performance.averageSpeed); // 10000 lines/sec
-	 * 
+	 *
 	 * // Check capabilities
 	 * if (metadata.capabilities.incrementalParsing) {
 	 *   console.log("Incremental parsing supported");
@@ -499,13 +499,13 @@ export class TypeScriptParser implements ILanguageParser {
 	 * @example
 	 * ```typescript
 	 * const parser = new TypeScriptParser();
-	 * 
+	 *
 	 * // Update timeout and file size limits
 	 * parser.configure({
 	 *   timeout: 45000,         // 45 second timeout
 	 *   maxFileSize: 20 * 1024 * 1024  // 20MB limit
 	 * });
-	 * 
+	 *
 	 * // Enable trivia parsing for comments
 	 * parser.configure({ includeTrivia: true });
 	 * ```
@@ -531,10 +531,10 @@ export class TypeScriptParser implements ILanguageParser {
 	 * ```typescript
 	 * const parser = new TypeScriptParser({ timeout: 60000 });
 	 * const config = parser.getConfiguration();
-	 * 
+	 *
 	 * console.log(config.timeout);     // 60000
 	 * console.log(config.maxFileSize); // 10485760 (default)
-	 * 
+	 *
 	 * // Safe to modify returned object
 	 * config.timeout = 30000; // doesn't affect parser
 	 * ```
@@ -565,28 +565,28 @@ export class TypeScriptParser implements ILanguageParser {
 	 * @param ast - Tree-sitter AST to traverse
 	 * @param visitor - Visitor object with optional callback methods:
 	 *   - `enter(node, parent)`: Called before visiting node children
-	 *   - `leave(node, parent)`: Called after visiting node children  
+	 *   - `leave(node, parent)`: Called after visiting node children
 	 *   - `[nodeType](node, parent)`: Called for specific node types
 	 *
 	 * @example
 	 * ```typescript
 	 * const parser = new TypeScriptParser();
 	 * const result = await parser.parse("test.ts", code);
-	 * 
+	 *
 	 * if (result.ast) {
 	 *   const identifiers: string[] = [];
-	 *   
+	 *
 	 *   parser.traverse(result.ast, {
 	 *     // Collect all identifiers
 	 *     identifier: (node) => {
 	 *       identifiers.push(node.text);
 	 *     },
-	 *     
+	 *
 	 *     // Track function entries
 	 *     function_declaration: (node) => {
 	 *       console.log(`Found function: ${node.child(1)?.text}`);
 	 *     },
-	 *     
+	 *
 	 *     // General enter/leave hooks
 	 *     enter: (node, parent) => {
 	 *       console.log(`Entering ${node.type}`);
