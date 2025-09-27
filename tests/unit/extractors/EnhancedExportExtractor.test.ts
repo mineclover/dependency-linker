@@ -36,27 +36,13 @@ describe("EnhancedExportExtractor", () => {
 		try {
 			const parseResult = await parser.parse(filename, code);
 
-			// Debug logging
-			console.log(`Parsing result for ${filename}:`);
-			console.log(`- AST exists: ${!!parseResult.ast}`);
-			console.log(`- Errors count: ${parseResult.errors.length}`);
-			if (parseResult.errors.length > 0) {
-				console.log(`- Errors:`, parseResult.errors);
-			}
-
 			if (!parseResult.ast || parseResult.errors.length > 0) {
 				return null;
 			}
 
 			const result = extractor.extract(parseResult.ast, filename);
-			console.log(`- Extraction result exists: ${!!result}`);
-			if (result) {
-				console.log(`- Total exports: ${result.statistics.totalExports}`);
-			}
-
 			return result;
 		} catch (error) {
-			console.error(`Error in parseAndExtract:`, error);
 			return null;
 		}
 	};
