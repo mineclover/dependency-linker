@@ -28,11 +28,60 @@ import type {
 	SyntaxValidationResult,
 } from "./ILanguageParser";
 
+/**
+ * TypeScript/TSX Parser using Tree-sitter
+ *
+ * Provides fast, accurate parsing of TypeScript and TSX files with support for:
+ * - Modern TypeScript syntax (ES2022+)
+ * - JSX/TSX components
+ * - Type annotations and generics
+ * - Decorators and metadata
+ * - Error recovery for partial/invalid code
+ *
+ * @example
+ * ```typescript
+ * // Basic usage (deps-cli compatible)
+ * const parser = new TypeScriptParser();
+ * const result = await parser.parse('app.ts', 'export const API_URL = "https://api.example.com";');
+ *
+ * if (result.ast) {
+ *   console.log(`Parsed ${result.metadata.nodeCount} AST nodes in ${result.parseTime}ms`);
+ * }
+ *
+ * // Advanced configuration
+ * const parser = new TypeScriptParser({
+ *   maxFileSize: 50 * 1024 * 1024, // 50MB files
+ *   includeTrivia: true,           // Include comments
+ *   timeout: 60000                 // 1 minute timeout
+ * });
+ * ```
+ *
+ * @since 2.0.0
+ */
 export class TypeScriptParser implements ILanguageParser {
 	private parser: Parser;
 	private options: ParserOptions;
 
-	constructor(options: ParserOptions = {}) {
+	/**
+	 * Creates a new TypeScript parser instance
+	 *
+	 * @param options - Parser configuration options. If not provided, uses sensible defaults.
+	 *                  All options are optional and will be merged with defaults.
+	 *
+	 * @example
+	 * ```typescript
+	 * // deps-cli compatible: no parameters
+	 * const parser = new TypeScriptParser();
+	 *
+	 * // Custom configuration
+	 * const parser = new TypeScriptParser({
+	 *   timeout: 15000,        // 15 second timeout
+	 *   maxFileSize: 5 * 1024 * 1024, // 5MB limit
+	 *   includeTrivia: true    // Include comments
+	 * });
+	 * ```
+	 */
+	constructor(options?: ParserOptions) {
 		this.parser = new Parser();
 		this.parser.setLanguage(TypeScript.typescript);
 
@@ -45,12 +94,45 @@ export class TypeScriptParser implements ILanguageParser {
 			includeLocations: true,
 			includeTrivia: false,
 			encoding: "utf-8",
-			...options,
+			...(options || {}),
 		};
 	}
 
 	/**
-	 * Parses a file and returns AST with metadata
+	 * Parses TypeScript/TSX source code and returns detailed parse results
+	 *
+	 * This is the primary method used by deps-cli and other consumers.
+	 * Automatically detects language variant (TS/TSX) and handles errors gracefully.
+	 *
+	 * @param filePath - Path to the source file (used for language detection and error reporting)
+	 * @param content - Optional source code content. If not provided, reads from filePath.
+	 *
+	 * @returns Promise resolving to ParseResult containing:
+	 *   - `ast`: Tree-sitter AST (null if parsing failed)
+	 *   - `language`: Detected language ("typescript", "tsx", etc.)
+	 *   - `parseTime`: Parse duration in milliseconds
+	 *   - `errors`: Array of syntax errors found
+	 *   - `metadata`: Detailed parsing statistics
+	 *
+	 * @example
+	 * ```typescript
+	 * // deps-cli usage pattern
+	 * const parser = new TypeScriptParser();
+	 * const parseResult = await parser.parse(filePath, content);
+	 *
+	 * if (parseResult.ast) {
+	 *   const exportResult = extractor.extractExports(parseResult.ast, filePath);
+	 *   // Process exports...
+	 * }
+	 *
+	 * // Error handling
+	 * if (parseResult.errors.length > 0) {
+	 *   console.warn(`Found ${parseResult.errors.length} syntax errors`);
+	 * }
+	 * ```
+	 *
+	 * @throws Will reject if file cannot be read or memory/timeout limits exceeded
+	 * @since 2.0.0
 	 */
 	async parse(filePath: string, content?: string): Promise<ParseResult> {
 		const startTime = Date.now();
@@ -166,6 +248,23 @@ export class TypeScriptParser implements ILanguageParser {
 
 	/**
 	 * Checks if this parser supports the given language
+	 *
+	 * @param language - Language identifier to check support for
+	 * @returns true if the language is supported, false otherwise
+	 *
+	 * @example
+	 * ```typescript
+	 * const parser = new TypeScriptParser();
+	 * console.log(parser.supports("typescript")); // true
+	 * console.log(parser.supports("tsx"));        // true
+	 * console.log(parser.supports("python"));     // false
+	 * ```
+	 *
+	 * Supported languages:
+	 * - "typescript", "ts" - TypeScript files
+	 * - "tsx" - TypeScript React files
+	 * - "javascript", "js" - JavaScript files (with TS parser)
+	 * - "jsx" - JavaScript React files
 	 */
 	supports(language: string): boolean {
 		const normalizedLang = language.toLowerCase();
@@ -185,6 +284,38 @@ export class TypeScriptParser implements ILanguageParser {
 
 	/**
 	 * Detects the language from file path and/or content
+	 */
+	/**
+	 * Detects the language variant from file path and/or content
+	 *
+	 * Uses file extension as primary indicator, falls back to content analysis
+	 * when extension is ambiguous or missing. Essential for setting correct
+	 * tree-sitter grammar.
+	 *
+	 * @param filePath - Path to source file (used for extension detection)
+	 * @param content - Optional source code content for heuristic analysis
+	 *
+	 * @returns Language identifier:
+	 *   - "typescript" - .ts files or content with TypeScript features
+	 *   - "tsx" - .tsx files or TypeScript with JSX syntax
+	 *   - "javascript" - .js files or basic JavaScript
+	 *   - "jsx" - .jsx files or JavaScript with JSX syntax
+	 *
+	 * @example
+	 * ```typescript
+	 * const parser = new TypeScriptParser();
+	 * 
+	 * // Extension-based detection
+	 * parser.detectLanguage("Button.tsx");           // "tsx"
+	 * parser.detectLanguage("utils.ts");             // "typescript"
+	 * parser.detectLanguage("legacy.js");            // "javascript"
+	 * 
+	 * // Content-based heuristics
+	 * parser.detectLanguage("unknown.txt", "interface User {}"); // "typescript"
+	 * parser.detectLanguage("unknown.txt", "const App = <div/>"); // "tsx"
+	 * ```
+	 *
+	 * @internal Used internally by parse() method
 	 */
 	detectLanguage(filePath: string, content?: string): string {
 		const ext = path.extname(filePath).toLowerCase();
@@ -228,6 +359,37 @@ export class TypeScriptParser implements ILanguageParser {
 	/**
 	 * Validates syntax without full parsing
 	 */
+	/**
+	 * Validates TypeScript/TSX syntax without full parsing overhead
+	 *
+	 * Performs lightweight syntax validation by parsing content and checking
+	 * for errors. More efficient than full parse() when only validation is needed.
+	 *
+	 * @param content - Source code to validate
+	 *
+	 * @returns SyntaxValidationResult containing:
+	 *   - `isValid`: true if no syntax errors found
+	 *   - `errors`: Array of syntax errors with location details
+	 *   - `validationTime`: Time spent validating in milliseconds
+	 *   - `firstErrorPosition`: Offset of first error (if any)
+	 *
+	 * @example
+	 * ```typescript
+	 * const parser = new TypeScriptParser();
+	 * 
+	 * // Valid syntax
+	 * const result1 = parser.validateSyntax("const x = 42;");
+	 * console.log(result1.isValid); // true
+	 * 
+	 * // Invalid syntax
+	 * const result2 = parser.validateSyntax("const = invalid");
+	 * console.log(result2.isValid); // false
+	 * console.log(result2.errors.length); // > 0
+	 * console.log(result2.firstErrorPosition); // position of error
+	 * ```
+	 *
+	 * @since 2.0.0
+	 */
 	validateSyntax(content: string): SyntaxValidationResult {
 		const startTime = Date.now();
 
@@ -260,6 +422,38 @@ export class TypeScriptParser implements ILanguageParser {
 
 	/**
 	 * Gets parser metadata
+	 */
+	/**
+	 * Gets comprehensive metadata about the parser capabilities and configuration
+	 *
+	 * Returns detailed information about supported languages, performance characteristics,
+	 * and current configuration. Useful for diagnostics and capability detection.
+	 *
+	 * @returns ParserMetadata containing:
+	 *   - `name`: Parser identifier
+	 *   - `version`: Current parser version
+	 *   - `supportedLanguages`: Array of supported language identifiers
+	 *   - `supportedExtensions`: Array of supported file extensions
+	 *   - `capabilities`: Feature flags and limits
+	 *   - `performance`: Performance characteristics and metrics
+	 *
+	 * @example
+	 * ```typescript
+	 * const parser = new TypeScriptParser();
+	 * const metadata = parser.getMetadata();
+	 * 
+	 * console.log(metadata.name);                    // "TypeScriptParser"
+	 * console.log(metadata.supportedLanguages);      // ["typescript", "tsx", ...]
+	 * console.log(metadata.capabilities.maxFileSize); // 10485760
+	 * console.log(metadata.performance.averageSpeed); // 10000 lines/sec
+	 * 
+	 * // Check capabilities
+	 * if (metadata.capabilities.incrementalParsing) {
+	 *   console.log("Incremental parsing supported");
+	 * }
+	 * ```
+	 *
+	 * @since 2.0.0
 	 */
 	getMetadata(): ParserMetadata {
 		return {
@@ -294,12 +488,58 @@ export class TypeScriptParser implements ILanguageParser {
 	/**
 	 * Configures the parser with options
 	 */
+	/**
+	 * Updates parser configuration with new options
+	 *
+	 * Merges provided options with existing configuration. Allows runtime
+	 * reconfiguration without creating new parser instance.
+	 *
+	 * @param options - Partial configuration options to update
+	 *
+	 * @example
+	 * ```typescript
+	 * const parser = new TypeScriptParser();
+	 * 
+	 * // Update timeout and file size limits
+	 * parser.configure({
+	 *   timeout: 45000,         // 45 second timeout
+	 *   maxFileSize: 20 * 1024 * 1024  // 20MB limit
+	 * });
+	 * 
+	 * // Enable trivia parsing for comments
+	 * parser.configure({ includeTrivia: true });
+	 * ```
+	 *
+	 * @since 2.0.0
+	 */
 	configure(options: ParserOptions): void {
 		this.options = { ...this.options, ...options };
 	}
 
 	/**
 	 * Gets the current parser configuration
+	 */
+	/**
+	 * Gets a copy of the current parser configuration
+	 *
+	 * Returns a shallow copy of current options to prevent external mutation.
+	 * Useful for inspecting current settings or creating similar parser instances.
+	 *
+	 * @returns Copy of current ParserOptions configuration
+	 *
+	 * @example
+	 * ```typescript
+	 * const parser = new TypeScriptParser({ timeout: 60000 });
+	 * const config = parser.getConfiguration();
+	 * 
+	 * console.log(config.timeout);     // 60000
+	 * console.log(config.maxFileSize); // 10485760 (default)
+	 * 
+	 * // Safe to modify returned object
+	 * config.timeout = 30000; // doesn't affect parser
+	 * ```
+	 *
+	 * @since 2.0.0
 	 */
 	getConfiguration(): ParserOptions {
 		return { ...this.options };
@@ -315,6 +555,54 @@ export class TypeScriptParser implements ILanguageParser {
 
 	/**
 	 * Traverses AST with visitor pattern
+	 */
+	/**
+	 * Traverses AST using visitor pattern with lifecycle hooks
+	 *
+	 * Provides flexible AST traversal with enter/leave hooks and node-type-specific
+	 * callbacks. Essential for building custom analyzers and extractors.
+	 *
+	 * @param ast - Tree-sitter AST to traverse
+	 * @param visitor - Visitor object with optional callback methods:
+	 *   - `enter(node, parent)`: Called before visiting node children
+	 *   - `leave(node, parent)`: Called after visiting node children  
+	 *   - `[nodeType](node, parent)`: Called for specific node types
+	 *
+	 * @example
+	 * ```typescript
+	 * const parser = new TypeScriptParser();
+	 * const result = await parser.parse("test.ts", code);
+	 * 
+	 * if (result.ast) {
+	 *   const identifiers: string[] = [];
+	 *   
+	 *   parser.traverse(result.ast, {
+	 *     // Collect all identifiers
+	 *     identifier: (node) => {
+	 *       identifiers.push(node.text);
+	 *     },
+	 *     
+	 *     // Track function entries
+	 *     function_declaration: (node) => {
+	 *       console.log(`Found function: ${node.child(1)?.text}`);
+	 *     },
+	 *     
+	 *     // General enter/leave hooks
+	 *     enter: (node, parent) => {
+	 *       console.log(`Entering ${node.type}`);
+	 *       return true; // continue traversal
+	 *     }
+	 *   });
+	 * }
+	 * ```
+	 *
+	 * @remarks
+	 * - Visitor methods can return `false` to skip child traversal
+	 * - `enter` hook is called before node-specific callbacks
+	 * - `leave` hook is called after visiting all children
+	 * - Traversal is depth-first, pre-order for enter, post-order for leave
+	 *
+	 * @since 2.0.0
 	 */
 	traverse(ast: AST, visitor: ASTVisitor): void {
 		if (!ast) return;

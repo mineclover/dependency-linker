@@ -13,15 +13,92 @@ const logger = createLogger("PathResolutionUtils");
 /**
  * Path resolution context
  */
+/**
+ * Context configuration for path resolution operations
+ * 
+ * Provides all necessary information for resolving relative and aliased imports
+ * within a project structure. Used by path resolution utilities to determine
+ * the correct absolute paths for dependencies.
+ * 
+ * @example
+ * ```typescript
+ * const context: PathResolutionContext = {
+ *   projectRoot: "/Users/dev/my-project",
+ *   sourceFileDir: "/Users/dev/my-project/src/components",
+ *   aliases: {
+ *     "@": "src",
+ *     "@utils": "src/utils",
+ *     "@components/*": "src/components/*"
+ *   },
+ *   extensions: [".ts", ".tsx", ".js", ".jsx", ".json"]
+ * };
+ * 
+ * // Usage with resolution functions
+ * const resolved = await resolveDependencyPath("@/helpers/api", context);
+ * ```
+ * 
+ * @since 2.0.0
+ */
 export interface PathResolutionContext {
+	/** Absolute path to the project root directory */
 	projectRoot: string;
+	
+	/** Absolute path to the directory containing the source file being analyzed */
 	sourceFileDir: string;
+	
+	/** 
+	 * Optional path aliases mapping (from tsconfig.json or similar)
+	 * 
+	 * Maps alias patterns to their actual paths relative to project root.
+	 * Supports wildcards like "@components/*" -> "src/components/*"
+	 */
 	aliases?: Record<string, string>;
+	
+	/** 
+	 * Optional file extensions to try when resolving imports
+	 * 
+	 * Default extensions include common TypeScript/JavaScript file types.
+	 * Extensions are tried in order when a file is not found.
+	 */
 	extensions?: string[];
 }
 
 /**
  * Batch resolve multiple dependency paths
+ */
+/**
+ * Resolves multiple dependency paths in parallel for improved performance
+ * 
+ * Efficiently processes multiple import paths using concurrent resolution,
+ * returning a map of original paths to their resolved absolute paths.
+ * Failed resolutions are mapped to null values.
+ * 
+ * @param sources - Array of import paths to resolve
+ * @param context - Resolution context containing project paths and configuration
+ * 
+ * @returns Promise resolving to Map where keys are original paths and values are resolved paths (or null)
+ * 
+ * @example
+ * ```typescript
+ * const sources = ["./Button", "@/utils/api", "../hooks/useAuth"];
+ * const context = createResolutionContext(analysisResult);
+ * 
+ * const results = await batchResolvePaths(sources, context);
+ * 
+ * // Process results
+ * for (const [original, resolved] of results) {
+ *   if (resolved) {
+ *     console.log(`${original} -> ${resolved}`);
+ *   } else {
+ *     console.warn(`Failed to resolve: ${original}`);
+ *   }
+ * }
+ * 
+ * // Extract successfully resolved paths
+ * const resolved = Array.from(results.values()).filter(Boolean);
+ * ```
+ * 
+ * @since 2.0.0
  */
 export async function batchResolvePaths(
 	sources: string[],
@@ -40,6 +117,46 @@ export async function batchResolvePaths(
 
 /**
  * Resolve a single dependency path to absolute path
+ */
+/**
+ * Resolves a dependency import path to an absolute file system path
+ * 
+ * Attempts multiple resolution strategies in order:
+ * 1. Absolute paths (returned as-is after normalization)
+ * 2. Alias resolution (using tsconfig paths or custom aliases)
+ * 3. Relative resolution (relative to source file directory)
+ * 4. Project-relative resolution (relative to project root)
+ * 
+ * Each resolution attempt includes extension resolution and index file checking.
+ * 
+ * @param source - The import path to resolve (e.g., "./utils", "@/components/Button", "../helpers")
+ * @param context - Resolution context containing project paths and configuration
+ * 
+ * @returns Promise resolving to absolute file path if found, null if resolution fails
+ * 
+ * @example
+ * ```typescript
+ * const context = {
+ *   projectRoot: "/project",
+ *   sourceFileDir: "/project/src/components",
+ *   aliases: { "@": "src" },
+ *   extensions: [".ts", ".tsx", ".js"]
+ * };
+ * 
+ * // Relative path resolution
+ * const result1 = await resolveDependencyPath("./Button", context);
+ * // Returns: "/project/src/components/Button.tsx" (if exists)
+ * 
+ * // Alias resolution
+ * const result2 = await resolveDependencyPath("@/utils/helper", context);
+ * // Returns: "/project/src/utils/helper.ts" (if exists)
+ * 
+ * // Parent directory resolution
+ * const result3 = await resolveDependencyPath("../hooks/useAuth", context);
+ * // Returns: "/project/src/hooks/useAuth.ts" (if exists)
+ * ```
+ * 
+ * @since 2.0.0
  */
 export async function resolveDependencyPath(
 	source: string,
@@ -103,6 +220,45 @@ export async function resolveDependencyPath(
 /**
  * Try to resolve path with alias substitution
  */
+/**
+ * Attempts to resolve an import path using configured path aliases
+ * 
+ * Supports various alias patterns including exact matches, prefix matches,
+ * and wildcard patterns commonly used in TypeScript projects.
+ * 
+ * @param source - The import path to resolve (e.g., "@/components/Button", "@utils/api")
+ * @param aliases - Record of alias patterns to their target paths
+ * @param projectRoot - Absolute path to the project root directory
+ * 
+ * @returns Resolved absolute path if alias matches, null if no alias applies
+ * 
+ * @example
+ * ```typescript
+ * const aliases = {
+ *   "@": "src",
+ *   "@utils": "src/utils",
+ *   "@components/*": "src/components/*"
+ * };
+ * 
+ * // Exact alias match
+ * const result1 = tryResolveWithAlias("@utils", aliases, "/project");
+ * // Returns: "/project/src/utils"
+ * 
+ * // Prefix match
+ * const result2 = tryResolveWithAlias("@/components/Button", aliases, "/project");
+ * // Returns: "/project/src/components/Button"
+ * 
+ * // Wildcard match
+ * const result3 = tryResolveWithAlias("@components/shared/Modal", aliases, "/project");
+ * // Returns: "/project/src/components/shared/Modal"
+ * 
+ * // No match
+ * const result4 = tryResolveWithAlias("./relative", aliases, "/project");
+ * // Returns: null
+ * ```
+ * 
+ * @since 2.0.0
+ */
 export function tryResolveWithAlias(
 	source: string,
 	aliases: Record<string, string>,
@@ -137,6 +293,42 @@ export function tryResolveWithAlias(
 /**
  * Try to resolve path with different extensions
  */
+/**
+ * Attempts to resolve a base path by trying different file extensions and index files
+ * 
+ * Implements Node.js-style module resolution by testing various file extensions
+ * and index file patterns. Useful for resolving imports that omit file extensions.
+ * 
+ * Resolution order:
+ * 1. Exact path as provided
+ * 2. Path with each extension appended
+ * 3. Index files in directory with each extension
+ * 
+ * @param basePath - The base file path to resolve (without extension)
+ * @param extensions - Array of file extensions to try (defaults to common web extensions)
+ * 
+ * @returns Promise resolving to the first existing file path, or null if none found
+ * 
+ * @example
+ * ```typescript
+ * // Try to resolve "./components/Button" -> "./components/Button.tsx"
+ * const result1 = await tryResolveWithExtensions("/project/src/components/Button");
+ * // Tests: Button, Button.ts, Button.tsx, Button.js, Button.jsx, Button.json
+ * // Then: Button/index.ts, Button/index.tsx, etc.
+ * 
+ * // Custom extensions
+ * const result2 = await tryResolveWithExtensions(
+ *   "/project/src/utils/api",
+ *   [".ts", ".js"]
+ * );
+ * 
+ * // Directory resolution to index file
+ * const result3 = await tryResolveWithExtensions("/project/src/components");
+ * // May resolve to: "/project/src/components/index.ts"
+ * ```
+ * 
+ * @since 2.0.0
+ */
 export async function tryResolveWithExtensions(
 	basePath: string,
 	extensions: string[] = [".ts", ".tsx", ".js", ".jsx", ".json"],
@@ -167,6 +359,49 @@ export async function tryResolveWithExtensions(
 
 /**
  * Convert absolute paths to project-relative paths in dependency data
+ */
+/**
+ * Converts absolute file paths to project-relative paths in nested data structures
+ * 
+ * Recursively processes objects, arrays, and strings to convert absolute paths
+ * to paths relative to the project root. Useful for making analysis results
+ * portable and easier to read.
+ * 
+ * @param data - The data structure to process (objects, arrays, primitives)
+ * @param projectRoot - Absolute path to the project root directory
+ * @param pathFields - Array of field names that are likely to contain file paths
+ * 
+ * @returns New data structure with absolute paths converted to relative paths
+ * 
+ * @example
+ * ```typescript
+ * const analysisData = {
+ *   source: "/project/src/components/Button.tsx",
+ *   dependencies: [
+ *     { path: "/project/src/utils/helper.ts" },
+ *     { external: "react" }  // non-path data unchanged
+ *   ],
+ *   metadata: { count: 5 }
+ * };
+ * 
+ * const converted = convertToProjectRelativePaths(
+ *   analysisData,
+ *   "/project",
+ *   ["source", "path"]
+ * );
+ * 
+ * // Result:
+ * // {
+ * //   source: "src/components/Button.tsx",
+ * //   dependencies: [
+ * //     { path: "src/utils/helper.ts" },
+ * //     { external: "react" }
+ * //   ],
+ * //   metadata: { count: 5 }
+ * // }
+ * ```
+ * 
+ * @since 2.0.0
  */
 export function convertToProjectRelativePaths<T extends Record<string, any>>(
 	data: T,
@@ -249,6 +484,48 @@ export function extractFileExtensions(sources: string[]): string[] {
 
 /**
  * Group dependencies by resolution type
+ */
+/**
+ * Groups dependency import paths by their type for categorized analysis
+ * 
+ * Classifies import paths into different categories based on their patterns:
+ * - Relative: paths starting with ./ or ../
+ * - Absolute: paths starting with / (absolute file system paths)
+ * - Node modules: external packages (no path prefix)
+ * - Built-in: Node.js built-in modules (with or without node: prefix)
+ * 
+ * @param sources - Array of import paths to categorize
+ * 
+ * @returns Object with categorized arrays of import paths
+ * 
+ * @example
+ * ```typescript
+ * const imports = [
+ *   "./components/Button",     // relative
+ *   "../hooks/useAuth",        // relative
+ *   "/absolute/path/file",     // absolute
+ *   "react",                   // nodeModules
+ *   "@types/node",             // nodeModules
+ *   "fs",                      // builtin
+ *   "node:path"                // builtin
+ * ];
+ * 
+ * const grouped = groupDependenciesByType(imports);
+ * 
+ * // Result:
+ * // {
+ * //   relative: ["./components/Button", "../hooks/useAuth"],
+ * //   absolute: ["/absolute/path/file"],
+ * //   nodeModules: ["react", "@types/node"],
+ * //   builtin: ["fs", "node:path"]
+ * // }
+ * 
+ * // Use for analysis
+ * console.log(`External dependencies: ${grouped.nodeModules.length}`);
+ * console.log(`Internal files: ${grouped.relative.length}`);
+ * ```
+ * 
+ * @since 2.0.0
  */
 export function groupDependenciesByType(sources: string[]): {
 	relative: string[];
@@ -362,6 +639,40 @@ export function findCommonBasePath(paths: string[]): string {
 /**
  * Create resolution context from analysis result
  */
+/**
+ * Creates a PathResolutionContext from an analysis result with optional overrides
+ * 
+ * Convenience factory function that extracts necessary path information from
+ * an analysis result and creates a properly configured resolution context.
+ * 
+ * @param analysisResult - Analysis result containing path information
+ * @param aliases - Optional path aliases (if not provided, no alias resolution will be performed)
+ * @param extensions - Optional file extensions (defaults to common web development extensions)
+ * 
+ * @returns Configured PathResolutionContext ready for use with resolution functions
+ * 
+ * @example
+ * ```typescript
+ * // Basic usage with analysis result
+ * const context = createResolutionContext(analysisResult);
+ * 
+ * // With custom aliases from tsconfig.json
+ * const aliases = await loadTsconfigPaths(projectRoot);
+ * const contextWithAliases = createResolutionContext(analysisResult, aliases);
+ * 
+ * // With custom extensions for specific project needs
+ * const customContext = createResolutionContext(
+ *   analysisResult,
+ *   { "@": "src" },
+ *   [".vue", ".ts", ".js"]
+ * );
+ * 
+ * // Use with resolution functions
+ * const resolved = await resolveDependencyPath("@/components/Button", customContext);
+ * ```
+ * 
+ * @since 2.0.0
+ */
 export function createResolutionContext(
 	analysisResult: { pathInfo: { projectRoot: string; absolute: string } },
 	aliases?: Record<string, string>,
@@ -397,6 +708,47 @@ async function fileExists(filePath: string): Promise<boolean> {
 
 /**
  * Load tsconfig.json path mappings
+ */
+/**
+ * Loads path mappings from TypeScript configuration file
+ * 
+ * Reads tsconfig.json and extracts path aliases from the compilerOptions.paths
+ * configuration, converting TypeScript path patterns to a simple alias mapping
+ * suitable for use with path resolution functions.
+ * 
+ * @param projectRoot - Absolute path to the project root directory containing tsconfig.json
+ * 
+ * @returns Promise resolving to record of alias patterns mapped to their target paths
+ * 
+ * @example
+ * ```typescript
+ * // Load path mappings from tsconfig.json
+ * const aliases = await loadTsconfigPaths("/project/root");
+ * 
+ * // Given tsconfig.json with:
+ * // {
+ * //   "compilerOptions": {
+ * //     "paths": {
+ * //       "@/*": ["src/*"],
+ * //       "@utils/*": ["src/utils/*"],
+ * //       "@components": ["src/components"]
+ * //     }
+ * //   }
+ * // }
+ * 
+ * // Returns:
+ * // {
+ * //   "@": "src",
+ * //   "@utils": "src/utils", 
+ * //   "@components": "src/components"
+ * // }
+ * 
+ * // Use with resolution context
+ * const context = createResolutionContext(analysisResult, aliases);
+ * const resolved = await resolveDependencyPath("@/components/Button", context);
+ * ```
+ * 
+ * @since 2.0.0
  */
 export async function loadTsconfigPaths(
 	projectRoot: string,

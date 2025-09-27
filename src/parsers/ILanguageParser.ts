@@ -262,35 +262,126 @@ export interface ParserPerformance {
 	threadSafe: boolean;
 }
 
+/**
+ * Configuration options for language parsers
+ * 
+ * @example
+ * ```typescript
+ * // Default configuration
+ * const parser = new TypeScriptParser();
+ * 
+ * // Custom configuration for large files
+ * const parser = new TypeScriptParser({
+ *   maxFileSize: 50 * 1024 * 1024, // 50MB
+ *   timeout: 60000,                 // 1 minute
+ *   includeTrivia: true            // Include comments
+ * });
+ * 
+ * // Performance-optimized configuration
+ * const fastParser = new TypeScriptParser({
+ *   enableIncremental: false,
+ *   includeLocations: false,
+ *   timeout: 5000
+ * });
+ * ```
+ */
 export interface ParserOptions {
-	/** Maximum file size to parse */
+	/**
+	 * Maximum file size to parse in bytes
+	 * 
+	 * @default 10485760 (10MB)
+	 * @example 5 * 1024 * 1024 // 5MB limit
+	 */
 	maxFileSize?: number;
 
-	/** Memory limit for parsing */
+	/**
+	 * Memory limit for parsing operations in bytes
+	 * 
+	 * @default 104857600 (100MB)
+	 * @example 200 * 1024 * 1024 // 200MB limit
+	 */
 	memoryLimit?: number;
 
-	/** Timeout for parsing operations */
+	/**
+	 * Timeout for parsing operations in milliseconds
+	 * 
+	 * @default 30000 (30 seconds)
+	 * @example 60000 // 1 minute timeout
+	 */
 	timeout?: number;
 
-	/** Whether to enable error recovery */
+	/**
+	 * Whether to enable error recovery during parsing
+	 * 
+	 * When enabled, the parser attempts to recover from syntax errors
+	 * and continue parsing, producing a partial AST even for invalid code.
+	 * 
+	 * @default true
+	 * @example false // Fail fast on syntax errors
+	 */
 	enableErrorRecovery?: boolean;
 
-	/** Whether to enable incremental parsing */
+	/**
+	 * Whether to enable incremental parsing
+	 * 
+	 * Incremental parsing can improve performance when re-parsing
+	 * modified files by reusing parts of the previous parse tree.
+	 * 
+	 * @default true
+	 * @example false // Disable for one-time parsing
+	 */
 	enableIncremental?: boolean;
 
-	/** Whether to include detailed location info */
+	/**
+	 * Whether to include detailed source location information
+	 * 
+	 * When enabled, AST nodes include precise line/column positions.
+	 * Disable for better performance when location info isn't needed.
+	 * 
+	 * @default true
+	 * @example false // Skip location info for performance
+	 */
 	includeLocations?: boolean;
 
-	/** Whether to include trivia (whitespace, comments) */
+	/**
+	 * Whether to include trivia (whitespace, comments, etc.)
+	 * 
+	 * When enabled, preserves formatting information like comments
+	 * and whitespace. Useful for code transformation tools.
+	 * 
+	 * @default false
+	 * @example true // Include comments and whitespace
+	 */
 	includeTrivia?: boolean;
 
-	/** Custom grammar options */
+	/**
+	 * Custom grammar-specific options
+	 * 
+	 * Advanced configuration options specific to the Tree-sitter grammar.
+	 * Consult the grammar documentation for available options.
+	 * 
+	 * @default undefined
+	 * @example { "jsx": true, "decorators": true }
+	 */
 	grammarOptions?: Record<string, any>;
 
-	/** Encoding to use for file reading */
+	/**
+	 * Character encoding to use for file reading
+	 * 
+	 * @default "utf-8"
+	 * @example "utf-16" // For UTF-16 encoded files
+	 */
 	encoding?: string;
 
-	/** Language override (skip detection) */
+	/**
+	 * Force a specific language instead of auto-detection
+	 * 
+	 * Supported values: "typescript", "tsx", "javascript", "jsx"
+	 * When specified, skips file extension-based language detection.
+	 * 
+	 * @default undefined (auto-detect from file extension)
+	 * @example "tsx" // Force TSX parsing for .ts files
+	 */
 	language?: string;
 }
 

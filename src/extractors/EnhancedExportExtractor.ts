@@ -24,17 +24,122 @@ import type {
 } from "./IDataExtractor";
 
 // Enhanced export information types
+/**
+ * Information about an exported method, function, variable, or other export
+ * 
+ * This is the core interface used by deps-cli for accessing export information.
+ * The `exportType` field is critical for compatibility - deps-cli expects this
+ * exact field name (not "type").
+ * 
+ * @example
+ * ```typescript
+ * // Function export example
+ * const functionExport: ExportMethodInfo = {
+ *   name: "processData",
+ *   exportType: "function",
+ *   declarationType: "named_export",
+ *   location: { line: 15, column: 0, endLine: 20, endColumn: 1 },
+ *   isAsync: true,
+ *   parameters: [{ name: "data", optional: false }],
+ *   returnType: "Promise<ProcessedData>"
+ * };
+ * 
+ * // Class method example
+ * const methodExport: ExportMethodInfo = {
+ *   name: "getUserData",
+ *   exportType: "class_method",
+ *   declarationType: "class_member",
+ *   location: { line: 45, column: 2, endLine: 50, endColumn: 3 },
+ *   parentClass: "UserService",
+ *   isAsync: true,
+ *   isStatic: false,
+ *   visibility: "public",
+ *   parameters: [{ name: "userId", optional: false }],
+ *   returnType: "Promise<User>"
+ * };
+ * ```
+ * 
+ * @since 2.0.0
+ */
 export interface ExportMethodInfo {
-	name: string; // Method/function name
-	exportType: ExportType; // Type classification
-	declarationType: DeclarationType; // How it's declared
-	location: SourceLocation; // Source location
-	parentClass?: string; // Parent class name (for class methods)
-	isAsync?: boolean; // Is async function
-	isStatic?: boolean; // Is static method (for class methods)
-	visibility?: "public" | "private" | "protected"; // Visibility (for class methods)
-	parameters?: ParameterInfo[]; // Function parameters
-	returnType?: string; // Return type (if available)
+	/** 
+	 * Name of the exported item
+	 * 
+	 * For aliased exports (export { internal as external }), this contains
+	 * the external name that consumers will import.
+	 */
+	name: string;
+	
+	/** 
+	 * Type classification of the export
+	 * 
+	 * CRITICAL: deps-cli expects this field to be named "exportType" (not "type").
+	 * This field determines how deps-cli categorizes and processes the export.
+	 */
+	exportType: ExportType;
+	
+	/** 
+	 * How the export is declared in source code
+	 * 
+	 * Helps distinguish between different export patterns:
+	 * - "named_export": export const foo = ...
+	 * - "default_export": export default ...
+	 * - "re_export": export { foo } from './module'
+	 * - "class_member": method/property within exported class
+	 */
+	declarationType: DeclarationType;
+	
+	/** 
+	 * Source location of the export declaration
+	 * 
+	 * Contains line/column information for IDE integration and error reporting.
+	 */
+	location: SourceLocation;
+	
+	/** 
+	 * Parent class name for class members
+	 * 
+	 * Only present when exportType is "class_method" or "class_property".
+	 * Allows deps-cli to understand the relationship between class and its members.
+	 */
+	parentClass?: string;
+	
+	/** 
+	 * Whether this is an async function
+	 * 
+	 * Only applicable for functions and methods (exportType: "function" or "class_method").
+	 */
+	isAsync?: boolean;
+	
+	/** 
+	 * Whether this is a static method/property
+	 * 
+	 * Only applicable for class members (exportType: "class_method" or "class_property").
+	 */
+	isStatic?: boolean;
+	
+	/** 
+	 * Visibility modifier for class members
+	 * 
+	 * Only applicable for class members. Defaults to "public" if not specified.
+	 */
+	visibility?: "public" | "private" | "protected";
+	
+	/** 
+	 * Function/method parameters with type information
+	 * 
+	 * Only present for functions and methods. Contains parameter names and
+	 * whether they are optional.
+	 */
+	parameters?: ParameterInfo[];
+	
+	/** 
+	 * Return type annotation (if available)
+	 * 
+	 * Only present for functions and methods with explicit return type annotations.
+	 * Contains the raw TypeScript type string.
+	 */
+	returnType?: string;
 }
 
 export type ExportType =
@@ -70,20 +175,109 @@ export interface SourceLocation {
 }
 
 // Enhanced extraction result
+/**
+ * Enhanced export extraction result containing comprehensive export analysis
+ * 
+ * This is the main result interface returned by EnhancedExportExtractor and expected
+ * by deps-cli. All three fields are required for deps-cli compatibility.
+ * 
+ * @example
+ * ```typescript
+ * const extractor = new EnhancedExportExtractor();
+ * const result = extractor.extractExports(ast, filePath);
+ * 
+ * // deps-cli usage pattern
+ * if (result.exportMethods) {
+ *   result.exportMethods.forEach(exp => {
+ *     console.log(`Found export: ${exp.name} (${exp.exportType})`);
+ *     if (exp.exportType === 'class_method') {
+ *       console.log(`  Class: ${exp.parentClass}`);
+ *     }
+ *   });
+ * }
+ * 
+ * console.log(`Total exports: ${result.statistics.totalExports}`);
+ * console.log(`Classes found: ${result.classes.length}`);
+ * ```
+ * 
+ * @since 2.0.0
+ */
 export interface EnhancedExportExtractionResult {
-	exportMethods: ExportMethodInfo[]; // All exported items with detailed info
-	statistics: ExportStatistics; // Summary statistics
-	classes: ClassExportInfo[]; // Detailed class information
+	/** 
+	 * All exported items with detailed information
+	 * 
+	 * CRITICAL: deps-cli expects this field to exist and be an array.
+	 * Contains functions, classes, variables, types, and class members.
+	 * Each item includes the essential "exportType" field for categorization.
+	 */
+	exportMethods: ExportMethodInfo[];
+	
+	/** 
+	 * Summary statistics of all exports
+	 * 
+	 * Provides aggregate counts by export type for reporting and analysis.
+	 * Useful for understanding the composition of a module's public API.
+	 */
+	statistics: ExportStatistics;
+	
+	/** 
+	 * Detailed information about exported classes
+	 * 
+	 * Contains class-specific details like inheritance, methods, and properties.
+	 * Separate from exportMethods to provide richer class analysis.
+	 */
+	classes: ClassExportInfo[];
 }
 
+/**
+ * Statistical summary of exports found in a module
+ * 
+ * Provides aggregate counts by export type for analysis and reporting.
+ * Useful for understanding the composition and complexity of a module's API.
+ * 
+ * @example
+ * ```typescript
+ * const statistics: ExportStatistics = {
+ *   totalExports: 15,
+ *   functionExports: 5,    // export function foo() {}
+ *   classExports: 2,       // export class Bar {}
+ *   variableExports: 4,    // export const API_URL = ...
+ *   typeExports: 2,        // export interface User {}
+ *   defaultExports: 1,     // export default class {}
+ *   classMethodsExports: 8, // methods in exported classes
+ *   classPropertiesExports: 3 // properties in exported classes
+ * };
+ * 
+ * // Analysis usage
+ * const complexity = statistics.classMethodsExports + statistics.functionExports;
+ * const typeOnlyExports = statistics.typeExports;
+ * ```
+ * 
+ * @since 2.0.0
+ */
 export interface ExportStatistics {
+	/** Total number of all exports (sum of all other counts) */
 	totalExports: number;
+	
+	/** Number of exported functions (export function name() {}) */
 	functionExports: number;
+	
+	/** Number of exported classes (export class Name {}) */
 	classExports: number;
+	
+	/** Number of exported variables/constants (export const name = ...) */
 	variableExports: number;
+	
+	/** Number of exported types (interfaces, type aliases, enums) */
 	typeExports: number;
+	
+	/** Number of default exports (export default ...) */
 	defaultExports: number;
+	
+	/** Number of methods in exported classes */
 	classMethodsExports: number;
+	
+	/** Number of properties in exported classes */
 	classPropertiesExports: number;
 }
 
@@ -116,6 +310,80 @@ export interface ClassPropertyInfo {
 	location: SourceLocation;
 }
 
+/**
+ * Enhanced export extractor for comprehensive TypeScript/JavaScript export analysis
+ * 
+ * Extracts detailed information about all exported items including functions, classes,
+ * variables, types, and class members. Designed for 100% compatibility with deps-cli
+ * API patterns and provides rich metadata for dependency analysis.
+ * 
+ * Features:
+ * - Complete export detection (named, default, re-exports)
+ * - Class member analysis (methods, properties, inheritance)
+ * - Type information extraction (parameters, return types)
+ * - Source location tracking for IDE integration
+ * - Statistical analysis of export composition
+ * - deps-cli compatible result format
+ * 
+ * @example
+ * ```typescript
+ * // deps-cli compatible usage (constructor without parameters)
+ * const extractor = new EnhancedExportExtractor();
+ * 
+ * // Parse TypeScript/TSX file
+ * const parser = new TypeScriptParser();
+ * const parseResult = await parser.parse(filePath, content);
+ * 
+ * if (parseResult.ast) {
+ *   // Extract exports (deps-cli pattern)
+ *   const exportResult = extractor.extractExports(parseResult.ast, filePath);
+ *   
+ *   // Process results
+ *   exportResult.exportMethods.forEach(exp => {
+ *     console.log(`Export: ${exp.name} (${exp.exportType})`);
+ *     
+ *     if (exp.exportType === 'function') {
+ *       console.log(`  Parameters: ${exp.parameters?.length || 0}`);
+ *       console.log(`  Async: ${exp.isAsync || false}`);
+ *     }
+ *     
+ *     if (exp.exportType === 'class_method') {
+ *       console.log(`  Class: ${exp.parentClass}`);
+ *       console.log(`  Visibility: ${exp.visibility || 'public'}`);
+ *     }
+ *   });
+ *   
+ *   console.log(`Statistics:`, exportResult.statistics);
+ *   console.log(`Classes:`, exportResult.classes.length);
+ * }
+ * ```
+ * 
+ * @example
+ * ```typescript
+ * // Advanced usage with filtering
+ * const extractor = new EnhancedExportExtractor();
+ * const result = extractor.extractExports(ast, filePath);
+ * 
+ * // Find all async functions
+ * const asyncFunctions = result.exportMethods.filter(exp => 
+ *   exp.exportType === 'function' && exp.isAsync
+ * );
+ * 
+ * // Find all public class methods
+ * const publicMethods = result.exportMethods.filter(exp => 
+ *   exp.exportType === 'class_method' && 
+ *   (exp.visibility === 'public' || !exp.visibility)
+ * );
+ * 
+ * // Analyze class inheritance
+ * const classesWithInheritance = result.classes.filter(cls => 
+ *   cls.superClass || (cls.implementsInterfaces && cls.implementsInterfaces.length > 0)
+ * );
+ * ```
+ * 
+ * @implements IDataExtractor<EnhancedExportExtractionResult>
+ * @since 2.0.0
+ */
 export class EnhancedExportExtractor
 	implements IDataExtractor<EnhancedExportExtractionResult>
 {
@@ -127,7 +395,35 @@ export class EnhancedExportExtractor
 	private dependencyExtractor = new DependencyExtractor();
 
 	/**
-	 * Extract enhanced export information from AST
+	 * Extracts comprehensive export information from TypeScript/JavaScript AST
+	 * 
+	 * This is the primary method used by deps-cli and other consumers for export analysis.
+	 * Processes all export types including named exports, default exports, re-exports,
+	 * and class members with detailed metadata.
+	 * 
+	 * @param ast - Tree-sitter AST from TypeScriptParser.parse()
+	 * @param _filePath - Path to source file (used for context, currently unused)
+	 * @param _options - Optional extraction configuration (currently unused)
+	 * 
+	 * @returns EnhancedExportExtractionResult containing:
+	 *   - `exportMethods`: Array of all exports with detailed info
+	 *   - `statistics`: Aggregate statistics by export type
+	 *   - `classes`: Detailed class information with methods/properties
+	 * 
+	 * @example
+	 * ```typescript
+	 * const extractor = new EnhancedExportExtractor();
+	 * const result = extractor.extractExports(ast, "UserService.ts");
+	 * 
+	 * // deps-cli compatibility check
+	 * if (result.exportMethods) {
+	 *   const validImports = importedMembers.filter(member =>
+	 *     result.exportMethods.some(exp => exp.name === member)
+	 *   );
+	 * }
+	 * ```
+	 * 
+	 * @since 2.0.0
 	 */
 	extractExports(
 		ast: Parser.Tree,
