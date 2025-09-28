@@ -4,8 +4,20 @@ import type {
 	ClassMethodInfo,
 	ClassPropertyInfo,
 } from "../types/result-types";
-import { ASTTraverser } from "../utils/ASTTraverser";
-import { NodeUtils } from "../utils/NodeUtils";
+import {
+	findNode,
+	findNodesByType,
+	getChildren,
+	getChildByType,
+} from "../utils/ASTTraverser";
+import {
+	getSourceLocation,
+	getText,
+	getIdentifierName,
+	isStatic,
+	isAsync,
+	getVisibility,
+} from "../utils/NodeUtils";
 
 /**
  * Information about class inheritance
@@ -44,7 +56,7 @@ export class ClassAnalyzer {
 
 		return {
 			className,
-			location: NodeUtils.getSourceLocation(classNode),
+			location: getSourceLocation(classNode),
 			methods: members.methods,
 			properties: members.properties,
 			isDefaultExport,
@@ -131,7 +143,7 @@ export class ClassAnalyzer {
 	private findClassBody(
 		classNode: Parser.SyntaxNode,
 	): Parser.SyntaxNode | undefined {
-		return ASTTraverser.findNode(
+		return findNode(
 			classNode,
 			(node) => node.type === "class_body" || node.type === "declaration_list",
 		);
@@ -143,7 +155,7 @@ export class ClassAnalyzer {
 	private findClassHeritage(
 		classNode: Parser.SyntaxNode,
 	): Parser.SyntaxNode | undefined {
-		return ASTTraverser.findNode(
+		return findNode(
 			classNode,
 			(node) =>
 				node.type === "class_heritage" ||
@@ -157,13 +169,13 @@ export class ClassAnalyzer {
 	 */
 	private extractSuperClass(heritage: Parser.SyntaxNode): string | undefined {
 		// Look for extends clause
-		const extendsClause = ASTTraverser.findNode(
+		const extendsClause = findNode(
 			heritage,
 			(node) => node.type === "extends_clause",
 		);
 
 		if (extendsClause) {
-			const identifier = ASTTraverser.findNode(
+			const identifier = findNode(
 				extendsClause,
 				(node) => node.type === "identifier",
 			);
@@ -185,13 +197,13 @@ export class ClassAnalyzer {
 		const interfaces: string[] = [];
 
 		// Look for implements clause
-		const implementsClause = ASTTraverser.findNode(
+		const implementsClause = findNode(
 			heritage,
 			(node) => node.type === "implements_clause",
 		);
 
 		if (implementsClause) {
-			const identifiers = ASTTraverser.findNodesByType(
+			const identifiers = findNodesByType(
 				implementsClause,
 				"identifier",
 			);
@@ -217,19 +229,19 @@ export class ClassAnalyzer {
 	private extractMethodInfo(
 		methodNode: Parser.SyntaxNode,
 	): ClassMethodInfo | undefined {
-		const name = NodeUtils.getIdentifierName(methodNode);
+		const name = getIdentifierName(methodNode);
 		if (!name) {
 			return undefined;
 		}
 
 		return {
 			name,
-			isStatic: NodeUtils.isStatic(methodNode),
-			isAsync: NodeUtils.isAsync(methodNode),
-			visibility: NodeUtils.getVisibility(methodNode),
+			isStatic: isStatic(methodNode),
+			isAsync: isAsync(methodNode),
+			visibility: getVisibility(methodNode),
 			parameters: this.extractMethodParameters(methodNode),
 			returnType: this.extractMethodReturnType(methodNode),
-			location: NodeUtils.getSourceLocation(methodNode),
+			location: getSourceLocation(methodNode),
 		};
 	}
 
@@ -246,7 +258,7 @@ export class ClassAnalyzer {
 			visibility: "public",
 			parameters: this.extractMethodParameters(constructorNode),
 			returnType: undefined, // Constructors don't have return types
-			location: NodeUtils.getSourceLocation(constructorNode),
+			location: getSourceLocation(constructorNode),
 		};
 	}
 
@@ -256,18 +268,18 @@ export class ClassAnalyzer {
 	private extractPropertyInfo(
 		propertyNode: Parser.SyntaxNode,
 	): ClassPropertyInfo | undefined {
-		const name = NodeUtils.getIdentifierName(propertyNode);
+		const name = getIdentifierName(propertyNode);
 		if (!name) {
 			return undefined;
 		}
 
 		return {
 			name,
-			isStatic: NodeUtils.isStatic(propertyNode),
-			visibility: NodeUtils.getVisibility(propertyNode),
+			isStatic: isStatic(propertyNode),
+			visibility: getVisibility(propertyNode),
 			type: this.extractPropertyType(propertyNode),
 			initialValue: this.extractPropertyInitialValue(propertyNode),
-			location: NodeUtils.getSourceLocation(propertyNode),
+			location: getSourceLocation(propertyNode),
 		};
 	}
 
@@ -279,7 +291,7 @@ export class ClassAnalyzer {
 	): ClassMethodInfo["parameters"] {
 		const parameters: ClassMethodInfo["parameters"] = [];
 
-		const paramsNode = ASTTraverser.findNode(
+		const paramsNode = findNode(
 			methodNode,
 			(node) => node.type === "formal_parameters" || node.type === "parameters",
 		);
@@ -307,7 +319,7 @@ export class ClassAnalyzer {
 	private extractParameterInfo(
 		paramNode: Parser.SyntaxNode,
 	): ClassMethodInfo["parameters"][0] | undefined {
-		const name = NodeUtils.getIdentifierName(paramNode);
+		const name = getIdentifierName(paramNode);
 		if (!name) {
 			return undefined;
 		}
@@ -326,7 +338,7 @@ export class ClassAnalyzer {
 	private extractParameterType(
 		paramNode: Parser.SyntaxNode,
 	): string | undefined {
-		const typeAnnotation = ASTTraverser.findNode(
+		const typeAnnotation = findNode(
 			paramNode,
 			(node) => node.type === "type_annotation",
 		);
@@ -358,7 +370,7 @@ export class ClassAnalyzer {
 	private extractParameterDefaultValue(
 		paramNode: Parser.SyntaxNode,
 	): string | undefined {
-		const assignmentPattern = ASTTraverser.findNode(
+		const assignmentPattern = findNode(
 			paramNode,
 			(node) => node.type === "assignment_pattern",
 		);
@@ -381,7 +393,7 @@ export class ClassAnalyzer {
 	private extractMethodReturnType(
 		methodNode: Parser.SyntaxNode,
 	): string | undefined {
-		const typeAnnotation = ASTTraverser.findNode(
+		const typeAnnotation = findNode(
 			methodNode,
 			(node) => node.type === "type_annotation",
 		);
@@ -402,7 +414,7 @@ export class ClassAnalyzer {
 	private extractPropertyType(
 		propertyNode: Parser.SyntaxNode,
 	): string | undefined {
-		const typeAnnotation = ASTTraverser.findNode(
+		const typeAnnotation = findNode(
 			propertyNode,
 			(node) => node.type === "type_annotation",
 		);

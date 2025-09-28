@@ -1,6 +1,13 @@
 import type Parser from "tree-sitter";
 import type { ExportMethodInfo, ParameterInfo } from "../types/result-types";
-import { NodeUtils } from "../utils/NodeUtils";
+import {
+	isFunctionDeclaration,
+	getSourceLocation,
+	getIdentifierName,
+	isAsync,
+	isStatic,
+	getVisibility,
+} from "../utils/NodeUtils";
 import { BaseNodeProcessor, type ProcessingContext } from "./NodeProcessor";
 
 /**
@@ -9,7 +16,7 @@ import { BaseNodeProcessor, type ProcessingContext } from "./NodeProcessor";
 export class FunctionProcessor extends BaseNodeProcessor {
 	canProcess(node: Parser.SyntaxNode): boolean {
 		// Check if this is a function declaration directly
-		if (NodeUtils.isFunctionDeclaration(node)) {
+		if (isFunctionDeclaration(node)) {
 			return true;
 		}
 
@@ -23,7 +30,7 @@ export class FunctionProcessor extends BaseNodeProcessor {
 
 			for (let i = 0; i < node.namedChildCount; i++) {
 				const child = node.namedChild(i);
-				if (child && NodeUtils.isFunctionDeclaration(child)) {
+				if (child && isFunctionDeclaration(child)) {
 					return true;
 				}
 			}
@@ -55,8 +62,8 @@ export class FunctionProcessor extends BaseNodeProcessor {
 			name,
 			exportType: "function",
 			declarationType: this.getDeclarationType(node, context),
-			location: NodeUtils.getSourceLocation(functionNode),
-			isAsync: NodeUtils.isAsync(functionNode),
+			location: getSourceLocation(functionNode),
+			isAsync: isAsync(functionNode),
 			parameters: this.extractParameters(functionNode),
 			returnType: this.extractReturnType(functionNode),
 		};
@@ -66,8 +73,8 @@ export class FunctionProcessor extends BaseNodeProcessor {
 			exportInfo.parentClass = context.currentClass;
 			exportInfo.exportType = "class_method";
 			exportInfo.declarationType = "class_member";
-			exportInfo.isStatic = NodeUtils.isStatic(functionNode);
-			exportInfo.visibility = NodeUtils.getVisibility(functionNode);
+			exportInfo.isStatic = isStatic(functionNode);
+			exportInfo.visibility = getVisibility(functionNode);
 		}
 
 		return [exportInfo];
@@ -144,7 +151,7 @@ export class FunctionProcessor extends BaseNodeProcessor {
 
 			default: {
 				// Try to extract name from children
-				const name = NodeUtils.getIdentifierName(paramNode);
+				const name = getIdentifierName(paramNode);
 				if (name) {
 					return {
 						name,
@@ -162,7 +169,7 @@ export class FunctionProcessor extends BaseNodeProcessor {
 	private extractTypedParameter(
 		paramNode: Parser.SyntaxNode,
 	): ParameterInfo | undefined {
-		const name = NodeUtils.getIdentifierName(paramNode);
+		const name = getIdentifierName(paramNode);
 		if (!name) {
 			return undefined;
 		}
@@ -195,7 +202,7 @@ export class FunctionProcessor extends BaseNodeProcessor {
 	private extractRestParameter(
 		paramNode: Parser.SyntaxNode,
 	): ParameterInfo | undefined {
-		let name = NodeUtils.getIdentifierName(paramNode);
+		let name = getIdentifierName(paramNode);
 
 		// If we can't get the name through NodeUtils, try extracting from text
 		if (!name) {
@@ -290,7 +297,7 @@ export class FunctionProcessor extends BaseNodeProcessor {
 		node: Parser.SyntaxNode,
 	): Parser.SyntaxNode | undefined {
 		// If this is already a function declaration, return it
-		if (NodeUtils.isFunctionDeclaration(node)) {
+		if (isFunctionDeclaration(node)) {
 			return node;
 		}
 
@@ -298,7 +305,7 @@ export class FunctionProcessor extends BaseNodeProcessor {
 		if (node.type === "export_statement") {
 			for (let i = 0; i < node.namedChildCount; i++) {
 				const child = node.namedChild(i);
-				if (child && NodeUtils.isFunctionDeclaration(child)) {
+				if (child && isFunctionDeclaration(child)) {
 					return child;
 				}
 			}

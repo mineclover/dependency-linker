@@ -1,6 +1,10 @@
 import type Parser from "tree-sitter";
 import type { ExportMethodInfo } from "../types/result-types";
-import { NodeUtils } from "../utils/NodeUtils";
+import {
+	isTypeDeclaration,
+	getSourceLocation,
+	getIdentifierName,
+} from "../utils/NodeUtils";
 import { BaseNodeProcessor, type ProcessingContext } from "./NodeProcessor";
 
 /**
@@ -8,7 +12,7 @@ import { BaseNodeProcessor, type ProcessingContext } from "./NodeProcessor";
  */
 export class TypeProcessor extends BaseNodeProcessor {
 	canProcess(node: Parser.SyntaxNode): boolean {
-		return NodeUtils.isTypeDeclaration(node);
+		return isTypeDeclaration(node);
 	}
 
 	process(
@@ -28,7 +32,7 @@ export class TypeProcessor extends BaseNodeProcessor {
 			name: typeName,
 			exportType: "type",
 			declarationType: this.getDeclarationType(node, context),
-			location: NodeUtils.getSourceLocation(node),
+			location: getSourceLocation(node),
 		};
 
 		// Add additional information based on type kind

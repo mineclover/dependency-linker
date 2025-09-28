@@ -1,7 +1,7 @@
 import type Parser from "tree-sitter";
 import type { ParameterInfo } from "../types/export-types";
-import { ASTTraverser } from "../utils/ASTTraverser";
-import { NodeUtils } from "../utils/NodeUtils";
+import { findNode } from "../utils/ASTTraverser";
+import { getIdentifierName } from "../utils/NodeUtils";
 
 /**
  * Detailed parameter information with additional metadata
@@ -60,7 +60,7 @@ export class ParameterAnalyzer {
 	 */
 	extractReturnType(functionNode: Parser.SyntaxNode): string | undefined {
 		// Look for type annotation after the parameter list
-		const typeAnnotation = ASTTraverser.findNode(
+		const typeAnnotation = findNode(
 			functionNode,
 			(node) =>
 				node.type === "type_annotation" &&
@@ -83,7 +83,7 @@ export class ParameterAnalyzer {
 	private findParametersNode(
 		functionNode: Parser.SyntaxNode,
 	): Parser.SyntaxNode | undefined {
-		return ASTTraverser.findNode(
+		return findNode(
 			functionNode,
 			(node) =>
 				node.type === "formal_parameters" ||
@@ -142,7 +142,7 @@ export class ParameterAnalyzer {
 	private extractTypedParameter(
 		paramNode: Parser.SyntaxNode,
 	): DetailedParameterInfo | undefined {
-		const name = NodeUtils.getIdentifierName(paramNode);
+		const name = getIdentifierName(paramNode);
 		if (!name) {
 			return undefined;
 		}
@@ -171,7 +171,7 @@ export class ParameterAnalyzer {
 	private extractRestParameter(
 		paramNode: Parser.SyntaxNode,
 	): DetailedParameterInfo | undefined {
-		const identifier = ASTTraverser.findNode(
+		const identifier = findNode(
 			paramNode,
 			(node) => node.type === "identifier",
 		);
@@ -238,7 +238,7 @@ export class ParameterAnalyzer {
 			return undefined;
 		}
 
-		const name = NodeUtils.getIdentifierName(identifier);
+		const name = getIdentifierName(identifier);
 		if (!name) {
 			return undefined;
 		}
@@ -259,7 +259,7 @@ export class ParameterAnalyzer {
 	private extractGenericParameter(
 		paramNode: Parser.SyntaxNode,
 	): DetailedParameterInfo | undefined {
-		const name = NodeUtils.getIdentifierName(paramNode);
+		const name = getIdentifierName(paramNode);
 		if (!name) {
 			return undefined;
 		}
@@ -278,7 +278,7 @@ export class ParameterAnalyzer {
 	private extractParameterType(
 		paramNode: Parser.SyntaxNode,
 	): string | undefined {
-		const typeAnnotation = ASTTraverser.findNode(
+		const typeAnnotation = findNode(
 			paramNode,
 			(node) => node.type === "type_annotation",
 		);
@@ -299,7 +299,7 @@ export class ParameterAnalyzer {
 	private extractDefaultValue(
 		paramNode: Parser.SyntaxNode,
 	): string | undefined {
-		const assignmentPattern = ASTTraverser.findNode(
+		const assignmentPattern = findNode(
 			paramNode,
 			(node) => node.type === "assignment_pattern",
 		);
@@ -344,7 +344,7 @@ export class ParameterAnalyzer {
 				}
 
 				case "rest_pattern": {
-					const restId = NodeUtils.getIdentifierName(child);
+					const restId = getIdentifierName(child);
 					if (restId) {
 						properties.push(`...${restId}`);
 					}
@@ -371,7 +371,7 @@ export class ParameterAnalyzer {
 			if (child.type === "identifier") {
 				properties.push(child.text);
 			} else if (child.type === "rest_pattern") {
-				const restId = NodeUtils.getIdentifierName(child);
+				const restId = getIdentifierName(child);
 				if (restId) {
 					properties.push(`...${restId}`);
 				}

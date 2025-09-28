@@ -23,7 +23,13 @@ import type {
 	ExportStatistics,
 } from "./types/result-types";
 // Utilities
-import { ASTTraverser, LRUCache, memoize, TextMatcher } from "./utils/index";
+import {
+	findNodesByTypes,
+	LRUCache,
+	memoize,
+	findAllExports,
+	parseNamedExports,
+} from "./utils/index";
 
 // Validators
 import { ExportValidator } from "./validators/index";
@@ -156,7 +162,7 @@ export class EnhancedExportExtractor {
 			"enum_declaration",
 		]);
 
-		const allNodes = ASTTraverser.findNodesByTypes(rootNode, exportNodeTypes);
+		const allNodes = findNodesByTypes(rootNode, exportNodeTypes);
 
 		// Filter logic to prevent duplicate processing while allowing legitimate exports
 		return allNodes.filter((node) => {
@@ -286,10 +292,10 @@ export class EnhancedExportExtractor {
 		}
 
 		// Use original text matcher for other exports (non-re-exports)
-		const textMatches = TextMatcher.findAllExports(sourceCode);
+		const textMatches = findAllExports(sourceCode);
 		for (const textMatch of textMatches) {
 			if (textMatch.type === "named") {
-				const namedExports = TextMatcher.parseNamedExports(
+				const namedExports = parseNamedExports(
 					textMatch.groups[0] || "",
 				);
 

@@ -1,6 +1,11 @@
 import type Parser from "tree-sitter";
 import type { ExportMethodInfo } from "../types/result-types";
-import { NodeUtils } from "../utils/NodeUtils";
+import {
+	isVariableDeclaration,
+	getSourceLocation,
+	getIdentifierName,
+} from "../utils/NodeUtils";
+import { getChildByType } from "../utils/ASTTraverser";
 import { BaseNodeProcessor, type ProcessingContext } from "./NodeProcessor";
 
 /**
@@ -10,7 +15,7 @@ export class VariableProcessor extends BaseNodeProcessor {
 	canProcess(node: Parser.SyntaxNode): boolean {
 		// Only process variable declarations, not export statements
 		// Default exports are handled by DefaultProcessor
-		if (NodeUtils.isVariableDeclaration(node)) {
+		if (isVariableDeclaration(node)) {
 			// Check if this is part of a default export
 			const parent = node.parent;
 			if (parent && parent.type === "export_statement") {
@@ -97,7 +102,7 @@ export class VariableProcessor extends BaseNodeProcessor {
 			name,
 			exportType: "variable",
 			declarationType: this.getDeclarationType(parent, context),
-			location: NodeUtils.getSourceLocation(declarator),
+			location: getSourceLocation(declarator),
 		};
 
 		// Try to extract type information
@@ -122,7 +127,7 @@ export class VariableProcessor extends BaseNodeProcessor {
 
 		// Variable declarator with identifier child
 		if (declarator.type === "variable_declarator") {
-			const identifierChild = NodeUtils.getChildByType(
+			const identifierChild = getChildByType(
 				declarator,
 				"identifier",
 			);
@@ -144,7 +149,7 @@ export class VariableProcessor extends BaseNodeProcessor {
 			return this.extractDestructuringNames(declarator);
 		}
 
-		return NodeUtils.getIdentifierName(declarator);
+		return getIdentifierName(declarator);
 	}
 
 	/**

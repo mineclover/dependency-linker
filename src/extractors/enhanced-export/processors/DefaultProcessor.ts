@@ -1,6 +1,17 @@
 import type Parser from "tree-sitter";
 import type { ExportMethodInfo } from "../types/result-types";
-import { NodeUtils } from "../utils/NodeUtils";
+import {
+	getSourceLocation,
+	isAsync,
+	isClassDeclaration,
+	isFunctionDeclaration,
+	isVariableDeclaration,
+	isTypeDeclaration,
+	getIdentifierName,
+	getText,
+	isStatic,
+	getVisibility,
+} from "../utils/NodeUtils";
 import { BaseNodeProcessor, type ProcessingContext } from "./NodeProcessor";
 
 /**
@@ -32,7 +43,7 @@ export class DefaultProcessor extends BaseNodeProcessor {
 
 				// If this is a default class export, also extract class members
 				const exportedNode = this.findDefaultExportedNode(node);
-				if (exportedNode && NodeUtils.isClassDeclaration(exportedNode)) {
+				if (exportedNode && isClassDeclaration(exportedNode)) {
 					const classMembers = this.extractClassMembers(exportedNode, context);
 					exports.push(...classMembers);
 				}
@@ -62,8 +73,8 @@ export class DefaultProcessor extends BaseNodeProcessor {
 			name,
 			exportType,
 			declarationType: "default_export",
-			location: NodeUtils.getSourceLocation(node),
-			isAsync: NodeUtils.isAsync(exportedNode),
+			location: getSourceLocation(node),
+			isAsync: isAsync(exportedNode),
 			parameters: this.extractParametersIfFunction(exportedNode),
 			returnType: this.extractReturnTypeIfFunction(exportedNode),
 		};
@@ -91,9 +102,9 @@ export class DefaultProcessor extends BaseNodeProcessor {
 	 */
 	private isExportableDeclaration(node: Parser.SyntaxNode): boolean {
 		return (
-			NodeUtils.isFunctionDeclaration(node) ||
-			NodeUtils.isClassDeclaration(node) ||
-			NodeUtils.isVariableDeclaration(node) ||
+			isFunctionDeclaration(node) ||
+			isClassDeclaration(node) ||
+			isVariableDeclaration(node) ||
 			node.type === "identifier" ||
 			node.type === "assignment_expression" ||
 			node.type === "call_expression" ||
@@ -119,16 +130,16 @@ export class DefaultProcessor extends BaseNodeProcessor {
 	private determineDefaultExportType(
 		node: Parser.SyntaxNode,
 	): ExportMethodInfo["exportType"] {
-		if (NodeUtils.isFunctionDeclaration(node)) {
+		if (isFunctionDeclaration(node)) {
 			return "function";
 		}
-		if (NodeUtils.isClassDeclaration(node)) {
+		if (isClassDeclaration(node)) {
 			return "class";
 		}
-		if (NodeUtils.isVariableDeclaration(node)) {
+		if (isVariableDeclaration(node)) {
 			return "variable";
 		}
-		if (NodeUtils.isTypeDeclaration(node)) {
+		if (isTypeDeclaration(node)) {
 			return "type";
 		}
 
@@ -146,7 +157,7 @@ export class DefaultProcessor extends BaseNodeProcessor {
 			name: "default",
 			exportType: "default",
 			declarationType: "default_export",
-			location: NodeUtils.getSourceLocation(node),
+			location: getSourceLocation(node),
 		};
 	}
 
@@ -156,7 +167,7 @@ export class DefaultProcessor extends BaseNodeProcessor {
 	private extractParametersIfFunction(
 		node: Parser.SyntaxNode,
 	): ExportMethodInfo["parameters"] {
-		if (!NodeUtils.isFunctionDeclaration(node)) {
+		if (!isFunctionDeclaration(node)) {
 			return undefined;
 		}
 
@@ -191,7 +202,7 @@ export class DefaultProcessor extends BaseNodeProcessor {
 	private extractReturnTypeIfFunction(
 		node: Parser.SyntaxNode,
 	): string | undefined {
-		if (!NodeUtils.isFunctionDeclaration(node)) {
+		if (!isFunctionDeclaration(node)) {
 			return undefined;
 		}
 
@@ -208,7 +219,7 @@ export class DefaultProcessor extends BaseNodeProcessor {
 		context: ProcessingContext,
 	): ExportMethodInfo[] {
 		const exports: ExportMethodInfo[] = [];
-		const className = NodeUtils.getIdentifierName(classNode) || "default";
+		const className = getIdentifierName(classNode) || "default";
 
 		// Create context for class members
 		const classContext: ProcessingContext = {
@@ -302,16 +313,16 @@ export class DefaultProcessor extends BaseNodeProcessor {
 
 			default: {
 				// Try to process as generic member
-				const memberName = NodeUtils.getIdentifierName(member);
+				const memberName = getIdentifierName(member);
 				if (memberName && this.isPublicMember(member)) {
 					const memberExport: ExportMethodInfo = {
 						name: memberName,
 						exportType: this.getMemberExportType(member),
 						declarationType: "class_member",
-						location: NodeUtils.getSourceLocation(member),
+						location: getSourceLocation(member),
 						parentClass: context.currentClass,
-						isStatic: NodeUtils.isStatic(member),
-						visibility: NodeUtils.getVisibility(member),
+						isStatic: isStatic(member),
+						visibility: getVisibility(member),
 					};
 					exports.push(memberExport);
 				}
@@ -329,7 +340,7 @@ export class DefaultProcessor extends BaseNodeProcessor {
 		method: Parser.SyntaxNode,
 		context: ProcessingContext,
 	): ExportMethodInfo[] {
-		const methodName = NodeUtils.getIdentifierName(method);
+		const methodName = getIdentifierName(method);
 		if (!methodName || !this.isPublicMember(method)) {
 			return [];
 		}
@@ -338,11 +349,11 @@ export class DefaultProcessor extends BaseNodeProcessor {
 			name: methodName,
 			exportType: "class_method",
 			declarationType: "class_member",
-			location: NodeUtils.getSourceLocation(method),
+			location: getSourceLocation(method),
 			parentClass: context.currentClass,
-			isAsync: NodeUtils.isAsync(method),
-			isStatic: NodeUtils.isStatic(method),
-			visibility: NodeUtils.getVisibility(method),
+			isAsync: isAsync(method),
+			isStatic: isStatic(method),
+			visibility: getVisibility(method),
 		};
 
 		// Add parameters and return type if available
@@ -359,7 +370,7 @@ export class DefaultProcessor extends BaseNodeProcessor {
 		property: Parser.SyntaxNode,
 		context: ProcessingContext,
 	): ExportMethodInfo[] {
-		const propertyName = NodeUtils.getIdentifierName(property);
+		const propertyName = getIdentifierName(property);
 		if (!propertyName || !this.isPublicMember(property)) {
 			return [];
 		}
@@ -368,10 +379,10 @@ export class DefaultProcessor extends BaseNodeProcessor {
 			name: propertyName,
 			exportType: "class_property",
 			declarationType: "class_member",
-			location: NodeUtils.getSourceLocation(property),
+			location: getSourceLocation(property),
 			parentClass: context.currentClass,
-			isStatic: NodeUtils.isStatic(property),
-			visibility: NodeUtils.getVisibility(property),
+			isStatic: isStatic(property),
+			visibility: getVisibility(property),
 		};
 
 		return [propertyExport];
@@ -392,7 +403,7 @@ export class DefaultProcessor extends BaseNodeProcessor {
 	private getMemberExportType(
 		member: Parser.SyntaxNode,
 	): ExportMethodInfo["exportType"] {
-		if (NodeUtils.isFunctionDeclaration(member)) {
+		if (isFunctionDeclaration(member)) {
 			return "class_method";
 		}
 		return "class_property";
@@ -405,7 +416,7 @@ export class DefaultProcessor extends BaseNodeProcessor {
 		method: Parser.SyntaxNode,
 	): ExportMethodInfo["parameters"] {
 		// This is a simplified version - full extraction would use FunctionProcessor
-		const text = NodeUtils.getText(method);
+		const text = getText(method);
 		const paramMatch = text.match(/\(([^)]*)\)/);
 		if (!paramMatch || !paramMatch[1].trim()) {
 			return [];
@@ -435,7 +446,7 @@ export class DefaultProcessor extends BaseNodeProcessor {
 	private extractBasicReturnType(
 		method: Parser.SyntaxNode,
 	): string | undefined {
-		const text = NodeUtils.getText(method);
+		const text = getText(method);
 		const returnTypeMatch = text.match(/\):\s*([^{]+)/);
 		return returnTypeMatch ? returnTypeMatch[1].trim() : undefined;
 	}

@@ -1,6 +1,15 @@
 import type Parser from "tree-sitter";
 import type { ExportMethodInfo } from "../types/result-types";
-import { NodeUtils } from "../utils/NodeUtils";
+import {
+	getText,
+	getIdentifierName,
+	getSourceLocation,
+	isStatic,
+	isAsync,
+	getVisibility,
+	isClassDeclaration,
+	isFunctionDeclaration,
+} from "../utils/NodeUtils";
 import { BaseNodeProcessor, type ProcessingContext } from "./NodeProcessor";
 
 /**
@@ -9,7 +18,7 @@ import { BaseNodeProcessor, type ProcessingContext } from "./NodeProcessor";
 export class ClassProcessor extends BaseNodeProcessor {
 	canProcess(node: Parser.SyntaxNode): boolean {
 		// Check if this is a class declaration directly
-		if (NodeUtils.isClassDeclaration(node)) {
+		if (isClassDeclaration(node)) {
 			return true;
 		}
 
@@ -23,7 +32,7 @@ export class ClassProcessor extends BaseNodeProcessor {
 
 			for (let i = 0; i < node.namedChildCount; i++) {
 				const child = node.namedChild(i);
-				if (child && NodeUtils.isClassDeclaration(child)) {
+				if (child && isClassDeclaration(child)) {
 					return true;
 				}
 			}
@@ -61,7 +70,7 @@ export class ClassProcessor extends BaseNodeProcessor {
 			name: className,
 			exportType: "class",
 			declarationType: this.getDeclarationType(node, context),
-			location: NodeUtils.getSourceLocation(classNode),
+			location: getSourceLocation(classNode),
 			superClass, // Add superClass property
 		};
 
@@ -159,16 +168,16 @@ export class ClassProcessor extends BaseNodeProcessor {
 
 			default: {
 				// Try to process as generic member
-				const memberName = NodeUtils.getIdentifierName(member);
+				const memberName = getIdentifierName(member);
 				if (memberName && this.isPublicMember(member)) {
 					const memberExport: ExportMethodInfo = {
 						name: memberName,
 						exportType: this.getMemberExportType(member),
 						declarationType: "class_member",
-						location: NodeUtils.getSourceLocation(member),
+						location: getSourceLocation(member),
 						parentClass: context.currentClass,
-						isStatic: NodeUtils.isStatic(member),
-						visibility: NodeUtils.getVisibility(member),
+						isStatic: isStatic(member),
+						visibility: getVisibility(member),
 					};
 					exports.push(memberExport);
 				}
@@ -186,7 +195,7 @@ export class ClassProcessor extends BaseNodeProcessor {
 		method: Parser.SyntaxNode,
 		context: ProcessingContext,
 	): ExportMethodInfo[] {
-		const methodName = NodeUtils.getIdentifierName(method);
+		const methodName = getIdentifierName(method);
 		if (!methodName || !this.isPublicMember(method)) {
 			return [];
 		}
@@ -195,11 +204,11 @@ export class ClassProcessor extends BaseNodeProcessor {
 			name: methodName,
 			exportType: "class_method",
 			declarationType: "class_member",
-			location: NodeUtils.getSourceLocation(method),
+			location: getSourceLocation(method),
 			parentClass: context.currentClass,
-			isAsync: NodeUtils.isAsync(method),
-			isStatic: NodeUtils.isStatic(method),
-			visibility: NodeUtils.getVisibility(method),
+			isAsync: isAsync(method),
+			isStatic: isStatic(method),
+			visibility: getVisibility(method),
 		};
 
 		// Add parameters and return type if available
@@ -218,7 +227,7 @@ export class ClassProcessor extends BaseNodeProcessor {
 		property: Parser.SyntaxNode,
 		context: ProcessingContext,
 	): ExportMethodInfo[] {
-		const propertyName = NodeUtils.getIdentifierName(property);
+		const propertyName = getIdentifierName(property);
 		if (!propertyName || !this.isPublicMember(property)) {
 			return [];
 		}
@@ -227,10 +236,10 @@ export class ClassProcessor extends BaseNodeProcessor {
 			name: propertyName,
 			exportType: "class_property",
 			declarationType: "class_member",
-			location: NodeUtils.getSourceLocation(property),
+			location: getSourceLocation(property),
 			parentClass: context.currentClass,
-			isStatic: NodeUtils.isStatic(property),
-			visibility: NodeUtils.getVisibility(property),
+			isStatic: isStatic(property),
+			visibility: getVisibility(property),
 		};
 
 		return [propertyExport];
@@ -251,7 +260,7 @@ export class ClassProcessor extends BaseNodeProcessor {
 	private getMemberExportType(
 		member: Parser.SyntaxNode,
 	): ExportMethodInfo["exportType"] {
-		if (NodeUtils.isFunctionDeclaration(member)) {
+		if (isFunctionDeclaration(member)) {
 			return "class_method";
 		}
 		return "class_property";
@@ -264,7 +273,7 @@ export class ClassProcessor extends BaseNodeProcessor {
 		method: Parser.SyntaxNode,
 	): ExportMethodInfo["parameters"] {
 		// This is a simplified version - full extraction would use FunctionProcessor
-		const text = NodeUtils.getText(method);
+		const text = getText(method);
 		const paramMatch = text.match(/\(([^)]*)\)/);
 		if (!paramMatch || !paramMatch[1].trim()) {
 			return [];
@@ -294,7 +303,7 @@ export class ClassProcessor extends BaseNodeProcessor {
 	private extractBasicReturnType(
 		method: Parser.SyntaxNode,
 	): string | undefined {
-		const text = NodeUtils.getText(method);
+		const text = getText(method);
 		const returnTypeMatch = text.match(/\):\s*([^{]+)/);
 		return returnTypeMatch ? returnTypeMatch[1].trim() : undefined;
 	}
@@ -360,7 +369,7 @@ export class ClassProcessor extends BaseNodeProcessor {
 		node: Parser.SyntaxNode,
 	): Parser.SyntaxNode | undefined {
 		// If this is already a class declaration, return it
-		if (NodeUtils.isClassDeclaration(node)) {
+		if (isClassDeclaration(node)) {
 			return node;
 		}
 
@@ -368,7 +377,7 @@ export class ClassProcessor extends BaseNodeProcessor {
 		if (node.type === "export_statement") {
 			for (let i = 0; i < node.namedChildCount; i++) {
 				const child = node.namedChild(i);
-				if (child && NodeUtils.isClassDeclaration(child)) {
+				if (child && isClassDeclaration(child)) {
 					return child;
 				}
 			}
