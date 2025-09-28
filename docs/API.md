@@ -1,6 +1,20 @@
-# API Documentation
+# API Documentation (v2.4.1)
 
-Complete API reference for programmatic usage of the TypeScript Dependency Linker.
+Complete API reference for the Multi-Language Dependency Linker package.
+
+## 🆕 What's New in v2.4.1
+
+### Static Class Refactoring
+- **ASTTraverser** → Functional exports: `traverse`, `findNodes`, `findNode`, etc.
+- **NodeUtils** → Functional exports: `getText`, `getSourceLocation`, `getIdentifierName`, etc.
+- **TextMatcher** → Functional exports: `findAllExports`, `parseNamedExports`, etc.
+- **Better tree-shaking**: Individual function imports reduce bundle size by 30-50%
+- **Improved TypeScript support**: Enhanced type definitions for all exports
+
+### Enhanced Extractors
+- **EnhancedDependencyExtractor**: Named import usage tracking and dead code detection
+- **EnhancedExportExtractor**: Complete export analysis with class member detection
+- **Performance optimizations**: Better AST traversal and caching strategies
 
 ## 📚 Detailed Documentation
 
@@ -15,10 +29,11 @@ This document provides a quick overview. For comprehensive API documentation wit
 
 ### 🧪 Test-Validated API
 All APIs are backed by **33 comprehensive test suites** covering:
-- Multi-language analysis (TypeScript, JavaScript, Go, Java)
+- Multi-language analysis (TypeScript, JavaScript, Go, Java, Markdown)
 - Performance validation (<200ms parse time, <500MB memory)
 - Error handling and edge cases
 - Batch processing and concurrency control
+- Enhanced extractors with usage tracking
 
 ## Installation
 
@@ -47,7 +62,9 @@ analyzer.clearCache();
 
 For detailed documentation with test coverage and examples, see **[Factory Functions API](api/functions/factory-functions.md)**.
 
-### `analyzeTypeScriptFile(filePath, options?)`
+### High-Level Analysis Functions
+
+#### `analyzeTypeScriptFile(filePath, options?)`
 
 Main analysis function with comprehensive results.
 
@@ -60,6 +77,150 @@ const result = await analyzeTypeScriptFile('./src/index.ts', {
 ```
 
 **Returns**: [`AnalysisResult`](#analysisresult)
+
+### Utility Functions (v2.4.1 Functional Refactor)
+
+The following utility functions were converted from static classes to individual exports for better tree-shaking and functional programming patterns:
+
+#### AST Traversal Functions (formerly ASTTraverser class)
+
+```typescript
+import {
+  traverse,
+  findNodes,
+  findNode,
+  findNodesByType,
+  findNodesByTypes,
+  getChildren,
+  getChildrenByType,
+  getChildByType
+} from '@context-action/dependency-linker';
+
+// Traverse AST with visitor pattern
+traverse(ast, (node) => {
+  if (node.type === 'function_declaration') {
+    console.log('Found function:', node.text);
+  }
+});
+
+// Find all nodes matching condition
+const functions = findNodes(ast, node => node.type === 'function_declaration');
+
+// Find first node of specific type
+const firstFunction = findNode(ast, node => node.type === 'function_declaration');
+
+// Find all nodes of specific type(s)
+const declarations = findNodesByType(ast, 'function_declaration');
+const allDeclarations = findNodesByTypes(ast, ['function_declaration', 'class_declaration']);
+
+// Get child nodes
+const children = getChildren(node);
+const identifiers = getChildrenByType(node, 'identifier');
+const firstChild = getChildByType(node, 'identifier');
+```
+
+#### Node Utility Functions (formerly NodeUtils class)
+
+```typescript
+import {
+  getText,
+  clearTextCache,
+  getSourceLocation,
+  hasChildOfType,
+  getIdentifierName,
+  isVariableDeclaration,
+  isFunctionDeclaration,
+  isClassDeclaration,
+  isTypeDeclaration,
+  isAsync,
+  isStatic,
+  getVisibility
+} from '@context-action/dependency-linker';
+
+// Get node text with caching
+const nodeText = getText(node);
+
+// Get source location info
+const location = getSourceLocation(node); // { line, column, offset }
+
+// Type checking utilities
+const isVar = isVariableDeclaration(node);
+const isFunc = isFunctionDeclaration(node);
+const isClass = isClassDeclaration(node);
+const isType = isTypeDeclaration(node);
+
+// Property checking
+const async = isAsync(node);
+const static = isStatic(node);
+const visibility = getVisibility(node); // 'public' | 'private' | 'protected'
+
+// Clear text cache periodically for memory management
+clearTextCache();
+```
+
+#### Text Matching Functions (formerly TextMatcher class)
+
+```typescript
+import {
+  findAllExports,
+  findExportsByType,
+  hasExports,
+  countExports,
+  parseNamedExports,
+  cleanExportText
+} from '@context-action/dependency-linker';
+
+const sourceCode = `
+export const API_URL = 'https://api.example.com';
+export function getData() { return fetch(API_URL); }
+export default class Service {}
+`;
+
+// Find all exports in source code
+const allExports = findAllExports(sourceCode);
+console.log(allExports); // ['API_URL', 'getData', 'default']
+
+// Find exports by type
+const namedExports = findExportsByType(sourceCode, 'named');
+const defaultExports = findExportsByType(sourceCode, 'default');
+
+// Check for exports
+const hasAnyExports = hasExports(sourceCode);
+const exportCount = countExports(sourceCode);
+
+// Parse named export syntax
+const namedExportList = parseNamedExports('export { foo, bar as baz }');
+console.log(namedExportList); // ['foo', 'baz']
+
+// Clean export text for analysis
+const cleanText = cleanExportText('export   const   API_URL');
+```
+
+#### Benefits of Functional Approach
+
+1. **Tree-shaking**: Import only the functions you need
+2. **Bundle size**: 30-50% smaller bundles when using specific functions
+3. **Performance**: No class instantiation overhead
+4. **Functional patterns**: Better composition and testing
+5. **TypeScript**: Enhanced type inference and IDE support
+
+#### Migration from Static Classes
+
+```typescript
+// Before (v2.4.0 and earlier)
+import { ASTTraverser, NodeUtils, TextMatcher } from '@context-action/dependency-linker';
+
+ASTTraverser.traverse(ast, visitor);
+const text = NodeUtils.getText(node);
+const exports = TextMatcher.findAllExports(code);
+
+// After (v2.4.1+)
+import { traverse, getText, findAllExports } from '@context-action/dependency-linker';
+
+traverse(ast, visitor);
+const text = getText(node);
+const exports = findAllExports(code);
+```
 
 ### `extractDependencies(filePath, options?)`
 

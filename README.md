@@ -69,12 +69,16 @@ await analyzer.analyzeFile('../project/src/component.tsx');  // From subdirector
 ### 📚 문서화
 - **README.md**: 기술 개요 및 설치 가이드 (현재 파일)
 - **[docs/](docs/)**: 상세 문서 디렉토리
-  - **[API.md](docs/API.md)**: API 개요 및 빠른 참조
+  - **[API.md](docs/API.md)**: API 개요 및 빠른 참조 (v2.4.1 업데이트)
   - **[api/](docs/api/)**: 테스트 기반 상세 API 문서
     - **[Factory Functions](docs/api/functions/factory-functions.md)**: 단순 함수 API
     - **[TypeScriptAnalyzer](docs/api/classes/TypeScriptAnalyzer.md)**: 메인 분석기 클래스
     - **[BatchAnalyzer](docs/api/classes/BatchAnalyzer.md)**: 배치 처리 시스템
     - **[Core Interfaces](docs/api/core/interfaces.md)**: 핵심 인터페이스
+  - **[CHANGELOG_v2.4.1.md](docs/CHANGELOG_v2.4.1.md)**: 🆕 v2.4.1 변경사항 및 개선점
+  - **[MIGRATION_GUIDE_v2.4.1.md](docs/MIGRATION_GUIDE_v2.4.1.md)**: 🔄 정적 클래스에서 함수로 마이그레이션 가이드
+  - **[PACKAGE_EXPORTS.md](docs/PACKAGE_EXPORTS.md)**: 📦 트리쉐이킹 및 선택적 임포트 가이드
+  - **[ENHANCED_EXTRACTORS_EXAMPLES.md](docs/ENHANCED_EXTRACTORS_EXAMPLES.md)**: 🚀 고급 추출기 사용 예제
   - **[quickstart.md](docs/quickstart.md)**: 빠른 시작 가이드
   - **[CORE_LOGIC.md](docs/CORE_LOGIC.md)**: 핵심 로직과 아키텍처
   - **[USAGE.md](docs/USAGE.md)**: 실제 활용법 및 고급 사용법
@@ -368,128 +372,272 @@ Override any preset with custom options:
 - `--max-array-length`: Maximum array length in output (default: 100)
 - `--max-depth`: Maximum nesting depth in output (default: 10)
 
-## 🔧 API Reference
+## 📚 API Documentation
 
-### 📦 트리쉐이킹 임포트 최적화
+### 🚀 Core API Overview
 
-패키지 크기 최적화를 위해 필요한 모듈만 선택적으로 임포트할 수 있습니다:
+The `@context-action/dependency-linker` package exports a comprehensive set of APIs for multi-language code analysis. All APIs support TypeScript with full type definitions.
 
-#### 🌳 모듈별 세부 임포트 (트리쉐이킹 지원)
+#### 📦 Main Package Exports (v2.4.1)
 
-```javascript
-// 파서만 필요한 경우
+```typescript
+// Core API - Factory Functions (Simple API)
+export {
+  analyzeTypeScriptFile,
+  analyzeMarkdownFile,
+  extractDependencies,
+  getBatchAnalysis,
+  analyzeDirectory,
+  resetFactoryAnalyzers,
+  resetSharedAnalyzer
+} from './api/factory-functions';
+
+// Core API - Classes (Advanced API)
+export { TypeScriptAnalyzer } from './api/TypeScriptAnalyzer';
+export { BatchAnalyzer } from './api/BatchAnalyzer';
+
+// Enhanced Extractors (Recent Updates)
+export { EnhancedDependencyExtractor } from './extractors/EnhancedDependencyExtractor';
+export { EnhancedExportExtractor } from './extractors/EnhancedExportExtractor';
+
+// Extractors & Interpreters (Plugin System)
+export { DependencyExtractor } from './extractors/DependencyExtractor';
+export { IdentifierExtractor } from './extractors/IdentifierExtractor';
+export { ComplexityExtractor } from './extractors/ComplexityExtractor';
+export { MarkdownLinkExtractor } from './extractors/MarkdownLinkExtractor';
+export { PathResolverInterpreter } from './interpreters/PathResolverInterpreter';
+export { DependencyAnalysisInterpreter } from './interpreters/DependencyAnalysisInterpreter';
+export { IdentifierAnalysisInterpreter } from './interpreters/IdentifierAnalysisInterpreter';
+export { LinkDependencyInterpreter } from './interpreters/LinkDependencyInterpreter';
+
+// Library Functions (Utility Functions - Recently Converted from Static Classes)
+export {
+  // AST Traversal Utilities (formerly ASTTraverser class)
+  traverse, findNodes, findNode, findNodesByType, findNodesByTypes,
+  getChildren, getChildrenByType, getChildByType,
+
+  // Node Utilities (formerly NodeUtils class)
+  getText, clearTextCache, getSourceLocation, hasChildOfType,
+  getIdentifierName, isVariableDeclaration, isFunctionDeclaration,
+  isClassDeclaration, isTypeDeclaration, isAsync, isStatic, getVisibility,
+
+  // Text Matching (formerly TextMatcher class)
+  findAllExports, findExportsByType, hasExports, countExports,
+  parseNamedExports, cleanExportText
+} from './extractors/enhanced-export';
+
+// Core Models (Data Structures)
+export { PathInfo, createPathInfo } from './models/PathInfo';
+export type { AnalysisResult } from './models/AnalysisResult';
+export type { PerformanceMetrics } from './models/PerformanceMetrics';
+
+// Language Parsers (Multi-Language Support)
+export { TypeScriptParser } from './parsers/TypeScriptParser';
+export { JavaScriptParser } from './parsers/JavaScriptParser';
+export { GoParser } from './parsers/GoParser';
+export { JavaParser } from './parsers/JavaParser';
+export { MarkdownParser } from './parsers/MarkdownParser';
+
+// Core Services (Engine & Infrastructure)
+export { AnalysisEngine } from './services/AnalysisEngine';
+export { CacheManager } from './services/CacheManager';
+export { ExtractorRegistry } from './services/ExtractorRegistry';
+export { InterpreterRegistry } from './services/InterpreterRegistry';
+export { ParserRegistry } from './services/ParserRegistry';
+export { DataIntegrator } from './services/integration/DataIntegrator';
+
+// Utilities (Helper Functions)
+export { createLogger } from './utils/logger';
+export { normalizePath, isProjectPath } from './utils/PathUtils';
+```
+
+### 🎯 Quick Start Examples
+
+#### 1. Simple Function API (Recommended for Most Use Cases)
+
+```typescript
+import { analyzeTypeScriptFile, analyzeMarkdownFile } from '@context-action/dependency-linker';
+
+// TypeScript/JavaScript analysis
+const result = await analyzeTypeScriptFile('./src/component.tsx', {
+  useIntegrated: true,
+  preset: 'balanced',
+  format: 'report'
+});
+
+console.log('Dependencies:', result.core.dependencies);
+console.log('Analysis time:', result.metadata.analysisTime);
+
+// Markdown link analysis
+const markdownResult = await analyzeMarkdownFile('./README.md');
+console.log('Links found:', markdownResult.interpretedData['link-analysis'].summary.totalLinks);
+```
+
+#### 2. Class-based API (Advanced Usage)
+
+```typescript
+import { TypeScriptAnalyzer, BatchAnalyzer } from '@context-action/dependency-linker';
+
+// Create analyzer with caching
+const analyzer = new TypeScriptAnalyzer({
+  enableCache: true,
+  cacheSize: 1000,
+  defaultTimeout: 30000
+});
+
+// Single file analysis
+const result = await analyzer.analyzeFile('./src/index.ts');
+
+// Batch processing
+const batchAnalyzer = new BatchAnalyzer(analyzer, {
+  maxConcurrency: 5,
+  enableResourceMonitoring: true
+});
+
+const results = await batchAnalyzer.processBatch([
+  './src/index.ts',
+  './src/utils.ts',
+  './src/types.ts'
+]);
+```
+
+#### 3. Enhanced Analysis (New in v2.4.1)
+
+```typescript
+import {
+  EnhancedDependencyExtractor,
+  EnhancedExportExtractor,
+  TypeScriptParser
+} from '@context-action/dependency-linker';
+
+const parser = new TypeScriptParser();
+const depExtractor = new EnhancedDependencyExtractor();
+const exportExtractor = new EnhancedExportExtractor();
+
+// Enhanced dependency analysis with usage tracking
+const parseResult = await parser.parse('./src/component.tsx');
+const depResult = depExtractor.extractEnhanced(parseResult.ast, './src/component.tsx');
+
+console.log('Named imports:', depResult.usageAnalysis.totalImports);
+console.log('Unused imports:', depResult.usageAnalysis.unusedImports);
+
+// Enhanced export analysis
+const exportResult = exportExtractor.extractExports(parseResult.ast, './src/component.tsx');
+console.log('Exported functions:', exportResult.statistics.functionExports);
+console.log('Class methods:', exportResult.statistics.classMethodsExports);
+```
+
+#### 4. Utility Functions (Recently Converted from Static Classes)
+
+```typescript
+import {
+  traverse, findNodes, getText, getSourceLocation,
+  findAllExports, parseNamedExports
+} from '@context-action/dependency-linker';
+import { TypeScriptParser } from '@context-action/dependency-linker';
+
+const parser = new TypeScriptParser();
+const parseResult = await parser.parse('./src/example.ts');
+
+// AST traversal (formerly ASTTraverser.traverse)
+traverse(parseResult.ast, (node) => {
+  if (node.type === 'function_declaration') {
+    console.log('Function found:', getText(node));
+    console.log('Location:', getSourceLocation(node));
+  }
+});
+
+// Find specific nodes (formerly ASTTraverser.findNodes)
+const functions = findNodes(parseResult.ast, node =>
+  node.type === 'function_declaration'
+);
+
+// Text-based export detection (formerly TextMatcher.findAllExports)
+const sourceCode = '...' // file content
+const exports = findAllExports(sourceCode);
+console.log('Detected exports:', exports);
+```
+
+### 📦 Tree-Shaking Optimized Imports
+
+For optimal bundle size, import only what you need:
+
+#### Basic Analysis Setup
+```typescript
+// Minimal TypeScript analysis
+import { TypeScriptParser } from '@context-action/dependency-linker/dist/parsers/TypeScriptParser';
+import { DependencyExtractor } from '@context-action/dependency-linker/dist/extractors/DependencyExtractor';
+
+// Enhanced analysis setup
+import { EnhancedDependencyExtractor } from '@context-action/dependency-linker/dist/extractors/EnhancedDependencyExtractor';
+import { EnhancedExportExtractor } from '@context-action/dependency-linker/dist/extractors/EnhancedExportExtractor';
+```
+
+#### Utility Functions Only
+```typescript
+// Import individual utility functions (v2.4.1 functional refactor)
+import {
+  traverse, findNodes, getText, getSourceLocation
+} from '@context-action/dependency-linker/dist/extractors/enhanced-export';
+```
+
+#### Multi-Language Support
+```typescript
+// Language-specific parsers
 import { TypeScriptParser } from '@context-action/dependency-linker/dist/parsers/TypeScriptParser';
 import { JavaParser } from '@context-action/dependency-linker/dist/parsers/JavaParser';
 import { GoParser } from '@context-action/dependency-linker/dist/parsers/GoParser';
 import { MarkdownParser } from '@context-action/dependency-linker/dist/parsers/MarkdownParser';
-
-// 추출기만 필요한 경우
-import { DependencyExtractor } from '@context-action/dependency-linker/dist/extractors/DependencyExtractor';
-
-// 인터프리터만 필요한 경우
-import { PathResolverInterpreter } from '@context-action/dependency-linker/dist/interpreters/PathResolverInterpreter';
-
-// 모델만 필요한 경우
-import { PathInfo, createPathInfo } from '@context-action/dependency-linker/dist/models/PathInfo';
-import { AnalysisResult } from '@context-action/dependency-linker/dist/models/AnalysisResult';
-
-// 서비스만 필요한 경우
-import { AnalysisEngine } from '@context-action/dependency-linker/dist/services/AnalysisEngine';
-import { CacheManager } from '@context-action/dependency-linker/dist/services/CacheManager';
-
-// 유틸리티만 필요한 경우
-import { createLogger } from '@context-action/dependency-linker/dist/utils/logger';
-import { normalizePath } from '@context-action/dependency-linker/dist/utils/PathUtils';
 ```
 
-#### 📁 모듈 경로 구조
+### 📊 Bundle Size Impact
 
-| 모듈 카테고리 | 임포트 경로 | 주요 클래스/함수 |
-|-------------|-------------|-----------------|
-| **파서** | `/dist/parsers/` | `TypeScriptParser`, `JavaParser`, `GoParser`, `MarkdownParser` |
-| **추출기** | `/dist/extractors/` | `DependencyExtractor` |
-| **인터프리터** | `/dist/interpreters/` | `PathResolverInterpreter` |
-| **모델** | `/dist/models/` | `PathInfo`, `AnalysisResult`, `PerformanceMetrics` |
-| **서비스** | `/dist/services/` | `AnalysisEngine`, `CacheManager`, `ExtractorRegistry` |
-| **유틸리티** | `/dist/utils/` | `logger`, `PathUtils`, `PathResolutionUtils` |
-| **API** | `/dist/api/` | `factory-functions`, `TypeScriptAnalyzer`, `BatchAnalyzer` |
+| Import Strategy | Bundle Size | Use Case |
+|----------------|-------------|----------|
+| Full package | ~250KB | Complete analysis suite |
+| Core API only | ~120KB | Standard usage |
+| Single parser | ~80KB | Language-specific analysis |
+| Utilities only | ~45KB | Custom analysis tools |
+| Individual functions | ~30KB | Minimal tree-shaken builds |
 
-#### ⚡ 성능 최적화 예제
+### 🔧 TypeScript Support
 
-```javascript
-// ❌ 전체 패키지 임포트 (큰 번들 크기)
-import * as DependencyLinker from '@context-action/dependency-linker';
-
-// ✅ 필요한 기능만 임포트 (최적화된 번들 크기)
-import { TypeScriptParser } from '@context-action/dependency-linker/dist/parsers/TypeScriptParser';
-import { DependencyExtractor } from '@context-action/dependency-linker/dist/extractors/DependencyExtractor';
-import { createPathInfo } from '@context-action/dependency-linker/dist/models/PathInfo';
-
-// 최소한의 TypeScript 분석기만 사용
-const parser = new TypeScriptParser();
-const extractor = new DependencyExtractor();
-
-async function analyzeTypeScriptOnly(filePath) {
-  const parseResult = await parser.parse(filePath);
-  if (!parseResult.ast) return null;
-
-  const dependencies = extractor.extract(parseResult.ast, filePath);
-  const pathInfo = createPathInfo(filePath);
-
-  return { dependencies, pathInfo };
-}
-```
-
-#### 🎯 용도별 최적화 임포트
-
-**1. TypeScript 전용 분석 (최소 패키지)**
-```javascript
-import { TypeScriptParser } from '@context-action/dependency-linker/dist/parsers/TypeScriptParser';
-import { DependencyExtractor } from '@context-action/dependency-linker/dist/extractors/DependencyExtractor';
-```
-
-**2. 다중 언어 분석 (선택적 파서)**
-```javascript
-import { TypeScriptParser } from '@context-action/dependency-linker/dist/parsers/TypeScriptParser';
-import { JavaParser } from '@context-action/dependency-linker/dist/parsers/JavaParser';
-import { GoParser } from '@context-action/dependency-linker/dist/parsers/GoParser';
-```
-
-**3. 경로 분석 전용 (유틸리티 중심)**
-```javascript
-import { PathInfo, createPathInfo } from '@context-action/dependency-linker/dist/models/PathInfo';
-import { normalizePath, isProjectPath } from '@context-action/dependency-linker/dist/utils/PathUtils';
-```
-
-**4. 고성능 배치 분석 (서비스 중심)**
-```javascript
-import { AnalysisEngine } from '@context-action/dependency-linker/dist/services/AnalysisEngine';
-import { CacheManager } from '@context-action/dependency-linker/dist/services/CacheManager';
-import { BatchAnalyzer } from '@context-action/dependency-linker/dist/api/BatchAnalyzer';
-```
-
-#### 📊 패키지 크기 비교
-
-| 임포트 방식 | 번들 크기 (압축) | 로딩 시간 | 메모리 사용량 |
-|------------|----------------|-----------|-------------|
-| 전체 패키지 | ~250KB | ~50ms | ~15MB |
-| TypeScript만 | ~120KB | ~25ms | ~8MB |
-| 유틸리티만 | ~45KB | ~10ms | ~3MB |
-| 개별 모듈 | ~30KB | ~8ms | ~2MB |
-
-#### 🔧 TypeScript 타입 지원
-
-모든 모듈별 임포트에서 완전한 타입 지원을 제공합니다:
+All exports include comprehensive TypeScript definitions:
 
 ```typescript
-import type { ParseResult } from '@context-action/dependency-linker/dist/parsers/ILanguageParser';
-import type { DependencyExtractionResult } from '@context-action/dependency-linker/dist/extractors/DependencyExtractor';
-import type { PathInfo as IPathInfo } from '@context-action/dependency-linker/dist/models/PathInfo';
+import type {
+  AnalysisResult,
+  EnhancedDependencyInfo,
+  ExportMethodInfo,
+  ParseResult,
+  PerformanceMetrics
+} from '@context-action/dependency-linker';
 
-// 완전한 타입 안전성 보장
-const parser: TypeScriptParser = new TypeScriptParser();
-const result: ParseResult = await parser.parse('file.ts');
+// Type-safe analysis
+const result: AnalysisResult = await analyzeTypeScriptFile('./file.ts');
+const dependencies: EnhancedDependencyInfo[] = result.extractedData.dependencies;
 ```
+
+### 🆕 What's New in v2.4.1
+
+1. **Static Class Refactor**: Converted `ASTTraverser`, `NodeUtils`, and `TextMatcher` from static classes to exported functions for better tree-shaking and functional programming patterns.
+
+2. **Enhanced Export Analysis**: Complete rewrite of export detection with class member analysis, inheritance tracking, and statistical reporting.
+
+3. **Improved Utility Functions**: All utility functions now available as individual exports with maintained performance through caching.
+
+4. **Better TypeScript Integration**: Improved type definitions and better IDE support for all exported functions.
+
+### 📚 Module Categories
+
+| Category | Description | Key Exports |
+|----------|-------------|-------------|
+| **Core API** | High-level analysis functions | `analyzeTypeScriptFile`, `TypeScriptAnalyzer` |
+| **Enhanced Extractors** | Advanced analysis tools | `EnhancedDependencyExtractor`, `EnhancedExportExtractor` |
+| **Utility Functions** | AST and text processing | `traverse`, `getText`, `findAllExports` |
+| **Language Parsers** | Multi-language support | `TypeScriptParser`, `JavaParser`, `GoParser` |
+| **Core Services** | Infrastructure components | `AnalysisEngine`, `CacheManager` |
+| **Data Models** | Type definitions | `AnalysisResult`, `PathInfo` |
 
 ## 🎯 Language-Specific Analysis Capabilities
 
