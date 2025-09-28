@@ -17,6 +17,7 @@ This project provides a comprehensive multi-language code analysis framework wit
 - **📊 Multiple Formats**: JSON (API), compact, summary, table, CSV, and more
 - **🛡️ Error Recovery**: Robust parsing with graceful error handling
 - **🔌 Plugin System**: Extensible extractors and interpreters for custom analysis
+- **🛤️ Project Root Path Normalization**: Consistent path handling across execution contexts
 - **🎯 Enhanced Dependency Analysis**: Named import tracking with actual usage analysis
 - **🌳 Tree-shaking Optimization**: Dead code detection and bundle size optimization
 - **📊 Usage Pattern Analysis**: Method call frequency and dependency utilization metrics
@@ -30,6 +31,28 @@ This project provides a comprehensive multi-language code analysis framework wit
 - **Advanced Caching**: Multi-tier caching with memory and file storage
 - **Event System**: Progress tracking and real-time analysis events
 - **CLI Integration**: Seamless CLI-to-API bridge with perfect compatibility
+
+### 🛤️ Project Root Path Normalization System
+
+**Consistent caching and path handling regardless of execution location:**
+
+- **📁 Auto Project Root Detection**: Automatically finds project root using markers (package.json, .git, tsconfig.json, etc.)
+- **🔄 Path Normalization**: Converts any path to project-root-relative format (`./src/file.ts`)
+- **💾 Cache Efficiency**: Single cache entry per file regardless of execution directory
+- **🌍 Cross-Platform**: Unified path handling for Windows/Unix systems
+- **⚡ Performance Optimized**: Cached project root detection for repeated operations
+
+```javascript
+// All paths normalized to project root - same cache key
+await analyzer.analyzeFile('./src/component.tsx');           // From project root
+await analyzer.analyzeFile('src/component.tsx');             // From project root
+await analyzer.analyzeFile('/full/path/src/component.tsx');  // Absolute path
+await analyzer.analyzeFile('../project/src/component.tsx');  // From subdirectory
+
+// All generate the same normalized path: "./src/component.tsx"
+```
+
+**📚 Complete Guide**: [Path Normalization Documentation](docs/PATH_NORMALIZATION.md)
 
 ### 🧪 테스트 현황
 - **Total Test Suites**: 33개 테스트 스위트 ✅ (전체 시스템 검증)
@@ -58,6 +81,9 @@ This project provides a comprehensive multi-language code analysis framework wit
   - **[EXTENSION_GUIDE.md](docs/EXTENSION_GUIDE.md)**: CLI/API 확장 가이드
   - **[DEBUGGING.md](docs/DEBUGGING.md)**: 문제 해결 가이드
   - **[PERFORMANCE.md](docs/PERFORMANCE.md)**: 성능 최적화 가이드
+  - **[CACHE_MANAGEMENT.md](docs/CACHE_MANAGEMENT.md)**: 캐시 관리 및 리셋 가이드
+  - **[CACHE_ARCHITECTURE_DEEP_DIVE.md](docs/CACHE_ARCHITECTURE_DEEP_DIVE.md)**: 내장 캐싱 구조 심층 분석
+  - **[CACHE_FLOW_DIAGRAM.md](docs/CACHE_FLOW_DIAGRAM.md)**: 캐싱 플로우 다이어그램
   - **[TECHNICAL_README.md](docs/TECHNICAL_README.md)**: 기술 세부사항
 - **demo/README.md**: 🎯 **인터랙티브 데모 가이드** - 실제 실행 가능한 예제들
 
@@ -1359,6 +1385,25 @@ const batchResult = await analyzer.analyzeFiles([
 
 // Clean up
 analyzer.clearCache();
+```
+
+### 🗄️ 캐시 관리
+
+```javascript
+const { TypeScriptAnalyzer, resetFactoryAnalyzers, resetSharedAnalyzer } = require('@context-action/dependency-linker');
+
+const analyzer = new TypeScriptAnalyzer();
+
+// 개별 분석기 캐시 초기화
+analyzer.clearCache();
+
+// 팩토리 공유 분석기 초기화 (권장: 테스트 환경)
+resetFactoryAnalyzers();
+resetSharedAnalyzer();
+
+// 캐시 통계 확인
+const stats = analyzer.getCacheStats();
+console.log(`Cache size: ${stats.size}, hits: ${stats.hits}`);
 ```
 
 ### Advanced Batch Processing

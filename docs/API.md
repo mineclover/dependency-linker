@@ -10,6 +10,7 @@ This document provides a quick overview. For comprehensive API documentation wit
 - **[TypeScriptAnalyzer Class](api/classes/TypeScriptAnalyzer.md)** - Full-featured analyzer class
 - **[BatchAnalyzer Class](api/classes/BatchAnalyzer.md)** - Enterprise batch processing
 - **[Core Interfaces](api/core/interfaces.md)** - System interfaces and contracts
+- **[Cache Management](CACHE_MANAGEMENT.md)** - Cache reset and management guide
 - **[API Index](api/README.md)** - Complete API documentation index
 
 ### 🧪 Test-Validated API

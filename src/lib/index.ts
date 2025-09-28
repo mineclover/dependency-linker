@@ -14,6 +14,7 @@ export {
 	getBatchMarkdownAnalysis,
 	getFactoryMarkdownEngine,
 	resetFactoryAnalyzers,
+	resetSharedAnalyzer,
 } from "../api/factory-functions";
 // Built-in plugins
 export * from "../extractors";

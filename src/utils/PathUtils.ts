@@ -18,6 +18,9 @@ import { createLogger } from "./logger";
 
 const logger: Logger = createLogger("PathUtils");
 
+// Cache for project root to avoid repeated filesystem operations
+let cachedProjectRoot: string | null = null;
+
 /**
  * Normalize path for cross-platform compatibility
  * @param inputPath Path to normalize
@@ -673,6 +676,231 @@ export function validatePath(inputPath: string): {
 		issues,
 		...(issues.length > 0 && { sanitized }),
 	};
+}
+
+/**
+ * Find the project root directory by looking for package.json, .git, or other markers
+ *
+ * Searches upward from the starting directory to find common project markers.
+ * The result is cached to avoid repeated filesystem operations.
+ *
+ * @param startPath - Starting directory (defaults to process.cwd())
+ * @returns Project root path, or current working directory if no markers found
+ *
+ * @example
+ * ```typescript
+ * const root = findProjectRoot();
+ * console.log(root); // "/Users/name/my-project"
+ *
+ * // Start search from specific directory
+ * const root2 = findProjectRoot('/some/nested/path');
+ * ```
+ */
+export function findProjectRoot(startPath?: string): string | null {
+	// Return cached result to avoid repeated filesystem operations
+	if (cachedProjectRoot) {
+		logger.debug(`Using cached project root: ${cachedProjectRoot}`);
+		return cachedProjectRoot;
+	}
+
+	const start = startPath || process.cwd();
+	let currentDir = resolve(start);
+	const rootDir = resolve("/");
+
+	// Project markers in order of priority
+	// More specific markers (package.json, .git) are checked first
+	const projectMarkers = [
+		"package.json",      // npm/yarn/pnpm project
+		".git",              // Git repository
+		"yarn.lock",         // Yarn workspace
+		"pnpm-lock.yaml",    // pnpm workspace
+		"package-lock.json", // npm project
+		"tsconfig.json",     // TypeScript project
+		"node_modules"       // Node.js project (fallback)
+	];
+
+	logger.debug(`Searching for project root starting from: ${currentDir}`);
+
+	while (currentDir !== rootDir) {
+		// Check if any project marker exists in current directory
+		for (const marker of projectMarkers) {
+			const markerPath = join(currentDir, marker);
+			if (existsSync(markerPath)) {
+				cachedProjectRoot = currentDir;
+				logger.debug(`Found project root at: ${currentDir} (marker: ${marker})`);
+				return currentDir;
+			}
+		}
+
+		// Move up one directory
+		const parentDir = resolve(currentDir, "..");
+		if (parentDir === currentDir) {
+			break; // Reached filesystem root
+		}
+		currentDir = parentDir;
+	}
+
+	// Fallback to current working directory if no project markers found
+	logger.warn("Could not find project root markers, using current working directory as fallback");
+	cachedProjectRoot = process.cwd();
+	return cachedProjectRoot;
+}
+
+/**
+ * Normalize file path to be relative to project root
+ *
+ * Converts any file path (relative, absolute, or cross-platform) to a consistent
+ * format relative to the project root. This ensures cache keys are consistent
+ * regardless of where the analysis is executed.
+ *
+ * @param inputPath - Input file path (relative or absolute)
+ * @param projectRoot - Override project root (optional, auto-detected if not provided)
+ * @returns Normalized path relative to project root, starting with "./"
+ *
+ * @example
+ * ```typescript
+ * // From project root
+ * normalizeToProjectRoot('./src/index.ts');     // → "./src/index.ts"
+ * normalizeToProjectRoot('src/index.ts');       // → "./src/index.ts"
+ *
+ * // From subdirectory
+ * normalizeToProjectRoot('./index.ts');         // → "./src/index.ts" (if in src/)
+ *
+ * // Absolute path
+ * normalizeToProjectRoot('/full/path/to/project/src/index.ts'); // → "./src/index.ts"
+ *
+ * // Outside project (returns absolute path)
+ * normalizeToProjectRoot('/usr/lib/module.js'); // → "/usr/lib/module.js"
+ * ```
+ */
+export function normalizeToProjectRoot(
+	inputPath: string,
+	projectRoot?: string
+): string {
+	try {
+		// Get or auto-detect project root
+		const root = projectRoot || findProjectRoot();
+		if (!root) {
+			logger.warn("Could not determine project root, returning original path");
+			return inputPath;
+		}
+
+		logger.debug(`Normalizing path: ${inputPath} (project root: ${root})`);
+
+		// Convert to absolute path first to handle all input variations
+		const absolutePath = pathIsAbsolute(inputPath)
+			? inputPath
+			: resolve(process.cwd(), inputPath);
+
+		// Generate relative path from project root
+		const relativePath = relative(root, absolutePath);
+
+		// If path goes outside project root, return absolute path as-is
+		// This handles cases like system libraries or external dependencies
+		if (relativePath.startsWith("..")) {
+			logger.warn(`Path ${inputPath} is outside project root ${root}, keeping as absolute`);
+			return absolutePath;
+		}
+
+		// Always use forward slashes for cross-platform consistency
+		// This ensures Windows and Unix systems generate identical cache keys
+		const normalizedPath = relativePath.replace(/\\/g, "/");
+
+		// Ensure consistent format starting with "./" for relative paths
+		// This creates predictable cache keys regardless of input format
+		const result = normalizedPath.startsWith("./") || normalizedPath.startsWith("../")
+			? normalizedPath
+			: `./${normalizedPath}`;
+
+		logger.debug(`Normalized path result: ${result}`);
+		return result;
+
+	} catch (error) {
+		logger.error("Error normalizing path to project root", { inputPath, projectRoot, error });
+		// Return original path as fallback to avoid breaking analysis
+		return inputPath;
+	}
+}
+
+/**
+ * Get absolute path from project root relative path
+ *
+ * Converts a normalized project-relative path back to an absolute path.
+ * This is the inverse operation of normalizeToProjectRoot().
+ *
+ * @param relativePath - Path relative to project root (should start with "./" or be clean)
+ * @param projectRoot - Override project root (optional, auto-detected if not provided)
+ * @returns Absolute path resolved from project root
+ *
+ * @example
+ * ```typescript
+ * // Convert normalized path back to absolute
+ * resolveFromProjectRoot('./src/index.ts');
+ * // → "/Users/name/project/src/index.ts"
+ *
+ * // Works with clean paths too
+ * resolveFromProjectRoot('src/index.ts');
+ * // → "/Users/name/project/src/index.ts"
+ *
+ * // With custom project root
+ * resolveFromProjectRoot('./lib/utils.js', '/custom/project/root');
+ * // → "/custom/project/root/lib/utils.js"
+ * ```
+ */
+export function resolveFromProjectRoot(
+	relativePath: string,
+	projectRoot?: string
+): string {
+	try {
+		// Get or auto-detect project root
+		const root = projectRoot || findProjectRoot();
+		if (!root) {
+			logger.warn("Could not determine project root, using relative resolution");
+			return resolve(relativePath);
+		}
+
+		logger.debug(`Resolving path from project root: ${relativePath} (root: ${root})`);
+
+		// Clean up the relative path by removing leading "./" if present
+		// This handles both "./src/file.ts" and "src/file.ts" formats
+		const cleanPath = relativePath.startsWith("./")
+			? relativePath.slice(2)
+			: relativePath;
+
+		const result = resolve(root, cleanPath);
+		logger.debug(`Resolved absolute path: ${result}`);
+		return result;
+
+	} catch (error) {
+		logger.error("Error resolving path from project root", { relativePath, projectRoot, error });
+		// Fallback to basic resolution to avoid breaking functionality
+		return resolve(relativePath);
+	}
+}
+
+/**
+ * Clear cached project root (useful for testing)
+ *
+ * Resets the internal project root cache, forcing the next call to
+ * findProjectRoot() to perform a fresh filesystem search.
+ * Primarily used in testing environments to ensure clean state.
+ *
+ * @example
+ * ```typescript
+ * // In test setup
+ * beforeEach(() => {
+ *   clearProjectRootCache();
+ * });
+ *
+ * // When changing project context during tests
+ * process.chdir('/different/project');
+ * clearProjectRootCache();
+ * const newRoot = findProjectRoot(); // Fresh search
+ * ```
+ */
+export function clearProjectRootCache(): void {
+	logger.debug("Clearing project root cache");
+	cachedProjectRoot = null;
 }
 
 // Legacy class export removed - use individual functions instead

@@ -32,6 +32,7 @@ import { GoParser } from "../../parsers/GoParser";
 import { JavaParser } from "../../parsers/JavaParser";
 import { JavaScriptParser } from "../../parsers/JavaScriptParser";
 import { TypeScriptParser } from "../../parsers/TypeScriptParser";
+import { normalizeToProjectRoot } from "../../utils/PathUtils";
 import { CacheManager, type ICacheManager } from "../CacheManager";
 import {
 	ExtractorRegistry,
@@ -113,6 +114,11 @@ export class AnalysisEngine implements IAnalysisEngine {
 			? mergeAnalysisConfigs(this.defaultConfig, config)
 			: this.defaultConfig;
 
+		// Normalize file path to project root for consistent caching
+		// This ensures that './src/file.ts', 'src/file.ts', and '/abs/path/to/project/src/file.ts'
+		// all generate the same cache key regardless of execution context
+		const normalizedFilePath = normalizeToProjectRoot(filePath);
+
 		// Start performance monitoring
 		this.performanceMonitor.start();
 		const initialMemory = process.memoryUsage().heapUsed;
@@ -122,9 +128,9 @@ export class AnalysisEngine implements IAnalysisEngine {
 		}
 
 		try {
-			// Check cache first using cache module
+			// Check cache first using cache module with normalized path
 			const cacheKey = this.cacheModule.generateCacheKey(
-				filePath,
+				normalizedFilePath,
 				analysisConfig,
 			);
 
@@ -166,12 +172,18 @@ export class AnalysisEngine implements IAnalysisEngine {
 				}
 			}
 
-			// Parse the file
+			// Parse the file using original path (for actual file reading)
+			// Note: We use the original path for file I/O operations to ensure
+			// the file system can locate the file correctly
 			const result = await this.performAnalysis(
 				filePath,
 				analysisConfig,
 				undefined,
 			);
+
+			// Update result to use normalized path for consistency
+			// This ensures all results contain project-root-relative paths
+			result.filePath = normalizedFilePath;
 
 			// Cache the result using cache module
 			if (analysisConfig.useCache !== false) {
@@ -207,6 +219,10 @@ export class AnalysisEngine implements IAnalysisEngine {
 		config?: AnalysisConfig,
 	): Promise<AnalysisResult> {
 		const startTime = Date.now();
+
+		// Normalize file path to project root for consistent path handling
+		// Even for in-memory content, we normalize the virtual path for cache consistency
+		const normalizedFilePath = normalizeToProjectRoot(filePath);
 		const analysisConfig = config
 			? mergeAnalysisConfigs(this.defaultConfig, config)
 			: this.defaultConfig;
@@ -221,12 +237,17 @@ export class AnalysisEngine implements IAnalysisEngine {
 				analysisConfig,
 				content,
 			);
+
+			// Update result to use normalized path for consistency
+			// This ensures content analysis results also use project-relative paths
+			result.filePath = normalizedFilePath;
+
 			const totalTime = Date.now() - startTime;
 			result.performanceMetrics.totalTime = totalTime;
 			this.metricsModule.updateAnalysisMetrics(result, totalTime);
 			return result;
 		} catch (error) {
-			return this.handleAnalysisError(error, filePath, startTime);
+			return this.handleAnalysisError(error, normalizedFilePath, startTime);
 		}
 	}
 
