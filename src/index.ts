@@ -22,6 +22,9 @@ export {
 } from "./core/QueryResultMap";
 // ===== CORE SYSTEM =====
 export * from "./core/types";
+// ===== NEW QUERY EXECUTION SYSTEM =====
+export * from "./core/TreeSitterQueryEngine";
+export * from "./core/QueryBridge";
 // ===== MAPPING SYSTEMS =====
 export * from "./mappers/CustomKeyMapper";
 // ===== PARSERS =====
@@ -33,6 +36,10 @@ export {
 	registerTypeScriptQueries,
 	typeScriptQueries,
 } from "./queries/typescript";
+// ===== TREE-SITTER QUERY STRINGS =====
+export * from "./queries/typescript/tree-sitter-queries";
+export * from "./queries/java/tree-sitter-queries";
+export * from "./queries/python/tree-sitter-queries";
 // ===== RESULT TYPES =====
 export {
 	ArrowFunctionResult,
@@ -105,6 +112,9 @@ export const Parsers = {
 		import("./parsers").then((p) => p.getSupportedLanguages()),
 };
 
+// ===== UNIFIED ANALYSIS API =====
+export * from "./api/analysis";
+
 // ===== DEFAULT EXPORT =====
 export default {
 	QueryEngine,
@@ -114,6 +124,10 @@ export default {
 	registerTypeScriptQueries,
 	registerJavaQueries,
 	registerPythonQueries,
+	// New analysis API
+	analyzeFile: () => import("./api/analysis").then(m => m.analyzeFile),
+	analyzeTypeScriptFile: () => import("./api/analysis").then(m => m.analyzeTypeScriptFile),
+	initializeAnalysisSystem: () => import("./api/analysis").then(m => m.initializeAnalysisSystem),
 };
 
 // ===== LIBRARY INFO =====
