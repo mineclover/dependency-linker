@@ -1,6 +1,6 @@
-# Usage Guide - Multi-Language AST Analysis Library
+# Usage Guide - Query-Based AST Analysis Library
 
-A TypeScript-first AST analysis library with extensible multi-language support and QueryResultMap-based type safety.
+A TypeScript-first AST analysis library with QueryResultMap-centric architecture, complete type safety, and multi-language support.
 
 ## Quick Start
 
@@ -8,11 +8,13 @@ A TypeScript-first AST analysis library with extensible multi-language support a
 import {
   QueryEngine,
   CustomKeyMapping,
-  predefinedMappings
+  QueryExecutionContext
 } from '@context-action/dependency-linker';
 
-// Use predefined mapping for TypeScript analysis
-const engine = new QueryEngine();
+// Initialize query engine with global instance
+const engine = QueryEngine.globalInstance;
+
+// Execute multiple queries in parallel
 const results = await engine.executeMultiple(
   ["ts-import-sources", "ts-export-declarations"],
   matches,
@@ -55,7 +57,7 @@ const mapping = CustomKeyMapping.createMapper({
 ### Basic TypeScript Analysis
 
 ```typescript
-import { executeQuery, QueryExecutionContext } from '@context-action/dependency-linker';
+import { QueryEngine, QueryExecutionContext } from '@context-action/dependency-linker';
 import Parser from 'tree-sitter';
 import TypeScript from 'tree-sitter-typescript';
 
@@ -82,21 +84,22 @@ const context: QueryExecutionContext = {
   astNode: convertTreeSitterNode(tree.rootNode)
 };
 
-// 3. Execute queries
-const importResults = await executeQuery(
+// 3. Execute queries using global engine
+const engine = QueryEngine.globalInstance;
+const importResults = await engine.execute(
   "ts-import-sources",
   matches,
   context
 );
 
 console.log(importResults);
-// Output: Array of ImportSourceResult objects
+// Output: Array of ImportSourceResult objects with full type safety
 ```
 
 ### Multi-Language Project Analysis
 
 ```typescript
-import { QueryEngine, predefinedMappings } from '@context-action/dependency-linker';
+import { QueryEngine } from '@context-action/dependency-linker';
 
 const engine = new QueryEngine();
 
@@ -234,34 +237,138 @@ const mapping = CustomKeyMapping.createMapper({
 ### Query Engine Performance Monitoring
 
 ```typescript
-const engine = new QueryEngine();
+const engine = QueryEngine.globalInstance;
 
 // Execute queries
 await engine.execute("ts-import-sources", matches, context);
 
 // Check performance metrics
 const metrics = engine.getPerformanceMetrics("ts-import-sources");
-console.log(metrics); // Array of QueryPerformanceMetrics
+console.log(`Average execution time: ${metrics.averageTime}ms`);
+console.log(`Cache hit rate: ${metrics.cacheHitRate}%`);
+
+// Validate engine state
+const validation = engine.validate();
+console.log(`Registry valid: ${validation.isValid}`);
+console.log(`Warnings: ${validation.warnings.length}`);
 ```
 
 ### Batch Execution for Better Performance
 
 ```typescript
-// Execute multiple queries in parallel
+// Execute multiple queries in parallel for maximum performance
 const results = await engine.executeMultiple(
   ["ts-import-sources", "ts-export-declarations", "ts-type-imports"],
   matches,
   context
 );
+
+// Priority-based execution
+const priorityResults = await engine.executeByPriority(
+  ["ts-import-sources", "ts-export-declarations", "ts-type-imports"],
+  matches,
+  context,
+  80 // minimum priority
+);
+
+// Language-specific batch execution
+const tsResults = await engine.executeForLanguage(
+  "typescript",
+  matches,
+  context
+);
 ```
 
-## Language Support
+### Custom Key Mapping for Complex Workflows
 
-### Currently Supported Languages
+```typescript
+// React component analysis mapping
+const reactMapping = CustomKeyMapping.createMapper({
+  hooks: "ts-named-imports",        // useState, useEffect, etc.
+  components: "ts-default-imports", // React component imports
+  types: "ts-type-imports",         // Type definitions
+  exports: "ts-export-declarations" // Component exports
+});
 
-- **TypeScript/TSX**: Complete import/export analysis
-- **Java**: Import statements, class/interface/enum declarations, methods
-- **Python**: Import statements, function/class/variable definitions
+// Execute with custom keys
+const results = await reactMapping.execute(matches, context);
+
+// Access results with user-friendly keys
+console.log(results.hooks);      // Hook imports
+console.log(results.components); // Component imports
+console.log(results.types);      // Type imports
+
+// Validate mapping
+const validation = reactMapping.validate();
+console.log(`Mapping valid: ${validation.isValid}`);
+```
+
+## Language-Specific Examples
+
+### TypeScript Analysis
+
+```typescript
+// TypeScript React component analysis
+const engine = QueryEngine.globalInstance;
+
+// Analyze imports
+const imports = await engine.execute("ts-import-sources", matches, context);
+const namedImports = await engine.execute("ts-named-imports", matches, context);
+const typeImports = await engine.execute("ts-type-imports", matches, context);
+
+// Analyze exports
+const exports = await engine.execute("ts-export-declarations", matches, context);
+
+// Results are fully typed
+imports.forEach(result => {
+  console.log(`Import: ${result.source} (${result.importType})`);
+  console.log(`Relative: ${result.isRelative}`);
+});
+```
+
+### Java Analysis
+
+```typescript
+// Java application analysis
+const javaContext: QueryExecutionContext = {
+  sourceCode: javaSourceCode,
+  language: "java",
+  filePath: "Application.java",
+  astNode: javaASTNode
+};
+
+// Analyze Java imports
+const javaImports = await engine.execute("java-import-sources", matches, javaContext);
+const javaClasses = await engine.execute("java-class-declarations", matches, javaContext);
+const javaMethods = await engine.execute("java-method-declarations", matches, javaContext);
+
+// Process results
+javaImports.forEach(result => {
+  console.log(`Java Import: ${result.source}`);
+});
+```
+
+### Python Analysis
+
+```typescript
+// Python module analysis
+const pythonContext: QueryExecutionContext = {
+  sourceCode: pythonSourceCode,
+  language: "python",
+  filePath: "main.py",
+  astNode: pythonASTNode
+};
+
+// Analyze Python imports and definitions
+const pythonImports = await engine.execute("python-import-sources", matches, pythonContext);
+const pythonFunctions = await engine.execute("python-function-definitions", matches, pythonContext);
+const pythonClasses = await engine.execute("python-class-definitions", matches, pythonContext);
+
+// Process results with type safety
+pythonImports.forEach(result => {
+  console.log(`Python Import: ${result.source}`);
+});
+```
 
 ### Adding New Languages
 
@@ -270,8 +377,9 @@ The architecture supports easy language expansion:
 1. Create language-specific query modules in `src/queries/{language}/`
 2. Define result types in `src/results/{language}.ts`
 3. Register queries in the main index
+4. Add language support to QueryEngine
 
-Example for adding Rust support:
+Example structure for adding Rust support:
 
 ```typescript
 // src/queries/rust/imports.ts

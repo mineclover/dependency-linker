@@ -1,53 +1,150 @@
-# API Documentation (v2.4.1)
+# API Documentation (v3.0.0)
 
-Complete API reference for the Multi-Language Dependency Linker package.
+Complete API reference for the Query-Based AST Analysis Library.
 
-## 🆕 What's New in v2.4.1
+## 🆕 What's New in v3.0.0
 
-### Static Class Refactoring
-- **ASTTraverser** → Functional exports: `traverse`, `findNodes`, `findNode`, etc.
-- **NodeUtils** → Functional exports: `getText`, `getSourceLocation`, `getIdentifierName`, etc.
-- **TextMatcher** → Functional exports: `findAllExports`, `parseNamedExports`, etc.
-- **Better tree-shaking**: Individual function imports reduce bundle size by 30-50%
-- **Improved TypeScript support**: Enhanced type definitions for all exports
+### Complete QueryResultMap-Centric Redesign
+- **QueryEngine**: Central coordination engine with singleton pattern and global instance
+- **UnifiedQueryResultMap**: Complete type system covering TypeScript, Java, and Python
+- **CustomKeyMapping**: User-friendly abstraction with full type preservation
+- **Zero `any` Types**: Complete elimination of `any` types for maximum type safety
+- **Multi-Language Support**: Full support for TypeScript, Java, and Python queries
 
-### Enhanced Extractors
-- **EnhancedDependencyExtractor**: Named import usage tracking and dead code detection
-- **EnhancedExportExtractor**: Complete export analysis with class member detection
-- **Performance optimizations**: Better AST traversal and caching strategies
+### Language-Specific Query Systems
+- **TypeScript Queries**: 6 queries covering imports, exports, and type analysis
+- **Java Queries**: 8 queries covering imports, classes, interfaces, enums, and methods
+- **Python Queries**: 8 queries covering imports, functions, classes, variables, and methods
+- **Tree-sitter Integration**: Real AST parsing with high-performance query execution
 
-### Functional Query System
-- **Custom Key Mapping**: User-defined key mapping with type inference
-- **Extensible QueryResultMap**: Type-safe query result management
-- **Composable Query Functions**: Modular and reusable query operations
-- **Complete TypeScript Integration**: Full type safety and IntelliSense support
+### Performance & Quality Improvements
+- **Parallel Execution**: Independent queries execute concurrently by default
+- **Performance Monitoring**: Built-in execution metrics and optimization
+- **Comprehensive Testing**: Real AST pipeline tests with actual tree-sitter parsers
+- **Code Quality**: Biome linting with strict formatting and organization standards
 
-## 📚 Detailed Documentation
+## 📚 Core API Components
 
-This document provides a quick overview. For comprehensive API documentation with test-driven specifications, see the **[api/](api/)** directory:
+### QueryEngine
+Central coordination engine for all query operations:
 
-- **[Factory Functions](api/functions/factory-functions.md)** - Simple function-based API
-- **[TypeScriptAnalyzer Class](api/classes/TypeScriptAnalyzer.md)** - Full-featured analyzer class
-- **[BatchAnalyzer Class](api/classes/BatchAnalyzer.md)** - Enterprise batch processing
-- **[Core Interfaces](api/core/interfaces.md)** - System interfaces and contracts
-- **[Cache Management](CACHE_MANAGEMENT.md)** - Cache reset and management guide
-- **[Custom Key Mapping Guide](CUSTOM_KEY_MAPPING_GUIDE.md)** - User-defined key mapping system
-- **[QueryResultMap Management](QUERY_RESULT_MAP_MANAGEMENT.md)** - Type-safe query result management
-- **[API Index](api/README.md)** - Complete API documentation index
+```typescript
+import { QueryEngine } from '@context-action/dependency-linker';
+
+// Use global instance
+const engine = QueryEngine.globalInstance;
+
+// Single query execution
+const results = await engine.execute("ts-import-sources", matches, context);
+
+// Multiple queries in parallel
+const allResults = await engine.executeMultiple([
+  "ts-import-sources",
+  "ts-export-declarations"
+], matches, context);
+
+// Language-specific execution
+const tsResults = await engine.executeForLanguage("typescript", matches, context);
+```
+
+### CustomKeyMapping
+User-friendly abstraction for query composition:
+
+```typescript
+import { CustomKeyMapping } from '@context-action/dependency-linker';
+
+// Create custom mapping
+const mapping = CustomKeyMapping.createMapper({
+  imports: "ts-import-sources",
+  exports: "ts-export-declarations",
+  types: "ts-type-imports"
+});
+
+// Execute with type-safe results
+const results = await mapping.execute(matches, context);
+const validation = mapping.validate();
+```
+
+### Type-Safe Query System
+Complete type safety throughout the pipeline:
+
+```typescript
+import type {
+  QueryExecutionContext,
+  ImportSourceResult,
+  UnifiedQueryResultMap
+} from '@context-action/dependency-linker';
+
+// Automatic type inference
+const results = await engine.execute("ts-import-sources", matches, context);
+// results: ImportSourceResult[] (automatically inferred)
+```
 
 ### 🧪 Test-Validated API
-All APIs are backed by **33 comprehensive test suites** covering:
-- Multi-language analysis (TypeScript, JavaScript, Go, Java, Markdown)
-- Performance validation (<200ms parse time, <500MB memory)
-- Error handling and edge cases
-- Batch processing and concurrency control
-- Enhanced extractors with usage tracking
+All APIs are backed by comprehensive test suites covering:
+- Real AST pipeline tests with actual tree-sitter parsers
+- Multi-language verification (TypeScript, Java, Python)
+- Type safety validation with zero `any` types
+- Performance benchmarks and resource usage
+- Custom key mapping functionality
 
 ## Installation
 
 ```bash
 npm install @context-action/dependency-linker
 # or
+yarn add @context-action/dependency-linker
+```
+
+## Quick Start
+
+```typescript
+import { QueryEngine, QueryExecutionContext } from '@context-action/dependency-linker';
+
+// Initialize
+const engine = QueryEngine.globalInstance;
+
+// Create context
+const context: QueryExecutionContext = {
+  sourceCode: 'import React from "react";',
+  language: "typescript",
+  filePath: "app.tsx",
+  astNode: parsedASTNode
+};
+
+// Execute query
+const results = await engine.execute("ts-import-sources", matches, context);
+```
+
+## Language Support
+
+### TypeScript Queries
+- `ts-import-sources` - Import source paths
+- `ts-named-imports` - Named import analysis
+- `ts-default-imports` - Default import tracking
+- `ts-type-imports` - Type-only imports
+- `ts-export-declarations` - Export statements
+- `ts-export-assignments` - Export assignments
+
+### Java Queries
+- `java-import-sources` - Import source paths
+- `java-import-statements` - Full import info
+- `java-wildcard-imports` - Wildcard imports (*)
+- `java-static-imports` - Static imports
+- `java-class-declarations` - Class definitions
+- `java-interface-declarations` - Interface definitions
+- `java-enum-declarations` - Enum definitions
+- `java-method-declarations` - Method definitions
+
+### Python Queries
+- `python-import-sources` - Import module sources
+- `python-import-statements` - Import statement info
+- `python-from-imports` - From imports
+- `python-import-as` - Import aliases
+- `python-function-definitions` - Function definitions
+- `python-class-definitions` - Class definitions
+- `python-variable-definitions` - Variable definitions
+- `python-method-definitions` - Method definitions
 npm run build  # for local development
 ```
 

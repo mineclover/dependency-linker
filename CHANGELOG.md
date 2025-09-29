@@ -5,6 +5,46 @@ All notable changes to this project will be documented in this file.
 The format is based on [Keep a Changelog](https://keepachangelog.com/en/1.0.0/),
 and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0.html).
 
+## [3.0.0] - 2025-09-29
+
+### 🚀 Major Release - Complete QueryResultMap-Centric Redesign
+
+### Added
+- **🎯 QueryResultMap-Centric Architecture**: Complete redesign around unified type system
+- **🌐 Multi-Language Support**: Full support for TypeScript, Java, and Python
+- **📋 TypeScript Queries**: 6 queries including imports, exports, and type analysis
+- **☕ Java Queries**: 8 queries covering imports, classes, interfaces, enums, and methods
+- **🐍 Python Queries**: 8 queries for imports, functions, classes, variables, and methods
+- **🔧 Custom Key Mapping**: User-friendly abstraction with full type preservation
+- **⚡ Global QueryEngine**: Singleton pattern with convenient global instance access
+- **📊 Performance Monitoring**: Built-in execution metrics and performance tracking
+- **🔍 Real AST Integration**: Actual tree-sitter parser integration for all languages
+- **✅ Comprehensive Testing**: Multi-language verification and pipeline testing
+
+### Changed
+- **🔒 Complete Type Safety**: Eliminated all `any` types for maximum type safety
+- **🏗️ Language Namespacing**: Clear separation and namespacing for all language queries
+- **⚡ Parallel Execution**: Independent queries execute concurrently by default
+- **🎼 Functional Architecture**: Pure functions with composable query operations
+- **📚 Enhanced Documentation**: Complete usage guides, architecture docs, and examples
+
+### Removed
+- **🧹 Legacy Code Cleanup**: Removed outdated integration tests and compatibility layers
+- **📁 Outdated Test Files**: Cleaned up legacy unit tests for old architecture
+- **🗂️ Temporary Files**: Removed development artifacts and temporary test directories
+
+### Technical
+- **📦 Package**: Updated to `@context-action/dependency-linker` v3.0.0
+- **🔧 Linting**: Biome linter with strict formatting and organization standards
+- **🧪 Testing**: Real AST pipeline tests with actual tree-sitter parsers
+- **📖 Documentation**: Updated README, USAGE, and ARCHITECTURE for new design
+
+### Migration
+- **Breaking Change**: Complete API redesign requires migration from v2.x
+- **Type Safety**: All query results now have complete type inference
+- **Global Access**: Use `QueryEngine.globalInstance` for convenient access
+- **Language Support**: Update query keys to use language prefixes (ts-, java-, python-)
+
 ## [2.3.2] - 2025-09-26
 
 ### Documentation

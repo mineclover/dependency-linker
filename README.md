@@ -1,10 +1,16 @@
-# Multi-Language AST Analysis Library
+# Query-Based AST Analysis Library
 
 🎯 **QueryResultMap-Centric Multi-Language Code Analysis with Type Safety**
+
+[![Version](https://img.shields.io/badge/version-3.0.0-blue.svg)](https://www.npmjs.com/package/@context-action/dependency-linker)
+[![TypeScript](https://img.shields.io/badge/TypeScript-5.0+-blue.svg)](https://www.typescriptlang.org/)
+[![License](https://img.shields.io/badge/license-MIT-green.svg)](LICENSE)
 
 ## 🚀 Overview
 
 A TypeScript-first AST analysis library featuring QueryResultMap-based type safety, extensible multi-language support, and functional query composition. Built on tree-sitter for maximum performance and reliability.
+
+**Version 3.0.0** introduces a complete architectural redesign with QueryResultMap at the center, providing unprecedented type safety and multi-language consistency.
 
 ## 🌟 Key Features
 
@@ -39,21 +45,31 @@ npm install @context-action/dependency-linker
 
 ```typescript
 import {
-  executeQuery,
-  executeQueries,
+  QueryEngine,
   CustomKeyMapping,
-  predefinedMappings
+  QueryExecutionContext
 } from '@context-action/dependency-linker';
 
+// Initialize query engine
+const engine = new QueryEngine();
+
+// Create execution context
+const context: QueryExecutionContext = {
+  sourceCode: 'import React from "react";',
+  language: "typescript",
+  filePath: "app.tsx",
+  astNode: parsedASTNode
+};
+
 // Single query execution
-const results = await executeQuery(
+const results = await engine.execute(
   "ts-import-sources",
   matches,
   context
 );
 
 // Multiple queries in parallel
-const allResults = await executeQueries([
+const allResults = await engine.executeMultiple([
   "ts-import-sources",
   "ts-export-declarations",
   "ts-type-imports"
@@ -69,17 +85,29 @@ const mapping = CustomKeyMapping.createMapper({
 const customResults = await mapping.execute(matches, context);
 ```
 
-### 🎨 Predefined Mappings
+### 🎨 Language-Specific Analysis
 
 ```typescript
-// TypeScript analysis
-const tsResults = await predefinedMappings.typeScriptAnalysis.execute(matches, context);
+// TypeScript comprehensive analysis
+const tsResults = await engine.executeForLanguage(
+  "typescript",
+  matches,
+  context
+);
 
-// React development
-const reactResults = await predefinedMappings.reactAnalysis.execute(matches, context);
+// Java analysis
+const javaResults = await engine.executeForLanguage(
+  "java",
+  javaMatches,
+  javaContext
+);
 
-// Module structure
-const moduleResults = await predefinedMappings.moduleAnalysis.execute(matches, context);
+// Python analysis
+const pythonResults = await engine.executeForLanguage(
+  "python",
+  pythonMatches,
+  pythonContext
+);
 ```
 
 ## 🏗️ Architecture
@@ -116,7 +144,7 @@ Each language follows consistent naming patterns:
 
 ## 📚 Language Support
 
-### 📋 TypeScript/TSX (6 queries)
+### 📋 TypeScript/TSX Queries
 ```typescript
 // Available TypeScript queries
 "ts-import-sources"      // Import source paths
@@ -127,10 +155,10 @@ Each language follows consistent naming patterns:
 "ts-export-assignments"  // Export assignments
 ```
 
-### ☕ Java (8 queries)
+### ☕ Java Queries
 ```typescript
 // Available Java queries
-"java-import-sources"        // Import statements
+"java-import-sources"        // Import source paths
 "java-import-statements"     // Full import info
 "java-wildcard-imports"      // Wildcard imports (*)
 "java-static-imports"        // Static imports
@@ -140,11 +168,11 @@ Each language follows consistent naming patterns:
 "java-method-declarations"   // Method definitions
 ```
 
-### 🐍 Python (8 queries)
+### 🐍 Python Queries
 ```typescript
 // Available Python queries
-"python-import-sources"      // Import sources
-"python-import-statements"   // Import info
+"python-import-sources"      // Import module sources
+"python-import-statements"   // Import statement info
 "python-from-imports"        // From imports
 "python-import-as"           // Import aliases
 "python-function-definitions" // Function definitions
@@ -354,19 +382,19 @@ const results = await executeQuery("ts-import-sources", matches, context);
 
 ## 🧪 Testing & Quality
 
-- **✅ Complete Test Suite**: 8 test suites, 48 tests passing
+- **✅ Complete Test Suite**: Multi-language verification and pipeline testing
 - **✅ Type Safety**: Zero `any` types, complete TypeScript inference
-- **✅ Multi-Language Validation**: All language query patterns tested
+- **✅ Multi-Language Validation**: TypeScript, Java, Python query patterns tested
 - **✅ Real AST Testing**: Integration with actual tree-sitter parsers
-- **✅ Performance Testing**: Execution time and memory validation
+- **✅ Performance Testing**: Query execution and validation
 
 ### Test Categories
 
-- **Real AST Pipeline Tests**: Actual tree-sitter integration
-- **Multi-Language Verification**: Cross-language compatibility
+- **Real AST Pipeline Tests**: Actual tree-sitter integration with TypeScript and JavaScript
+- **Multi-Language Verification**: Cross-language query compatibility testing
 - **Type Inference Validation**: Complete type safety verification
-- **Pipeline Concept Validation**: Core architecture validation
-- **Query Registry Tests**: Query registration and validation
+- **Pipeline Concept Validation**: Core QueryResultMap architecture validation
+- **Query Registry Tests**: Query registration and validation with all languages
 
 ## 📚 Documentation
 
@@ -376,12 +404,12 @@ const results = await executeQuery("ts-import-sources", matches, context);
 
 ## 🏆 Project Status
 
-**✅ Production Ready**
-- All linting errors resolved
+**✅ Version 3.0.0 - Production Ready**
+- All linting errors resolved with Biome
 - Complete test suite passing
-- Type-safe implementation
-- Multi-language support verified
-- Performance benchmarks met
+- Type-safe implementation with zero `any` types
+- Multi-language support verified (TypeScript, Java, Python)
+- QueryResultMap-centric architecture stable
 
 ### Technical Features
 
