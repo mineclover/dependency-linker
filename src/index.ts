@@ -1,147 +1,145 @@
 /**
- * Query-Based AST Analysis Library
- * QueryResultMap 중심의 타입 안전한 AST 분석 라이브러리
+ * Multi-Language Dependency Linker - Main Entry Point
+ * 다국어 의존성 분석 라이브러리의 메인 진입점
  */
 
-export * from "./core/QueryBridge";
-export * from "./core/QueryEngine";
+// ===== CORE API EXPORTS =====
+
+// Analysis API
 export {
-	extractLanguageFromQueryKey,
-	filterQueryKeysByLanguage,
-	GoQueryResultMap,
-	groupQueryKeysByLanguage,
-	isLanguageQueryKey,
-	JavaQueryResultMap,
-	JavaScriptQueryResultMap,
-	LanguageSpecificQueryKey,
-	LanguageSpecificQueryResult,
-	PythonQueryResultMap,
+	analyzeFile,
+	analyzeTypeScriptFile,
+	analyzeJavaScriptFile,
+	analyzeJavaFile,
+	analyzePythonFile,
+	analyzeImports,
+	analyzeDependencies,
+	initializeAnalysisSystem,
+} from "./api/analysis";
+
+export type {
+	AnalysisResult,
+	AnalysisOptions,
+} from "./api/analysis";
+
+// ===== CORE SYSTEM EXPORTS =====
+
+// Types
+export type {
+	SupportedLanguage,
+	QueryExecutionContext,
+} from "./core/types";
+
+export type {
 	QueryKey,
 	QueryResult,
-	QueryResultMap,
-	TypeScriptQueryResultMap,
 } from "./core/QueryResultMap";
-// ===== NEW QUERY EXECUTION SYSTEM =====
-export * from "./core/TreeSitterQueryEngine";
-// ===== CORE SYSTEM =====
-export * from "./core/types";
-// ===== MAPPING SYSTEMS =====
-export * from "./mappers/CustomKeyMapper";
-// ===== PARSERS =====
-export * from "./parsers";
-// ===== QUERY SYSTEMS =====
-export { javaQueries, registerJavaQueries } from "./queries/java";
-export * from "./queries/java/tree-sitter-queries";
-export { pythonQueries, registerPythonQueries } from "./queries/python";
-export * from "./queries/python/tree-sitter-queries";
-export {
-	registerTypeScriptQueries,
-	typeScriptQueries,
-} from "./queries/typescript";
-// ===== TREE-SITTER QUERY STRINGS =====
-export * from "./queries/typescript/tree-sitter-queries";
-// ===== RESULT TYPES =====
-export {
-	ArrowFunctionResult,
-	BaseQueryResultMap,
-	ClassDefinitionResult,
-	DefaultImportResult,
-	EnumDefinitionResult,
-	ExportAssignmentResult,
-	ExportDeclarationResult,
-	FunctionDeclarationResult,
-	GoExportResult,
-	ImportSourceResult,
-	InterfaceDefinitionResult,
-	JavaExportResult,
-	MethodDefinitionResult,
-	NamedImportResult,
-	TypeImportResult,
-	UnifiedQueryResultMap,
-} from "./results";
-// ===== UTILITIES =====
-export * from "./utils";
 
-// ===== MAIN API =====
-import {
-	executeQueries,
-	executeQuery,
-	globalQueryEngine,
-	registerQuery,
-} from "./core/QueryEngine";
-import {
+// Custom Key Mapping
+export {
 	createCustomKeyMapper,
-	executeQueriesWithCustomKeys,
 	predefinedCustomMappings,
 } from "./mappers/CustomKeyMapper";
-import { registerJavaQueries } from "./queries/java";
-import { registerPythonQueries } from "./queries/python";
-import { registerTypeScriptQueries } from "./queries/typescript";
 
-// 기본 쿼리들 자동 등록
-registerTypeScriptQueries(globalQueryEngine);
-registerJavaQueries(globalQueryEngine);
-registerPythonQueries(globalQueryEngine);
-
-// ===== CONVENIENCE EXPORTS =====
-export const QueryEngine = {
-	globalInstance: globalQueryEngine,
-	registerQuery,
-	executeQuery,
-	executeQueries,
-};
-
-export const CustomKeyMapping = {
-	execute: executeQueriesWithCustomKeys,
-	createMapper: createCustomKeyMapper,
-	predefined: predefinedCustomMappings,
-};
-
-export const Parsers = {
-	parseFile: (filePath: string) =>
-		import("./parsers").then((p) => p.parseFile(filePath)),
-	parseCode: (sourceCode: string, language: any, filePath?: string) =>
-		import("./parsers").then((p) =>
-			p.parseCode(sourceCode, language, filePath),
-		),
-	createParser: (language: any) =>
-		import("./parsers").then((p) => p.createParser(language)),
-	isFileSupported: (filePath: string) =>
-		import("./parsers").then((p) => p.isFileSupported(filePath)),
-	getSupportedLanguages: () =>
-		import("./parsers").then((p) => p.getSupportedLanguages()),
-};
-
-// ===== UNIFIED ANALYSIS API =====
-export * from "./api/analysis";
-
-// ===== DEFAULT EXPORT =====
-export default {
-	QueryEngine,
+export type {
 	CustomKeyMapping,
-	Parsers,
-	predefinedMappings: predefinedCustomMappings,
-	registerTypeScriptQueries,
-	registerJavaQueries,
-	registerPythonQueries,
-	// New analysis API
-	analyzeFile: () => import("./api/analysis").then((m) => m.analyzeFile),
-	analyzeTypeScriptFile: () =>
-		import("./api/analysis").then((m) => m.analyzeTypeScriptFile),
-	initializeAnalysisSystem: () =>
-		import("./api/analysis").then((m) => m.initializeAnalysisSystem),
-};
+	CustomKeyMapper,
+} from "./mappers/CustomKeyMapper";
 
-// ===== LIBRARY INFO =====
-export const LIBRARY_INFO = {
-	name: "Query-Based AST Analysis Library",
-	version: "3.0.0",
-	description: "TypeScript-first AST analysis with extensible query system",
-	features: [
-		"QueryResultMap-based type safety",
-		"Language-specific query grouping",
-		"Custom key mapping system",
-		"Extensible query architecture",
-		"TypeScript-first design",
-	],
-} as const;
+// Parsers
+export { parseCode } from "./parsers";
+export type { ParseResult, ParserOptions } from "./parsers/base";
+
+// Parser Management
+export {
+	globalParserManager,
+	ParserManager,
+} from "./parsers/ParserManager";
+
+// ===== DEPENDENCY GRAPH ANALYSIS =====
+
+// Main Graph API
+export {
+	createDependencyAnalyzer,
+	analyzeDependencyGraph,
+	analyzeProjectDependencies,
+	analyzeFileImpact,
+} from "./graph/api";
+
+// Graph Building
+export {
+	DependencyGraphBuilder,
+	createDependencyGraphBuilder,
+	buildDependencyGraph,
+} from "./graph/DependencyGraphBuilder";
+
+// Graph Analysis
+export {
+	GraphAnalyzer,
+	createGraphAnalyzer,
+	analyzeGraph,
+} from "./graph/GraphAnalyzer";
+
+// Path Resolution
+export {
+	PathResolver,
+	createPathResolver,
+	resolvePath,
+} from "./graph/PathResolver";
+
+// Graph Types
+export type {
+	FileDependency,
+	DependencyNode,
+	DependencyEdge,
+	DependencyGraph,
+	PathResolutionOptions,
+	PathResolutionResult,
+	GraphAnalysisResult,
+	GraphBuildOptions,
+	GraphBuildResult,
+} from "./graph/types";
+
+// ===== QUERY ENGINE EXPORTS =====
+
+// Query Bridge
+export {
+	executeTreeSitterQuery,
+	executeMultipleTreeSitterQueries,
+	executeAllLanguageQueries,
+	initializeQueryBridge,
+} from "./core/QueryBridge";
+
+// Query Engine
+export {
+	globalQueryEngine,
+	QueryEngine,
+} from "./core/QueryEngine";
+
+// Tree-sitter Query Engine
+export {
+	globalTreeSitterQueryEngine,
+	TreeSitterQueryEngine,
+} from "./core/TreeSitterQueryEngine";
+
+// ===== LANGUAGE PARSERS =====
+
+// Individual Parsers
+export { TypeScriptParser } from "./parsers/typescript";
+export { JavaParser } from "./parsers/java";
+export { PythonParser } from "./parsers/python";
+export { GoParser } from "./parsers/go";
+
+// Parser Factory
+export {
+	ParserFactory,
+	globalParserFactory,
+} from "./parsers/ParserFactory";
+
+// ===== UTILITIES =====
+
+// Note: Additional utilities can be added here as needed
+
+// ===== VERSION INFO =====
+
+export const VERSION = "2.4.1";
