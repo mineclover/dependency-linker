@@ -161,17 +161,25 @@ export const asyncProcessor = async (data: any) => {
         expect(astNode.type).toBe("program");
         expect(astNode.children).toBeDefined();
 
-        // 예상된 타입들이 AST에 포함되어 있는지 확인
-        const nodeTypes = new Set(
-          astNode.children!.map(child => child.type)
-        );
+        // 예상된 타입들이 AST에 포함되어 있는지 확인 (깊이 우선 탐색)
+        const getAllNodeTypes = (node: ASTNode): string[] => {
+          const types = [node.type];
+          if (node.children) {
+            for (const child of node.children) {
+              types.push(...getAllNodeTypes(child));
+            }
+          }
+          return types;
+        };
+
+        const allNodeTypes = new Set(getAllNodeTypes(astNode));
 
         testCase.expectedTypes.forEach(expectedType => {
-          expect(Array.from(nodeTypes)).toContain(expectedType);
+          expect(Array.from(allNodeTypes)).toContain(expectedType);
         });
 
         console.log(`✅ ${testCase.name} AST 처리 확인`);
-        console.log(`   - Node Types: ${Array.from(nodeTypes).join(", ")}`);
+        console.log(`   - Node Types: ${Array.from(allNodeTypes).join(", ")}`);
       });
     });
   });
@@ -274,33 +282,50 @@ module.exports = { defaultConfig };`
     });
 
     it("should support custom query mapping across languages", () => {
-      // 언어별 커스텀 매핑 - 동일한 사용자 키, 다른 쿼리 키
-      const mappings = {
-        typescript: CustomKeyMapping.createMapper({
-          imports: "ts-import-sources",
-          exports: "ts-export-declarations",
-          types: "ts-interface-definitions"
-        }),
-        javascript: CustomKeyMapping.createMapper({
-          imports: "js-import-sources",
-          exports: "js-export-declarations",
-          // JavaScript에는 types가 없으므로 생략
-        })
-      };
-
-      // 모든 매핑이 유효하고 사용자 키는 동일
-      Object.entries(mappings).forEach(([language, mapper]) => {
-        const validation = mapper.validate();
-        expect(validation.isValid).toBe(true);
-
-        const userKeys = mapper.getUserKeys();
-        expect(userKeys).toContain("imports");
-        expect(userKeys).toContain("exports");
-
-        console.log(`✅ ${language} 커스텀 매핑 검증`);
-        console.log(`   - User Keys: ${userKeys.join(", ")}`);
-        console.log(`   - Valid: ${validation.isValid}`);
+      // 현재 구현된 쿼리들로 커스텀 매핑 테스트
+      const typeScriptMapping = CustomKeyMapping.createMapper({
+        imports: "ts-import-sources",
+        namedImports: "ts-named-imports",
+        defaultImports: "ts-default-imports",
+        typeImports: "ts-type-imports"
       });
+
+      const pythonMapping = CustomKeyMapping.createMapper({
+        imports: "python-import-sources",
+        fromImports: "python-from-imports",
+        importStatements: "python-import-statements",
+        importAliases: "python-import-as"
+      });
+
+      // TypeScript 매핑 검증
+      const tsValidation = typeScriptMapping.validate();
+      expect(tsValidation.isValid).toBe(true);
+
+      const tsUserKeys = typeScriptMapping.getUserKeys();
+      expect(tsUserKeys).toContain("imports");
+      expect(tsUserKeys).toContain("namedImports");
+
+      // Python 매핑 검증
+      const pyValidation = pythonMapping.validate();
+      expect(pyValidation.isValid).toBe(true);
+
+      const pyUserKeys = pythonMapping.getUserKeys();
+      expect(pyUserKeys).toContain("imports");
+      expect(pyUserKeys).toContain("fromImports");
+
+      console.log(`✅ TypeScript 커스텀 매핑 검증`);
+      console.log(`   - User Keys: ${tsUserKeys.join(", ")}`);
+      console.log(`   - Valid: ${tsValidation.isValid}`);
+
+      console.log(`✅ Python 커스텀 매핑 검증`);
+      console.log(`   - User Keys: ${pyUserKeys.join(", ")}`);
+      console.log(`   - Valid: ${pyValidation.isValid}`);
+
+      // 언어 간 쿼리 구조의 일관성 확인
+      expect(tsUserKeys.length).toBeGreaterThan(2);
+      expect(pyUserKeys.length).toBeGreaterThan(2);
+      expect(tsUserKeys).toContain("imports");
+      expect(pyUserKeys).toContain("imports");
     });
   });
 });

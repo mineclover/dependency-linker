@@ -245,14 +245,15 @@ describe("AST → Query Pipeline", () => {
 
       // 3. 커스텀 키 매핑으로 쿼리 조합
       const customMapping = {
-        reactImports: "ts-import-sources",
-        components: "ts-default-imports"
+        imports: "ts-import-sources" as const,
+        defaultImports: "ts-default-imports" as const,
+        namedImports: "ts-named-imports" as const
       };
 
       // 4. 파이프라인 실행 시뮬레이션
       const mapper = CustomKeyMapping.createMapper(customMapping);
       expect(mapper.getMapping()).toEqual(customMapping);
-      expect(mapper.getUserKeys()).toContain("reactImports");
+      expect(mapper.getUserKeys()).toContain("imports");
       expect(mapper.getQueryKeys()).toContain("ts-import-sources");
 
       // 5. 결과 확인 - AST가 쿼리를 통해 구조화된 결과로 변환됨
