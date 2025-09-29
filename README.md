@@ -24,6 +24,9 @@ This project provides a comprehensive multi-language code analysis framework wit
 - **⚡ Tree-sitter Query System**: High-performance AST analysis with configurable query injection
 - **🔒 Type-Safe Query Results**: Strongly-typed query outputs with comprehensive result validation
 - **🚀 Cursor-Based Optimization**: Memory-efficient traversal for large codebases
+- **🎯 Functional Query System**: Custom key mapping with type inference and extensible QueryResultMap
+- **🔧 User-Defined Mapping**: Type-safe custom key mapping for flexible result structures
+- **📈 Extensible Queries**: Modular and composable query functions with type safety
 
 ### 🚀 API Capabilities
 - **Multi-Language Support**: TypeScript, JavaScript, Go, Java, Markdown parsers
@@ -78,6 +81,8 @@ await analyzer.analyzeFile('../project/src/component.tsx');  // From subdirector
     - **[TypeScriptAnalyzer](docs/api/classes/TypeScriptAnalyzer.md)**: 메인 분석기 클래스
     - **[BatchAnalyzer](docs/api/classes/BatchAnalyzer.md)**: 배치 처리 시스템
     - **[Core Interfaces](docs/api/core/interfaces.md)**: 핵심 인터페이스
+  - **[CUSTOM_KEY_MAPPING_GUIDE.md](docs/CUSTOM_KEY_MAPPING_GUIDE.md)**: 사용자 정의 키 매핑 시스템 가이드
+  - **[QUERY_RESULT_MAP_MANAGEMENT.md](docs/QUERY_RESULT_MAP_MANAGEMENT.md)**: QueryResultMap 관리 및 확장 가이드
   - **[CHANGELOG_v2.4.1.md](docs/CHANGELOG_v2.4.1.md)**: 🆕 v2.4.1 변경사항 및 개선점
   - **[MIGRATION_GUIDE_v2.4.1.md](docs/MIGRATION_GUIDE_v2.4.1.md)**: 🔄 정적 클래스에서 함수로 마이그레이션 가이드
   - **[PACKAGE_EXPORTS.md](docs/PACKAGE_EXPORTS.md)**: 📦 트리쉐이킹 및 선택적 임포트 가이드

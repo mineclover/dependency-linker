@@ -16,6 +16,12 @@ Complete API reference for the Multi-Language Dependency Linker package.
 - **EnhancedExportExtractor**: Complete export analysis with class member detection
 - **Performance optimizations**: Better AST traversal and caching strategies
 
+### Functional Query System
+- **Custom Key Mapping**: User-defined key mapping with type inference
+- **Extensible QueryResultMap**: Type-safe query result management
+- **Composable Query Functions**: Modular and reusable query operations
+- **Complete TypeScript Integration**: Full type safety and IntelliSense support
+
 ## 📚 Detailed Documentation
 
 This document provides a quick overview. For comprehensive API documentation with test-driven specifications, see the **[api/](api/)** directory:
@@ -25,6 +31,8 @@ This document provides a quick overview. For comprehensive API documentation wit
 - **[BatchAnalyzer Class](api/classes/BatchAnalyzer.md)** - Enterprise batch processing
 - **[Core Interfaces](api/core/interfaces.md)** - System interfaces and contracts
 - **[Cache Management](CACHE_MANAGEMENT.md)** - Cache reset and management guide
+- **[Custom Key Mapping Guide](CUSTOM_KEY_MAPPING_GUIDE.md)** - User-defined key mapping system
+- **[QueryResultMap Management](QUERY_RESULT_MAP_MANAGEMENT.md)** - Type-safe query result management
 - **[API Index](api/README.md)** - Complete API documentation index
 
 ### 🧪 Test-Validated API
