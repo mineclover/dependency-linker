@@ -13,7 +13,7 @@
 5. [Type Safety Requirements](#type-safety-requirements)
 6. [Testing Requirements](#testing-requirements)
 7. [Performance Monitoring](#performance-monitoring)
-8. [Migration Guidelines](#migration-guidelines)
+8. [Rescan-Based Approach](#rescan-based-approach)
 
 ---
 
@@ -680,81 +680,227 @@ interface CacheStats {
 
 ---
 
-## Migration Guidelines
+## Rescan-Based Approach
 
-### 8.1 Breaking Changes
+### 8.1 Philosophy: No Migration, Just Rescan
 
-**When Breaking Changes Are Necessary**:
-- Fundamental schema changes
-- Edge type semantics changes
-- Inference algorithm improvements
+**Core Principle**: When schema or edge type definitions change, simply delete the old database and rescan all source files. This is simpler, safer, and more maintainable than complex migration logic.
 
-**Migration Process**:
+**Why No Migration?**:
+- **Source of Truth**: Source code is the ultimate source of truth, not the database
+- **Simplicity**: No complex migration scripts to maintain
+- **Correctness**: Guaranteed consistency with current analyzer logic
+- **Speed**: Modern analyzers are fast enough to rescan entire projects in seconds
+- **Idempotency**: Rescan produces identical results every time
 
-1. **Version the Change**:
+### 8.2 When to Rescan
+
+**Schema Changes**:
+```bash
+# Delete database and rescan
+rm graph.db
+npm run analyze:project
+```
+
+**Edge Type Changes**:
+```bash
+# After modifying EdgeTypeRegistry
+rm graph.db
+npm run analyze:project
+```
+
+**Analyzer Logic Updates**:
+```bash
+# After updating analyzer behavior
+rm graph.db
+npm run analyze:project
+```
+
+**Cache Corruption or Inconsistency**:
+```bash
+# When in doubt, rescan
+rm graph.db
+npm run analyze:project
+```
+
+### 8.3 Making Changes Safe for Rescan
+
+**Code Changes**:
 ```typescript
-// migrations/v2_inference_cache.ts
-export async function migrateV2InferenceCache(db: Database): Promise<void> {
-  // 1. Backup existing data
-  await db.run('CREATE TABLE edges_backup AS SELECT * FROM edges');
+// ✅ Good - Safe to rescan
+export class FileDependencyAnalyzer {
+  static readonly OWNED_EDGE_TYPES = ['imports_file', 'imports_library'];
 
-  // 2. Apply schema changes
-  await db.run('ALTER TABLE edges ADD COLUMN new_field TEXT');
+  async analyzeFile(filePath: string): Promise<void> {
+    // 1. Cleanup owned edges for this file
+    await this.cleanupRelationships(filePath);
 
-  // 3. Migrate data
-  await db.run('UPDATE edges SET new_field = ...');
+    // 2. Re-analyze and create fresh edges
+    const deps = await this.extractDependencies(filePath);
+    for (const dep of deps) {
+      await this.createEdge(dep);
+    }
+  }
+}
 
-  // 4. Validate
-  const validation = await validateMigration(db);
-  if (!validation.success) {
-    await rollback(db);
-    throw new Error('Migration failed');
+// ❌ Bad - Not idempotent, will create duplicates
+export class BadAnalyzer {
+  async analyzeFile(filePath: string): Promise<void> {
+    // No cleanup! Will accumulate edges on each run
+    const deps = await this.extractDependencies(filePath);
+    for (const dep of deps) {
+      await this.createEdge(dep);
+    }
   }
 }
 ```
 
-2. **Provide Rollback**:
+**Idempotent Operations**:
 ```typescript
-export async function rollbackV2InferenceCache(db: Database): Promise<void> {
-  await db.run('DROP TABLE edges');
-  await db.run('ALTER TABLE edges_backup RENAME TO edges');
+// ✅ Idempotent - Can run multiple times safely
+await db.upsertRelationship({
+  type: 'imports_file',
+  fromNodeId: nodeA.id,
+  toNodeId: nodeB.id,
+  sourceFile: filePath,
+  // ... other properties
+});
+
+// ✅ Idempotent - Cleanup before creating
+await db.cleanupRelationshipsBySourceAndTypes(filePath, ['imports_file']);
+await db.createRelationships(newEdges);
+```
+
+### 8.4 Rescan Performance Optimization
+
+**Incremental Analysis** (when possible):
+```typescript
+// Analyze only changed files
+const changedFiles = await gitDiff();
+for (const file of changedFiles) {
+  await analyzer.analyzeFile(file);
 }
 ```
 
-3. **Document Changes**:
-```markdown
-# Migration V2: Inference Cache Improvements
-
-## Changes
-- Added `computed_at` column to inference cache
-- Updated cache sync logic for better performance
-
-## Breaking Changes
-- InferenceEngine constructor signature changed
-- Cache table schema modified
-
-## Migration Steps
-1. Backup database: `cp graph.db graph.db.backup`
-2. Run migration: `npm run migrate:v2`
-3. Verify: `npm run test:migration`
-
-## Rollback
-If issues occur: `npm run migrate:rollback:v2`
+**Parallel Processing**:
+```typescript
+// Analyze multiple files in parallel
+const files = await findAllSourceFiles();
+await Promise.all(
+  files.map(file => analyzer.analyzeFile(file))
+);
 ```
 
-### 8.2 Non-Breaking Changes
+**Progress Tracking**:
+```typescript
+// Show progress during full rescan
+const files = await findAllSourceFiles();
+let processed = 0;
 
-**Safe to Add**:
-- New edge types (as long as they don't conflict)
-- New inference options (with defaults)
-- New indexes
-- New analyzer classes
+for (const file of files) {
+  await analyzer.analyzeFile(file);
+  processed++;
+  if (processed % 100 === 0) {
+    console.log(`Analyzed ${processed}/${files.length} files`);
+  }
+}
+```
 
-**Process**:
-1. Add to EdgeTypeRegistry
-2. Update schema.sql
-3. Add tests
-4. Document in changelog
+### 8.5 Preserving User Data During Rescan
+
+**Convention**: User-created data should have distinct edge types and source files.
+
+**Example**:
+```typescript
+// System-generated edges: Always safe to delete and rescan
+{
+  type: 'imports_file',
+  sourceFile: '/src/App.tsx', // From analyzer
+  // ...
+}
+
+// User-created edges: Preserve across rescans
+{
+  type: 'user_annotation',
+  sourceFile: 'user:manual', // Special prefix
+  // ...
+}
+```
+
+**Selective Cleanup**:
+```typescript
+// Only delete analyzer-generated edges
+await db.run(`
+  DELETE FROM edges
+  WHERE source_file NOT LIKE 'user:%'
+    AND type IN (${ANALYZER_EDGE_TYPES})
+`);
+
+// Then rescan
+await analyzer.analyzeAllFiles();
+```
+
+### 8.6 Testing Rescan Behavior
+
+**Test Idempotency**:
+```typescript
+describe('Analyzer Idempotency', () => {
+  it('should produce identical results on multiple runs', async () => {
+    // First analysis
+    await analyzer.analyzeFile('/src/test.ts');
+    const edges1 = await db.findRelationships({
+      sourceFiles: ['/src/test.ts']
+    });
+
+    // Second analysis (rescan)
+    await analyzer.analyzeFile('/src/test.ts');
+    const edges2 = await db.findRelationships({
+      sourceFiles: ['/src/test.ts']
+    });
+
+    // Results should be identical
+    expect(edges2).toEqual(edges1);
+  });
+
+  it('should handle full database rescan', async () => {
+    // Initial scan
+    await analyzer.analyzeAllFiles();
+    const initialStats = await db.getGraphStats();
+
+    // Delete and rescan
+    await db.reset();
+    await analyzer.analyzeAllFiles();
+    const rescanStats = await db.getGraphStats();
+
+    // Statistics should match
+    expect(rescanStats.nodeCount).toBe(initialStats.nodeCount);
+    expect(rescanStats.edgeCount).toBe(initialStats.edgeCount);
+  });
+});
+```
+
+### 8.7 Schema Evolution Strategy
+
+**Backward-Compatible Changes** (No rescan needed):
+- Adding new edge types (doesn't affect existing edges)
+- Adding optional columns with defaults
+- Adding indexes
+- Adding new analyzers
+
+**Breaking Changes** (Requires rescan):
+- Changing edge type semantics
+- Renaming edge types
+- Changing edge metadata structure
+- Modifying inference properties
+
+**Process for Breaking Changes**:
+1. Update `EdgeTypeRegistry` with new definitions
+2. Update `schema.sql` to match
+3. Update analyzer logic if needed
+4. Document changes in changelog
+5. Users run: `rm graph.db && npm run analyze:project`
+
+**No migration scripts needed!**
 
 ---
 
@@ -788,13 +934,13 @@ If issues occur: `npm run migrate:rollback:v2`
 - [ ] Update inference-system.md docs
 
 ### Schema Changes
-- [ ] Create migration file
 - [ ] Update schema.sql
 - [ ] Update TypeScript interfaces
-- [ ] Provide rollback procedure
-- [ ] Test migration on sample database
-- [ ] Document breaking changes
-- [ ] Update version number
+- [ ] Update EdgeTypeRegistry if edge types changed
+- [ ] Test analyzer idempotency
+- [ ] Document breaking changes in changelog
+- [ ] Note in docs: Users should rescan (`rm graph.db && npm run analyze:project`)
+- [ ] Run full test suite
 
 ---
 
