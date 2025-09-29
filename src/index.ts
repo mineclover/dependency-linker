@@ -1,60 +1,96 @@
 /**
- * TypeScript Dependency Linker - Main Entry Point
- * Multi-language AST-based code analysis framework with extensible plugin architecture
+ * Query-Based AST Analysis Library
+ * QueryResultMap 중심의 타입 안전한 AST 분석 라이브러리
  */
 
-// ===== CORE API =====
-export * from "./api";
-// ===== EXTRACTORS & INTERPRETERS =====
-export * from "./extractors";
-export * from "./interpreters";
-// ===== LIBRARY FUNCTIONS =====
-export * from "./lib";
-// ===== CORE MODELS =====
-export { AnalysisConfig } from "./models/AnalysisConfig";
-export { AnalysisError } from "./models/AnalysisError";
-export { AnalysisResult } from "./models/AnalysisResult";
-export { CacheEntry } from "./models/CacheEntry";
-export { DependencyInfo } from "./models/DependencyInfo";
-export { ExportInfo } from "./models/ExportInfo";
-export { ExtractedData } from "./models/ExtractedData";
+// ===== CORE SYSTEM =====
+export * from "./core/types";
 export {
-	FileAnalysisRequest,
-	OutputFormat,
-} from "./models/FileAnalysisRequest";
-export { ImportInfo } from "./models/ImportInfo";
-export { IntegratedAnalysisData } from "./models/IntegratedData";
-export { PerformanceMetrics } from "./models/PerformanceMetrics";
-export { SourceLocation } from "./models/SourceLocation";
-export { GoParser } from "./parsers/GoParser";
-// ===== LANGUAGE PARSERS =====
-export { ILanguageParser } from "./parsers/ILanguageParser";
-export { JavaParser } from "./parsers/JavaParser";
-export { JavaScriptParser } from "./parsers/JavaScriptParser";
-export { TypeScriptParser } from "./parsers/TypeScriptParser";
-export { AnalysisEngineFactory } from "./services/AnalysisEngineFactory";
-// ===== CORE SERVICES =====
-export { AnalysisEngine } from "./services/analysis-engine";
-export { CacheManager } from "./services/CacheManager";
-export { DependencyAnalyzer } from "./services/DependencyAnalyzer";
-export { DirectoryAnalyzer } from "./services/DirectoryAnalyzer";
-// ===== REGISTRIES =====
-export { ExtractorRegistry } from "./services/ExtractorRegistry";
-export { FileAnalyzer } from "./services/FileAnalyzer";
-export { IAnalysisEngine } from "./services/IAnalysisEngine";
-export { ICacheManager } from "./services/ICacheManager";
-export { InterpreterRegistry } from "./services/InterpreterRegistry";
-// ===== INTEGRATION SERVICES =====
-export { DataIntegrator } from "./services/integration/DataIntegrator";
-export { ParserRegistry } from "./services/ParserRegistry";
-export { TypeScriptParser as LegacyTypeScriptParser } from "./services/TypeScriptParser"; // Legacy parser
-export * from "./types/ASTWrappers";
-// ===== TYPE SYSTEM =====
-export * from "./types/TreeSitterTypes";
-// ===== UTILITIES =====
-export { createLogger } from "./utils/logger";
-export * from "./utils/PathResolutionUtils";
-export * from "./utils/PathUtils";
+  QueryResultMap,
+  QueryKey,
+  QueryResult,
+  TypeScriptQueryResultMap,
+  JavaScriptQueryResultMap,
+  GoQueryResultMap,
+  JavaQueryResultMap,
+  LanguageSpecificQueryKey,
+  LanguageSpecificQueryResult,
+  isLanguageQueryKey,
+  extractLanguageFromQueryKey,
+  filterQueryKeysByLanguage,
+  groupQueryKeysByLanguage
+} from "./core/QueryResultMap";
+export * from "./core/QueryEngine";
 
-// ===== CONFIGURATION =====
-// Configuration is handled through config files and API
+// ===== RESULT TYPES =====
+export {
+  UnifiedQueryResultMap,
+  BaseQueryResultMap,
+  ImportSourceResult,
+  NamedImportResult,
+  DefaultImportResult,
+  TypeImportResult,
+  ExportDeclarationResult,
+  ExportAssignmentResult,
+  GoExportResult,
+  JavaExportResult,
+  ClassDefinitionResult,
+  InterfaceDefinitionResult,
+  EnumDefinitionResult,
+  FunctionDeclarationResult,
+  MethodDefinitionResult,
+  ArrowFunctionResult
+} from "./results";
+
+// ===== QUERY SYSTEMS =====
+export * from "./queries/typescript";
+
+// ===== MAPPING SYSTEMS =====
+export * from "./mappers/CustomKeyMapper";
+
+// ===== UTILITIES =====
+export * from "./utils";
+
+// ===== MAIN API =====
+import { globalQueryEngine, registerQuery, executeQuery, executeQueries } from "./core/QueryEngine";
+import { executeQueriesWithCustomKeys, createCustomKeyMapper, predefinedCustomMappings } from "./mappers/CustomKeyMapper";
+import { registerTypeScriptQueries } from "./queries/typescript";
+
+// 기본 쿼리들 자동 등록
+registerTypeScriptQueries(globalQueryEngine);
+
+// ===== CONVENIENCE EXPORTS =====
+export const QueryEngine = {
+  globalInstance: globalQueryEngine,
+  registerQuery,
+  executeQuery,
+  executeQueries,
+};
+
+export const CustomKeyMapping = {
+  execute: executeQueriesWithCustomKeys,
+  createMapper: createCustomKeyMapper,
+  predefined: predefinedCustomMappings,
+};
+
+// ===== DEFAULT EXPORT =====
+export default {
+  QueryEngine,
+  CustomKeyMapping,
+  predefinedMappings: predefinedCustomMappings,
+  registerTypeScriptQueries,
+};
+
+// ===== LIBRARY INFO =====
+export const LIBRARY_INFO = {
+  name: "Query-Based AST Analysis Library",
+  version: "3.0.0",
+  description: "TypeScript-first AST analysis with extensible query system",
+  features: [
+    "QueryResultMap-based type safety",
+    "Language-specific query grouping",
+    "Custom key mapping system",
+    "Extensible query architecture",
+    "TypeScript-first design",
+  ],
+} as const;

@@ -1,7 +1,7 @@
 {
 	"name": "@context-action/dependency-linker",
-	"version": "2.4.1",
-	"description": "Multi-language AST-based code analysis framework with extensible plugin architecture. Supports TypeScript, Go, Java, Markdown, and custom analysis types through tree-sitter parsers.",
+	"version": "3.0.0",
+	"description": "Query-Based AST Analysis Library - TypeScript-first AST analysis with extensible query system. QueryResultMap-centric architecture with language-specific query grouping and custom key mapping.",
 	"main": "dist/index.js",
 	"types": "dist/index.d.ts",
 	"scripts": {
@@ -26,17 +26,17 @@
 		"prepublishOnly": "npm run typecheck"
 	},
 	"keywords": [
+		"query-system",
+		"ast-analysis",
+		"typescript-first",
+		"queryresultmap",
+		"language-specific",
+		"custom-mapping",
 		"tree-sitter",
-		"ast",
-		"dependency-analysis",
+		"type-safety",
+		"extensible-queries",
 		"multi-language",
-		"typescript",
-		"go",
-		"java",
-		"markdown",
-		"code-analysis",
-		"parser",
-		"plugin-architecture"
+		"code-analysis"
 	],
 	"author": "",
 	"license": "MIT",
