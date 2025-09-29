@@ -1,11 +1,11 @@
 import type Parser from "tree-sitter";
 import type { ExportMethodInfo } from "../types/result-types";
-import {
-	isVariableDeclaration,
-	getSourceLocation,
-	getIdentifierName,
-} from "../utils/NodeUtils";
 import { getChildByType } from "../utils/ASTTraverser";
+import {
+	getIdentifierName,
+	getSourceLocation,
+	isVariableDeclaration,
+} from "../utils/NodeUtils";
 import { BaseNodeProcessor, type ProcessingContext } from "./NodeProcessor";
 
 /**
@@ -127,10 +127,7 @@ export class VariableProcessor extends BaseNodeProcessor {
 
 		// Variable declarator with identifier child
 		if (declarator.type === "variable_declarator") {
-			const identifierChild = getChildByType(
-				declarator,
-				"identifier",
-			);
+			const identifierChild = getChildByType(declarator, "identifier");
 			if (identifierChild) {
 				return identifierChild.text;
 			}

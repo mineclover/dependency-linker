@@ -24,10 +24,10 @@ import type {
 } from "./types/result-types";
 // Utilities
 import {
+	findAllExports,
 	findNodesByTypes,
 	LRUCache,
 	memoize,
-	findAllExports,
 	parseNamedExports,
 } from "./utils/index";
 
@@ -39,9 +39,6 @@ import { ExportValidator } from "./validators/index";
  */
 export class EnhancedExportExtractor {
 	private readonly processors: Map<string, NodeProcessor>;
-	private readonly classAnalyzer: ClassAnalyzer;
-	private readonly parameterAnalyzer: ParameterAnalyzer;
-	private locationAnalyzer: LocationAnalyzer;
 	private readonly validator: ExportValidator;
 	private readonly cache: LRUCache<string, any>;
 
@@ -295,9 +292,7 @@ export class EnhancedExportExtractor {
 		const textMatches = findAllExports(sourceCode);
 		for (const textMatch of textMatches) {
 			if (textMatch.type === "named") {
-				const namedExports = parseNamedExports(
-					textMatch.groups[0] || "",
-				);
+				const namedExports = parseNamedExports(textMatch.groups[0] || "");
 
 				// Only process if this is NOT a re-export (no 'from' in the match)
 				const matchText = sourceCode.substring(

@@ -14,8 +14,7 @@ export interface ExportMatch {
  */
 const compiledPatterns = {
 	// Variable exports: export const/let/var name = ...
-	variableExport:
-		/export\s+(const|let|var)\s+([a-zA-Z_$][a-zA-Z0-9_$]*)\s*=/g,
+	variableExport: /export\s+(const|let|var)\s+([a-zA-Z_$][a-zA-Z0-9_$]*)\s*=/g,
 
 	// Named exports: export { name1, name2 as alias }
 	namedExport: /export\s*\{\s*([^}]+)\s*\}/g,
@@ -49,24 +48,22 @@ export function findAllExports(sourceCode: string): ExportMatch[] {
 	const matches: ExportMatch[] = [];
 
 	// Single pass through all patterns
-	Object.entries(compiledPatterns).forEach(
-		([patternName, pattern]) => {
-			// Reset pattern to start from beginning
-			pattern.lastIndex = 0;
+	Object.entries(compiledPatterns).forEach(([patternName, pattern]) => {
+		// Reset pattern to start from beginning
+		pattern.lastIndex = 0;
 
-			let match: RegExpExecArray | null;
-			while ((match = pattern.exec(sourceCode)) !== null) {
-				const exportType = getExportTypeFromPattern(patternName);
-				matches.push({
-					match: match[0],
-					type: exportType,
-					startIndex: match.index,
-					endIndex: match.index + match[0].length,
-					groups: Array.from(match).slice(1),
-				});
-			}
-		},
-	);
+		let match: RegExpExecArray | null;
+		while ((match = pattern.exec(sourceCode)) !== null) {
+			const exportType = getExportTypeFromPattern(patternName);
+			matches.push({
+				match: match[0],
+				type: exportType,
+				startIndex: match.index,
+				endIndex: match.index + match[0].length,
+				groups: Array.from(match).slice(1),
+			});
+		}
+	});
 
 	// Sort by start index for consistent ordering
 	return matches.sort((a, b) => a.startIndex - b.startIndex);
@@ -166,9 +163,7 @@ export function parseNamedExports(namedExportContent: string): Array<{
 /**
  * Get export type from pattern name
  */
-function getExportTypeFromPattern(
-	patternName: string,
-): ExportMatch["type"] {
+function getExportTypeFromPattern(patternName: string): ExportMatch["type"] {
 	switch (patternName) {
 		case "variableExport":
 			return "variable";

@@ -51,7 +51,10 @@ export function getSourceLocation(node: Parser.SyntaxNode): SourceLocation {
  * @param childType Type to search for
  * @returns True if child type is found
  */
-export function hasChildOfType(node: Parser.SyntaxNode, childType: string): boolean {
+export function hasChildOfType(
+	node: Parser.SyntaxNode,
+	childType: string,
+): boolean {
 	for (let i = 0; i < node.childCount; i++) {
 		const child = node.child(i);
 		if (child && child.type === childType) {
@@ -127,8 +130,7 @@ export function isClassDeclaration(node: Parser.SyntaxNode): boolean {
  */
 export function isVariableDeclaration(node: Parser.SyntaxNode): boolean {
 	return (
-		node.type === "variable_declaration" ||
-		node.type === "lexical_declaration"
+		node.type === "variable_declaration" || node.type === "lexical_declaration"
 	);
 }
 

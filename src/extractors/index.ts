@@ -1,7 +1,22 @@
 /**
- * Data Extractors
- * Built-in data extraction plugins for AST analysis
+ * Import Analysis System - Unified Entry Point
+ * Import 분석 시스템 통합 진입점
+ *
+ * 2단계 분석 아키텍처:
+ * 1. Primary Analysis (1차 분석): Tree-sitter 쿼리 기반 원시 데이터 수집
+ * 2. Secondary Analysis (2차 분석): 도메인 특화 해석 및 통계 생성
  */
+
+// ========================================
+// 1차 분석: Tree-sitter Query Based
+// ========================================
+
+// Primary Analysis - Core Exports
+export * from "./primary-analysis";
+
+// ========================================
+// Legacy Data Extractors
+// ========================================
 
 export {
 	type ComplexityExtractionResult,

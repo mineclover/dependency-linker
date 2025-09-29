@@ -1,12 +1,12 @@
 import type Parser from "tree-sitter";
 import type { ExportMethodInfo, ParameterInfo } from "../types/result-types";
 import {
-	isFunctionDeclaration,
-	getSourceLocation,
 	getIdentifierName,
-	isAsync,
-	isStatic,
+	getSourceLocation,
 	getVisibility,
+	isAsync,
+	isFunctionDeclaration,
+	isStatic,
 } from "../utils/NodeUtils";
 import { BaseNodeProcessor, type ProcessingContext } from "./NodeProcessor";
 

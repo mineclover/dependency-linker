@@ -146,9 +146,7 @@ export function getChildrenByType(
 	node: Parser.SyntaxNode,
 	nodeType: string,
 ): Parser.SyntaxNode[] {
-	return getChildren(node).filter(
-		(child) => child.type === nodeType,
-	);
+	return getChildren(node).filter((child) => child.type === nodeType);
 }
 
 /**

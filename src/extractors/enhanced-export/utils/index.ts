@@ -1,14 +1,14 @@
 // AST traversal utilities
 export type { NodePredicate, NodeVisitor } from "./ASTTraverser";
 export {
-	traverse,
-	findNodes,
 	findNode,
+	findNodes,
 	findNodesByType,
 	findNodesByTypes,
+	getChildByType,
 	getChildren,
 	getChildrenByType,
-	getChildByType,
+	traverse,
 } from "./ASTTraverser";
 
 export type { ICache } from "./Cache";
@@ -23,32 +23,32 @@ export {
 
 // Node utilities
 export {
-	getText,
 	clearTextCache,
-	getSourceLocation,
-	hasChildOfType,
+	findAncestor,
+	getDepth,
 	getIdentifierName,
+	getNamedChildren,
+	getSourceLocation,
+	getText,
+	getVisibility,
+	hasChildOfType,
+	isAsync,
+	isClassDeclaration,
 	isExportStatement,
 	isFunctionDeclaration,
-	isClassDeclaration,
-	isVariableDeclaration,
-	isTypeDeclaration,
-	getNamedChildren,
-	findAncestor,
-	isWithinExport,
-	getVisibility,
 	isStatic,
-	isAsync,
-	getDepth,
+	isTypeDeclaration,
+	isVariableDeclaration,
+	isWithinExport,
 } from "./NodeUtils";
 
 export type { ExportMatch } from "./TextMatcher";
 // Text pattern matching
 export {
+	cleanExportText,
+	countExports,
 	findAllExports,
 	findExportsByType,
 	hasExports,
-	countExports,
 	parseNamedExports,
-	cleanExportText,
 } from "./TextMatcher";

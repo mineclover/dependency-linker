@@ -1,16 +1,16 @@
 import type Parser from "tree-sitter";
 import type { ExportMethodInfo } from "../types/result-types";
 import {
+	getIdentifierName,
 	getSourceLocation,
+	getText,
+	getVisibility,
 	isAsync,
 	isClassDeclaration,
 	isFunctionDeclaration,
-	isVariableDeclaration,
-	isTypeDeclaration,
-	getIdentifierName,
-	getText,
 	isStatic,
-	getVisibility,
+	isTypeDeclaration,
+	isVariableDeclaration,
 } from "../utils/NodeUtils";
 import { BaseNodeProcessor, type ProcessingContext } from "./NodeProcessor";
 

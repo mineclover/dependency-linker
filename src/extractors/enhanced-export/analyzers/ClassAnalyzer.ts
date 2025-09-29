@@ -4,19 +4,13 @@ import type {
 	ClassMethodInfo,
 	ClassPropertyInfo,
 } from "../types/result-types";
+import { findNode, findNodesByType } from "../utils/ASTTraverser";
 import {
-	findNode,
-	findNodesByType,
-	getChildren,
-	getChildByType,
-} from "../utils/ASTTraverser";
-import {
-	getSourceLocation,
-	getText,
 	getIdentifierName,
-	isStatic,
-	isAsync,
+	getSourceLocation,
 	getVisibility,
+	isAsync,
+	isStatic,
 } from "../utils/NodeUtils";
 
 /**
@@ -203,10 +197,7 @@ export class ClassAnalyzer {
 		);
 
 		if (implementsClause) {
-			const identifiers = findNodesByType(
-				implementsClause,
-				"identifier",
-			);
+			const identifiers = findNodesByType(implementsClause, "identifier");
 			interfaces.push(...identifiers.map((id) => id.text));
 		} else {
 			// Alternative: parse from text

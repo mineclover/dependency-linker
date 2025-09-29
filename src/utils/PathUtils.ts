@@ -464,7 +464,11 @@ export function batchResolveAnalysisPaths(
 	return inputPaths.map((inputPath) => {
 		try {
 			// Basic validation for empty or invalid input
-			if (!inputPath || typeof inputPath !== "string" || inputPath.trim() === "") {
+			if (
+				!inputPath ||
+				typeof inputPath !== "string" ||
+				inputPath.trim() === ""
+			) {
 				return {
 					input: inputPath,
 					isValid: false,
@@ -710,13 +714,13 @@ export function findProjectRoot(startPath?: string): string | null {
 	// Project markers in order of priority
 	// More specific markers (package.json, .git) are checked first
 	const projectMarkers = [
-		"package.json",      // npm/yarn/pnpm project
-		".git",              // Git repository
-		"yarn.lock",         // Yarn workspace
-		"pnpm-lock.yaml",    // pnpm workspace
+		"package.json", // npm/yarn/pnpm project
+		".git", // Git repository
+		"yarn.lock", // Yarn workspace
+		"pnpm-lock.yaml", // pnpm workspace
 		"package-lock.json", // npm project
-		"tsconfig.json",     // TypeScript project
-		"node_modules"       // Node.js project (fallback)
+		"tsconfig.json", // TypeScript project
+		"node_modules", // Node.js project (fallback)
 	];
 
 	logger.debug(`Searching for project root starting from: ${currentDir}`);
@@ -727,7 +731,9 @@ export function findProjectRoot(startPath?: string): string | null {
 			const markerPath = join(currentDir, marker);
 			if (existsSync(markerPath)) {
 				cachedProjectRoot = currentDir;
-				logger.debug(`Found project root at: ${currentDir} (marker: ${marker})`);
+				logger.debug(
+					`Found project root at: ${currentDir} (marker: ${marker})`,
+				);
 				return currentDir;
 			}
 		}
@@ -741,7 +747,9 @@ export function findProjectRoot(startPath?: string): string | null {
 	}
 
 	// Fallback to current working directory if no project markers found
-	logger.warn("Could not find project root markers, using current working directory as fallback");
+	logger.warn(
+		"Could not find project root markers, using current working directory as fallback",
+	);
 	cachedProjectRoot = process.cwd();
 	return cachedProjectRoot;
 }
@@ -775,7 +783,7 @@ export function findProjectRoot(startPath?: string): string | null {
  */
 export function normalizeToProjectRoot(
 	inputPath: string,
-	projectRoot?: string
+	projectRoot?: string,
 ): string {
 	try {
 		// Get or auto-detect project root
@@ -798,7 +806,9 @@ export function normalizeToProjectRoot(
 		// If path goes outside project root, return absolute path as-is
 		// This handles cases like system libraries or external dependencies
 		if (relativePath.startsWith("..")) {
-			logger.warn(`Path ${inputPath} is outside project root ${root}, keeping as absolute`);
+			logger.warn(
+				`Path ${inputPath} is outside project root ${root}, keeping as absolute`,
+			);
 			return absolutePath;
 		}
 
@@ -808,15 +818,19 @@ export function normalizeToProjectRoot(
 
 		// Ensure consistent format starting with "./" for relative paths
 		// This creates predictable cache keys regardless of input format
-		const result = normalizedPath.startsWith("./") || normalizedPath.startsWith("../")
-			? normalizedPath
-			: `./${normalizedPath}`;
+		const result =
+			normalizedPath.startsWith("./") || normalizedPath.startsWith("../")
+				? normalizedPath
+				: `./${normalizedPath}`;
 
 		logger.debug(`Normalized path result: ${result}`);
 		return result;
-
 	} catch (error) {
-		logger.error("Error normalizing path to project root", { inputPath, projectRoot, error });
+		logger.error("Error normalizing path to project root", {
+			inputPath,
+			projectRoot,
+			error,
+		});
 		// Return original path as fallback to avoid breaking analysis
 		return inputPath;
 	}
@@ -849,17 +863,21 @@ export function normalizeToProjectRoot(
  */
 export function resolveFromProjectRoot(
 	relativePath: string,
-	projectRoot?: string
+	projectRoot?: string,
 ): string {
 	try {
 		// Get or auto-detect project root
 		const root = projectRoot || findProjectRoot();
 		if (!root) {
-			logger.warn("Could not determine project root, using relative resolution");
+			logger.warn(
+				"Could not determine project root, using relative resolution",
+			);
 			return resolve(relativePath);
 		}
 
-		logger.debug(`Resolving path from project root: ${relativePath} (root: ${root})`);
+		logger.debug(
+			`Resolving path from project root: ${relativePath} (root: ${root})`,
+		);
 
 		// Clean up the relative path by removing leading "./" if present
 		// This handles both "./src/file.ts" and "src/file.ts" formats
@@ -870,9 +888,12 @@ export function resolveFromProjectRoot(
 		const result = resolve(root, cleanPath);
 		logger.debug(`Resolved absolute path: ${result}`);
 		return result;
-
 	} catch (error) {
-		logger.error("Error resolving path from project root", { relativePath, projectRoot, error });
+		logger.error("Error resolving path from project root", {
+			relativePath,
+			projectRoot,
+			error,
+		});
 		// Fallback to basic resolution to avoid breaking functionality
 		return resolve(relativePath);
 	}

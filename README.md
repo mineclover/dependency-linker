@@ -21,6 +21,9 @@ This project provides a comprehensive multi-language code analysis framework wit
 - **🎯 Enhanced Dependency Analysis**: Named import tracking with actual usage analysis
 - **🌳 Tree-shaking Optimization**: Dead code detection and bundle size optimization
 - **📊 Usage Pattern Analysis**: Method call frequency and dependency utilization metrics
+- **⚡ Tree-sitter Query System**: High-performance AST analysis with configurable query injection
+- **🔒 Type-Safe Query Results**: Strongly-typed query outputs with comprehensive result validation
+- **🚀 Cursor-Based Optimization**: Memory-efficient traversal for large codebases
 
 ### 🚀 API Capabilities
 - **Multi-Language Support**: TypeScript, JavaScript, Go, Java, Markdown parsers
