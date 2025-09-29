@@ -13,19 +13,10 @@ export class TypeScriptParser extends BaseParser {
 	protected language = "typescript" as const;
 	protected fileExtensions = ["ts", "tsx", "js", "jsx"];
 
-	private parser: Parser;
-	private tsxParser: Parser;
-
-	constructor() {
-		super();
-
-		// TypeScript 파서 초기화
-		this.parser = new Parser();
-		this.parser.setLanguage(TypeScript.typescript);
-
-		// TSX 파서 초기화
-		this.tsxParser = new Parser();
-		this.tsxParser.setLanguage(TypeScript.tsx);
+	private createParser(isTsx: boolean): Parser {
+		const parser = new Parser();
+		parser.setLanguage(isTsx ? TypeScript.tsx : TypeScript.typescript);
+		return parser;
 	}
 
 	/**
@@ -41,9 +32,10 @@ export class TypeScriptParser extends BaseParser {
 			// TSX 파일인지 확인
 			const isTsx =
 				options.filePath?.endsWith(".tsx") ||
-				(sourceCode.includes("<") && sourceCode.includes("/>"));
+				(sourceCode.includes("<") &&
+					(sourceCode.includes("/>") || sourceCode.includes("</")));
 
-			const parser = isTsx ? this.tsxParser : this.parser;
+			const parser = this.createParser(isTsx);
 			const tree = parser.parse(sourceCode);
 
 			if (!tree.rootNode) {
@@ -70,6 +62,12 @@ export class TypeScriptParser extends BaseParser {
 				},
 			};
 		} catch (error) {
+			console.error("TypeScript parsing error details:", {
+				error: error instanceof Error ? error.message : error,
+				stack: error instanceof Error ? error.stack : undefined,
+				sourceCode: `${sourceCode.slice(0, 100)}...`,
+				options,
+			});
 			throw new Error(
 				`TypeScript parsing failed: ${error instanceof Error ? error.message : "Unknown error"}`,
 			);

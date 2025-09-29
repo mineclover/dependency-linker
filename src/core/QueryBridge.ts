@@ -3,18 +3,20 @@
  * Tree-sitter 쿼리 결과를 기존 쿼리 프로세서와 연결하는 브리지
  */
 
-import type { QueryMatch, QueryExecutionContext, SupportedLanguage } from "./types";
-import type { QueryKey, QueryResult } from "./QueryResultMap";
-import { globalQueryEngine } from "./QueryEngine";
-import { globalTreeSitterQueryEngine } from "./TreeSitterQueryEngine";
-import { getTreeSitterQueries } from "../queries/typescript/tree-sitter-queries";
 import { getJavaTreeSitterQueries } from "../queries/java/tree-sitter-queries";
 import { getPythonTreeSitterQueries } from "../queries/python/tree-sitter-queries";
+import { getTreeSitterQueries } from "../queries/typescript/tree-sitter-queries";
+import { globalQueryEngine } from "./QueryEngine";
+import type { QueryKey, QueryResult } from "./QueryResultMap";
+import { globalTreeSitterQueryEngine } from "./TreeSitterQueryEngine";
+import type { QueryExecutionContext, SupportedLanguage } from "./types";
 
 /**
  * 언어별 Tree-sitter 쿼리 가져오기
  */
-function getLanguageTreeSitterQueries(language: SupportedLanguage): Record<string, string> {
+function getLanguageTreeSitterQueries(
+	language: SupportedLanguage,
+): Record<string, string> {
 	switch (language) {
 		case "typescript":
 		case "tsx":
@@ -38,7 +40,7 @@ function getLanguageTreeSitterQueries(language: SupportedLanguage): Record<strin
  */
 export async function executeTreeSitterQuery(
 	queryKey: QueryKey,
-	context: QueryExecutionContext
+	context: QueryExecutionContext,
 ): Promise<QueryResult<QueryKey>[]> {
 	try {
 		// 1. 해당 언어의 Tree-sitter 쿼리 문자열 가져오기
@@ -46,7 +48,9 @@ export async function executeTreeSitterQuery(
 		const queryString = languageQueries[queryKey];
 
 		if (!queryString) {
-			console.warn(`No tree-sitter query found for ${queryKey} in language ${context.language}`);
+			console.warn(
+				`No tree-sitter query found for ${queryKey} in language ${context.language}`,
+			);
 			return [];
 		}
 
@@ -55,7 +59,7 @@ export async function executeTreeSitterQuery(
 			queryKey,
 			queryString,
 			context.tree,
-			context.language
+			context.language,
 		);
 
 		// 3. QueryMatch를 기존 프로세서로 전달하여 QueryResult 생성
@@ -63,7 +67,10 @@ export async function executeTreeSitterQuery(
 
 		return results;
 	} catch (error) {
-		console.error(`Failed to execute tree-sitter query for ${queryKey}:`, error);
+		console.error(
+			`Failed to execute tree-sitter query for ${queryKey}:`,
+			error,
+		);
 		return [];
 	}
 }
@@ -73,9 +80,12 @@ export async function executeTreeSitterQuery(
  */
 export async function executeMultipleTreeSitterQueries(
 	queryKeys: QueryKey[],
-	context: QueryExecutionContext
+	context: QueryExecutionContext,
 ): Promise<Record<QueryKey, QueryResult<QueryKey>[]>> {
-	const results: Record<QueryKey, QueryResult<QueryKey>[]> = {} as Record<QueryKey, QueryResult<QueryKey>[]>;
+	const results: Record<QueryKey, QueryResult<QueryKey>[]> = {} as Record<
+		QueryKey,
+		QueryResult<QueryKey>[]
+	>;
 
 	// 병렬 실행
 	const promises = queryKeys.map(async (queryKey) => {
@@ -99,7 +109,7 @@ export async function executeMultipleTreeSitterQueries(
  * 언어에 지원되는 모든 쿼리 실행
  */
 export async function executeAllLanguageQueries(
-	context: QueryExecutionContext
+	context: QueryExecutionContext,
 ): Promise<Record<QueryKey, QueryResult<QueryKey>[]>> {
 	// 해당 언어에서 지원되는 모든 쿼리 키 가져오기
 	const languageQueries = getLanguageTreeSitterQueries(context.language);
@@ -107,8 +117,9 @@ export async function executeAllLanguageQueries(
 
 	// 지원되는 쿼리만 필터링 (프로세서가 등록된 것들만)
 	const registry = globalQueryEngine.getRegistry();
-	const supportedQueryKeys = queryKeys.filter(key =>
-		registry.has(key) && registry.supportsLanguage(key, context.language)
+	const supportedQueryKeys = queryKeys.filter(
+		(key) =>
+			registry.get(key) && registry.supportsLanguage(key, context.language),
 	);
 
 	return executeMultipleTreeSitterQueries(supportedQueryKeys, context);
@@ -122,13 +133,21 @@ export function initializeTreeSitterQueries(): void {
 	// TypeScript/JavaScript 쿼리 등록
 	const tsQueries = getTreeSitterQueries("typescript");
 	for (const [queryName, queryString] of Object.entries(tsQueries)) {
-		globalTreeSitterQueryEngine.registerQuery("typescript", queryName, queryString);
+		globalTreeSitterQueryEngine.registerQuery(
+			"typescript",
+			queryName,
+			queryString,
+		);
 		globalTreeSitterQueryEngine.registerQuery("tsx", queryName, queryString);
 	}
 
 	const jsQueries = getTreeSitterQueries("javascript");
 	for (const [queryName, queryString] of Object.entries(jsQueries)) {
-		globalTreeSitterQueryEngine.registerQuery("javascript", queryName, queryString);
+		globalTreeSitterQueryEngine.registerQuery(
+			"javascript",
+			queryName,
+			queryString,
+		);
 		globalTreeSitterQueryEngine.registerQuery("jsx", queryName, queryString);
 	}
 

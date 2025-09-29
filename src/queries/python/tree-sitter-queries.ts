@@ -112,7 +112,6 @@ export const PYTHON_TREE_SITTER_QUERIES = {
 			]
 			right: (_) @value)
 	`,
-
 } as const;
 
 /**
@@ -125,8 +124,12 @@ export function getPythonTreeSitterQueries(): Record<string, string> {
 /**
  * 특정 Python 쿼리 가져오기
  */
-export function getPythonTreeSitterQuery(queryName: string): string | undefined {
-	return PYTHON_TREE_SITTER_QUERIES[queryName as keyof typeof PYTHON_TREE_SITTER_QUERIES];
+export function getPythonTreeSitterQuery(
+	queryName: string,
+): string | undefined {
+	return PYTHON_TREE_SITTER_QUERIES[
+		queryName as keyof typeof PYTHON_TREE_SITTER_QUERIES
+	];
 }
 
 /**

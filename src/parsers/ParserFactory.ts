@@ -15,11 +15,9 @@ import { TypeScriptParser } from "./typescript";
  */
 export class ParserFactory implements IParserFactory {
 	private static instance: ParserFactory;
-	private parsers = new Map<SupportedLanguage, BaseParser>();
 	private fileExtensionMap = new Map<string, SupportedLanguage>();
 
 	constructor() {
-		this.initializeParsers();
 		this.buildExtensionMap();
 	}
 
@@ -34,14 +32,24 @@ export class ParserFactory implements IParserFactory {
 	}
 
 	/**
-	 * 언어별 파서 생성
+	 * 언어별 파서 생성 (항상 새 인스턴스 생성)
 	 */
 	createParser(language: SupportedLanguage): BaseParser {
-		const parser = this.parsers.get(language);
-		if (!parser) {
-			throw new Error(`Parser for language "${language}" not found`);
+		switch (language) {
+			case "typescript":
+			case "tsx":
+			case "javascript":
+			case "jsx":
+				return new TypeScriptParser();
+			case "java":
+				return new JavaParser();
+			case "python":
+				return new PythonParser();
+			case "go":
+				return new GoParser();
+			default:
+				throw new Error(`Parser for language "${language}" not found`);
 		}
-		return parser;
 	}
 
 	/**
@@ -62,7 +70,7 @@ export class ParserFactory implements IParserFactory {
 	 * 지원되는 언어 목록
 	 */
 	getSupportedLanguages(): SupportedLanguage[] {
-		return Array.from(this.parsers.keys());
+		return ["typescript", "tsx", "javascript", "jsx", "java", "python", "go"];
 	}
 
 	/**
@@ -81,14 +89,6 @@ export class ParserFactory implements IParserFactory {
 	}
 
 	/**
-	 * 언어별 파서 등록
-	 */
-	registerParser(language: SupportedLanguage, parser: BaseParser): void {
-		this.parsers.set(language, parser);
-		this.updateExtensionMap(language, parser);
-	}
-
-	/**
 	 * 모든 파서 정보 조회
 	 */
 	getParserInfo(): Array<{
@@ -96,52 +96,41 @@ export class ParserFactory implements IParserFactory {
 		extensions: string[];
 		parserClass: string;
 	}> {
-		return Array.from(this.parsers.entries()).map(([language, parser]) => ({
-			language,
-			extensions: parser.getSupportedExtensions(),
-			parserClass: parser.constructor.name,
-		}));
-	}
-
-	/**
-	 * 파서 초기화
-	 */
-	private initializeParsers(): void {
-		// TypeScript 파서
-		this.parsers.set("typescript", new TypeScriptParser());
-
-		// Java 파서
-		this.parsers.set("java", new JavaParser());
-
-		// Python 파서
-		this.parsers.set("python", new PythonParser());
-
-		// Go 파서
-		this.parsers.set("go", new GoParser());
-
-		// JavaScript는 TypeScript 파서 재사용
-		this.parsers.set("javascript", new TypeScriptParser());
+		const languages: SupportedLanguage[] = [
+			"typescript",
+			"java",
+			"python",
+			"go",
+			"javascript",
+		];
+		return languages.map((language) => {
+			const parser = this.createParser(language);
+			return {
+				language,
+				extensions: parser.getSupportedExtensions(),
+				parserClass: parser.constructor.name,
+			};
+		});
 	}
 
 	/**
 	 * 파일 확장자 맵 구축
 	 */
 	private buildExtensionMap(): void {
-		for (const [language, parser] of this.parsers) {
-			this.updateExtensionMap(language, parser);
-		}
-	}
+		const languageExtensions: Record<SupportedLanguage, string[]> = {
+			typescript: ["ts", "tsx"],
+			tsx: ["tsx"],
+			javascript: ["js", "jsx"],
+			jsx: ["jsx"],
+			java: ["java"],
+			python: ["py", "pyi"],
+			go: ["go"],
+		};
 
-	/**
-	 * 특정 파서의 확장자 맵 업데이트
-	 */
-	private updateExtensionMap(
-		language: SupportedLanguage,
-		parser: BaseParser,
-	): void {
-		const extensions = parser.getSupportedExtensions();
-		for (const ext of extensions) {
-			this.fileExtensionMap.set(ext, language);
+		for (const [language, extensions] of Object.entries(languageExtensions)) {
+			for (const ext of extensions) {
+				this.fileExtensionMap.set(ext, language as SupportedLanguage);
+			}
 		}
 	}
 

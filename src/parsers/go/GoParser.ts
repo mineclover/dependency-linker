@@ -13,14 +13,10 @@ export class GoParser extends BaseParser {
 	protected language = "go" as const;
 	protected fileExtensions = ["go"];
 
-	private parser: Parser;
-
-	constructor() {
-		super();
-
-		// Go 파서 초기화
-		this.parser = new Parser();
-		this.parser.setLanguage(Go);
+	private createParser(): Parser {
+		const parser = new Parser();
+		parser.setLanguage(Go);
+		return parser;
 	}
 
 	/**
@@ -33,7 +29,8 @@ export class GoParser extends BaseParser {
 		const startTime = performance.now();
 
 		try {
-			const tree = this.parser.parse(sourceCode);
+			const parser = this.createParser();
+			const tree = parser.parse(sourceCode);
 
 			if (!tree.rootNode) {
 				throw new Error("Failed to parse Go code");

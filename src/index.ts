@@ -3,6 +3,7 @@
  * QueryResultMap 중심의 타입 안전한 AST 분석 라이브러리
  */
 
+export * from "./core/QueryBridge";
 export * from "./core/QueryEngine";
 export {
 	extractLanguageFromQueryKey,
@@ -20,26 +21,25 @@ export {
 	QueryResultMap,
 	TypeScriptQueryResultMap,
 } from "./core/QueryResultMap";
-// ===== CORE SYSTEM =====
-export * from "./core/types";
 // ===== NEW QUERY EXECUTION SYSTEM =====
 export * from "./core/TreeSitterQueryEngine";
-export * from "./core/QueryBridge";
+// ===== CORE SYSTEM =====
+export * from "./core/types";
 // ===== MAPPING SYSTEMS =====
 export * from "./mappers/CustomKeyMapper";
 // ===== PARSERS =====
 export * from "./parsers";
 // ===== QUERY SYSTEMS =====
 export { javaQueries, registerJavaQueries } from "./queries/java";
+export * from "./queries/java/tree-sitter-queries";
 export { pythonQueries, registerPythonQueries } from "./queries/python";
+export * from "./queries/python/tree-sitter-queries";
 export {
 	registerTypeScriptQueries,
 	typeScriptQueries,
 } from "./queries/typescript";
 // ===== TREE-SITTER QUERY STRINGS =====
 export * from "./queries/typescript/tree-sitter-queries";
-export * from "./queries/java/tree-sitter-queries";
-export * from "./queries/python/tree-sitter-queries";
 // ===== RESULT TYPES =====
 export {
 	ArrowFunctionResult,
@@ -125,9 +125,11 @@ export default {
 	registerJavaQueries,
 	registerPythonQueries,
 	// New analysis API
-	analyzeFile: () => import("./api/analysis").then(m => m.analyzeFile),
-	analyzeTypeScriptFile: () => import("./api/analysis").then(m => m.analyzeTypeScriptFile),
-	initializeAnalysisSystem: () => import("./api/analysis").then(m => m.initializeAnalysisSystem),
+	analyzeFile: () => import("./api/analysis").then((m) => m.analyzeFile),
+	analyzeTypeScriptFile: () =>
+		import("./api/analysis").then((m) => m.analyzeTypeScriptFile),
+	initializeAnalysisSystem: () =>
+		import("./api/analysis").then((m) => m.initializeAnalysisSystem),
 };
 
 // ===== LIBRARY INFO =====

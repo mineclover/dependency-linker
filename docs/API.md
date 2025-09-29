@@ -1,1079 +1,959 @@
-# API Documentation (v3.0.0)
+# API Documentation
 
-Complete API reference for the Query-Based AST Analysis Library.
+Complete API reference for the Multi-Language Dependency Linker with CustomKeyMapper system.
 
-## 🆕 What's New in v3.0.0
+## 📚 Table of Contents
 
-### Complete QueryResultMap-Centric Redesign
-- **QueryEngine**: Central coordination engine with singleton pattern and global instance
-- **UnifiedQueryResultMap**: Complete type system covering TypeScript, Java, and Python
-- **CustomKeyMapping**: User-friendly abstraction with full type preservation
-- **Zero `any` Types**: Complete elimination of `any` types for maximum type safety
-- **Multi-Language Support**: Full support for TypeScript, Java, and Python queries
+- [Core Analysis API](#core-analysis-api)
+- [CustomKeyMapper API](#customkeymapper-api)
+- [Query Engine API](#query-engine-api)
+- [Tree-sitter Integration](#tree-sitter-integration)
+- [Type Definitions](#type-definitions)
+- [Error Handling](#error-handling)
 
-### Language-Specific Query Systems
-- **TypeScript Queries**: 6 queries covering imports, exports, and type analysis
-- **Java Queries**: 8 queries covering imports, classes, interfaces, enums, and methods
-- **Python Queries**: 8 queries covering imports, functions, classes, variables, and methods
-- **Tree-sitter Integration**: Real AST parsing with high-performance query execution
+---
 
-### Performance & Quality Improvements
-- **Parallel Execution**: Independent queries execute concurrently by default
-- **Performance Monitoring**: Built-in execution metrics and optimization
-- **Comprehensive Testing**: Real AST pipeline tests with actual tree-sitter parsers
-- **Code Quality**: Biome linting with strict formatting and organization standards
-
-## 📚 Core API Components
-
-### QueryEngine
-Central coordination engine for all query operations:
-
-```typescript
-import { QueryEngine } from '@context-action/dependency-linker';
-
-// Use global instance
-const engine = QueryEngine.globalInstance;
-
-// Single query execution
-const results = await engine.execute("ts-import-sources", matches, context);
-
-// Multiple queries in parallel
-const allResults = await engine.executeMultiple([
-  "ts-import-sources",
-  "ts-export-declarations"
-], matches, context);
-
-// Language-specific execution
-const tsResults = await engine.executeForLanguage("typescript", matches, context);
-```
-
-### CustomKeyMapping
-User-friendly abstraction for query composition:
-
-```typescript
-import { CustomKeyMapping } from '@context-action/dependency-linker';
-
-// Create custom mapping
-const mapping = CustomKeyMapping.createMapper({
-  imports: "ts-import-sources",
-  exports: "ts-export-declarations",
-  types: "ts-type-imports"
-});
-
-// Execute with type-safe results
-const results = await mapping.execute(matches, context);
-const validation = mapping.validate();
-```
-
-### Type-Safe Query System
-Complete type safety throughout the pipeline:
-
-```typescript
-import type {
-  QueryExecutionContext,
-  ImportSourceResult,
-  UnifiedQueryResultMap
-} from '@context-action/dependency-linker';
-
-// Automatic type inference
-const results = await engine.execute("ts-import-sources", matches, context);
-// results: ImportSourceResult[] (automatically inferred)
-```
-
-### 🧪 Test-Validated API
-All APIs are backed by comprehensive test suites covering:
-- Real AST pipeline tests with actual tree-sitter parsers
-- Multi-language verification (TypeScript, Java, Python)
-- Type safety validation with zero `any` types
-- Performance benchmarks and resource usage
-- Custom key mapping functionality
-
-## Installation
-
-```bash
-npm install @context-action/dependency-linker
-# or
-yarn add @context-action/dependency-linker
-```
-
-## Quick Start
-
-```typescript
-import { QueryEngine, QueryExecutionContext } from '@context-action/dependency-linker';
-
-// Initialize
-const engine = QueryEngine.globalInstance;
-
-// Create context
-const context: QueryExecutionContext = {
-  sourceCode: 'import React from "react";',
-  language: "typescript",
-  filePath: "app.tsx",
-  tree: treeSitterTree
-};
-
-// Execute query
-const results = await engine.execute("ts-import-sources", matches, context);
-```
-
-## Language Support
-
-### TypeScript Queries
-- `ts-import-sources` - Import source paths
-- `ts-named-imports` - Named import analysis
-- `ts-default-imports` - Default import tracking
-- `ts-type-imports` - Type-only imports
-- `ts-export-declarations` - Export statements
-- `ts-export-assignments` - Export assignments
-
-### Java Queries
-- `java-import-sources` - Import source paths
-- `java-import-statements` - Full import info
-- `java-wildcard-imports` - Wildcard imports (*)
-- `java-static-imports` - Static imports
-- `java-class-declarations` - Class definitions
-- `java-interface-declarations` - Interface definitions
-- `java-enum-declarations` - Enum definitions
-- `java-method-declarations` - Method definitions
-
-### Python Queries
-- `python-import-sources` - Import module sources
-- `python-import-statements` - Import statement info
-- `python-from-imports` - From imports
-- `python-import-as` - Import aliases
-- `python-function-definitions` - Function definitions
-- `python-class-definitions` - Class definitions
-- `python-variable-definitions` - Variable definitions
-- `python-method-definitions` - Method definitions
-npm run build  # for local development
-```
-
-## Quick Start
-
-```javascript
-const { analyzeTypeScriptFile, TypeScriptAnalyzer } = require('@context-action/dependency-linker');
-
-// Simple function API
-const result = await analyzeTypeScriptFile('./src/component.tsx');
-console.log(result.dependencies);
-
-// Class-based API  
-const analyzer = new TypeScriptAnalyzer();
-const result = await analyzer.analyzeFile('./src/component.tsx');
-analyzer.clearCache();
-```
-
-## Function-Based API
-
-For detailed documentation with test coverage and examples, see **[Factory Functions API](api/functions/factory-functions.md)**.
+## Core Analysis API
 
 ### High-Level Analysis Functions
 
-#### `analyzeTypeScriptFile(filePath, options?)`
+#### `analyzeFile(sourceCode, language, filePath?, options?)`
 
-Main analysis function with comprehensive results.
-
-```javascript
-const result = await analyzeTypeScriptFile('./src/index.ts', {
-  format: 'json',              // 'json' | 'text' | 'compact' | 'summary'
-  includeSources: true,        // Include source location info
-  parseTimeout: 10000          // Parsing timeout in milliseconds
-});
-```
-
-**Returns**: [`AnalysisResult`](#analysisresult)
-
-### Utility Functions (v2.4.1 Functional Refactor)
-
-The following utility functions were converted from static classes to individual exports for better tree-shaking and functional programming patterns:
-
-#### AST Traversal Functions (formerly ASTTraverser class)
+General file analysis function that works with any supported language.
 
 ```typescript
-import {
-  traverse,
-  findNodes,
-  findNode,
-  findNodesByType,
-  findNodesByTypes,
-  getChildren,
-  getChildrenByType,
-  getChildByType
-} from '@context-action/dependency-linker';
-
-// Traverse AST with visitor pattern
-traverse(ast, (node) => {
-  if (node.type === 'function_declaration') {
-    console.log('Found function:', node.text);
-  }
-});
-
-// Find all nodes matching condition
-const functions = findNodes(ast, node => node.type === 'function_declaration');
-
-// Find first node of specific type
-const firstFunction = findNode(ast, node => node.type === 'function_declaration');
-
-// Find all nodes of specific type(s)
-const declarations = findNodesByType(ast, 'function_declaration');
-const allDeclarations = findNodesByTypes(ast, ['function_declaration', 'class_declaration']);
-
-// Get child nodes
-const children = getChildren(node);
-const identifiers = getChildrenByType(node, 'identifier');
-const firstChild = getChildByType(node, 'identifier');
+async function analyzeFile(
+  sourceCode: string,
+  language: SupportedLanguage,
+  filePath?: string,
+  options?: AnalysisOptions
+): Promise<AnalysisResult>
 ```
 
-#### Node Utility Functions (formerly NodeUtils class)
+**Parameters:**
+- `sourceCode`: The source code to analyze
+- `language`: Target language (`"typescript"`, `"tsx"`, `"javascript"`, `"jsx"`, `"java"`, `"python"`)
+- `filePath`: Optional file path for context (default: `"unknown"`)
+- `options`: Optional analysis configuration
+
+**Returns:** Complete analysis result with query results, performance metrics, and optional custom mapping results.
+
+**Example:**
+```typescript
+import { analyzeFile } from '@context-action/dependency-linker';
+
+const result = await analyzeFile(`
+import React from 'react';
+export const App = () => <div>Hello</div>;
+`, "tsx", "App.tsx");
+
+console.log(result.queryResults);        // All query results
+console.log(result.performanceMetrics); // Execution timing
+console.log(result.parseMetadata);      // AST parsing info
+```
+
+#### `analyzeTypeScriptFile(sourceCode, filePath?, options?)`
+
+TypeScript-specific analysis with automatic language detection (.ts vs .tsx).
 
 ```typescript
-import {
-  getText,
-  clearTextCache,
-  getSourceLocation,
-  hasChildOfType,
-  getIdentifierName,
-  isVariableDeclaration,
-  isFunctionDeclaration,
-  isClassDeclaration,
-  isTypeDeclaration,
-  isAsync,
-  isStatic,
-  getVisibility
-} from '@context-action/dependency-linker';
-
-// Get node text with caching
-const nodeText = getText(node);
-
-// Get source location info
-const location = getSourceLocation(node); // { line, column, offset }
-
-// Type checking utilities
-const isVar = isVariableDeclaration(node);
-const isFunc = isFunctionDeclaration(node);
-const isClass = isClassDeclaration(node);
-const isType = isTypeDeclaration(node);
-
-// Property checking
-const async = isAsync(node);
-const static = isStatic(node);
-const visibility = getVisibility(node); // 'public' | 'private' | 'protected'
-
-// Clear text cache periodically for memory management
-clearTextCache();
+async function analyzeTypeScriptFile(
+  sourceCode: string,
+  filePath?: string,
+  options?: Omit<AnalysisOptions, 'language'>
+): Promise<AnalysisResult>
 ```
 
-#### Text Matching Functions (formerly TextMatcher class)
+**Auto-detection:**
+- Files ending with `.tsx` → `"tsx"` language
+- All others → `"typescript"` language
+
+**Example:**
+```typescript
+import { analyzeTypeScriptFile } from '@context-action/dependency-linker';
+
+const result = await analyzeTypeScriptFile(`
+import type { User } from './types';
+import { ApiClient } from '@/lib/api';
+export const UserService = new ApiClient();
+`, "UserService.tsx");
+
+// Automatically uses 'tsx' language due to .tsx extension
+```
+
+#### `analyzeJavaScriptFile(sourceCode, filePath?, options?)`
+
+JavaScript-specific analysis with JSX support detection.
 
 ```typescript
-import {
-  findAllExports,
-  findExportsByType,
-  hasExports,
-  countExports,
-  parseNamedExports,
-  cleanExportText
-} from '@context-action/dependency-linker';
-
-const sourceCode = `
-export const API_URL = 'https://api.example.com';
-export function getData() { return fetch(API_URL); }
-export default class Service {}
-`;
-
-// Find all exports in source code
-const allExports = findAllExports(sourceCode);
-console.log(allExports); // ['API_URL', 'getData', 'default']
-
-// Find exports by type
-const namedExports = findExportsByType(sourceCode, 'named');
-const defaultExports = findExportsByType(sourceCode, 'default');
-
-// Check for exports
-const hasAnyExports = hasExports(sourceCode);
-const exportCount = countExports(sourceCode);
-
-// Parse named export syntax
-const namedExportList = parseNamedExports('export { foo, bar as baz }');
-console.log(namedExportList); // ['foo', 'baz']
-
-// Clean export text for analysis
-const cleanText = cleanExportText('export   const   API_URL');
+async function analyzeJavaScriptFile(
+  sourceCode: string,
+  filePath?: string,
+  options?: Omit<AnalysisOptions, 'language'>
+): Promise<AnalysisResult>
 ```
 
-#### Benefits of Functional Approach
+#### `analyzeJavaFile(sourceCode, filePath?, options?)`
 
-1. **Tree-shaking**: Import only the functions you need
-2. **Bundle size**: 30-50% smaller bundles when using specific functions
-3. **Performance**: No class instantiation overhead
-4. **Functional patterns**: Better composition and testing
-5. **TypeScript**: Enhanced type inference and IDE support
-
-#### Migration from Static Classes
+Java-specific analysis optimized for Java language patterns.
 
 ```typescript
-// Before (v2.4.0 and earlier)
-import { ASTTraverser, NodeUtils, TextMatcher } from '@context-action/dependency-linker';
-
-ASTTraverser.traverse(ast, visitor);
-const text = NodeUtils.getText(node);
-const exports = TextMatcher.findAllExports(code);
-
-// After (v2.4.1+)
-import { traverse, getText, findAllExports } from '@context-action/dependency-linker';
-
-traverse(ast, visitor);
-const text = getText(node);
-const exports = findAllExports(code);
+async function analyzeJavaFile(
+  sourceCode: string,
+  filePath?: string,
+  options?: Omit<AnalysisOptions, 'language'>
+): Promise<AnalysisResult>
 ```
 
-### `extractDependencies(filePath, options?)`
+#### `analyzePythonFile(sourceCode, filePath?, options?)`
 
-Extract only dependency information.
+Python-specific analysis optimized for Python language patterns.
 
-```javascript
-const deps = await extractDependencies('./src/index.ts');
-// Returns: ['react', 'lodash', './utils', '@mui/material']
+```typescript
+async function analyzePythonFile(
+  sourceCode: string,
+  filePath?: string,
+  options?: Omit<AnalysisOptions, 'language'>
+): Promise<AnalysisResult>
 ```
 
-**Returns**: `string[]`
+### Specialized Analysis Functions
 
-### `getBatchAnalysis(filePaths, options?)`
+#### `analyzeImports(sourceCode, language, filePath?)`
 
-Analyze multiple files with concurrency control.
+Focused import analysis with detailed breakdown.
 
-```javascript
-const results = await getBatchAnalysis([
-  './src/index.ts',
-  './src/utils.ts'
-], {
-  concurrency: 3,
-  continueOnError: true,
-  onProgress: (completed, total) => console.log(`${completed}/${total}`),
-  onFileError: (filePath, error) => console.log(`Error: ${filePath}`)
+```typescript
+async function analyzeImports(
+  sourceCode: string,
+  language: SupportedLanguage,
+  filePath?: string
+): Promise<{
+  sources: QueryResult<QueryKey>[];
+  named: QueryResult<QueryKey>[];
+  defaults: QueryResult<QueryKey>[];
+  types?: QueryResult<QueryKey>[];  // TypeScript only
+}>
+```
+
+**Returns:**
+- `sources`: Import source paths (`'react'`, `'./utils'`)
+- `named`: Named imports (`{ useState, useEffect }`)
+- `defaults`: Default imports (`React`, `Component`)
+- `types`: Type-only imports (TypeScript/TSX only)
+
+**Example:**
+```typescript
+import { analyzeImports } from '@context-action/dependency-linker';
+
+const imports = await analyzeImports(`
+import React, { useState, useEffect } from 'react';
+import type { User } from './types';
+import { ApiClient } from '@/lib/api';
+`, "tsx", "Component.tsx");
+
+console.log(`Found ${imports.sources.length} import sources`);
+console.log(`Found ${imports.named.length} named imports`);
+console.log(`Found ${imports.types?.length || 0} type imports`);
+```
+
+#### `analyzeDependencies(sourceCode, language, filePath?)`
+
+Dependency classification into internal, external, and builtin modules.
+
+```typescript
+async function analyzeDependencies(
+  sourceCode: string,
+  language: SupportedLanguage,
+  filePath?: string
+): Promise<{
+  internal: string[];   // Relative path imports
+  external: string[];   // npm packages
+  builtin: string[];    // Node.js built-ins
+}>
+```
+
+**Classification Rules:**
+- **Internal**: Starts with `./` or `../`
+- **External**: npm packages (doesn't start with `./` or `../`, not builtin)
+- **Builtin**: Node.js built-in modules (`fs`, `path`, `os`, etc.)
+
+**Example:**
+```typescript
+import { analyzeDependencies } from '@context-action/dependency-linker';
+
+const deps = await analyzeDependencies(`
+import fs from 'fs';
+import axios from 'axios';
+import { utils } from './utils';
+import { Config } from '../config';
+`, "typescript");
+
+console.log('Internal:', deps.internal);  // ['./utils', '../config']
+console.log('External:', deps.external);  // ['axios']
+console.log('Builtin:', deps.builtin);    // ['fs']
+```
+
+---
+
+## CustomKeyMapper API
+
+### Core Functions
+
+#### `createCustomKeyMapper(mapping)`
+
+Creates a new CustomKeyMapper instance with user-defined key mappings.
+
+```typescript
+function createCustomKeyMapper<T extends CustomKeyMapping>(
+  mapping: T
+): CustomKeyMapper<T>
+```
+
+**Parameters:**
+- `mapping`: Object mapping user-friendly keys to actual query keys
+
+**Returns:** CustomKeyMapper instance with validation and execution methods
+
+**Example:**
+```typescript
+import { createCustomKeyMapper } from '@context-action/dependency-linker';
+
+const mapper = createCustomKeyMapper({
+  "모든_임포트": "ts-import-sources",
+  "네임드_임포트": "ts-named-imports",
+  "타입_임포트": "ts-type-imports"
 });
 ```
 
-**Returns**: [`BatchResult`](#batchresult)
+### CustomKeyMapper Methods
 
-### `analyzeDirectory(dirPath, options?)`
+#### `mapper.validate()`
 
-Analyze an entire directory tree.
+Validates the mapping against currently registered queries.
 
-```javascript
-const results = await analyzeDirectory('./src', {
-  extensions: ['.ts', '.tsx'],
-  ignorePatterns: ['**/*.test.ts', '**/node_modules/**'],
-  recursive: true,
-  maxFiles: 1000
-});
+```typescript
+validate(): ValidationResult
 ```
 
-**Returns**: [`BatchResult`](#batchresult)
-
-## Class-Based API
-
-### `TypeScriptAnalyzer`
-
-Advanced analyzer with caching and batch processing capabilities.
-
-```javascript
-const analyzer = new TypeScriptAnalyzer({
-  enableCache: true,           // Enable result caching
-  cacheSize: 1000,            // Maximum cache entries
-  defaultTimeout: 30000        // Default parsing timeout
-});
-```
-
-#### Methods
-
-##### `analyzeFile(filePath, options?)`
-
-Analyze a single file with caching.
-
-```javascript
-const result = await analyzer.analyzeFile('./src/index.ts', {
-  format: 'json',
-  includeSources: true
-});
-```
-
-##### `extractDependencies(filePath, options?)`
-
-Extract dependencies with caching.
-
-```javascript
-const deps = await analyzer.extractDependencies('./src/index.ts');
-```
-
-##### `getImports(filePath, options?)`
-
-Extract only import information.
-
-```javascript
-const imports = await analyzer.getImports('./src/index.ts');
-```
-
-##### `getExports(filePath, options?)`
-
-Extract only export information.
-
-```javascript
-const exports = await analyzer.getExports('./src/index.ts');
-```
-
-##### `analyzeFiles(filePaths, options?)`
-
-Batch analyze with intelligent caching.
-
-```javascript
-const results = await analyzer.analyzeFiles([
-  './src/index.ts',
-  './src/utils.ts'
-], {
-  concurrency: 5,
-  continueOnError: true,
-  useCache: true
-});
-```
-
-##### `clearCache()`
-
-Clear analysis cache.
-
-```javascript
-analyzer.clearCache();
-```
-
-## Advanced Batch Processing
-
-### `BatchAnalyzer`
-
-High-performance batch processing with resource monitoring.
-
-```javascript
-const { BatchAnalyzer } = require('dependency-linker/dist/api/BatchAnalyzer');
-
-const batchAnalyzer = new BatchAnalyzer(analyzer, {
-  maxConcurrency: 5,              // Max concurrent operations
-  enableResourceMonitoring: true, // Monitor memory/CPU usage
-  memoryLimit: 512,               // Memory limit in MB
-  adaptiveConcurrency: true       // Auto-adjust concurrency
-});
-
-const result = await batchAnalyzer.processBatch(filePaths, {
-  continueOnError: true,
-  failFast: false,
-  onProgress: (completed, total) => console.log(`Progress: ${completed}/${total}`),
-  onFileComplete: (filePath, result) => console.log(`Completed: ${filePath}`),
-  onFileError: (filePath, error) => console.log(`Error: ${filePath}`)
-});
-
-// Get resource metrics
-const metrics = batchAnalyzer.getResourceMetrics();
-console.log('Memory usage:', metrics.memoryUsage, 'MB');
-
-// Clean up
-batchAnalyzer.dispose();
-```
-
-## Task Management API (`TaskAPI`)
-
-The Task Management API provides a comprehensive system for programmatically defining, tracking, and executing complex development workflows. It is designed based on the specifications in `specs/tasks.md` and allows for sophisticated task management directly within your codebase.
-
-### Quick Start
-
-```javascript
-import { TaskAPI } from 'dependency-linker/task';
-
-const taskApi = new TaskAPI();
-
-async function setupProject() {
-  // Create a new task
-  const task = await taskApi.createTask({
-    title: 'Setup initial project structure',
-    description: 'Create necessary folders and configuration files.',
-    priority: 'High',
-    complexity: 'Simple',
-    // ... other task properties
-  });
-
-  // Start the task
-  await taskApi.startTask(task.id);
-
-  // ... perform actions ...
-
-  // Complete the task
-  await taskApi.completeTask(task.id);
-
-  // Get project statistics
-  const stats = await taskApi.getStatistics();
-  console.log(`Total tasks: ${stats.totalTasks}`);
+**Returns:**
+```typescript
+interface ValidationResult {
+  isValid: boolean;
+  errors: string[];
+  validKeys: string[];
+  invalidKeys: string[];
 }
-
-setupProject();
 ```
 
-### `TaskAPI` Class
+**Example:**
+```typescript
+const validation = mapper.validate();
+if (!validation.isValid) {
+  console.error('Invalid mappings:', validation.errors);
+  console.log('Valid keys:', validation.validKeys);
+}
+```
 
-The main entry point for all task-related operations.
+#### `mapper.getUserKeys()`
 
-#### `new TaskAPI(config?)`
+Returns array of user-defined keys.
 
-Creates a new `TaskAPI` instance.
+```typescript
+getUserKeys(): string[]
+```
 
-```javascript
-const taskApi = new TaskAPI({
-  enableValidation: true,
-  autoSave: true,
-  resourceLimits: {
-    maxConcurrentTasks: 5,
+#### `mapper.getQueryKeys()`
+
+Returns array of mapped query keys.
+
+```typescript
+getQueryKeys(): QueryKey[]
+```
+
+#### `mapper.execute(matches, context)`
+
+Executes all mapped queries and returns results with user-friendly keys.
+
+```typescript
+async execute(
+  matches: QueryMatch[],
+  context: QueryExecutionContext
+): Promise<Record<string, QueryResult<QueryKey>[]>>
+```
+
+#### `mapper.executeConditional(conditions, matches, context)`
+
+Executes only queries where the corresponding condition is `true`.
+
+```typescript
+async executeConditional(
+  conditions: Record<string, boolean>,
+  matches: QueryMatch[],
+  context: QueryExecutionContext
+): Promise<Record<string, QueryResult<QueryKey>[]>>
+```
+
+**Example:**
+```typescript
+const conditions = {
+  "모든_임포트": true,     // Execute
+  "네임드_임포트": true,   // Execute
+  "타입_임포트": false     // Skip
+};
+
+const results = await mapper.executeConditional(conditions, matches, context);
+// Only contains results for "모든_임포트" and "네임드_임포트"
+```
+
+### Predefined Mappings
+
+#### `predefinedCustomMappings`
+
+Pre-configured mappings for common analysis scenarios.
+
+```typescript
+export const predefinedCustomMappings = {
+  typeScriptAnalysis: {
+    "sources": "ts-import-sources",
+    "namedImports": "ts-named-imports",
+    "defaultImports": "ts-default-imports",
+    "typeImports": "ts-type-imports",
+    "exports": "ts-export-declarations",
+    "assignments": "ts-export-assignments"
   },
-});
+
+  reactAnalysis: {
+    "hooks": "ts-named-imports",
+    "components": "ts-default-imports",
+    "exports": "ts-export-declarations"
+  },
+
+  generalAnalysis: {
+    "imports": "ts-import-sources",
+    "exports": "ts-export-declarations"
+  }
+} as const;
 ```
 
-**Configuration (`TaskAPIConfig`)**:
+**Usage:**
+```typescript
+import { predefinedCustomMappings, createCustomKeyMapper } from '@context-action/dependency-linker';
 
--   `persistencePath` (string): Path to store task data.
--   `autoSave` (boolean): Automatically save state changes.
--   `enableValidation` (boolean): Enable automatic validation of tasks and transitions.
--   `resourceLimits` (object): Configure resource usage limits.
+const tsMapper = createCustomKeyMapper(predefinedCustomMappings.typeScriptAnalysis);
+const reactMapper = createCustomKeyMapper(predefinedCustomMappings.reactAnalysis);
+```
 
-### Core Methods
+---
 
-#### Task CRUD
+## Query Engine API
 
--   `createTask(taskData, options?)`: Creates a new task.
--   `getTask(taskId)`: Retrieves a task by its ID.
--   `updateTask(taskId, updates)`: Updates a task's properties.
--   `deleteTask(taskId)`: Deletes a task.
--   `getTasks(options?)`: Queries for tasks with filtering and sorting.
+### Core QueryEngine
 
-#### Task Execution
+#### `globalQueryEngine`
 
--   `startTask(taskId, context?)`: Starts a task's execution.
--   `completeTask(taskId, validationResults?)`: Marks a task as complete.
--   `cancelTask(taskId, reason?)`: Cancels a task.
--   `blockTask(taskId, reason?)`: Blocks a task.
--   `unblockTask(taskId)`: Unblocks a task.
+The global singleton QueryEngine instance with all queries pre-registered.
 
-#### Dependency Management
+```typescript
+import { globalQueryEngine } from '@context-action/dependency-linker';
+```
 
--   `addDependency(taskId, dependencyTaskId, type?)`: Adds a dependency between two tasks.
--   `removeDependency(taskId, dependencyTaskId)`: Removes a dependency.
--   `getDependencies(taskId)`: Gets all dependencies for a task.
--   `canStartTask(taskId)`: Checks if a task's dependencies are met.
+### Registration Functions
 
-#### Batch Operations
+#### `registerTypeScriptQueries(engine)`
 
--   `createBatch(batchData)`: Creates a batch of tasks.
--   `executeBatch(batchId, maxConcurrency?)`: Executes a batch of tasks.
--   `getBatchProgress(batchId)`: Gets the progress of a batch execution.
+Registers all TypeScript/TSX queries with the engine.
 
-#### Analytics and Statistics
+```typescript
+function registerTypeScriptQueries(engine: QueryEngine): void
+```
 
--   `getStatistics()`: Retrieves statistics for all tasks.
--   `getCriticalPath()`: Identifies the critical path in the task graph.
--   `getParallelizableTasks()`: Gets tasks that can be run in parallel.
--   `estimateCompletionTime()`: Estimates the total time to complete all tasks.
+#### `registerJavaQueries(engine)`
 
-### Key Data Types
+Registers all Java queries with the engine.
 
--   `Task`: The core task object, containing all information about a task.
--   `TaskBatch`: A collection of tasks to be executed together.
--   `TaskExecutionResult`: The result of a task's execution.
--   `TaskStatistics`: An object containing various metrics about the tasks.
+```typescript
+function registerJavaQueries(engine: QueryEngine): void
+```
 
-(For detailed type information, refer to `src/task/types.ts`)
+#### `registerPythonQueries(engine)`
 
-## Data Types
+Registers all Python queries with the engine.
 
-### `AnalysisResult`
+```typescript
+function registerPythonQueries(engine: QueryEngine): void
+```
+
+**Example:**
+```typescript
+import {
+  QueryEngine,
+  registerTypeScriptQueries,
+  registerJavaQueries
+} from '@context-action/dependency-linker';
+
+const engine = new QueryEngine();
+registerTypeScriptQueries(engine);
+registerJavaQueries(engine);
+```
+
+### Query Execution
+
+#### `executeQuery(queryKey, matches, context)`
+
+Execute a single query by key.
+
+```typescript
+async function executeQuery<K extends QueryKey>(
+  queryKey: K,
+  matches: QueryMatch[],
+  context: QueryExecutionContext
+): Promise<QueryResult<K>[]>
+```
+
+#### `executeQueries(queryKeys, matches, context)`
+
+Execute multiple queries in parallel.
+
+```typescript
+async function executeQueries(
+  queryKeys: QueryKey[],
+  matches: QueryMatch[],
+  context: QueryExecutionContext
+): Promise<Record<QueryKey, QueryResult<QueryKey>[]>>
+```
+
+---
+
+## Tree-sitter Integration
+
+### Query Bridge Functions
+
+#### `executeTreeSitterQuery(queryKey, context)`
+
+Execute a Tree-sitter query and process results through the query bridge.
+
+```typescript
+async function executeTreeSitterQuery(
+  queryKey: QueryKey,
+  context: QueryExecutionContext
+): Promise<QueryResult<QueryKey>[]>
+```
+
+#### `executeMultipleTreeSitterQueries(queryKeys, context)`
+
+Execute multiple Tree-sitter queries in parallel.
+
+```typescript
+async function executeMultipleTreeSitterQueries(
+  queryKeys: QueryKey[],
+  context: QueryExecutionContext
+): Promise<Record<QueryKey, QueryResult<QueryKey>[]>>
+```
+
+#### `executeAllLanguageQueries(context)`
+
+Execute all queries available for the context's language.
+
+```typescript
+async function executeAllLanguageQueries(
+  context: QueryExecutionContext
+): Promise<Record<QueryKey, QueryResult<QueryKey>[]>>
+```
+
+### Tree-sitter Query Engine
+
+#### `globalTreeSitterQueryEngine`
+
+The global Tree-sitter query execution engine.
+
+```typescript
+import { globalTreeSitterQueryEngine } from '@context-action/dependency-linker';
+
+// Get supported languages
+const languages = globalTreeSitterQueryEngine.getSupportedLanguages();
+console.log('Supported:', languages); // ['typescript', 'tsx', 'javascript', 'jsx', 'java', 'python']
+```
+
+---
+
+## Type Definitions
+
+### Core Types
+
+#### `SupportedLanguage`
+
+```typescript
+type SupportedLanguage =
+  | "typescript"
+  | "tsx"
+  | "javascript"
+  | "jsx"
+  | "java"
+  | "python";
+```
+
+#### `QueryExecutionContext`
+
+```typescript
+interface QueryExecutionContext {
+  sourceCode: string;
+  language: SupportedLanguage;
+  filePath: string;
+  tree: Parser.Tree;  // Tree-sitter AST
+}
+```
+
+#### `AnalysisResult`
 
 ```typescript
 interface AnalysisResult {
+  // Basic info
+  language: SupportedLanguage;
   filePath: string;
-  success: boolean;
-  parseTime: number;              // Milliseconds
-  dependencies: DependencyInfo[];
-  imports: ImportInfo[];
-  exports: ExportInfo[];
-  error?: {
-    code: string;
-    message: string;
-    details?: any;
+  sourceCode: string;
+
+  // Parse results
+  parseMetadata: {
+    nodeCount: number;
+    parseTime: number;
+  };
+
+  // Query results
+  queryResults: Record<QueryKey, QueryResult<QueryKey>[]>;
+
+  // Custom mapping results (if provided)
+  customResults?: Record<string, QueryResult<QueryKey>[]>;
+
+  // Performance metrics
+  performanceMetrics: {
+    totalExecutionTime: number;
+    queryExecutionTime: number;
+    customMappingTime?: number;
   };
 }
 ```
 
-### `DependencyInfo`
+#### `AnalysisOptions`
 
 ```typescript
-interface DependencyInfo {
-  source: string;                 // Import source
-  type: 'external' | 'internal' | 'relative';
-  location: SourceLocation;
-  isNodeBuiltin: boolean;
-  isScopedPackage: boolean;
-  packageName: string;
+interface AnalysisOptions {
+  // Query selection
+  queryKeys?: QueryKey[];
+
+  // Custom key mapping
+  customMapping?: CustomKeyMapping;
+  customConditions?: Record<string, boolean>;
+
+  // Performance options
+  enableParallelExecution?: boolean;
+  enableCaching?: boolean;
 }
 ```
 
-### `ImportInfo`
+### Query Types
+
+#### `QueryKey`
+
+All available query keys across all languages:
 
 ```typescript
-interface ImportInfo {
-  source: string;
-  specifiers: Array<{
-    type: 'default' | 'named' | 'namespace';
-    imported: string;
-    local: string;
-  }>;
-  location: SourceLocation;
-  isTypeOnly: boolean;
+type QueryKey =
+  // TypeScript/TSX
+  | "ts-import-sources"
+  | "ts-named-imports"
+  | "ts-default-imports"
+  | "ts-type-imports"
+  | "ts-export-declarations"
+  | "ts-export-assignments"
+
+  // JavaScript/JSX
+  | "js-import-sources"
+  | "js-named-imports"
+  | "js-default-imports"
+  | "js-export-declarations"
+  | "js-export-assignments"
+
+  // Java
+  | "java-import-sources"
+  | "java-import-statements"
+  | "java-wildcard-imports"
+  | "java-static-imports"
+  | "java-class-declarations"
+  | "java-interface-declarations"
+  | "java-enum-declarations"
+  | "java-method-declarations"
+
+  // Python
+  | "python-import-sources"
+  | "python-import-statements"
+  | "python-from-imports"
+  | "python-import-as"
+  | "python-function-definitions"
+  | "python-class-definitions"
+  | "python-variable-definitions"
+  | "python-method-definitions";
+```
+
+#### `QueryResult<K>`
+
+Base result type for all queries:
+
+```typescript
+interface QueryResult<K extends QueryKey> {
+  queryName: K;
+  location: Location;
+  nodeText: string;
+  // Additional properties specific to query type
 }
 ```
 
-### `ExportInfo`
+#### `CustomKeyMapping`
 
 ```typescript
-interface ExportInfo {
-  name: string;
-  type: 'default' | 'named';
-  location: SourceLocation;
-  isTypeOnly: boolean;
+type CustomKeyMapping = Record<string, QueryKey>;
+```
+
+### Specific Result Types
+
+#### `ImportSourceResult`
+
+```typescript
+interface ImportSourceResult extends QueryResult<"ts-import-sources"> {
+  source: string;  // e.g., "react", "./utils"
 }
 ```
 
-### `SourceLocation`
+#### `NamedImportResult`
 
 ```typescript
-interface SourceLocation {
-  line: number;                   // 1-based line number
-  column: number;                 // 0-based column number
-  offset: number;                 // Character offset from start
+interface NamedImportResult extends QueryResult<"ts-named-imports"> {
+  name: string;      // e.g., "useState"
+  alias?: string;    // e.g., "useState as useStateHook"
 }
 ```
 
-### `BatchResult`
+#### `ExportDeclarationResult`
 
 ```typescript
-interface BatchResult {
-  results: AnalysisResult[];
-  summary: {
-    totalFiles: number;
-    successfulFiles: number;
-    failedFiles: number;
-    totalDependencies: number;
-    totalImports: number;
-    totalExports: number;
-    averageTime: number;          // Milliseconds
-  };
-  errors: Array<{
-    filePath: string;
-    code: string;
-    message: string;
-    details?: any;
-  }>;
-  totalTime: number;              // Milliseconds
+interface ExportDeclarationResult extends QueryResult<"ts-export-declarations"> {
+  name: string;          // e.g., "UserComponent"
+  exportType: "const" | "function" | "class" | "interface" | "type";
 }
 ```
+
+---
+
+## System Initialization
+
+### `initializeAnalysisSystem()`
+
+Initialize the complete analysis system with all components.
+
+```typescript
+function initializeAnalysisSystem(): void
+```
+
+**What it does:**
+- Initializes the Query Bridge
+- Registers all language queries
+- Sets up Tree-sitter query engine
+- Prepares the system for analysis
+
+**Example:**
+```typescript
+import { initializeAnalysisSystem } from '@context-action/dependency-linker';
+
+// Initialize once at application startup
+initializeAnalysisSystem();
+
+// Now all analysis functions are ready to use
+```
+
+---
 
 ## Error Handling
 
-All API functions handle errors gracefully and return structured error information.
+### Common Error Types
 
-### Common Error Codes
+#### `AnalysisError`
 
--   `FILE_NOT_FOUND`: File does not exist
--   `PARSE_ERROR`: TypeScript parsing failed
--   `TIMEOUT`: Parsing exceeded timeout limit
--   `ACCESS_DENIED`: Insufficient file permissions
--   `INVALID_FORMAT`: Unsupported file format
+Thrown when analysis fails due to parsing or execution issues.
 
-### Example Error Handling
-
-```javascript
+```typescript
 try {
-  const result = await analyzeTypeScriptFile('./src/invalid.ts');
-  if (!result.success) {
-    console.error(`Analysis failed: ${result.error?.message}`);
-    console.error(`Error code: ${result.error?.code}`);
+  const result = await analyzeTypeScriptFile(sourceCode, "Component.tsx");
+} catch (error) {
+  if (error instanceof AnalysisError) {
+    console.error('Analysis failed:', error.message);
+    console.error('File:', error.filePath);
+    console.error('Language:', error.language);
+  }
+}
+```
+
+#### `ValidationError`
+
+Thrown when CustomKeyMapper validation fails.
+
+```typescript
+try {
+  const mapper = createCustomKeyMapper({
+    "invalid": "non-existent-query"
+  });
+
+  const validation = mapper.validate();
+  if (!validation.isValid) {
+    throw new ValidationError(`Invalid mapping: ${validation.errors.join(', ')}`);
   }
 } catch (error) {
-  console.error('Unexpected error:', error.message);
-}
-```
-
-## Performance Guidelines
-
-### Memory Optimization
-
--   Use `clearCache()` periodically for long-running processes
--   Set appropriate `cacheSize` limits
--   Monitor memory usage with `getResourceMetrics()`
-
-### Concurrency Control
-
--   Start with `concurrency: 3-5` for most systems
--   Use `adaptiveConcurrency: true` for automatic optimization
--   Monitor resource usage and adjust accordingly
-
-### Large File Handling
-
--   Increase `parseTimeout` for large files (>10,000 lines)
--   Consider breaking large files into smaller modules
--   Use `continueOnError: true` for batch operations
-
-## Integration Examples
-
-### Webpack Plugin
-
-```javascript
-class DependencyAnalysisPlugin {
-  apply(compiler) {
-    compiler.hooks.compilation.tap('DependencyAnalysisPlugin', async (compilation) => {
-      const analyzer = new TypeScriptAnalyzer();
-      const result = await analyzer.analyzeFile('./src/index.ts');
-      const externalDeps = result.dependencies.filter(d => d.type === 'external');
-      console.log('External dependencies:', externalDeps.map(d => d.source));
-      analyzer.clearCache();
-    });
+  if (error instanceof ValidationError) {
+    console.error('Validation failed:', error.message);
   }
 }
 ```
 
-### Build Script Integration
+### Error Recovery
 
-```javascript
-const { analyzeDirectory } = require('dependency-linker');
+#### Graceful Degradation
 
-async function analyzeBuild() {
-  const results = await analyzeDirectory('./src', {
-    extensions: ['.ts', '.tsx'],
-    ignorePatterns: ['**/*.test.ts']
-  });
-  
-  console.log(`Analyzed ${results.summary.totalFiles} files`);
-  console.log(`Found ${results.summary.totalDependencies} dependencies`);
-  
-  // Extract all external dependencies
-  const allDeps = new Set();
-  results.results.forEach(result => {
-    result.dependencies
-      .filter(dep => dep.type === 'external')
-      .forEach(dep => allDeps.add(dep.source));
-  });
-  
-  console.log('External dependencies:', Array.from(allDeps).sort());
-}
+```typescript
+import { analyzeTypeScriptFile } from '@context-action/dependency-linker';
 
-analyzeBuild().catch(console.error);
-```
-
-## CLI Bridge
-
-For CLI-like usage in Node.js:
-
-```javascript
-const { execSync } = require('child_process');
-
-function analyzeFileSync(filePath, format = 'json') {
+async function safeAnalyze(sourceCode: string, filePath: string) {
   try {
-    const output = execSync(`./analyze-file "${filePath}" --format ${format}`, {
-      encoding: 'utf8'
-    });
-    return format === 'json' ? JSON.parse(output) : output;
+    return await analyzeTypeScriptFile(sourceCode, filePath);
   } catch (error) {
-    throw new Error(`Analysis failed: ${error.message}`);
+    console.warn(`Analysis failed for ${filePath}:`, error.message);
+
+    // Return minimal result
+    return {
+      success: false,
+      error: error.message,
+      filePath,
+      fallbackResults: []
+    };
   }
 }
-
-const result = analyzeFileSync('./src/index.ts');
-console.log(result.dependencies);
 ```
 
-## 🎯 Enhanced Dependency Analysis API
-
-### `EnhancedDependencyExtractor`
-
-Advanced dependency analysis with named import usage tracking, dead code detection, and tree-shaking optimization.
-
-#### Constructor
-
-```javascript
-const extractor = new EnhancedDependencyExtractor();
-```
-
-Extends the base `DependencyExtractor` with enhanced analysis capabilities.
-
-#### Methods
-
-##### `extractEnhanced(ast, filePath)`
-
-Performs comprehensive dependency analysis including usage tracking.
-
-```javascript
-const result = extractor.extractEnhanced(parseResult.ast, './src/component.tsx');
-```
-
-**Parameters**:
-- `ast`: Parsed AST from tree-sitter
-- `filePath`: Path to the analyzed file
-
-**Returns**: [`EnhancedDependencyExtractionResult`](#enhanceddependencyextractionresult)
-
-#### Enhanced Data Types
-
-##### `EnhancedDependencyExtractionResult`
+#### Partial Success Handling
 
 ```typescript
-interface EnhancedDependencyExtractionResult extends DependencyExtractionResult {
-  enhancedDependencies: EnhancedDependencyInfo[];
-  usageAnalysis: {
-    totalImports: number;
-    usedImports: number;
-    unusedImports: number;
-    mostUsedMethods: Array<{
-      method: string;
-      count: number;
-      source: string;
-    }>;
-    unusedImportsList: Array<{
-      source: string;
-      unusedItems: string[];
-    }>;
+async function analyzeWithFallback(sourceCode: string, filePath: string) {
+  try {
+    // Try full analysis with custom mapping
+    return await analyzeTypeScriptFile(sourceCode, filePath, {
+      customMapping: predefinedCustomMappings.typeScriptAnalysis
+    });
+  } catch (error) {
+    console.warn('Custom mapping failed, trying basic analysis');
+
+    // Fallback to basic analysis
+    return await analyzeTypeScriptFile(sourceCode, filePath);
+  }
+}
+```
+
+---
+
+## Usage Patterns
+
+### Initialization Pattern
+
+```typescript
+import { initializeAnalysisSystem } from '@context-action/dependency-linker';
+
+// Initialize once at application startup
+initializeAnalysisSystem();
+
+// Now all analysis functions are ready to use
+```
+
+### Batch Processing Pattern
+
+```typescript
+import { analyzeTypeScriptFile } from '@context-action/dependency-linker';
+
+async function analyzeBatch(files: Array<{code: string, path: string}>) {
+  const results = await Promise.allSettled(
+    files.map(file => analyzeTypeScriptFile(file.code, file.path))
+  );
+
+  const successful = results
+    .filter(r => r.status === 'fulfilled')
+    .map(r => r.value);
+
+  const failed = results
+    .filter(r => r.status === 'rejected')
+    .map(r => r.reason);
+
+  return { successful, failed };
+}
+```
+
+### Custom Analysis Pipeline
+
+```typescript
+import {
+  analyzeFile,
+  createCustomKeyMapper,
+  globalQueryEngine
+} from '@context-action/dependency-linker';
+
+class CustomAnalyzer {
+  private mapping = {
+    "user_imports": "ts-import-sources",
+    "user_exports": "ts-export-declarations"
   };
-}
-```
 
-##### `EnhancedDependencyInfo`
+  private mapper = createCustomKeyMapper(this.mapping);
 
-```typescript
-interface EnhancedDependencyInfo {
-  // Basic dependency info
-  source: string;
-  type: "external" | "internal" | "relative";
-  location?: SourceLocation;
-  isTypeOnly?: boolean;
-
-  // Enhanced analysis
-  importedNames?: string[];          // All imported named items
-  usedMethods?: UsedMethodInfo[];    // Actually used methods
-  unusedImports?: string[];          // Imported but unused items
-  usageCount?: number;               // Total usage count
-  usageLocations?: SourceLocation[]; // All usage locations
-}
-```
-
-##### `UsedMethodInfo`
-
-```typescript
-interface UsedMethodInfo {
-  methodName: string;                // Method name
-  originalName?: string;             // Original name if aliased
-  usageType: "call" | "property" | "reference"; // Usage type
-  locations: SourceLocation[];      // All usage locations
-  callCount: number;                 // Number of times called
-  contextInfo?: {
-    parentFunction?: string;
-    isInCondition?: boolean;
-    isInLoop?: boolean;
-    callArguments?: string[];
-  };
-}
-```
-
-#### Example Usage
-
-##### Basic Enhanced Analysis
-
-```javascript
-import { EnhancedDependencyExtractor, TypeScriptParser } from '@context-action/dependency-linker';
-
-async function analyzeEnhancedDependencies() {
-  const code = `
-import { useState, useEffect, useMemo } from 'react';
-import { format, addDays } from 'date-fns';
-import { debounce, throttle } from 'lodash';
-
-function MyComponent() {
-  const [date, setDate] = useState(new Date());
-
-  useEffect(() => {
-    const tomorrow = addDays(date, 1);
-    console.log(format(tomorrow, 'yyyy-MM-dd'));
-  }, [date]);
-
-  const debouncedUpdate = debounce(() => {
-    setDate(new Date());
-  }, 1000);
-
-  // throttle is imported but never used
-
-  return <div onClick={debouncedUpdate}>Click me</div>;
-}
-`;
-
-  const parser = new TypeScriptParser();
-  const parseResult = await parser.parse('/example.tsx', code);
-
-  const extractor = new EnhancedDependencyExtractor();
-  const result = extractor.extractEnhanced(parseResult.ast, '/example.tsx');
-
-  console.log('📊 Analysis Results:');
-  console.log(`Total imports: ${result.usageAnalysis.totalImports}`);
-  console.log(`Used methods: ${result.usageAnalysis.usedImports}`);
-  console.log(`Unused imports: ${result.usageAnalysis.unusedImports}`);
-
-  // Detailed per-dependency analysis
-  result.enhancedDependencies.forEach(dep => {
-    console.log(`\n📦 ${dep.source}:`);
-    console.log(`  Imported: ${dep.importedNames?.join(', ')}`);
-    console.log(`  Used: ${dep.usedMethods?.map(m => `${m.methodName}(${m.callCount}x)`).join(', ') || 'None'}`);
-
-    if (dep.unusedImports?.length) {
-      console.log(`  ⚠️ Unused: ${dep.unusedImports.join(', ')}`);
+  async analyze(sourceCode: string, language: SupportedLanguage) {
+    // Validate mapping
+    const validation = this.mapper.validate();
+    if (!validation.isValid) {
+      throw new Error(`Invalid mapping: ${validation.errors.join(', ')}`);
     }
-  });
+
+    // Execute analysis
+    const result = await analyzeFile(sourceCode, language, "file", {
+      customMapping: this.mapping
+    });
+
+    return {
+      imports: result.customResults?.user_imports || [],
+      exports: result.customResults?.user_exports || [],
+      performance: result.performanceMetrics
+    };
+  }
 }
 ```
 
-##### Tree-shaking Analysis
+---
 
-```javascript
-async function analyzeTreeShaking() {
-  const lodashCode = `
-import _ from 'lodash';
-import { debounce } from 'lodash';
+## Performance Considerations
 
-// Inefficient: default import usage
-const uniqueData = _.uniq([1, 2, 2, 3]);
-const sortedData = _.sortBy([3, 1, 2]);
+### Optimization Tips
 
-// Efficient: named import usage
-const debouncedFn = debounce(() => console.log('debounced'), 100);
-`;
+1. **Initialize Once**: Call `initializeAnalysisSystem()` only once at startup
+2. **Reuse Mappers**: Create CustomKeyMapper instances once and reuse them
+3. **Parallel Processing**: Use `Promise.all()` for analyzing multiple files
+4. **Query Selection**: Use `queryKeys` option to run only needed queries
+5. **Conditional Execution**: Use `customConditions` to skip unnecessary queries
 
-  const parser = new TypeScriptParser();
-  const parseResult = await parser.parse('/optimization.ts', lodashCode);
+### Performance Monitoring
 
-  const extractor = new EnhancedDependencyExtractor();
-  const result = extractor.extractEnhanced(parseResult.ast, '/optimization.ts');
+```typescript
+import { analyzeTypeScriptFile } from '@context-action/dependency-linker';
 
-  // Tree-shaking recommendations
-  result.enhancedDependencies.forEach(dep => {
-    if (dep.source === 'lodash') {
-      console.log('🌳 Tree-shaking Recommendations:');
+const result = await analyzeTypeScriptFile(sourceCode, "Component.tsx");
 
-      if (dep.usedMethods) {
-        const defaultImportMethods = dep.usedMethods.filter(m => m.methodName.startsWith('_'));
-
-        if (defaultImportMethods.length > 0) {
-          console.log('⚠️ Inefficient default imports found:');
-          defaultImportMethods.forEach(method => {
-            const methodName = method.methodName.replace('_.', '');
-            console.log(`  ${method.methodName} → import { ${methodName} } from 'lodash/${methodName}';`);
-          });
-        }
-      }
-
-      if (dep.unusedImports?.length) {
-        console.log(`🗑️ Remove unused: ${dep.unusedImports.join(', ')}`);
-      }
-    }
-  });
-}
+console.log('Performance Metrics:');
+console.log(`Total time: ${result.performanceMetrics.totalExecutionTime}ms`);
+console.log(`Query time: ${result.performanceMetrics.queryExecutionTime}ms`);
+console.log(`Parse time: ${result.parseMetadata.parseTime}ms`);
+console.log(`AST nodes: ${result.parseMetadata.nodeCount}`);
 ```
 
-##### Usage Pattern Analysis
+---
 
-```javascript
-async function analyzeUsagePatterns() {
-  const complexCode = `
-import React, { useState, useEffect, useCallback } from 'react';
-import { format, isAfter, isBefore } from 'date-fns';
-import { debounce, merge, isEmpty } from 'lodash';
+## Complete Examples
 
-const Dashboard = () => {
-  const [data, setData] = useState([]);
+### Basic Usage with Korean Keys
 
-  // High frequency: format used multiple times
-  const formatDate = useCallback((date) => format(date, 'yyyy-MM-dd'), []);
-  const formatTime = (date) => format(date, 'HH:mm');
-  const displayDate = (date) => format(date, 'PPP');
+```typescript
+import {
+  analyzeTypeScriptFile,
+  createCustomKeyMapper,
+  initializeAnalysisSystem
+} from '@context-action/dependency-linker';
 
-  // Medium frequency: debounce, merge
-  const debouncedSearch = debounce((query) => {
-    const filters = merge({}, { search: query });
-    console.log(filters);
-  }, 300);
+// Initialize system
+initializeAnalysisSystem();
 
-  // Low frequency: isEmpty
-  const processData = (rawData) => {
-    if (isEmpty(rawData)) return [];
-    return rawData;
-  };
-
-  return <div>Dashboard</div>;
+// Create Korean key mapping
+const koreanMapping = {
+  "모든_임포트": "ts-import-sources",
+  "네임드_임포트": "ts-named-imports",
+  "타입_임포트": "ts-type-imports",
+  "익스포트_선언": "ts-export-declarations"
 };
-`;
 
-  const parser = new TypeScriptParser();
-  const parseResult = await parser.parse('/dashboard.tsx', complexCode);
+// Validate mapping
+const mapper = createCustomKeyMapper(koreanMapping);
+const validation = mapper.validate();
 
-  const extractor = new EnhancedDependencyExtractor();
-  const result = extractor.extractEnhanced(parseResult.ast, '/dashboard.tsx');
+if (validation.isValid) {
+  const sourceCode = `
+  import React, { useState } from 'react';
+  import type { User } from './types';
+  export const UserComponent = () => <div>Hello</div>;
+  `;
 
-  console.log('📈 Usage Pattern Analysis:');
-
-  // Categorize by usage frequency
-  const highUsage = result.usageAnalysis.mostUsedMethods.filter(m => m.count >= 3);
-  const mediumUsage = result.usageAnalysis.mostUsedMethods.filter(m => m.count >= 2 && m.count < 3);
-  const lowUsage = result.usageAnalysis.mostUsedMethods.filter(m => m.count === 1);
-
-  console.log('🔥 High usage (3+ calls):', highUsage.map(m => `${m.method}(${m.count}x)`));
-  console.log('🔶 Medium usage (2 calls):', mediumUsage.map(m => `${m.method}(${m.count}x)`));
-  console.log('🔷 Low usage (1 call):', lowUsage.map(m => `${m.method}(${m.count}x)`));
-
-  // Package utilization analysis
-  result.enhancedDependencies.forEach(dep => {
-    const totalImports = dep.importedNames?.length || 0;
-    const usedImports = dep.usedMethods?.length || 0;
-    const utilizationRate = totalImports > 0 ? ((usedImports / totalImports) * 100).toFixed(1) : 0;
-
-    console.log(`📦 ${dep.source}: ${utilizationRate}% utilization (${usedImports}/${totalImports})`);
+  const result = await analyzeTypeScriptFile(sourceCode, "Component.tsx", {
+    customMapping: koreanMapping
   });
+
+  // Results with Korean keys
+  console.log("모든_임포트:", result.customResults?.["모든_임포트"]);
+  console.log("네임드_임포트:", result.customResults?.["네임드_임포트"]);
 }
 ```
 
-#### Integration with Existing API
+### Production Class Example
 
-The `EnhancedDependencyExtractor` integrates seamlessly with existing analyzer classes:
+```typescript
+import {
+  analyzeTypeScriptFile,
+  createCustomKeyMapper,
+  predefinedCustomMappings,
+  initializeAnalysisSystem
+} from '@context-action/dependency-linker';
 
-```javascript
-// With TypeScriptAnalyzer
-const analyzer = new TypeScriptAnalyzer();
-const extractor = new EnhancedDependencyExtractor();
+class ProjectAnalyzer {
+  private mapper: ReturnType<typeof createCustomKeyMapper>;
 
-async function enhancedAnalysis(filePath) {
-  // Standard analysis
-  const basicResult = await analyzer.analyzeFile(filePath);
+  constructor() {
+    initializeAnalysisSystem();
 
-  // Enhanced analysis
-  const parseResult = await analyzer.parser.parse(filePath);
-  const enhancedResult = extractor.extractEnhanced(parseResult.ast, filePath);
+    this.mapper = createCustomKeyMapper(
+      predefinedCustomMappings.typeScriptAnalysis
+    );
 
-  return {
-    basic: basicResult,
-    enhanced: enhancedResult
-  };
+    const validation = this.mapper.validate();
+    if (!validation.isValid) {
+      throw new Error(`Invalid mapping: ${validation.errors.join(', ')}`);
+    }
+  }
+
+  async analyzeComponent(sourceCode: string, filePath: string) {
+    try {
+      const result = await analyzeTypeScriptFile(sourceCode, filePath, {
+        customMapping: predefinedCustomMappings.typeScriptAnalysis,
+        enableParallelExecution: true
+      });
+
+      return {
+        success: true,
+        data: {
+          imports: result.customResults?.sources || [],
+          exports: result.customResults?.exports || [],
+          types: result.customResults?.typeImports || [],
+          performance: result.performanceMetrics
+        }
+      };
+    } catch (error) {
+      return {
+        success: false,
+        error: error.message,
+        filePath
+      };
+    }
+  }
 }
 ```
 
-#### Performance Considerations
+---
 
-- **Memory Usage**: Enhanced analysis requires additional memory for usage tracking
-- **Performance**: Typical overhead of 10-20% compared to basic dependency extraction
-- **Scalability**: Suitable for files up to 50,000 lines with optimal performance
-- **Caching**: Results can be cached alongside basic dependency analysis
+**🎯 Complete API reference for CustomKeyMapper query composition and Tree-sitter AST analysis**

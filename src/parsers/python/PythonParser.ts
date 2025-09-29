@@ -13,14 +13,10 @@ export class PythonParser extends BaseParser {
 	protected language = "python" as const;
 	protected fileExtensions = ["py", "pyi"];
 
-	private parser: Parser;
-
-	constructor() {
-		super();
-
-		// Python 파서 초기화
-		this.parser = new Parser();
-		this.parser.setLanguage(Python);
+	private createParser(): Parser {
+		const parser = new Parser();
+		parser.setLanguage(Python);
+		return parser;
 	}
 
 	/**
@@ -33,7 +29,8 @@ export class PythonParser extends BaseParser {
 		const startTime = performance.now();
 
 		try {
-			const tree = this.parser.parse(sourceCode);
+			const parser = this.createParser();
+			const tree = parser.parse(sourceCode);
 
 			if (!tree.rootNode) {
 				throw new Error("Failed to parse Python code");

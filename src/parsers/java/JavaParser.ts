@@ -13,14 +13,10 @@ export class JavaParser extends BaseParser {
 	protected language = "java" as const;
 	protected fileExtensions = ["java"];
 
-	private parser: Parser;
-
-	constructor() {
-		super();
-
-		// Java 파서 초기화
-		this.parser = new Parser();
-		this.parser.setLanguage(Java);
+	private createParser(): Parser {
+		const parser = new Parser();
+		parser.setLanguage(Java);
+		return parser;
 	}
 
 	/**
@@ -33,7 +29,8 @@ export class JavaParser extends BaseParser {
 		const startTime = performance.now();
 
 		try {
-			const tree = this.parser.parse(sourceCode);
+			const parser = this.createParser();
+			const tree = parser.parse(sourceCode);
 
 			if (!tree.rootNode) {
 				throw new Error("Failed to parse Java code");

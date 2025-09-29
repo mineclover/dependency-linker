@@ -97,7 +97,6 @@ export const TYPESCRIPT_TREE_SITTER_QUERIES = {
 				(identifier) @export_assignment)
 		]
 	`,
-
 } as const;
 
 /**
@@ -108,14 +107,19 @@ export const JAVASCRIPT_TREE_SITTER_QUERIES = {
 	"js-import-sources": TYPESCRIPT_TREE_SITTER_QUERIES["ts-import-sources"],
 	"js-named-imports": TYPESCRIPT_TREE_SITTER_QUERIES["ts-named-imports"],
 	"js-default-imports": TYPESCRIPT_TREE_SITTER_QUERIES["ts-default-imports"],
-	"js-export-declarations": TYPESCRIPT_TREE_SITTER_QUERIES["ts-export-declarations"],
-	"js-export-assignments": TYPESCRIPT_TREE_SITTER_QUERIES["ts-export-assignments"],
+	"js-export-declarations":
+		TYPESCRIPT_TREE_SITTER_QUERIES["ts-export-declarations"],
+	"js-export-assignments":
+		TYPESCRIPT_TREE_SITTER_QUERIES["ts-export-assignments"],
 } as const;
 
 /**
  * 언어별 쿼리 매핑
  */
-export const TREE_SITTER_QUERY_MAP: Record<SupportedLanguage, Record<string, string>> = {
+export const TREE_SITTER_QUERY_MAP: Record<
+	SupportedLanguage,
+	Record<string, string>
+> = {
 	typescript: TYPESCRIPT_TREE_SITTER_QUERIES,
 	tsx: TYPESCRIPT_TREE_SITTER_QUERIES,
 	javascript: JAVASCRIPT_TREE_SITTER_QUERIES,
@@ -129,14 +133,19 @@ export const TREE_SITTER_QUERY_MAP: Record<SupportedLanguage, Record<string, str
 /**
  * 특정 언어의 모든 Tree-sitter 쿼리 가져오기
  */
-export function getTreeSitterQueries(language: SupportedLanguage): Record<string, string> {
+export function getTreeSitterQueries(
+	language: SupportedLanguage,
+): Record<string, string> {
 	return TREE_SITTER_QUERY_MAP[language] || {};
 }
 
 /**
  * 특정 언어의 특정 쿼리 가져오기
  */
-export function getTreeSitterQuery(language: SupportedLanguage, queryName: string): string | undefined {
+export function getTreeSitterQuery(
+	language: SupportedLanguage,
+	queryName: string,
+): string | undefined {
 	const queries = getTreeSitterQueries(language);
 	return queries[queryName];
 }

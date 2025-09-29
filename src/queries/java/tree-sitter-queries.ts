@@ -91,7 +91,6 @@ export const JAVA_TREE_SITTER_QUERIES = {
 			name: (identifier) @enum_name
 			body: (enum_body) @enum_body)
 	`,
-
 } as const;
 
 /**
@@ -105,7 +104,9 @@ export function getJavaTreeSitterQueries(): Record<string, string> {
  * 특정 Java 쿼리 가져오기
  */
 export function getJavaTreeSitterQuery(queryName: string): string | undefined {
-	return JAVA_TREE_SITTER_QUERIES[queryName as keyof typeof JAVA_TREE_SITTER_QUERIES];
+	return JAVA_TREE_SITTER_QUERIES[
+		queryName as keyof typeof JAVA_TREE_SITTER_QUERIES
+	];
 }
 
 /**

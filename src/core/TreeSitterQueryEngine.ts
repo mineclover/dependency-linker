@@ -3,24 +3,29 @@
  * Tree-sitter 쿼리를 실행하여 QueryMatch 객체를 생성하는 엔진
  */
 
-import Parser from "tree-sitter";
+import type Parser from "tree-sitter";
 import type { QueryMatch, SupportedLanguage } from "./types";
 
 /**
  * Tree-sitter 쿼리 실행 엔진
  */
 export class TreeSitterQueryEngine {
-	private languageQueries: Map<SupportedLanguage, Map<string, string>> = new Map();
+	private languageQueries: Map<SupportedLanguage, Map<string, string>> =
+		new Map();
 	private parsers: Map<SupportedLanguage, Parser> = new Map();
 
 	/**
 	 * 언어별 쿼리 등록
 	 */
-	registerQuery(language: SupportedLanguage, queryName: string, queryString: string): void {
+	registerQuery(
+		language: SupportedLanguage,
+		queryName: string,
+		queryString: string,
+	): void {
 		if (!this.languageQueries.has(language)) {
 			this.languageQueries.set(language, new Map());
 		}
-		this.languageQueries.get(language)!.set(queryName, queryString);
+		this.languageQueries.get(language)?.set(queryName, queryString);
 	}
 
 	/**
@@ -37,7 +42,7 @@ export class TreeSitterQueryEngine {
 		queryName: string,
 		queryString: string,
 		tree: Parser.Tree,
-		language: SupportedLanguage
+		language: SupportedLanguage,
 	): QueryMatch[] {
 		try {
 			const parser = this.parsers.get(language);
@@ -53,7 +58,10 @@ export class TreeSitterQueryEngine {
 
 			// 캡처를 QueryMatch 형태로 변환
 			const matches: QueryMatch[] = [];
-			const captureGroups = new Map<number, Array<{ name: string; node: Parser.SyntaxNode }>>();
+			const captureGroups = new Map<
+				number,
+				Array<{ name: string; node: Parser.SyntaxNode }>
+			>();
 
 			// 캡처들을 패턴별로 그룹화
 			for (const capture of captures) {
@@ -61,17 +69,17 @@ export class TreeSitterQueryEngine {
 				if (!captureGroups.has(patternIndex)) {
 					captureGroups.set(patternIndex, []);
 				}
-				captureGroups.get(patternIndex)!.push({
+				captureGroups.get(patternIndex)?.push({
 					name: capture.name,
-					node: capture.node
+					node: capture.node,
 				});
 			}
 
 			// 각 패턴 그룹을 QueryMatch로 변환
-			for (const [patternIndex, captures] of captureGroups) {
+			for (const [_patternIndex, captures] of captureGroups) {
 				matches.push({
 					queryName: queryName,
-					captures: captures
+					captures: captures,
 				});
 			}
 
@@ -87,7 +95,7 @@ export class TreeSitterQueryEngine {
 	 */
 	executeAllQueries(
 		tree: Parser.Tree,
-		language: SupportedLanguage
+		language: SupportedLanguage,
 	): Record<string, QueryMatch[]> {
 		const results: Record<string, QueryMatch[]> = {};
 		const queries = this.languageQueries.get(language);
@@ -97,7 +105,12 @@ export class TreeSitterQueryEngine {
 		}
 
 		for (const [queryName, queryString] of queries) {
-			results[queryName] = this.executeQuery(queryName, queryString, tree, language);
+			results[queryName] = this.executeQuery(
+				queryName,
+				queryString,
+				tree,
+				language,
+			);
 		}
 
 		return results;
@@ -109,7 +122,7 @@ export class TreeSitterQueryEngine {
 	executeSelectedQueries(
 		queryNames: string[],
 		tree: Parser.Tree,
-		language: SupportedLanguage
+		language: SupportedLanguage,
 	): Record<string, QueryMatch[]> {
 		const results: Record<string, QueryMatch[]> = {};
 		const queries = this.languageQueries.get(language);
@@ -121,7 +134,12 @@ export class TreeSitterQueryEngine {
 		for (const queryName of queryNames) {
 			const queryString = queries.get(queryName);
 			if (queryString) {
-				results[queryName] = this.executeQuery(queryName, queryString, tree, language);
+				results[queryName] = this.executeQuery(
+					queryName,
+					queryString,
+					tree,
+					language,
+				);
 			}
 		}
 
@@ -155,7 +173,7 @@ export const globalTreeSitterQueryEngine = new TreeSitterQueryEngine();
 export function registerTreeSitterQuery(
 	language: SupportedLanguage,
 	queryName: string,
-	queryString: string
+	queryString: string,
 ): void {
 	globalTreeSitterQueryEngine.registerQuery(language, queryName, queryString);
 }
@@ -165,7 +183,7 @@ export function registerTreeSitterQuery(
  */
 export function setTreeSitterParser(
 	language: SupportedLanguage,
-	parser: Parser
+	parser: Parser,
 ): void {
 	globalTreeSitterQueryEngine.setParser(language, parser);
 }

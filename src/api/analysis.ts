@@ -3,17 +3,16 @@
  * 통합 분석 API - 사용자가 쉽게 사용할 수 있는 고수준 분석 인터페이스
  */
 
-import type { SupportedLanguage, QueryExecutionContext } from "../core/types";
+import {
+	executeAllLanguageQueries,
+	executeMultipleTreeSitterQueries,
+	initializeQueryBridge,
+} from "../core/QueryBridge";
 import type { QueryKey, QueryResult } from "../core/QueryResultMap";
+import type { QueryExecutionContext, SupportedLanguage } from "../core/types";
 import type { CustomKeyMapping } from "../mappers/CustomKeyMapper";
 import { createCustomKeyMapper } from "../mappers/CustomKeyMapper";
 import { parseCode } from "../parsers";
-import {
-	executeTreeSitterQuery,
-	executeMultipleTreeSitterQueries,
-	executeAllLanguageQueries,
-	initializeQueryBridge
-} from "../core/QueryBridge";
 
 // ===== ANALYSIS RESULT TYPES =====
 
@@ -50,14 +49,8 @@ export interface AnalysisResult {
  * 분석 옵션
  */
 export interface AnalysisOptions {
-	// 실행할 쿼리 키들 (미지정시 모든 지원 쿼리 실행)
-	queryKeys?: QueryKey[];
-
-	// 커스텀 키 매핑
-	customMapping?: CustomKeyMapping;
-
-	// 조건부 커스텀 매핑
-	customConditions?: Record<string, boolean>;
+	// 키 매핑 (정의된 키만 실행됨)
+	mapping?: CustomKeyMapping;
 
 	// 성능 최적화 옵션
 	enableParallelExecution?: boolean;
@@ -73,7 +66,7 @@ export async function analyzeFile(
 	sourceCode: string,
 	language: SupportedLanguage,
 	filePath: string = "unknown",
-	options: AnalysisOptions = {}
+	options: AnalysisOptions = {},
 ): Promise<AnalysisResult> {
 	const startTime = performance.now();
 
@@ -86,49 +79,42 @@ export async function analyzeFile(
 		const queryStartTime = performance.now();
 
 		let queryResults: Record<QueryKey, QueryResult<QueryKey>[]>;
-
-		if (options.queryKeys && options.queryKeys.length > 0) {
-			// 지정된 쿼리만 실행
-			queryResults = await executeMultipleTreeSitterQueries(options.queryKeys, context);
-		} else {
-			// 모든 지원 쿼리 실행
-			queryResults = await executeAllLanguageQueries(context);
-		}
-
-		const queryExecutionTime = performance.now() - queryStartTime;
-
-		// 3. 커스텀 매핑 실행 (옵션인 경우)
 		let customResults: Record<string, QueryResult<QueryKey>[]> | undefined;
 		let customMappingTime: number | undefined;
 
-		if (options.customMapping) {
+		if (options.mapping) {
+			// 매핑이 있으면 해당 쿼리들만 실행
+			const customMapper = createCustomKeyMapper(options.mapping);
+			const requiredQueryKeys = Object.values(options.mapping) as QueryKey[];
+
+			queryResults = await executeMultipleTreeSitterQueries(
+				requiredQueryKeys,
+				context,
+			);
+
+			// 커스텀 매핑 실행
 			const customStartTime = performance.now();
-			const customMapper = createCustomKeyMapper(options.customMapping);
 
 			// 커스텀 매핑에 필요한 매치 데이터 생성
 			const allMatches = [];
 			for (const [queryKey, results] of Object.entries(queryResults)) {
 				// QueryResult를 QueryMatch로 변환 (간단한 변환)
-				const matches = results.map(result => ({
+				const matches = results.map((_result) => ({
 					queryName: queryKey,
-					captures: [{ name: "result", node: null as any }] // 실제로는 원본 노드가 필요
+					captures: [{ name: "result", node: null as any }], // 실제로는 원본 노드가 필요
 				}));
 				allMatches.push(...matches);
 			}
 
-			if (options.customConditions) {
-				customResults = await customMapper.executeConditional(
-					options.customConditions,
-					allMatches,
-					context
-				);
-			} else {
-				customResults = await customMapper.execute(allMatches, context);
-			}
+			customResults = (await customMapper.execute(allMatches, context)) as any;
 
 			customMappingTime = performance.now() - customStartTime;
+		} else {
+			// 매핑이 없으면 모든 지원 쿼리 실행
+			queryResults = await executeAllLanguageQueries(context);
 		}
 
+		const queryExecutionTime = performance.now() - queryStartTime;
 		const totalExecutionTime = performance.now() - startTime;
 
 		return {
@@ -137,17 +123,16 @@ export async function analyzeFile(
 			sourceCode: context.sourceCode,
 			parseMetadata: {
 				nodeCount: parseResult.metadata.nodeCount,
-				parseTime: parseResult.metadata.parseTime
+				parseTime: parseResult.metadata.parseTime,
 			},
 			queryResults,
 			customResults,
 			performanceMetrics: {
 				totalExecutionTime,
 				queryExecutionTime,
-				customMappingTime
-			}
+				customMappingTime,
+			},
 		};
-
 	} catch (error) {
 		throw new Error(`Analysis failed for ${filePath}: ${error}`);
 	}
@@ -159,9 +144,11 @@ export async function analyzeFile(
 export async function analyzeTypeScriptFile(
 	sourceCode: string,
 	filePath: string = "unknown.ts",
-	options: Omit<AnalysisOptions, 'language'> = {}
+	options: Omit<AnalysisOptions, "language"> = {},
 ): Promise<AnalysisResult> {
-	const language: SupportedLanguage = filePath.endsWith('.tsx') ? 'tsx' : 'typescript';
+	const language: SupportedLanguage = filePath.endsWith(".tsx")
+		? "tsx"
+		: "typescript";
 	return analyzeFile(sourceCode, language, filePath, options);
 }
 
@@ -171,9 +158,11 @@ export async function analyzeTypeScriptFile(
 export async function analyzeJavaScriptFile(
 	sourceCode: string,
 	filePath: string = "unknown.js",
-	options: Omit<AnalysisOptions, 'language'> = {}
+	options: Omit<AnalysisOptions, "language"> = {},
 ): Promise<AnalysisResult> {
-	const language: SupportedLanguage = filePath.endsWith('.jsx') ? 'jsx' : 'javascript';
+	const language: SupportedLanguage = filePath.endsWith(".jsx")
+		? "jsx"
+		: "javascript";
 	return analyzeFile(sourceCode, language, filePath, options);
 }
 
@@ -183,7 +172,7 @@ export async function analyzeJavaScriptFile(
 export async function analyzeJavaFile(
 	sourceCode: string,
 	filePath: string = "Unknown.java",
-	options: Omit<AnalysisOptions, 'language'> = {}
+	options: Omit<AnalysisOptions, "language"> = {},
 ): Promise<AnalysisResult> {
 	return analyzeFile(sourceCode, "java", filePath, options);
 }
@@ -194,7 +183,7 @@ export async function analyzeJavaFile(
 export async function analyzePythonFile(
 	sourceCode: string,
 	filePath: string = "unknown.py",
-	options: Omit<AnalysisOptions, 'language'> = {}
+	options: Omit<AnalysisOptions, "language"> = {},
 ): Promise<AnalysisResult> {
 	return analyzeFile(sourceCode, "python", filePath, options);
 }
@@ -207,7 +196,7 @@ export async function analyzePythonFile(
 export async function analyzeImports(
 	sourceCode: string,
 	language: SupportedLanguage,
-	filePath: string = "unknown"
+	filePath: string = "unknown",
 ): Promise<{
 	sources: QueryResult<QueryKey>[];
 	named: QueryResult<QueryKey>[];
@@ -215,17 +204,24 @@ export async function analyzeImports(
 	types?: QueryResult<QueryKey>[]; // TypeScript만
 }> {
 	const importQueryKeys = getImportQueryKeys(language);
+	const customMapping: Record<string, QueryKey> = {};
+	importQueryKeys.forEach((key, index) => {
+		customMapping[`import_${index}`] = key;
+	});
+
 	const result = await analyzeFile(sourceCode, language, filePath, {
-		queryKeys: importQueryKeys
+		mapping: customMapping,
 	});
 
 	return {
 		sources: result.queryResults[getSourceQueryKey(language)] || [],
 		named: result.queryResults[getNamedImportQueryKey(language)] || [],
 		defaults: result.queryResults[getDefaultImportQueryKey(language)] || [],
-		...(language.startsWith('typescript') || language.startsWith('tsx') ? {
-			types: result.queryResults[getTypeImportQueryKey(language)] || []
-		} : {})
+		...(language.startsWith("typescript") || language.startsWith("tsx")
+			? {
+					types: result.queryResults[getTypeImportQueryKey(language)] || [],
+				}
+			: {}),
 	};
 }
 
@@ -235,25 +231,25 @@ export async function analyzeImports(
 export async function analyzeDependencies(
 	sourceCode: string,
 	language: SupportedLanguage,
-	filePath: string = "unknown"
+	filePath: string = "unknown",
 ): Promise<{
-	internal: string[];     // 내부 의존성 (상대 경로)
-	external: string[];     // 외부 의존성 (npm 패키지 등)
-	builtin: string[];      // 내장 모듈
+	internal: string[]; // 내부 의존성 (상대 경로)
+	external: string[]; // 외부 의존성 (npm 패키지 등)
+	builtin: string[]; // 내장 모듈
 }> {
 	const result = await analyzeImports(sourceCode, language, filePath);
 
 	const dependencies = {
 		internal: [] as string[],
 		external: [] as string[],
-		builtin: [] as string[]
+		builtin: [] as string[],
 	};
 
 	// 소스 분석하여 분류
 	for (const sourceResult of result.sources) {
-		if ('source' in sourceResult) {
+		if ("source" in sourceResult) {
 			const source = (sourceResult as any).source;
-			if (source.startsWith('./') || source.startsWith('../')) {
+			if (source.startsWith("./") || source.startsWith("../")) {
 				dependencies.internal.push(source);
 			} else if (isBuiltinModule(source, language)) {
 				dependencies.builtin.push(source);
@@ -272,14 +268,27 @@ function getImportQueryKeys(language: SupportedLanguage): QueryKey[] {
 	switch (language) {
 		case "typescript":
 		case "tsx":
-			return ["ts-import-sources", "ts-named-imports", "ts-default-imports", "ts-type-imports"] as QueryKey[];
+			return [
+				"ts-import-sources",
+				"ts-named-imports",
+				"ts-default-imports",
+				"ts-type-imports",
+			] as QueryKey[];
 		case "javascript":
 		case "jsx":
-			return ["js-import-sources", "js-named-imports", "js-default-imports"] as QueryKey[];
+			return [
+				"js-import-sources",
+				"js-named-imports",
+				"js-default-imports",
+			] as QueryKey[];
 		case "java":
 			return ["java-import-sources", "java-import-statements"] as QueryKey[];
 		case "python":
-			return ["python-import-sources", "python-import-statements", "python-from-imports"] as QueryKey[];
+			return [
+				"python-import-sources",
+				"python-import-statements",
+				"python-from-imports",
+			] as QueryKey[];
 		default:
 			return [];
 	}
@@ -324,7 +333,9 @@ function getDefaultImportQueryKey(language: SupportedLanguage): QueryKey {
 		case "jsx":
 			return "js-default-imports" as QueryKey;
 		default:
-			throw new Error(`Default imports not supported for language: ${language}`);
+			throw new Error(
+				`Default imports not supported for language: ${language}`,
+			);
 	}
 }
 
@@ -346,16 +357,38 @@ function isBuiltinModule(source: string, language: SupportedLanguage): boolean {
 		case "javascript":
 		case "jsx":
 			return [
-				'fs', 'path', 'os', 'crypto', 'events', 'stream', 'util', 'url',
-				'querystring', 'http', 'https', 'net', 'tls', 'dns', 'child_process'
+				"fs",
+				"path",
+				"os",
+				"crypto",
+				"events",
+				"stream",
+				"util",
+				"url",
+				"querystring",
+				"http",
+				"https",
+				"net",
+				"tls",
+				"dns",
+				"child_process",
 			].includes(source);
 		case "python":
 			return [
-				'os', 'sys', 'pathlib', 'datetime', 'json', 'urllib', 'http',
-				'collections', 'itertools', 'functools', 'typing'
+				"os",
+				"sys",
+				"pathlib",
+				"datetime",
+				"json",
+				"urllib",
+				"http",
+				"collections",
+				"itertools",
+				"functools",
+				"typing",
 			].includes(source);
 		case "java":
-			return source.startsWith('java.') || source.startsWith('javax.');
+			return source.startsWith("java.") || source.startsWith("javax.");
 		default:
 			return false;
 	}
