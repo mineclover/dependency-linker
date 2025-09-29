@@ -89,7 +89,8 @@ export default Component;
 
       const result = await parseCode(sourceCode, "typescript", "test.tsx");
 
-      expect(result.ast).toBeDefined();
+      expect(result.tree).toBeDefined();
+      expect(result.tree.rootNode).toBeDefined();
       expect(result.context.language).toBe("typescript");
       expect(result.metadata.language).toBe("typescript");
       expect(result.metadata.nodeCount).toBeGreaterThan(0);
@@ -97,7 +98,7 @@ export default Component;
       console.log("🔷 TypeScript 파싱 결과:");
       console.log(`   - 노드 수: ${result.metadata.nodeCount}`);
       console.log(`   - 파싱 시간: ${result.metadata.parseTime.toFixed(2)}ms`);
-      console.log(`   - AST 루트: ${result.ast.type}`);
+      console.log(`   - AST 루트: ${result.tree.rootNode.type}`);
     });
   });
 
@@ -124,7 +125,8 @@ public class UserService {
 
       const result = await parseCode(sourceCode, "java", "UserService.java");
 
-      expect(result.ast).toBeDefined();
+      expect(result.tree).toBeDefined();
+      expect(result.tree.rootNode).toBeDefined();
       expect(result.context.language).toBe("java");
       expect(result.metadata.language).toBe("java");
       expect(result.metadata.nodeCount).toBeGreaterThan(0);
@@ -132,7 +134,7 @@ public class UserService {
       console.log("☕ Java 파싱 결과:");
       console.log(`   - 노드 수: ${result.metadata.nodeCount}`);
       console.log(`   - 파싱 시간: ${result.metadata.parseTime.toFixed(2)}ms`);
-      console.log(`   - AST 루트: ${result.ast.type}`);
+      console.log(`   - AST 루트: ${result.tree.rootNode.type}`);
     });
   });
 
@@ -161,7 +163,8 @@ def main():
 
       const result = await parseCode(sourceCode, "python", "user_service.py");
 
-      expect(result.ast).toBeDefined();
+      expect(result.tree).toBeDefined();
+      expect(result.tree.rootNode).toBeDefined();
       expect(result.context.language).toBe("python");
       expect(result.metadata.language).toBe("python");
       expect(result.metadata.nodeCount).toBeGreaterThan(0);
@@ -169,7 +172,7 @@ def main():
       console.log("🐍 Python 파싱 결과:");
       console.log(`   - 노드 수: ${result.metadata.nodeCount}`);
       console.log(`   - 파싱 시간: ${result.metadata.parseTime.toFixed(2)}ms`);
-      console.log(`   - AST 루트: ${result.ast.type}`);
+      console.log(`   - AST 루트: ${result.tree.rootNode.type}`);
     });
   });
 
@@ -207,7 +210,8 @@ func main() {
 
       const result = await parseCode(sourceCode, "go", "main.go");
 
-      expect(result.ast).toBeDefined();
+      expect(result.tree).toBeDefined();
+      expect(result.tree.rootNode).toBeDefined();
       expect(result.context.language).toBe("go");
       expect(result.metadata.language).toBe("go");
       expect(result.metadata.nodeCount).toBeGreaterThan(0);
@@ -215,7 +219,7 @@ func main() {
       console.log("🐹 Go 파싱 결과:");
       console.log(`   - 노드 수: ${result.metadata.nodeCount}`);
       console.log(`   - 파싱 시간: ${result.metadata.parseTime.toFixed(2)}ms`);
-      console.log(`   - AST 루트: ${result.ast.type}`);
+      console.log(`   - AST 루트: ${result.tree.rootNode.type}`);
     });
   });
 
@@ -249,7 +253,8 @@ func main() {
       for (const { language, code, file } of testCases) {
         const result = await parseCode(code, language, file);
 
-        expect(result.ast).toBeDefined();
+        expect(result.tree).toBeDefined();
+        expect(result.tree.rootNode).toBeDefined();
         expect(result.context.language).toBe(language);
         expect(result.metadata.nodeCount).toBeGreaterThan(0);
 

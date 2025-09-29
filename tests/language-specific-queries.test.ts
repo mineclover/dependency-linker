@@ -3,21 +3,100 @@
  * 언어별 기본 쿼리 동작 테스트
  */
 
+import type Parser from "tree-sitter";
 import {
   QueryEngine,
   QueryExecutionContext,
   QueryMatch,
-  ASTNode,
 } from "../src";
 
-// Mock 데이터 생성 헬퍼 함수들
-function createMockASTNode(type: string, text: string, children?: ASTNode[]): ASTNode {
+// Mock tree-sitter objects
+function createMockTree(rootType: string, sourceCode: string): Parser.Tree {
+  const mockRootNode: Parser.SyntaxNode = {
+    type: rootType,
+    text: sourceCode,
+    startPosition: { row: 0, column: 0 },
+    endPosition: { row: sourceCode.split('\n').length - 1, column: sourceCode.length },
+    startIndex: 0,
+    endIndex: sourceCode.length,
+    childCount: 0,
+    namedChildCount: 0,
+    firstChild: null,
+    firstNamedChild: null,
+    lastChild: null,
+    lastNamedChild: null,
+    nextSibling: null,
+    nextNamedSibling: null,
+    previousSibling: null,
+    previousNamedSibling: null,
+    parent: null,
+    children: [],
+    namedChildren: [],
+    child: () => null,
+    namedChild: () => null,
+    childForFieldName: () => null,
+    fieldNameForChild: () => null,
+    descendantForIndex: () => mockRootNode,
+    namedDescendantForIndex: () => mockRootNode,
+    descendantForPosition: () => mockRootNode,
+    namedDescendantForPosition: () => mockRootNode,
+    walk: () => ({} as any),
+    toString: () => sourceCode,
+    hasChanges: () => false,
+    hasError: () => false,
+    isError: () => false,
+    isMissing: () => false,
+    isNamed: () => true,
+  };
+
+  return {
+    rootNode: mockRootNode,
+    language: {} as any,
+    getChangedRanges: () => [],
+    getIncludedRanges: () => [],
+    edit: () => {},
+    walk: () => ({} as any),
+    copy: () => ({} as any),
+    delete: () => {},
+  };
+}
+
+function createMockASTNode(type: string, text: string): Parser.SyntaxNode {
   return {
     type,
     text,
     startPosition: { row: 0, column: 0 },
     endPosition: { row: 0, column: text.length },
-    children: children || []
+    startIndex: 0,
+    endIndex: text.length,
+    childCount: 0,
+    namedChildCount: 0,
+    firstChild: null,
+    firstNamedChild: null,
+    lastChild: null,
+    lastNamedChild: null,
+    nextSibling: null,
+    nextNamedSibling: null,
+    previousSibling: null,
+    previousNamedSibling: null,
+    parent: null,
+    children: [],
+    namedChildren: [],
+    child: () => null,
+    namedChild: () => null,
+    childForFieldName: () => null,
+    fieldNameForChild: () => null,
+    descendantForIndex: () => ({} as any),
+    namedDescendantForIndex: () => ({} as any),
+    descendantForPosition: () => ({} as any),
+    namedDescendantForPosition: () => ({} as any),
+    walk: () => ({} as any),
+    toString: () => text,
+    hasChanges: () => false,
+    hasError: () => false,
+    isError: () => false,
+    isMissing: () => false,
+    isNamed: () => true,
   };
 }
 
@@ -40,7 +119,7 @@ describe("Language-Specific Query Tests", () => {
       sourceCode,
       language: "typescript",
       filePath: "test.ts",
-      astNode: createMockASTNode("program", sourceCode)
+      tree: createMockTree("program", sourceCode)
     });
 
     it("should execute ts-import-sources query", async () => {
@@ -128,7 +207,7 @@ describe("Language-Specific Query Tests", () => {
       sourceCode,
       language: "java",
       filePath: "Test.java",
-      astNode: createMockASTNode("compilation_unit", sourceCode)
+      tree: createMockTree("compilation_unit", sourceCode)
     });
 
     it("should execute java-import-sources query", async () => {
@@ -206,7 +285,7 @@ describe("Language-Specific Query Tests", () => {
       sourceCode,
       language: "python",
       filePath: "test.py",
-      astNode: createMockASTNode("module", sourceCode)
+      tree: createMockTree("module", sourceCode)
     });
 
     it("should execute python-import-sources query", async () => {
@@ -319,21 +398,21 @@ describe("Language-Specific Query Tests", () => {
         sourceCode: 'import React from "react";',
         language: "typescript",
         filePath: "App.tsx",
-        astNode: createMockASTNode("program", "")
+        tree: createMockTree("program", "")
       };
 
       const javaContext: QueryExecutionContext = {
         sourceCode: 'import java.util.List;',
         language: "java",
         filePath: "App.java",
-        astNode: createMockASTNode("compilation_unit", "")
+        tree: createMockTree("compilation_unit", "")
       };
 
       const pythonContext: QueryExecutionContext = {
         sourceCode: 'import pandas as pd',
         language: "python",
         filePath: "app.py",
-        astNode: createMockASTNode("module", "")
+        tree: createMockTree("module", "")
       };
 
       const matches = [createMockMatch("import_statement", "import test")];
@@ -357,7 +436,7 @@ describe("Language-Specific Query Tests", () => {
         sourceCode: 'import React from "react";',
         language: "typescript",
         filePath: "test.ts",
-        astNode: createMockASTNode("program", "")
+        tree: createMockTree("program", "")
       };
 
       const matches = [createMockMatch("import_statement", 'import React from "react";')];
@@ -388,7 +467,7 @@ describe("Language-Specific Query Tests", () => {
           sourceCode: code,
           language,
           filePath: `test.${language}`,
-          astNode: createMockASTNode("program", code)
+          tree: createMockTree("program", code)
         };
 
         const matches = [createMockMatch("import_statement", code)];

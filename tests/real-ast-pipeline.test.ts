@@ -14,26 +14,8 @@ import {
   CustomKeyMapping,
   QueryExecutionContext,
   QueryMatch,
-  ASTNode,
   SupportedLanguage,
 } from "../src";
-
-// tree-sitter AST를 우리 ASTNode 형식으로 변환
-function convertTreeSitterNode(node: Parser.SyntaxNode): ASTNode {
-  return {
-    type: node.type,
-    text: node.text,
-    startPosition: {
-      row: node.startPosition.row,
-      column: node.startPosition.column,
-    },
-    endPosition: {
-      row: node.endPosition.row,
-      column: node.endPosition.column,
-    },
-    children: node.children.map(child => convertTreeSitterNode(child)),
-  };
-}
 
 describe("Real AST → Query Pipeline", () => {
   let tsParser: Parser;
@@ -82,26 +64,27 @@ export default UserComponent;
 
       // 2. tree-sitter로 실제 AST 파싱
       const tree = tsParser.parse(sourceCode);
-      const astNode = convertTreeSitterNode(tree.rootNode);
-
-      // 3. 실행 컨텍스트 생성
+      // 3. 실행 컨텍스트 생성 (tree-sitter 네이티브 객체 사용)
       const context: QueryExecutionContext = {
         sourceCode,
         language: "typescript" as SupportedLanguage,
         filePath: "UserComponent.tsx",
-        astNode,
+        tree,
       };
 
-      // 4. AST 구조 검증
-      expect(astNode.type).toBe("program");
-      expect(astNode.text).toBe(sourceCode);
-      expect(astNode.children).toBeDefined();
-      expect(astNode.children!.length).toBeGreaterThan(0);
+      // 4. AST 구조 검증 (tree-sitter 네이티브 객체)
+      expect(tree.rootNode.type).toBe("program");
+      expect(tree.rootNode.text).toBe(sourceCode);
+      expect(tree.rootNode.childCount).toBeGreaterThan(0);
 
-      // 5. import 노드들 찾기
-      const importNodes = astNode.children!.filter(child =>
-        child.type === "import_statement"
-      );
+      // 5. import 노드들 찾기 (tree-sitter 네이티브 방식)
+      const importNodes: Parser.SyntaxNode[] = [];
+      for (let i = 0; i < tree.rootNode.childCount; i++) {
+        const child = tree.rootNode.child(i);
+        if (child && child.type === "import_statement") {
+          importNodes.push(child);
+        }
+      }
 
       expect(importNodes.length).toBe(3); // 3개의 import 문
 
@@ -111,19 +94,24 @@ export default UserComponent;
       expect(importTexts[1]).toContain("Button");
       expect(importTexts[2]).toContain("type { User }");
 
-      // 7. export 노드들 찾기
-      const exportNodes = astNode.children!.filter(child =>
-        child.type === "export_statement" ||
-        child.type === "lexical_declaration" &&
-        child.text.startsWith("export")
-      );
+      // 7. export 노드들 찾기 (tree-sitter 네이티브 방식)
+      const exportNodes: Parser.SyntaxNode[] = [];
+      for (let i = 0; i < tree.rootNode.childCount; i++) {
+        const child = tree.rootNode.child(i);
+        if (child && (
+          child.type === "export_statement" ||
+          (child.type === "lexical_declaration" && child.text.startsWith("export"))
+        )) {
+          exportNodes.push(child);
+        }
+      }
 
       expect(exportNodes.length).toBeGreaterThan(0);
 
       console.log("✅ TypeScript AST → Query Pipeline 검증 완료");
       console.log(`   - Source: ${sourceCode.split('\n')[0]}...`);
-      console.log(`   - AST Type: ${astNode.type}`);
-      console.log(`   - Children: ${astNode.children!.length} nodes`);
+      console.log(`   - AST Type: ${tree.rootNode.type}`);
+      console.log(`   - Children: ${tree.rootNode.childCount} nodes`);
       console.log(`   - Imports: ${importNodes.length} statements`);
       console.log(`   - Language: ${context.language}`);
     });
@@ -174,13 +162,13 @@ export const asyncProcessor = async (data: any) => {
 
       testCases.forEach(testCase => {
         const tree = tsParser.parse(testCase.code);
-        const astNode = convertTreeSitterNode(tree.rootNode);
+        // Using tree-sitter native tree object directly
 
-        expect(astNode.type).toBe("program");
-        expect(astNode.children).toBeDefined();
+        expect(tree.rootNode.type).toBe("program");
+        expect(tree.rootNode.childCount).toBeGreaterThan(0);
 
         // 예상된 타입들이 AST에 포함되어 있는지 확인 (깊이 우선 탐색)
-        const getAllNodeTypes = (node: ASTNode): string[] => {
+        const getAllNodeTypes = (node: Parser.SyntaxNode): string[] => {
           const types = [node.type];
           if (node.children) {
             for (const child of node.children) {
@@ -190,7 +178,7 @@ export const asyncProcessor = async (data: any) => {
           return types;
         };
 
-        const allNodeTypes = new Set(getAllNodeTypes(astNode));
+        const allNodeTypes = new Set(getAllNodeTypes(tree.rootNode));
 
         testCase.expectedTypes.forEach(expectedType => {
           expect(Array.from(allNodeTypes)).toContain(expectedType);
@@ -231,20 +219,20 @@ module.exports = {
 
       testCases.forEach(testCase => {
         const tree = jsParser.parse(testCase.code);
-        const astNode = convertTreeSitterNode(tree.rootNode);
+        // Using tree-sitter native tree object directly
 
         const context: QueryExecutionContext = {
           sourceCode: testCase.code,
           language: testCase.language,
           filePath: `test.js`,
-          astNode,
+          tree,
         };
 
-        expect(astNode.type).toBe("program");
+        expect(tree.rootNode.type).toBe("program");
         expect(context.language).toBe("javascript");
 
         console.log(`✅ ${testCase.name} JavaScript AST 처리 확인`);
-        console.log(`   - AST Type: ${astNode.type}`);
+        console.log(`   - AST Type: ${tree.rootNode.type}`);
         console.log(`   - Language: ${context.language}`);
       });
     });
@@ -278,23 +266,23 @@ public class UserService {
       `.trim();
 
       const tree = javaParser.parse(sourceCode);
-      const astNode = convertTreeSitterNode(tree.rootNode);
+      // Using tree-sitter native tree object directly
 
       const context: QueryExecutionContext = {
         sourceCode,
         language: "java" as SupportedLanguage,
         filePath: "UserService.java",
-        astNode,
+        tree,
       };
 
-      expect(astNode.type).toBe("program");
-      expect(astNode.text).toBe(sourceCode);
-      expect(astNode.children).toBeDefined();
-      expect(astNode.children!.length).toBeGreaterThan(0);
+      expect(tree.rootNode.type).toBe("program");
+      expect(tree.rootNode.text).toBe(sourceCode);
+      expect(tree.rootNode.childCount).toBeGreaterThan(0);
+      expect(tree.rootNode.childCount).toBeGreaterThan(0);
 
       // 깊이 우선 탐색으로 import 노드들 찾기
-      const findNodesByType = (node: ASTNode, targetType: string): ASTNode[] => {
-        const results: ASTNode[] = [];
+      const findNodesByType = (node: Parser.SyntaxNode, targetType: string): Parser.SyntaxNode[] => {
+        const results: Parser.SyntaxNode[] = [];
         if (node.type === targetType) {
           results.push(node);
         }
@@ -306,7 +294,7 @@ public class UserService {
         return results;
       };
 
-      const importNodes = findNodesByType(astNode, "import_declaration");
+      const importNodes = findNodesByType(tree.rootNode, "import_declaration");
       expect(importNodes.length).toBeGreaterThan(0);
 
       const importTexts = importNodes.map(node => node.text);
@@ -314,13 +302,13 @@ public class UserService {
       expect(importTexts.some(text => text.includes("ArrayList"))).toBe(true);
       expect(importTexts.some(text => text.includes("static"))).toBe(true);
 
-      const classNodes = findNodesByType(astNode, "class_declaration");
+      const classNodes = findNodesByType(tree.rootNode, "class_declaration");
       expect(classNodes.length).toBe(1);
       expect(classNodes[0].text).toContain("UserService");
 
       console.log("✅ Java AST → Query Pipeline 검증 완료");
       console.log(`   - Source: ${sourceCode.split('\n')[1].trim()}...`);
-      console.log(`   - AST Type: ${astNode.type}`);
+      console.log(`   - AST Type: ${tree.rootNode.type}`);
       console.log(`   - Imports: ${importNodes.length} declarations`);
       console.log(`   - Classes: ${classNodes.length} class`);
     });
@@ -359,11 +347,11 @@ public abstract class BaseService<T> extends ServiceBase implements Repository<T
 
       testCases.forEach(testCase => {
         const tree = javaParser.parse(testCase.code);
-        const astNode = convertTreeSitterNode(tree.rootNode);
+        // Using tree-sitter native tree object directly
 
-        expect(astNode.type).toBe("program");
+        expect(tree.rootNode.type).toBe("program");
 
-        const getAllNodeTypes = (node: ASTNode): string[] => {
+        const getAllNodeTypes = (node: Parser.SyntaxNode): string[] => {
           const types = [node.type];
           if (node.children) {
             for (const child of node.children) {
@@ -373,7 +361,7 @@ public abstract class BaseService<T> extends ServiceBase implements Repository<T
           return types;
         };
 
-        const allNodeTypes = new Set(getAllNodeTypes(astNode));
+        const allNodeTypes = new Set(getAllNodeTypes(tree.rootNode));
 
         testCase.expectedTypes.forEach(expectedType => {
           expect(Array.from(allNodeTypes)).toContain(expectedType);
@@ -415,22 +403,22 @@ def process_data(data: pd.DataFrame) -> np.ndarray:
       `.trim();
 
       const tree = pythonParser.parse(sourceCode);
-      const astNode = convertTreeSitterNode(tree.rootNode);
+      // Using tree-sitter native tree object directly
 
       const context: QueryExecutionContext = {
         sourceCode,
         language: "python" as SupportedLanguage,
         filePath: "user_service.py",
-        astNode,
+        tree,
       };
 
-      expect(astNode.type).toBe("module");
-      expect(astNode.text).toBe(sourceCode);
-      expect(astNode.children).toBeDefined();
-      expect(astNode.children!.length).toBeGreaterThan(0);
+      expect(tree.rootNode.type).toBe("module");
+      expect(tree.rootNode.text).toBe(sourceCode);
+      expect(tree.rootNode.childCount).toBeGreaterThan(0);
+      expect(tree.rootNode.childCount).toBeGreaterThan(0);
 
-      const findNodesByType = (node: ASTNode, targetType: string): ASTNode[] => {
-        const results: ASTNode[] = [];
+      const findNodesByType = (node: Parser.SyntaxNode, targetType: string): Parser.SyntaxNode[] => {
+        const results: Parser.SyntaxNode[] = [];
         if (node.type === targetType) {
           results.push(node);
         }
@@ -442,8 +430,8 @@ def process_data(data: pd.DataFrame) -> np.ndarray:
         return results;
       };
 
-      const importNodes = findNodesByType(astNode, "import_statement");
-      const fromImportNodes = findNodesByType(astNode, "import_from_statement");
+      const importNodes = findNodesByType(tree.rootNode, "import_statement");
+      const fromImportNodes = findNodesByType(tree.rootNode, "import_from_statement");
 
       expect(importNodes.length).toBeGreaterThan(0);
       expect(fromImportNodes.length).toBeGreaterThan(0);
@@ -455,16 +443,16 @@ def process_data(data: pd.DataFrame) -> np.ndarray:
       expect(importTexts.some(text => text.includes("from typing"))).toBe(true);
       expect(importTexts.some(text => text.includes("django"))).toBe(true);
 
-      const classNodes = findNodesByType(astNode, "class_definition");
+      const classNodes = findNodesByType(tree.rootNode, "class_definition");
       expect(classNodes.length).toBe(1);
       expect(classNodes[0].text).toContain("UserService");
 
-      const functionNodes = findNodesByType(astNode, "function_definition");
+      const functionNodes = findNodesByType(tree.rootNode, "function_definition");
       expect(functionNodes.length).toBeGreaterThan(0);
 
       console.log("✅ Python AST → Query Pipeline 검증 완료");
       console.log(`   - Source: ${sourceCode.split('\n')[0]}...`);
-      console.log(`   - AST Type: ${astNode.type}`);
+      console.log(`   - AST Type: ${tree.rootNode.type}`);
       console.log(`   - Import statements: ${importNodes.length}`);
       console.log(`   - From import statements: ${fromImportNodes.length}`);
       console.log(`   - Classes: ${classNodes.length}`);
@@ -508,11 +496,11 @@ def process_users(users):
 
       testCases.forEach(testCase => {
         const tree = pythonParser.parse(testCase.code);
-        const astNode = convertTreeSitterNode(tree.rootNode);
+        // Using tree-sitter native tree object directly
 
-        expect(astNode.type).toBe("module");
+        expect(tree.rootNode.type).toBe("module");
 
-        const getAllNodeTypes = (node: ASTNode): string[] => {
+        const getAllNodeTypes = (node: Parser.SyntaxNode): string[] => {
           const types = [node.type];
           if (node.children) {
             for (const child of node.children) {
@@ -522,7 +510,7 @@ def process_users(users):
           return types;
         };
 
-        const allNodeTypes = new Set(getAllNodeTypes(astNode));
+        const allNodeTypes = new Set(getAllNodeTypes(tree.rootNode));
 
         testCase.expectedTypes.forEach(expectedType => {
           expect(Array.from(allNodeTypes)).toContain(expectedType);
@@ -579,22 +567,22 @@ func main() {
       `.trim();
 
       const tree = goParser.parse(sourceCode);
-      const astNode = convertTreeSitterNode(tree.rootNode);
+      // Using tree-sitter native tree object directly
 
       const context: QueryExecutionContext = {
         sourceCode,
         language: "go" as SupportedLanguage,
         filePath: "main.go",
-        astNode,
+        tree,
       };
 
-      expect(astNode.type).toBe("source_file");
-      expect(astNode.text).toBe(sourceCode);
-      expect(astNode.children).toBeDefined();
-      expect(astNode.children!.length).toBeGreaterThan(0);
+      expect(tree.rootNode.type).toBe("source_file");
+      expect(tree.rootNode.text).toBe(sourceCode);
+      expect(tree.rootNode.childCount).toBeGreaterThan(0);
+      expect(tree.rootNode.childCount).toBeGreaterThan(0);
 
-      const findNodesByType = (node: ASTNode, targetType: string): ASTNode[] => {
-        const results: ASTNode[] = [];
+      const findNodesByType = (node: Parser.SyntaxNode, targetType: string): Parser.SyntaxNode[] => {
+        const results: Parser.SyntaxNode[] = [];
         if (node.type === targetType) {
           results.push(node);
         }
@@ -606,25 +594,25 @@ func main() {
         return results;
       };
 
-      const packageNodes = findNodesByType(astNode, "package_clause");
+      const packageNodes = findNodesByType(tree.rootNode, "package_clause");
       expect(packageNodes.length).toBe(1);
       expect(packageNodes[0].text).toContain("main");
 
-      const importNodes = findNodesByType(astNode, "import_declaration");
+      const importNodes = findNodesByType(tree.rootNode, "import_declaration");
       expect(importNodes.length).toBeGreaterThan(0);
 
-      const typeNodes = findNodesByType(astNode, "type_declaration");
+      const typeNodes = findNodesByType(tree.rootNode, "type_declaration");
       expect(typeNodes.length).toBeGreaterThan(0);
 
-      const functionNodes = findNodesByType(astNode, "function_declaration");
+      const functionNodes = findNodesByType(tree.rootNode, "function_declaration");
       expect(functionNodes.length).toBeGreaterThan(0);
 
-      const methodNodes = findNodesByType(astNode, "method_declaration");
+      const methodNodes = findNodesByType(tree.rootNode, "method_declaration");
       expect(methodNodes.length).toBeGreaterThan(0);
 
       console.log("✅ Go AST → Query Pipeline 검증 완료");
       console.log(`   - Source: package main...`);
-      console.log(`   - AST Type: ${astNode.type}`);
+      console.log(`   - AST Type: ${tree.rootNode.type}`);
       console.log(`   - Package: ${packageNodes.length} clause`);
       console.log(`   - Imports: ${importNodes.length} declarations`);
       console.log(`   - Types: ${typeNodes.length} declarations`);
@@ -681,11 +669,11 @@ func processUsers(users []User) <-chan User {
 
       testCases.forEach(testCase => {
         const tree = goParser.parse(testCase.code);
-        const astNode = convertTreeSitterNode(tree.rootNode);
+        // Using tree-sitter native tree object directly
 
-        expect(astNode.type).toBe("source_file");
+        expect(tree.rootNode.type).toBe("source_file");
 
-        const getAllNodeTypes = (node: ASTNode): string[] => {
+        const getAllNodeTypes = (node: Parser.SyntaxNode): string[] => {
           const types = [node.type];
           if (node.children) {
             for (const child of node.children) {
@@ -695,7 +683,7 @@ func processUsers(users []User) <-chan User {
           return types;
         };
 
-        const allNodeTypes = new Set(getAllNodeTypes(astNode));
+        const allNodeTypes = new Set(getAllNodeTypes(tree.rootNode));
 
         testCase.expectedTypes.forEach(expectedType => {
           expect(Array.from(allNodeTypes)).toContain(expectedType);
@@ -733,24 +721,24 @@ module.exports = { defaultConfig };`
       Object.entries(implementations).forEach(([language, code]) => {
         const parser = language === "typescript" ? tsParser : jsParser;
         const tree = parser.parse(code);
-        const astNode = convertTreeSitterNode(tree.rootNode);
+        // Using tree-sitter native tree object directly
 
         const context: QueryExecutionContext = {
           sourceCode: code,
           language: language as SupportedLanguage,
           filePath: `config.${language === "typescript" ? "ts" : "js"}`,
-          astNode,
+          tree,
         };
 
         // 동일한 파이프라인 구조
-        expect(astNode.type).toBe("program");
+        expect(tree.rootNode.type).toBe("program");
         expect(context.language).toBe(language);
         expect(context.sourceCode).toContain("apiUrl");
         expect(context.sourceCode).toContain("example.com");
 
         console.log(`✅ ${language} 파이프라인 처리 확인`);
         console.log(`   - 동일한 로직, 다른 언어`);
-        console.log(`   - AST Type: ${astNode.type}`);
+        console.log(`   - AST Type: ${tree.rootNode.type}`);
         console.log(`   - Context Language: ${context.language}`);
       });
     });
