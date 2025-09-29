@@ -150,16 +150,3 @@ export type LanguageQueryKey<L extends LanguageGroup> = L extends "typescript"
 
 export type QueryResult<K extends QueryKey> = UnifiedQueryResultMap[K];
 
-// ===== LEGACY COMPATIBILITY (기존 시스템과의 호환성) =====
-export interface LegacyQueryResultMap {
-	"import-sources": ImportSourceResult;
-	"named-imports": NamedImportResult;
-	"default-imports": DefaultImportResult;
-	"type-imports": TypeImportResult;
-}
-
-// 기존 시스템과의 호환성을 위한 타입 별칭
-export type ImportSourceResult_Legacy = ImportSourceResult;
-export type NamedImportResult_Legacy = NamedImportResult;
-export type DefaultImportResult_Legacy = DefaultImportResult;
-export type TypeImportResult_Legacy = TypeImportResult;
