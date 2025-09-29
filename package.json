@@ -44,9 +44,12 @@
 		"access": "public"
 	},
 	"dependencies": {
+		"@anthropic-ai/claude-code": "^2.0.0",
 		"@types/glob": "^8.1.0",
+		"@types/sqlite3": "^3.1.11",
 		"commander": "^14.0.1",
 		"glob": "^11.0.3",
+		"sqlite3": "^5.1.7",
 		"tree-sitter": "^0.21.0",
 		"tree-sitter-go": "^0.21.2",
 		"tree-sitter-java": "^0.21.0",

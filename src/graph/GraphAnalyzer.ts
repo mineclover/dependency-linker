@@ -3,10 +3,7 @@
  * 의존성 그래프 분석 및 인사이트 제공
  */
 
-import type {
-	DependencyGraph,
-	GraphAnalysisResult,
-} from "./types";
+import type { DependencyGraph, GraphAnalysisResult } from "./types";
 
 /**
  * 그래프 분석기 클래스
@@ -40,8 +37,10 @@ export class GraphAnalyzer {
 		return {
 			cycles,
 			totalCycles: cycles.length,
-			maxDepth: cycles.length > 0 ?
-				Math.max(...cycles.map(cycle => cycle.length)) : 0,
+			maxDepth:
+				cycles.length > 0
+					? Math.max(...cycles.map((cycle) => cycle.length))
+					: 0,
 		};
 	}
 
@@ -61,10 +60,13 @@ export class GraphAnalyzer {
 			visited.add(nodeId);
 
 			const dependencies = this.graph.edges
-				.filter(edge => edge.from === nodeId)
-				.map(edge => edge.to)
-				.filter(depId => this.graph.nodes.has(depId) &&
-					this.graph.nodes.get(depId)?.type === "internal");
+				.filter((edge) => edge.from === nodeId)
+				.map((edge) => edge.to)
+				.filter(
+					(depId) =>
+						this.graph.nodes.has(depId) &&
+						this.graph.nodes.get(depId)?.type === "internal",
+				);
 
 			if (dependencies.length === 0) {
 				depths.set(nodeId, currentDepth);
@@ -90,12 +92,15 @@ export class GraphAnalyzer {
 
 		const depthValues = Array.from(depths.values());
 		const maxDepth = depthValues.length > 0 ? Math.max(...depthValues) : 0;
-		const averageDepth = depthValues.length > 0 ?
-			depthValues.reduce((sum, depth) => sum + depth, 0) / depthValues.length : 0;
+		const averageDepth =
+			depthValues.length > 0
+				? depthValues.reduce((sum, depth) => sum + depth, 0) /
+					depthValues.length
+				: 0;
 
 		// 깊이별 분포
 		const depthDistribution: Record<number, number> = {};
-		depthValues.forEach(depth => {
+		depthValues.forEach((depth) => {
 			depthDistribution[depth] = (depthDistribution[depth] || 0) + 1;
 		});
 
@@ -114,7 +119,7 @@ export class GraphAnalyzer {
 		const outgoingCount = new Map<string, number>();
 
 		// 들어오는/나가는 의존성 카운트
-		this.graph.edges.forEach(edge => {
+		this.graph.edges.forEach((edge) => {
 			// 들어오는 의존성 (다른 파일이 이 파일을 의존)
 			incomingCount.set(edge.to, (incomingCount.get(edge.to) || 0) + 1);
 
@@ -151,7 +156,7 @@ export class GraphAnalyzer {
 		const connectedNodes = new Set<string>();
 
 		// 연결된 노드들 수집
-		this.graph.edges.forEach(edge => {
+		this.graph.edges.forEach((edge) => {
 			connectedNodes.add(edge.from);
 			connectedNodes.add(edge.to);
 		});
@@ -173,7 +178,7 @@ export class GraphAnalyzer {
 	private findUnresolvedDependencies() {
 		const unresolvedDeps: GraphAnalysisResult["unresolvedDependencies"] = [];
 
-		this.graph.edges.forEach(edge => {
+		this.graph.edges.forEach((edge) => {
 			const toNode = this.graph.nodes.get(edge.to);
 
 			// 노드가 존재하지 않거나 파일이 존재하지 않는 경우
@@ -181,8 +186,10 @@ export class GraphAnalyzer {
 				const fromNode = this.graph.nodes.get(edge.from);
 				if (fromNode?.dependency) {
 					// 원본 import 문 찾기
-					const originalImport = fromNode.dependency.directDependencies
-						.find(dep => edge.to.includes(dep)) || edge.to;
+					const originalImport =
+						fromNode.dependency.directDependencies.find((dep) =>
+							edge.to.includes(dep),
+						) || edge.to;
 
 					unresolvedDeps.push({
 						from: edge.from,
@@ -211,10 +218,10 @@ export class GraphAnalyzer {
 			}
 
 			const dependencies = this.graph.edges
-				.filter(edge => edge.from === nodeId)
-				.map(edge => edge.to)
-				.filter(depId => this.graph.nodes.has(depId))
-				.map(depId => buildTree(depId, currentDepth + 1));
+				.filter((edge) => edge.from === nodeId)
+				.map((edge) => edge.to)
+				.filter((depId) => this.graph.nodes.has(depId))
+				.map((depId) => buildTree(depId, currentDepth + 1));
 
 			return {
 				filePath: node.filePath,
@@ -232,9 +239,9 @@ export class GraphAnalyzer {
 	 */
 	getDependents(filePath: string): string[] {
 		return this.graph.edges
-			.filter(edge => edge.to === filePath)
-			.map(edge => edge.from)
-			.filter(fromId => this.graph.nodes.has(fromId));
+			.filter((edge) => edge.to === filePath)
+			.map((edge) => edge.from)
+			.filter((fromId) => this.graph.nodes.has(fromId));
 	}
 
 	/**
@@ -242,9 +249,9 @@ export class GraphAnalyzer {
 	 */
 	getDependencies(filePath: string): string[] {
 		return this.graph.edges
-			.filter(edge => edge.from === filePath)
-			.map(edge => edge.to)
-			.filter(toId => this.graph.nodes.has(toId));
+			.filter((edge) => edge.from === filePath)
+			.map((edge) => edge.to)
+			.filter((toId) => this.graph.nodes.has(toId));
 	}
 
 	/**
@@ -252,10 +259,14 @@ export class GraphAnalyzer {
 	 */
 	findDependencyPath(from: string, to: string): string[] | null {
 		const visited = new Set<string>();
-		const queue: Array<{ node: string; path: string[] }> = [{ node: from, path: [from] }];
+		const queue: Array<{ node: string; path: string[] }> = [
+			{ node: from, path: [from] },
+		];
 
 		while (queue.length > 0) {
-			const { node, path } = queue.shift()!;
+			const item = queue.shift();
+			if (!item) break;
+			const { node, path } = item;
 
 			if (node === to) {
 				return path;
@@ -269,9 +280,9 @@ export class GraphAnalyzer {
 
 			// 직접 의존성들을 큐에 추가
 			const dependencies = this.graph.edges
-				.filter(edge => edge.from === node)
-				.map(edge => edge.to)
-				.filter(depId => this.graph.nodes.has(depId) && !visited.has(depId));
+				.filter((edge) => edge.from === node)
+				.map((edge) => edge.to)
+				.filter((depId) => this.graph.nodes.has(depId) && !visited.has(depId));
 
 			for (const dep of dependencies) {
 				queue.push({ node: dep, path: [...path, dep] });
@@ -285,14 +296,16 @@ export class GraphAnalyzer {
 	 * 그래프 통계 요약
 	 */
 	getStatistics() {
-		const internalNodes = Array.from(this.graph.nodes.values())
-			.filter(node => node.type === "internal");
+		const internalNodes = Array.from(this.graph.nodes.values()).filter(
+			(node) => node.type === "internal",
+		);
 
-		const externalNodes = Array.from(this.graph.nodes.values())
-			.filter(node => node.type === "external");
+		const externalNodes = Array.from(this.graph.nodes.values()).filter(
+			(node) => node.type === "external",
+		);
 
 		const languageDistribution: Record<string, number> = {};
-		internalNodes.forEach(node => {
+		internalNodes.forEach((node) => {
 			if (node.language) {
 				languageDistribution[node.language] =
 					(languageDistribution[node.language] || 0) + 1;

@@ -6,6 +6,7 @@
 export { NodeIdentifier, createNodeIdentifier, createStandardNode } from './NodeIdentifier';
 export { CircularDependencyDetector, createCircularDependencyDetector } from './CircularDependencyDetector';
 export { NodeCentricAnalyzer, createNodeCentricAnalyzer } from './NodeCentricAnalyzer';
+export { InferenceEngine } from './InferenceEngine';
 
 export type {
   NodeContext,

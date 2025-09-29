@@ -3,12 +3,11 @@
  * 의존성 그래프 생성 및 관리
  */
 
-import { dirname, resolve } from "node:path";
+import { resolve } from "node:path";
 import { analyzeDependencies } from "../api/analysis";
 import type { SupportedLanguage } from "../core/types";
 import { PathResolver } from "./PathResolver";
 import type {
-	DependencyEdge,
 	DependencyGraph,
 	DependencyNode,
 	FileDependency,
@@ -29,7 +28,12 @@ export class DependencyGraphBuilder {
 	constructor(options: GraphBuildOptions) {
 		this.options = {
 			includePatterns: ["**/*.{ts,tsx,js,jsx,java,py,go}"],
-			excludePatterns: ["**/node_modules/**", "**/dist/**", "**/*.test.*", "**/*.spec.*"],
+			excludePatterns: [
+				"**/node_modules/**",
+				"**/dist/**",
+				"**/*.test.*",
+				"**/*.spec.*",
+			],
 			maxDepth: 10,
 			includeExternalDependencies: false,
 			pathResolution: {},
@@ -98,7 +102,7 @@ export class DependencyGraphBuilder {
 	 */
 	private async analyzeEntryPoints(): Promise<void> {
 		const tasks = this.options.entryPoints.map((entryPoint) =>
-			this.analyzeFile(resolve(this.options.projectRoot, entryPoint), 0)
+			this.analyzeFile(resolve(this.options.projectRoot, entryPoint), 0),
 		);
 
 		if (this.options.parallel) {
@@ -137,7 +141,6 @@ export class DependencyGraphBuilder {
 
 			// 3. 의존성 파일들 해결 및 분석
 			await this.processDependencies(dependency, depth);
-
 		} catch (error) {
 			this.errors.push({
 				filePath,
@@ -150,7 +153,9 @@ export class DependencyGraphBuilder {
 	/**
 	 * 파일의 의존성 분석
 	 */
-	private async analyzeFileDependencies(filePath: string): Promise<FileDependency> {
+	private async analyzeFileDependencies(
+		filePath: string,
+	): Promise<FileDependency> {
 		try {
 			const language = this.detectLanguage(filePath);
 			const resolver = this.pathResolver.withBasePath(filePath);
@@ -169,7 +174,7 @@ export class DependencyGraphBuilder {
 				allImports.map(async (importPath) => {
 					const result = await resolver.resolvePath(importPath);
 					return result;
-				})
+				}),
 			);
 
 			const internalDeps: string[] = [];
@@ -211,7 +216,6 @@ export class DependencyGraphBuilder {
 				analyzedAt: new Date(),
 				exists: true,
 			};
-
 		} catch (error) {
 			this.errors.push({
 				filePath,
@@ -250,13 +254,16 @@ export class DependencyGraphBuilder {
 	/**
 	 * 의존성 처리
 	 */
-	private async processDependencies(dependency: FileDependency, depth: number): Promise<void> {
+	private async processDependencies(
+		dependency: FileDependency,
+		depth: number,
+	): Promise<void> {
 		// 1. 엣지 생성
 		this.createEdges(dependency);
 
 		// 2. 내부 의존성 재귀 분석
 		const internalTasks = dependency.internalDependencies.map((depPath) =>
-			this.analyzeFile(depPath, depth + 1)
+			this.analyzeFile(depPath, depth + 1),
 		);
 
 		// 3. 외부 의존성 노드 생성 (분석하지 않음)
@@ -347,8 +354,9 @@ export class DependencyGraphBuilder {
 	 */
 	private updateMetadata(): void {
 		this.graph.metadata.totalFiles = this.graph.nodes.size;
-		this.graph.metadata.analyzedFiles = Array.from(this.graph.nodes.values())
-			.filter(node => node.type === "internal").length;
+		this.graph.metadata.analyzedFiles = Array.from(
+			this.graph.nodes.values(),
+		).filter((node) => node.type === "internal").length;
 		this.graph.metadata.totalDependencies = this.graph.edges.length;
 	}
 
@@ -378,8 +386,8 @@ export class DependencyGraphBuilder {
 
 			// 의존성 탐색
 			const dependencies = this.graph.edges
-				.filter(edge => edge.from === nodeId)
-				.map(edge => edge.to);
+				.filter((edge) => edge.from === nodeId)
+				.map((edge) => edge.to);
 
 			for (const depId of dependencies) {
 				if (this.graph.nodes.has(depId)) {
@@ -409,7 +417,12 @@ export class DependencyGraphBuilder {
 			circularDependencies: {
 				cycles: this.graph.metadata.circularDependencies,
 				totalCycles: this.graph.metadata.circularDependencies.length,
-				maxDepth: Math.max(...this.graph.metadata.circularDependencies.map(cycle => cycle.length), 0),
+				maxDepth: Math.max(
+					...this.graph.metadata.circularDependencies.map(
+						(cycle) => cycle.length,
+					),
+					0,
+				),
 			},
 			dependencyDepth: {
 				maxDepth: 0,
@@ -433,7 +446,9 @@ export class DependencyGraphBuilder {
 /**
  * 의존성 그래프 빌더 팩토리 함수
  */
-export function createDependencyGraphBuilder(options: GraphBuildOptions): DependencyGraphBuilder {
+export function createDependencyGraphBuilder(
+	options: GraphBuildOptions,
+): DependencyGraphBuilder {
 	return new DependencyGraphBuilder(options);
 }
 

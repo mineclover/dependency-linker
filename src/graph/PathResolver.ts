@@ -5,10 +5,7 @@
 
 import { promises as fs } from "node:fs";
 import { dirname, extname, isAbsolute, join, resolve } from "node:path";
-import type {
-	PathResolutionOptions,
-	PathResolutionResult,
-} from "./types";
+import type { PathResolutionOptions, PathResolutionResult } from "./types";
 
 /**
  * 경로 해결기 클래스
@@ -100,16 +97,50 @@ export class PathResolver {
 	private isBuiltinModule(moduleName: string): boolean {
 		const builtinModules = [
 			// Node.js built-in modules
-			"fs", "path", "os", "crypto", "events", "stream", "util", "url",
-			"querystring", "http", "https", "net", "tls", "dns", "child_process",
-			"cluster", "worker_threads", "timers", "readline", "zlib", "buffer",
+			"fs",
+			"path",
+			"os",
+			"crypto",
+			"events",
+			"stream",
+			"util",
+			"url",
+			"querystring",
+			"http",
+			"https",
+			"net",
+			"tls",
+			"dns",
+			"child_process",
+			"cluster",
+			"worker_threads",
+			"timers",
+			"readline",
+			"zlib",
+			"buffer",
 
 			// Node.js prefixed modules
-			"node:fs", "node:path", "node:os", "node:crypto", "node:events",
-			"node:stream", "node:util", "node:url", "node:querystring",
-			"node:http", "node:https", "node:net", "node:tls", "node:dns",
-			"node:child_process", "node:cluster", "node:worker_threads",
-			"node:timers", "node:readline", "node:zlib", "node:buffer",
+			"node:fs",
+			"node:path",
+			"node:os",
+			"node:crypto",
+			"node:events",
+			"node:stream",
+			"node:util",
+			"node:url",
+			"node:querystring",
+			"node:http",
+			"node:https",
+			"node:net",
+			"node:tls",
+			"node:dns",
+			"node:child_process",
+			"node:cluster",
+			"node:worker_threads",
+			"node:timers",
+			"node:readline",
+			"node:zlib",
+			"node:buffer",
 		];
 
 		return builtinModules.includes(moduleName);
@@ -120,9 +151,11 @@ export class PathResolver {
 	 */
 	private isExternalPackage(moduleName: string): boolean {
 		// 상대 경로가 아니고, 내장 모듈도 아니면 외부 패키지
-		return !moduleName.startsWith(".") &&
-		       !moduleName.startsWith("/") &&
-		       !this.isBuiltinModule(moduleName);
+		return (
+			!moduleName.startsWith(".") &&
+			!moduleName.startsWith("/") &&
+			!this.isBuiltinModule(moduleName)
+		);
 	}
 
 	/**
@@ -202,7 +235,7 @@ export class PathResolver {
 	 * 프로젝트 루트에서 상대 경로로 변환
 	 */
 	getRelativeFromRoot(absolutePath: string): string {
-		return resolve(absolutePath).replace(this.options.projectRoot + "/", "");
+		return resolve(absolutePath).replace(`${this.options.projectRoot}/`, "");
 	}
 
 	/**
@@ -219,7 +252,9 @@ export class PathResolver {
 /**
  * 경로 해결기 팩토리 함수
  */
-export function createPathResolver(options: PathResolutionOptions): PathResolver {
+export function createPathResolver(
+	options: PathResolutionOptions,
+): PathResolver {
 	return new PathResolver(options);
 }
 

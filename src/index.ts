@@ -5,45 +5,41 @@
 
 // ===== CORE API EXPORTS =====
 
+export type {
+	AnalysisOptions,
+	AnalysisResult,
+} from "./api/analysis";
 // Analysis API
 export {
-	analyzeFile,
-	analyzeTypeScriptFile,
-	analyzeJavaScriptFile,
-	analyzeJavaFile,
-	analyzePythonFile,
-	analyzeImports,
 	analyzeDependencies,
+	analyzeFile,
+	analyzeImports,
+	analyzeJavaFile,
+	analyzeJavaScriptFile,
+	analyzePythonFile,
+	analyzeTypeScriptFile,
 	initializeAnalysisSystem,
 } from "./api/analysis";
 
-export type {
-	AnalysisResult,
-	AnalysisOptions,
-} from "./api/analysis";
-
 // ===== CORE SYSTEM EXPORTS =====
-
-// Types
-export type {
-	SupportedLanguage,
-	QueryExecutionContext,
-} from "./core/types";
 
 export type {
 	QueryKey,
 	QueryResult,
 } from "./core/QueryResultMap";
-
+// Types
+export type {
+	QueryExecutionContext,
+	SupportedLanguage,
+} from "./core/types";
+export type {
+	CustomKeyMapper,
+	CustomKeyMapping,
+} from "./mappers/CustomKeyMapper";
 // Custom Key Mapping
 export {
 	createCustomKeyMapper,
 	predefinedCustomMappings,
-} from "./mappers/CustomKeyMapper";
-
-export type {
-	CustomKeyMapping,
-	CustomKeyMapper,
 } from "./mappers/CustomKeyMapper";
 
 // Parsers
@@ -60,53 +56,53 @@ export {
 
 // Main Graph API
 export {
-	createDependencyAnalyzer,
 	analyzeDependencyGraph,
-	analyzeProjectDependencies,
 	analyzeFileImpact,
+	analyzeProjectDependencies,
+	createDependencyAnalyzer,
 } from "./graph/api";
 
 // Graph Building
 export {
-	DependencyGraphBuilder,
-	createDependencyGraphBuilder,
 	buildDependencyGraph,
+	createDependencyGraphBuilder,
+	DependencyGraphBuilder,
 } from "./graph/DependencyGraphBuilder";
 
 // Graph Analysis
 export {
-	GraphAnalyzer,
-	createGraphAnalyzer,
 	analyzeGraph,
+	createGraphAnalyzer,
+	GraphAnalyzer,
 } from "./graph/GraphAnalyzer";
 
 // Path Resolution
 export {
-	PathResolver,
 	createPathResolver,
+	PathResolver,
 	resolvePath,
 } from "./graph/PathResolver";
 
 // Graph Types
 export type {
-	FileDependency,
-	DependencyNode,
 	DependencyEdge,
 	DependencyGraph,
-	PathResolutionOptions,
-	PathResolutionResult,
+	DependencyNode,
+	FileDependency,
 	GraphAnalysisResult,
 	GraphBuildOptions,
 	GraphBuildResult,
+	PathResolutionOptions,
+	PathResolutionResult,
 } from "./graph/types";
 
 // ===== QUERY ENGINE EXPORTS =====
 
 // Query Bridge
 export {
-	executeTreeSitterQuery,
-	executeMultipleTreeSitterQueries,
 	executeAllLanguageQueries,
+	executeMultipleTreeSitterQueries,
+	executeTreeSitterQuery,
 	initializeQueryBridge,
 } from "./core/QueryBridge";
 
@@ -124,17 +120,16 @@ export {
 
 // ===== LANGUAGE PARSERS =====
 
-// Individual Parsers
-export { TypeScriptParser } from "./parsers/typescript";
-export { JavaParser } from "./parsers/java";
-export { PythonParser } from "./parsers/python";
 export { GoParser } from "./parsers/go";
-
+export { JavaParser } from "./parsers/java";
 // Parser Factory
 export {
-	ParserFactory,
 	globalParserFactory,
+	ParserFactory,
 } from "./parsers/ParserFactory";
+export { PythonParser } from "./parsers/python";
+// Individual Parsers
+export { TypeScriptParser } from "./parsers/typescript";
 
 // ===== UTILITIES =====
 

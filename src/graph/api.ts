@@ -47,7 +47,9 @@ export class DependencyAnalyzer {
 	 */
 	analyzeGraph(): GraphAnalysisResult {
 		if (!this.analyzer) {
-			throw new Error("Graph must be built before analysis. Call buildGraph() first.");
+			throw new Error(
+				"Graph must be built before analysis. Call buildGraph() first.",
+			);
 		}
 
 		return this.analyzer.analyze();
@@ -74,7 +76,9 @@ export class DependencyAnalyzer {
 	 */
 	getDependencyTree(filePath: string, maxDepth = 5): any {
 		if (!this.analyzer) {
-			throw new Error("Graph must be built before getting dependency tree. Call buildGraph() first.");
+			throw new Error(
+				"Graph must be built before getting dependency tree. Call buildGraph() first.",
+			);
 		}
 
 		return this.analyzer.getDependencyTree(filePath, maxDepth);
@@ -85,7 +89,9 @@ export class DependencyAnalyzer {
 	 */
 	getDependents(filePath: string): string[] {
 		if (!this.analyzer) {
-			throw new Error("Graph must be built before getting dependents. Call buildGraph() first.");
+			throw new Error(
+				"Graph must be built before getting dependents. Call buildGraph() first.",
+			);
 		}
 
 		return this.analyzer.getDependents(filePath);
@@ -96,7 +102,9 @@ export class DependencyAnalyzer {
 	 */
 	getDependencies(filePath: string): string[] {
 		if (!this.analyzer) {
-			throw new Error("Graph must be built before getting dependencies. Call buildGraph() first.");
+			throw new Error(
+				"Graph must be built before getting dependencies. Call buildGraph() first.",
+			);
 		}
 
 		return this.analyzer.getDependencies(filePath);
@@ -107,7 +115,9 @@ export class DependencyAnalyzer {
 	 */
 	findDependencyPath(from: string, to: string): string[] | null {
 		if (!this.analyzer) {
-			throw new Error("Graph must be built before finding dependency path. Call buildGraph() first.");
+			throw new Error(
+				"Graph must be built before finding dependency path. Call buildGraph() first.",
+			);
 		}
 
 		return this.analyzer.findDependencyPath(from, to);
@@ -118,7 +128,9 @@ export class DependencyAnalyzer {
 	 */
 	getStatistics() {
 		if (!this.analyzer) {
-			throw new Error("Graph must be built before getting statistics. Call buildGraph() first.");
+			throw new Error(
+				"Graph must be built before getting statistics. Call buildGraph() first.",
+			);
 		}
 
 		return this.analyzer.getStatistics();
@@ -145,7 +157,9 @@ export class DependencyAnalyzer {
 /**
  * 의존성 분석기 팩토리 함수
  */
-export function createDependencyAnalyzer(options: GraphBuildOptions): DependencyAnalyzer {
+export function createDependencyAnalyzer(
+	options: GraphBuildOptions,
+): DependencyAnalyzer {
 	return new DependencyAnalyzer(options);
 }
 

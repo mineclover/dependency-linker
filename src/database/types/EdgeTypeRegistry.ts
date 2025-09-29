@@ -351,6 +351,13 @@ export class EdgeTypeRegistry {
   }
 
   /**
+   * 특정 parent를 가진 모든 child type 이름들 조회 (문자열 배열)
+   */
+  static getChildren(parentType: string): string[] {
+    return this.getChildTypes(parentType).map(def => def.type);
+  }
+
+  /**
    * Edge type의 전체 계층 경로 조회
    * 예: imports_library → imports → depends_on
    */

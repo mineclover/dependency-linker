@@ -1071,6 +1071,251 @@ export class GraphDatabase {
       }).catch(reject);
     });
   }
+
+  // ========== Inference Methods ==========
+
+  /**
+   * Hierarchical 관계 조회: 자식 타입들을 부모 타입으로 조회
+   * @param edgeType 조회할 edge type (부모 타입)
+   * @param options 조회 옵션
+   */
+  async queryHierarchicalRelationships(
+    edgeType: string,
+    options: { includeChildren?: boolean; includeParents?: boolean } = {}
+  ): Promise<GraphRelationship[]> {
+    if (!this.db) throw new Error('Database not initialized');
+
+    const { includeChildren = true, includeParents = false } = options;
+
+    // Dynamic import to avoid circular dependency
+    const { EdgeTypeRegistry } = await import('./types/EdgeTypeRegistry');
+    const relatedTypes = new Set<string>([edgeType]);
+
+    // 자식 타입 수집
+    if (includeChildren) {
+      const children = EdgeTypeRegistry.getChildren(edgeType);
+      const collectChildren = (type: string): void => {
+        const directChildren = EdgeTypeRegistry.getChildren(type);
+        directChildren.forEach(child => {
+          relatedTypes.add(child);
+          collectChildren(child);
+        });
+      };
+      children.forEach(collectChildren);
+    }
+
+    // 부모 타입 수집
+    if (includeParents) {
+      const parents = EdgeTypeRegistry.getHierarchyPath(edgeType);
+      parents.forEach(type => relatedTypes.add(type));
+    }
+
+    // 모든 관련 타입의 관계 조회
+    return this.findRelationships({
+      relationshipTypes: Array.from(relatedTypes),
+    });
+  }
+
+  /**
+   * Transitive 관계 조회: A→B→C ⇒ A→C
+   * @param fromNodeId 시작 노드 ID
+   * @param edgeType 관계 타입 (transitive 타입이어야 함)
+   * @param maxDepth 최대 경로 깊이 (기본: 10)
+   */
+  async queryTransitiveRelationships(
+    fromNodeId: number,
+    edgeType: string,
+    maxDepth: number = 10
+  ): Promise<GraphRelationship[]> {
+    if (!this.db) throw new Error('Database not initialized');
+
+    const sql = `
+      WITH RECURSIVE transitive_paths AS (
+        -- Base case: 직접 관계
+        SELECT
+          e.id,
+          e.start_node_id,
+          e.end_node_id,
+          e.type,
+          e.label,
+          e.metadata,
+          e.weight,
+          e.source_file,
+          1 as depth,
+          CAST(e.start_node_id AS TEXT) as visited
+        FROM edges e
+        WHERE e.start_node_id = ?
+          AND e.type = ?
+
+        UNION ALL
+
+        -- Recursive case: 간접 관계
+        SELECT
+          e.id,
+          tp.start_node_id,
+          e.end_node_id,
+          e.type,
+          e.label,
+          e.metadata,
+          e.weight,
+          e.source_file,
+          tp.depth + 1,
+          tp.visited || ',' || CAST(e.end_node_id AS TEXT)
+        FROM edges e
+        INNER JOIN transitive_paths tp ON e.start_node_id = tp.end_node_id
+        WHERE tp.depth < ?
+          AND e.type = ?
+          AND INSTR(tp.visited, CAST(e.end_node_id AS TEXT)) = 0  -- 순환 방지
+      )
+      SELECT DISTINCT
+        id,
+        start_node_id,
+        end_node_id,
+        type,
+        label,
+        metadata,
+        weight,
+        source_file
+      FROM transitive_paths
+      ORDER BY depth, start_node_id, end_node_id
+    `;
+
+    return new Promise((resolve, reject) => {
+      this.db!.all(sql, [fromNodeId, edgeType, maxDepth, edgeType], (err: Error | null, rows: any[]) => {
+        if (err) {
+          reject(new Error(`Transitive query failed: ${err.message}`));
+        } else {
+          const relationships = rows.map(row => ({
+            id: row.id,
+            fromNodeId: row.start_node_id,
+            toNodeId: row.end_node_id,
+            type: row.type,
+            label: row.label,
+            metadata: JSON.parse(row.metadata || '{}'),
+            weight: row.weight,
+            sourceFile: row.source_file,
+          }));
+          resolve(relationships);
+        }
+      });
+    });
+  }
+
+  /**
+   * Inheritable 관계 조회: parent(A,B), rel(B,C) ⇒ rel(A,C)
+   * @param fromNodeId 시작 노드 ID
+   * @param parentRelationType 부모 관계 타입 (contains, declares 등)
+   * @param inheritableType 상속 가능한 관계 타입
+   * @param maxDepth 최대 상속 깊이 (기본: 5)
+   */
+  async queryInheritableRelationships(
+    fromNodeId: number,
+    parentRelationType: string,
+    inheritableType: string,
+    maxDepth: number = 5
+  ): Promise<GraphRelationship[]> {
+    if (!this.db) throw new Error('Database not initialized');
+
+    const sql = `
+      WITH RECURSIVE inheritance AS (
+        -- Base case: 직접 자식의 관계
+        SELECT
+          parent.start_node_id as root_node,
+          child_rel.id,
+          child_rel.start_node_id,
+          child_rel.end_node_id,
+          child_rel.type,
+          child_rel.label,
+          child_rel.metadata,
+          child_rel.weight,
+          child_rel.source_file,
+          1 as depth
+        FROM edges parent
+        INNER JOIN edges child_rel ON parent.end_node_id = child_rel.start_node_id
+        WHERE parent.start_node_id = ?
+          AND parent.type = ?
+          AND child_rel.type = ?
+
+        UNION ALL
+
+        -- Recursive case: 간접 자식의 관계
+        SELECT
+          inh.root_node,
+          child_rel.id,
+          child_rel.start_node_id,
+          child_rel.end_node_id,
+          child_rel.type,
+          child_rel.label,
+          child_rel.metadata,
+          child_rel.weight,
+          child_rel.source_file,
+          inh.depth + 1
+        FROM inheritance inh
+        INNER JOIN edges parent ON inh.end_node_id = parent.start_node_id
+        INNER JOIN edges child_rel ON parent.end_node_id = child_rel.start_node_id
+        WHERE inh.depth < ?
+          AND parent.type = ?
+          AND child_rel.type = ?
+      )
+      SELECT DISTINCT
+        root_node as start_node_id,
+        end_node_id,
+        id,
+        type,
+        label,
+        metadata,
+        weight,
+        source_file
+      FROM inheritance
+      ORDER BY depth, start_node_id, end_node_id
+    `;
+
+    return new Promise((resolve, reject) => {
+      this.db!.all(
+        sql,
+        [fromNodeId, parentRelationType, inheritableType, maxDepth, parentRelationType, inheritableType],
+        (err: Error | null, rows: any[]) => {
+          if (err) {
+            reject(new Error(`Inheritable query failed: ${err.message}`));
+          } else {
+            const relationships = rows.map(row => ({
+              id: row.id,
+              fromNodeId: row.start_node_id,
+              toNodeId: row.end_node_id,
+              type: row.type,
+              label: row.label,
+              metadata: JSON.parse(row.metadata || '{}'),
+              weight: row.weight,
+              sourceFile: row.source_file,
+            }));
+            resolve(relationships);
+          }
+        }
+      );
+    });
+  }
+
+  /**
+   * 추론 캐시 동기화
+   * edge_inference_cache 테이블을 현재 edges 상태로 업데이트
+   */
+  async syncInferenceCache(): Promise<number> {
+    if (!this.db) throw new Error('Database not initialized');
+
+    // 기존 캐시 삭제
+    const deleteSql = 'DELETE FROM edge_inference_cache';
+
+    return new Promise((resolve, reject) => {
+      this.db!.run(deleteSql, (err: Error | null) => {
+        if (err) {
+          reject(new Error(`Cache sync failed: ${err.message}`));
+        } else {
+          // TODO: 모든 transitive/inheritable 관계 재계산 및 캐시 저장
+          resolve(0);
+        }
+      });
+    });
+  }
 }
 
 /**

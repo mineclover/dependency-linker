@@ -3,42 +3,38 @@
  * 의존성 그래프 분석 모듈의 메인 익스포트
  */
 
+// High-level API
+export {
+	analyzeDependencyGraph,
+	createDependencyAnalyzer,
+} from "./api";
+// Graph Building
+export {
+	buildDependencyGraph,
+	createDependencyGraphBuilder,
+	DependencyGraphBuilder,
+} from "./DependencyGraphBuilder";
+// Graph Analysis
+export {
+	analyzeGraph,
+	createGraphAnalyzer,
+	GraphAnalyzer,
+} from "./GraphAnalyzer";
+// Path Resolution
+export {
+	createPathResolver,
+	PathResolver,
+	resolvePath,
+} from "./PathResolver";
 // Types
 export type {
-	FileDependency,
-	DependencyNode,
 	DependencyEdge,
 	DependencyGraph,
-	PathResolutionOptions,
-	PathResolutionResult,
+	DependencyNode,
+	FileDependency,
 	GraphAnalysisResult,
 	GraphBuildOptions,
 	GraphBuildResult,
+	PathResolutionOptions,
+	PathResolutionResult,
 } from "./types";
-
-// Path Resolution
-export {
-	PathResolver,
-	createPathResolver,
-	resolvePath,
-} from "./PathResolver";
-
-// Graph Building
-export {
-	DependencyGraphBuilder,
-	createDependencyGraphBuilder,
-	buildDependencyGraph,
-} from "./DependencyGraphBuilder";
-
-// Graph Analysis
-export {
-	GraphAnalyzer,
-	createGraphAnalyzer,
-	analyzeGraph,
-} from "./GraphAnalyzer";
-
-// High-level API
-export {
-	createDependencyAnalyzer,
-	analyzeDependencyGraph,
-} from "./api";
