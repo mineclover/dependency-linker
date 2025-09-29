@@ -3,32 +3,21 @@
  * TypeScript 전용 Import 관련 쿼리들
  */
 
-import type {
-	ASTNode,
-	ExtendedSourceLocation,
-	QueryFunction,
-} from "../../core/types";
+import type Parser from "tree-sitter";
+import type { QueryFunction } from "../../core/types";
 import type {
 	DefaultImportResult,
 	ImportSourceResult,
 	NamedImportResult,
 	TypeImportResult,
 } from "../../results";
+import { extractLocation } from "../../utils/ast-helpers";
 
 // ===== UTILITY FUNCTIONS =====
-const extractStringFromNode = (node: ASTNode): string => {
+const extractStringFromNode = (node: Parser.SyntaxNode): string => {
 	const text = node.text;
 	return text.slice(1, -1); // 따옴표 제거
 };
-
-const extractLocation = (node: ASTNode): ExtendedSourceLocation => ({
-	line: node.startPosition.row + 1,
-	column: node.startPosition.column,
-	offset: 0,
-	endLine: node.endPosition.row + 1,
-	endColumn: node.endPosition.column,
-	endOffset: 0,
-});
 
 const isRelativePath = (source: string): boolean => {
 	return source.startsWith("./") || source.startsWith("../");
@@ -111,9 +100,11 @@ export const tsNamedImportQuery: QueryFunction<NamedImportResult> = {
 					const aliasNode = aliasNodes[index];
 
 					// TypeScript type-only import 검사
-					const isTypeOnly =
-						match.node.text.includes("import type") ||
-						match.node.text.includes(`type ${nameNode.node.text}`);
+					const matchNode = match.captures[0]?.node;
+					const isTypeOnly = matchNode
+						? matchNode.text.includes("import type") ||
+							matchNode.text.includes(`type ${nameNode.node.text}`)
+						: false;
 
 					results.push({
 						queryName: "ts-named-imports",

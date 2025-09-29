@@ -1,76 +1,63 @@
 {
-  "timestamp": "2025-09-29T01:12:36.315Z",
-  "testSourceCode": "\nimport React, { useState, useEffect as useAsyncEffect } from 'react';\nimport { User, Profile } from './types/User';\nimport type { FC, ReactNode } from 'react';\nimport type { APIResponse } from '@/api/types';\nimport * as utils from './utils';\nimport defaultLogger from './logger';\nimport axios from 'axios';\n\n// 추가 import 패턴들\nimport { debounce } from 'lodash';\nimport type { ComponentProps } from 'react';\nimport * as Icons from '@heroicons/react/24/outline';\nimport moment from 'moment';\n\nexport const App: FC = () => {\n  const [user, setUser] = useState<User | null>(null);\n  const [data, setData] = useState<APIResponse | null>(null);\n\n  useAsyncEffect(() => {\n    // Component logic here\n    const debouncedFetch = debounce(() => {\n      axios.get('/api/user').then(response => {\n        setData(response.data);\n      });\n    }, 300);\n\n    debouncedFetch();\n  }, []);\n\n  return React.createElement('div', null,\n    React.createElement(Icons.UserIcon, null),\n    'Hello World - ',\n    moment().format('YYYY-MM-DD')\n  );\n};\n\nexport default App;\n",
-  "result": {
-    "executionTimestamp": "2025-09-29T01:12:36.315Z",
-    "testSourceInfo": {
-      "totalLines": 39,
-      "importStatements": 8,
-      "typescriptFeatures": true
-    },
-    "analysisResults": {
-      "importAnalysis": {
-        "file": "import-analysis-result.json",
-        "totalImports": 14,
-        "packageImports": 7,
-        "typeImports": 4
-      },
-      "dependencyAnalysis": {
-        "file": "dependency-analysis-result.json",
-        "externalDeps": 6,
-        "internalDeps": 3,
-        "graphNodes": 10
-      },
-      "typescriptAnalysis": {
-        "file": "typescript-analysis-result.json",
-        "typeImports": 4,
-        "features": 5
-      },
-      "customAnalysis": {
-        "file": "custom-analysis-result.json",
-        "uniqueSources": 8,
-        "complexityScore": 6.5
-      }
-    },
-    "conclusions": [
-      "모든 쿼리 조합이 성공적으로 실행됨",
-      "TypeScript import 패턴 정확히 분석됨",
-      "의존성 그래프 구조 생성 확인됨",
-      "사용자 정의 집계 로직 동작 확인됨"
-    ]
-  },
-  "metadata": {
-    "nodeVersion": "v22.17.1",
-    "testDescription": "Query combination execution results",
-    "totalImportStatements": 8,
-    "expectedPatterns": {
-      "namedImports": [
-        "useState",
-        "useEffect as useAsyncEffect",
-        "User",
-        "Profile",
-        "FC",
-        "ReactNode",
-        "APIResponse",
-        "debounce",
-        "ComponentProps"
-      ],
-      "defaultImports": [
-        "React",
-        "defaultLogger",
-        "axios",
-        "moment"
-      ],
-      "namespaceImports": [
-        "utils",
-        "Icons"
-      ],
-      "typeImports": [
-        "FC",
-        "ReactNode",
-        "APIResponse",
-        "ComponentProps"
-      ]
-    }
-  }
+	"timestamp": "2025-09-29T01:12:36.315Z",
+	"testSourceCode": "\nimport React, { useState, useEffect as useAsyncEffect } from 'react';\nimport { User, Profile } from './types/User';\nimport type { FC, ReactNode } from 'react';\nimport type { APIResponse } from '@/api/types';\nimport * as utils from './utils';\nimport defaultLogger from './logger';\nimport axios from 'axios';\n\n// 추가 import 패턴들\nimport { debounce } from 'lodash';\nimport type { ComponentProps } from 'react';\nimport * as Icons from '@heroicons/react/24/outline';\nimport moment from 'moment';\n\nexport const App: FC = () => {\n  const [user, setUser] = useState<User | null>(null);\n  const [data, setData] = useState<APIResponse | null>(null);\n\n  useAsyncEffect(() => {\n    // Component logic here\n    const debouncedFetch = debounce(() => {\n      axios.get('/api/user').then(response => {\n        setData(response.data);\n      });\n    }, 300);\n\n    debouncedFetch();\n  }, []);\n\n  return React.createElement('div', null,\n    React.createElement(Icons.UserIcon, null),\n    'Hello World - ',\n    moment().format('YYYY-MM-DD')\n  );\n};\n\nexport default App;\n",
+	"result": {
+		"executionTimestamp": "2025-09-29T01:12:36.315Z",
+		"testSourceInfo": {
+			"totalLines": 39,
+			"importStatements": 8,
+			"typescriptFeatures": true
+		},
+		"analysisResults": {
+			"importAnalysis": {
+				"file": "import-analysis-result.json",
+				"totalImports": 14,
+				"packageImports": 7,
+				"typeImports": 4
+			},
+			"dependencyAnalysis": {
+				"file": "dependency-analysis-result.json",
+				"externalDeps": 6,
+				"internalDeps": 3,
+				"graphNodes": 10
+			},
+			"typescriptAnalysis": {
+				"file": "typescript-analysis-result.json",
+				"typeImports": 4,
+				"features": 5
+			},
+			"customAnalysis": {
+				"file": "custom-analysis-result.json",
+				"uniqueSources": 8,
+				"complexityScore": 6.5
+			}
+		},
+		"conclusions": [
+			"모든 쿼리 조합이 성공적으로 실행됨",
+			"TypeScript import 패턴 정확히 분석됨",
+			"의존성 그래프 구조 생성 확인됨",
+			"사용자 정의 집계 로직 동작 확인됨"
+		]
+	},
+	"metadata": {
+		"nodeVersion": "v22.17.1",
+		"testDescription": "Query combination execution results",
+		"totalImportStatements": 8,
+		"expectedPatterns": {
+			"namedImports": [
+				"useState",
+				"useEffect as useAsyncEffect",
+				"User",
+				"Profile",
+				"FC",
+				"ReactNode",
+				"APIResponse",
+				"debounce",
+				"ComponentProps"
+			],
+			"defaultImports": ["React", "defaultLogger", "axios", "moment"],
+			"namespaceImports": ["utils", "Icons"],
+			"typeImports": ["FC", "ReactNode", "APIResponse", "ComponentProps"]
+		}
+	}
 }

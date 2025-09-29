@@ -32,12 +32,18 @@ export const javaImportSources: QueryFunction<JavaImportSourceResult> = {
 		matches: QueryMatch[],
 		_context: QueryExecutionContext,
 	): JavaImportSourceResult[] => {
-		return matches.map((match) => ({
-			queryName: "java-import-sources",
-			source: extractJavaImportPath(match.node),
-			location: extractLocation(match.node),
-			nodeText: match.node.text,
-		}));
+		return matches
+			.map((match) => {
+				const node = match.captures[0]?.node;
+				if (!node) return null;
+				return {
+					queryName: "java-import-sources",
+					source: extractJavaImportPath(node),
+					location: extractLocation(node),
+					nodeText: node.text,
+				};
+			})
+			.filter((result): result is JavaImportSourceResult => result !== null);
 	},
 };
 
@@ -57,15 +63,21 @@ export const javaImportStatements: QueryFunction<JavaImportStatementResult> = {
 		matches: QueryMatch[],
 		_context: QueryExecutionContext,
 	): JavaImportStatementResult[] => {
-		return matches.map((match) => ({
-			queryName: "java-import-statements",
-			packagePath: extractJavaImportPath(match.node),
-			isStatic: isStaticImport(match.node),
-			isWildcard: isWildcardImport(match.node),
-			importedName: extractImportedName(match.node),
-			location: extractLocation(match.node),
-			nodeText: match.node.text,
-		}));
+		return matches
+			.map((match) => {
+				const node = match.captures[0]?.node;
+				if (!node) return null;
+				return {
+					queryName: "java-import-statements",
+					packagePath: extractJavaImportPath(node),
+					isStatic: isStaticImport(node),
+					isWildcard: isWildcardImport(node),
+					importedName: extractImportedName(node),
+					location: extractLocation(node),
+					nodeText: node.text,
+				};
+			})
+			.filter((result): result is JavaImportStatementResult => result !== null);
 	},
 };
 
@@ -86,13 +98,17 @@ export const javaWildcardImports: QueryFunction<JavaWildcardImportResult> = {
 		_context: QueryExecutionContext,
 	): JavaWildcardImportResult[] => {
 		return matches
-			.filter((match) => isWildcardImport(match.node))
-			.map((match) => ({
-				queryName: "java-wildcard-imports",
-				packagePath: extractJavaImportPath(match.node).replace(/\.\*$/, ""),
-				location: extractLocation(match.node),
-				nodeText: match.node.text,
-			}));
+			.map((match) => {
+				const node = match.captures[0]?.node;
+				if (!node || !isWildcardImport(node)) return null;
+				return {
+					queryName: "java-wildcard-imports",
+					packagePath: extractJavaImportPath(node).replace(/\.\*$/, ""),
+					location: extractLocation(node),
+					nodeText: node.text,
+				};
+			})
+			.filter((result): result is JavaWildcardImportResult => result !== null);
 	},
 };
 
@@ -113,15 +129,19 @@ export const javaStaticImports: QueryFunction<JavaStaticImportResult> = {
 		_context: QueryExecutionContext,
 	): JavaStaticImportResult[] => {
 		return matches
-			.filter((match) => isStaticImport(match.node))
-			.map((match) => ({
-				queryName: "java-static-imports",
-				className: extractStaticImportClass(match.node),
-				memberName: extractStaticImportMember(match.node),
-				isWildcard: isWildcardImport(match.node),
-				location: extractLocation(match.node),
-				nodeText: match.node.text,
-			}));
+			.map((match) => {
+				const node = match.captures[0]?.node;
+				if (!node || !isStaticImport(node)) return null;
+				return {
+					queryName: "java-static-imports",
+					className: extractStaticImportClass(node),
+					memberName: extractStaticImportMember(node),
+					isWildcard: isWildcardImport(node),
+					location: extractLocation(node),
+					nodeText: node.text,
+				};
+			})
+			.filter((result): result is JavaStaticImportResult => result !== null);
 	},
 };
 

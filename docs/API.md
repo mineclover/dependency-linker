@@ -109,7 +109,7 @@ const context: QueryExecutionContext = {
   sourceCode: 'import React from "react";',
   language: "typescript",
   filePath: "app.tsx",
-  astNode: parsedASTNode
+  tree: treeSitterTree
 };
 
 // Execute query

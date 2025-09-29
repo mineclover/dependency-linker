@@ -33,16 +33,26 @@ export const pythonFunctionDefinitions: QueryFunction<PythonFunctionDefinitionRe
 			matches: QueryMatch[],
 			_context: QueryExecutionContext,
 		): PythonFunctionDefinitionResult[] => {
-			return matches.map((match) => ({
-				queryName: "python-function-definitions",
-				functionName: extractPythonFunctionName(match.node),
-				parameters: extractFunctionParameters(match.node),
-				returnType: extractReturnTypeAnnotation(match.node),
-				isAsync: isAsyncFunction(match.node),
-				decorators: extractDecorators(match.node),
-				location: extractLocation(match.node),
-				nodeText: match.node.text,
-			}));
+			return matches
+				.map((match) => {
+					const node = match.captures[0]?.node;
+					if (!node) return null;
+					const returnType = extractReturnTypeAnnotation(node);
+					const result: PythonFunctionDefinitionResult = {
+						queryName: "python-function-definitions",
+						functionName: extractPythonFunctionName(node),
+						parameters: extractFunctionParameters(node),
+						isAsync: isAsyncFunction(node),
+						decorators: extractDecorators(node),
+						location: extractLocation(node),
+						nodeText: node.text,
+					};
+					if (returnType) result.returnType = returnType;
+					return result;
+				})
+				.filter(
+					(result): result is PythonFunctionDefinitionResult => result !== null,
+				);
 		},
 	};
 
@@ -63,14 +73,22 @@ export const pythonClassDefinitions: QueryFunction<PythonClassDefinitionResult> 
 			matches: QueryMatch[],
 			_context: QueryExecutionContext,
 		): PythonClassDefinitionResult[] => {
-			return matches.map((match) => ({
-				queryName: "python-class-definitions",
-				className: extractPythonClassName(match.node),
-				baseClasses: extractBaseClasses(match.node),
-				decorators: extractDecorators(match.node),
-				location: extractLocation(match.node),
-				nodeText: match.node.text,
-			}));
+			return matches
+				.map((match) => {
+					const node = match.captures[0]?.node;
+					if (!node) return null;
+					return {
+						queryName: "python-class-definitions",
+						className: extractPythonClassName(node),
+						baseClasses: extractBaseClasses(node),
+						decorators: extractDecorators(node),
+						location: extractLocation(node),
+						nodeText: node.text,
+					};
+				})
+				.filter(
+					(result): result is PythonClassDefinitionResult => result !== null,
+				);
 		},
 	};
 
@@ -91,14 +109,25 @@ export const pythonVariableDefinitions: QueryFunction<PythonVariableDefinitionRe
 			matches: QueryMatch[],
 			_context: QueryExecutionContext,
 		): PythonVariableDefinitionResult[] => {
-			return matches.map((match) => ({
-				queryName: "python-variable-definitions",
-				variableName: extractVariableName(match.node),
-				variableType: extractVariableTypeAnnotation(match.node),
-				initialValue: extractInitialValue(match.node),
-				location: extractLocation(match.node),
-				nodeText: match.node.text,
-			}));
+			return matches
+				.map((match) => {
+					const node = match.captures[0]?.node;
+					if (!node) return null;
+					const variableType = extractVariableTypeAnnotation(node);
+					const initialValue = extractInitialValue(node);
+					const result: PythonVariableDefinitionResult = {
+						queryName: "python-variable-definitions",
+						variableName: extractVariableName(node),
+						location: extractLocation(node),
+						nodeText: node.text,
+					};
+					if (variableType) result.variableType = variableType;
+					if (initialValue) result.initialValue = initialValue;
+					return result;
+				})
+				.filter(
+					(result): result is PythonVariableDefinitionResult => result !== null,
+				);
 		},
 	};
 
@@ -119,18 +148,28 @@ export const pythonMethodDefinitions: QueryFunction<PythonMethodDefinitionResult
 			matches: QueryMatch[],
 			_context: QueryExecutionContext,
 		): PythonMethodDefinitionResult[] => {
-			return matches.map((match) => ({
-				queryName: "python-method-definitions",
-				methodName: extractPythonFunctionName(match.node),
-				parameters: extractFunctionParameters(match.node),
-				returnType: extractReturnTypeAnnotation(match.node),
-				isAsync: isAsyncFunction(match.node),
-				isClassMethod: isClassMethod(match.node),
-				isStaticMethod: isStaticMethod(match.node),
-				decorators: extractDecorators(match.node),
-				location: extractLocation(match.node),
-				nodeText: match.node.text,
-			}));
+			return matches
+				.map((match) => {
+					const node = match.captures[0]?.node;
+					if (!node) return null;
+					const returnType = extractReturnTypeAnnotation(node);
+					const result: PythonMethodDefinitionResult = {
+						queryName: "python-method-definitions",
+						methodName: extractPythonFunctionName(node),
+						parameters: extractFunctionParameters(node),
+						isAsync: isAsyncFunction(node),
+						isClassMethod: isClassMethod(node),
+						isStaticMethod: isStaticMethod(node),
+						decorators: extractDecorators(node),
+						location: extractLocation(node),
+						nodeText: node.text,
+					};
+					if (returnType) result.returnType = returnType;
+					return result;
+				})
+				.filter(
+					(result): result is PythonMethodDefinitionResult => result !== null,
+				);
 		},
 	};
 

@@ -1,113 +1,85 @@
 {
-  "timestamp": "2025-09-29T01:12:36.314Z",
-  "testSourceCode": "\nimport React, { useState, useEffect as useAsyncEffect } from 'react';\nimport { User, Profile } from './types/User';\nimport type { FC, ReactNode } from 'react';\nimport type { APIResponse } from '@/api/types';\nimport * as utils from './utils';\nimport defaultLogger from './logger';\nimport axios from 'axios';\n\n// 추가 import 패턴들\nimport { debounce } from 'lodash';\nimport type { ComponentProps } from 'react';\nimport * as Icons from '@heroicons/react/24/outline';\nimport moment from 'moment';\n\nexport const App: FC = () => {\n  const [user, setUser] = useState<User | null>(null);\n  const [data, setData] = useState<APIResponse | null>(null);\n\n  useAsyncEffect(() => {\n    // Component logic here\n    const debouncedFetch = debounce(() => {\n      axios.get('/api/user').then(response => {\n        setData(response.data);\n      });\n    }, 300);\n\n    debouncedFetch();\n  }, []);\n\n  return React.createElement('div', null,\n    React.createElement(Icons.UserIcon, null),\n    'Hello World - ',\n    moment().format('YYYY-MM-DD')\n  );\n};\n\nexport default App;\n",
-  "result": {
-    "analysisType": "typescript-analysis",
-    "typeImports": [
-      {
-        "typeName": "FC",
-        "source": "react",
-        "importType": "named",
-        "usageContext": "component-type",
-        "location": {
-          "line": 4,
-          "column": 13
-        }
-      },
-      {
-        "typeName": "ReactNode",
-        "source": "react",
-        "importType": "named",
-        "usageContext": "props-type",
-        "location": {
-          "line": 4,
-          "column": 17
-        }
-      },
-      {
-        "typeName": "APIResponse",
-        "source": "@/api/types",
-        "importType": "named",
-        "usageContext": "data-type",
-        "location": {
-          "line": 5,
-          "column": 13
-        }
-      },
-      {
-        "typeName": "ComponentProps",
-        "source": "react",
-        "importType": "named",
-        "usageContext": "props-type",
-        "location": {
-          "line": 12,
-          "column": 13
-        }
-      }
-    ],
-    "typeUsagePatterns": {
-      "componentTypes": [
-        "FC"
-      ],
-      "dataTypes": [
-        "APIResponse",
-        "User"
-      ],
-      "utilityTypes": [
-        "ReactNode",
-        "ComponentProps"
-      ],
-      "totalTypeImports": 4,
-      "typeOnlyImports": 4,
-      "mixedImports": 0
-    },
-    "typeScriptFeatures": {
-      "generics": [
-        "useState<User | null>",
-        "useState<APIResponse | null>"
-      ],
-      "typeAnnotations": [
-        "FC",
-        "User | null",
-        "APIResponse | null"
-      ],
-      "typeAssertions": [],
-      "interfaces": [],
-      "typeAliases": []
-    }
-  },
-  "metadata": {
-    "nodeVersion": "v22.17.1",
-    "testDescription": "Query combination execution results",
-    "totalImportStatements": 8,
-    "expectedPatterns": {
-      "namedImports": [
-        "useState",
-        "useEffect as useAsyncEffect",
-        "User",
-        "Profile",
-        "FC",
-        "ReactNode",
-        "APIResponse",
-        "debounce",
-        "ComponentProps"
-      ],
-      "defaultImports": [
-        "React",
-        "defaultLogger",
-        "axios",
-        "moment"
-      ],
-      "namespaceImports": [
-        "utils",
-        "Icons"
-      ],
-      "typeImports": [
-        "FC",
-        "ReactNode",
-        "APIResponse",
-        "ComponentProps"
-      ]
-    }
-  }
+	"timestamp": "2025-09-29T01:12:36.314Z",
+	"testSourceCode": "\nimport React, { useState, useEffect as useAsyncEffect } from 'react';\nimport { User, Profile } from './types/User';\nimport type { FC, ReactNode } from 'react';\nimport type { APIResponse } from '@/api/types';\nimport * as utils from './utils';\nimport defaultLogger from './logger';\nimport axios from 'axios';\n\n// 추가 import 패턴들\nimport { debounce } from 'lodash';\nimport type { ComponentProps } from 'react';\nimport * as Icons from '@heroicons/react/24/outline';\nimport moment from 'moment';\n\nexport const App: FC = () => {\n  const [user, setUser] = useState<User | null>(null);\n  const [data, setData] = useState<APIResponse | null>(null);\n\n  useAsyncEffect(() => {\n    // Component logic here\n    const debouncedFetch = debounce(() => {\n      axios.get('/api/user').then(response => {\n        setData(response.data);\n      });\n    }, 300);\n\n    debouncedFetch();\n  }, []);\n\n  return React.createElement('div', null,\n    React.createElement(Icons.UserIcon, null),\n    'Hello World - ',\n    moment().format('YYYY-MM-DD')\n  );\n};\n\nexport default App;\n",
+	"result": {
+		"analysisType": "typescript-analysis",
+		"typeImports": [
+			{
+				"typeName": "FC",
+				"source": "react",
+				"importType": "named",
+				"usageContext": "component-type",
+				"location": {
+					"line": 4,
+					"column": 13
+				}
+			},
+			{
+				"typeName": "ReactNode",
+				"source": "react",
+				"importType": "named",
+				"usageContext": "props-type",
+				"location": {
+					"line": 4,
+					"column": 17
+				}
+			},
+			{
+				"typeName": "APIResponse",
+				"source": "@/api/types",
+				"importType": "named",
+				"usageContext": "data-type",
+				"location": {
+					"line": 5,
+					"column": 13
+				}
+			},
+			{
+				"typeName": "ComponentProps",
+				"source": "react",
+				"importType": "named",
+				"usageContext": "props-type",
+				"location": {
+					"line": 12,
+					"column": 13
+				}
+			}
+		],
+		"typeUsagePatterns": {
+			"componentTypes": ["FC"],
+			"dataTypes": ["APIResponse", "User"],
+			"utilityTypes": ["ReactNode", "ComponentProps"],
+			"totalTypeImports": 4,
+			"typeOnlyImports": 4,
+			"mixedImports": 0
+		},
+		"typeScriptFeatures": {
+			"generics": ["useState<User | null>", "useState<APIResponse | null>"],
+			"typeAnnotations": ["FC", "User | null", "APIResponse | null"],
+			"typeAssertions": [],
+			"interfaces": [],
+			"typeAliases": []
+		}
+	},
+	"metadata": {
+		"nodeVersion": "v22.17.1",
+		"testDescription": "Query combination execution results",
+		"totalImportStatements": 8,
+		"expectedPatterns": {
+			"namedImports": [
+				"useState",
+				"useEffect as useAsyncEffect",
+				"User",
+				"Profile",
+				"FC",
+				"ReactNode",
+				"APIResponse",
+				"debounce",
+				"ComponentProps"
+			],
+			"defaultImports": ["React", "defaultLogger", "axios", "moment"],
+			"namespaceImports": ["utils", "Icons"],
+			"typeImports": ["FC", "ReactNode", "APIResponse", "ComponentProps"]
+		}
+	}
 }

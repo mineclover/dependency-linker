@@ -1,363 +1,216 @@
-# Test Optimization Framework - Architecture Overview
+# Multi-Language Dependency Linker - Architecture Overview
 
-## Table of Contents
-- [Overview](#overview)
-- [Design Principles](#design-principles)
-- [Core Architecture](#core-architecture)
-- [Module Structure](#module-structure)
-- [Data Flow](#data-flow)
-- [Service Layer](#service-layer)
-- [Error Handling](#error-handling)
-- [Performance Considerations](#performance-considerations)
+## System Architecture (v3.0.0)
 
-## Overview
+The Multi-Language Dependency Linker follows a **Query-Centric Architecture** with strict separation between parsing, query execution, and result mapping across multiple programming languages.
 
-The Test Optimization Framework is a comprehensive TypeScript-based system designed to analyze, categorize, and optimize test suites for improved performance, reliability, and maintainability. The framework implements a modular, extensible architecture that supports multiple optimization strategies and real-time performance monitoring.
+### Core Design Principles
 
-### Key Objectives
-- **Performance**: Target <1.5s execution time for optimized test suites
-- **Reliability**: Achieve >99% pass rate through flaky test elimination
-- **Maintainability**: Reduce test count to ~250 while preserving coverage
-- **Scalability**: Support concurrent optimization of multiple test suites
+1. **Query-First Design**: All analysis operations flow through the centralized query system
+2. **Language Agnostic**: Unified interfaces support multiple programming languages
+3. **Parser Isolation**: Parsers focus purely on source code → AST conversion
+4. **Type Safety**: Comprehensive TypeScript type system with zero `any` types
+5. **Performance**: Tree-sitter based parsing with intelligent caching
 
-## Design Principles
-
-### 1. Separation of Concerns
-The framework is organized into distinct layers with clear responsibilities:
-- **Models**: Data structures and type definitions
-- **Services**: Business logic and optimization algorithms
-- **Utilities**: Helper functions and common operations
-- **Interfaces**: Contracts for extensibility
-
-### 2. Modularity and Extensibility
-Each component is designed to be:
-- **Independently testable**
-- **Easily replaceable**
-- **Configurable**
-- **Extensible through well-defined interfaces**
-
-### 3. Type Safety
-Comprehensive TypeScript typing ensures:
-- **Compile-time error detection**
-- **Enhanced developer experience**
-- **Self-documenting code**
-- **Refactoring safety**
-
-### 4. Error Handling
-Standardized error handling provides:
-- **Consistent error reporting**
-- **Detailed context information**
-- **Recovery strategies**
-- **User-friendly error messages**
-
-## Core Architecture
+## Architectural Layers
 
 ```
-┌─────────────────────────────────────────────────────────────────┐
-│                   Test Optimization Framework                   │
-├─────────────────────────────────────────────────────────────────┤
-│                     Public API Layer                           │
-│  ┌─────────────────┐ ┌─────────────────┐ ┌─────────────────┐   │
-│  │ Framework Entry │ │ Service Exports │ │ Model Exports   │   │
-│  │     Point       │ │                 │ │                 │   │
-│  └─────────────────┘ └─────────────────┘ └─────────────────┘   │
-├─────────────────────────────────────────────────────────────────┤
-│                    Service Layer                               │
-│  ┌─────────────────┐ ┌─────────────────┐ ┌─────────────────┐   │
-│  │  TestAnalyzer   │ │ TestOptimizer   │ │PerformanceTracker │
-│  │                 │ │                 │ │                 │   │
-│  │ - File scanning │ │ - Strategy exec │ │ - Metric capture│   │
-│  │ - Opportunity   │ │ - Validation    │ │ - Baseline mgmt │   │
-│  │   identification│ │ - Impact calc   │ │ - Real-time mon │   │
-│  └─────────────────┘ └─────────────────┘ └─────────────────┘   │
-├─────────────────────────────────────────────────────────────────┤
-│                     Model Layer                                │
-│  ┌─────────────────┐ ┌─────────────────┐ ┌─────────────────┐   │
-│  │   TestSuite     │ │ OptimizationOpp │ │ PerformanceBase │   │
-│  │                 │ │                 │ │                 │   │
-│  │ - Test cases    │ │ - Strategies    │ │ - Metrics       │   │
-│  │ - Categories    │ │ - Impact assess │ │ - Comparisons   │   │
-│  │ - Metadata      │ │ - Risk levels   │ │ - Trends        │   │
-│  └─────────────────┘ └─────────────────┘ └─────────────────┘   │
-├─────────────────────────────────────────────────────────────────┤
-│                   Infrastructure Layer                         │
-│  ┌─────────────────┐ ┌─────────────────┐ ┌─────────────────┐   │
-│  │ Error Handling  │ │   Constants     │ │   Utilities     │   │
-│  │                 │ │                 │ │                 │   │
-│  │ - Custom errors │ │ - Performance   │ │ - Type guards   │   │
-│  │ - Error utils   │ │   targets       │ │ - Helpers       │   │
-│  │ - Recovery      │ │ - Config values │ │ - Validators    │   │
-│  └─────────────────┘ └─────────────────┘ └─────────────────┘   │
-└─────────────────────────────────────────────────────────────────┘
+┌─────────────────────────────────────────────┐
+│          Application Layer                   │
+│        (CLI Tools, API Usage)               │
+└─────────────────────────────────────────────┘
+                       ↓
+┌─────────────────────────────────────────────┐
+│         Query Execution Layer               │
+│    (QueryEngine, CustomKeyMapper)          │
+└─────────────────────────────────────────────┘
+                       ↓
+┌─────────────────────────────────────────────┐
+│       Parser Abstraction Layer             │
+│         (ParserFactory)                     │
+└─────────────────────────────────────────────┘
+                       ↓
+┌─────────────────────────────────────────────┐
+│    Language-Specific Parsers               │
+│  (TypeScript, Go, Java, Python)            │
+└─────────────────────────────────────────────┘
+                       ↓
+┌─────────────────────────────────────────────┐
+│      Tree-Sitter Integration               │
+│        (Native AST Parsing)                │
+└─────────────────────────────────────────────┘
 ```
 
-## Module Structure
+## Module Organization
 
-### Core Models (`src/models/optimization/`)
-
-#### Type System (`types.ts`)
-- **Enums**: TestCategory, TestType, Priority, OptimizationType, etc.
-- **Interfaces**: Core data contracts for all framework components
-- **Type Guards**: Runtime type validation functions
-- **Utilities**: Helper functions for type manipulation
-
-#### Data Models
-- **TestSuite**: Collection of related test cases with metadata
-- **TestCase**: Individual test with execution characteristics
-- **OptimizationOpportunity**: Identified improvement with impact assessment
-- **PerformanceBaseline**: Historical performance data for comparison
-
-#### Supporting Infrastructure
-- **Errors**: Standardized error classes with context
-- **Constants**: Framework configuration and defaults
-- **Index**: Centralized exports for public API
-
-### Service Layer (`src/services/optimization/`)
-
-#### Core Services
-
-**TestAnalyzer**
-```typescript
-class TestAnalyzer {
-  // File system scanning and test discovery
-  async analyzeTestFiles(pattern: string): Promise<TestSuiteAnalysis>
-
-  // Optimization opportunity identification
-  findOptimizationOpportunities(suites: TestSuite[]): OptimizationOpportunity[]
-
-  // Duplicate and similarity detection
-  calculateDuplicateSimilarity(test1: TestCase, test2: TestCase): number
-}
+### Core Module Structure
+```
+src/
+├── core/           # Central coordination and type definitions
+│   ├── QueryEngine.ts
+│   ├── QueryResultMap.ts
+│   └── types.ts
+├── parsers/        # Language-specific parsing implementations
+│   ├── base.ts
+│   ├── typescript/
+│   ├── go/
+│   ├── java/
+│   └── python/
+├── queries/        # Language-specific query definitions
+│   ├── typescript/
+│   ├── go/
+│   ├── java/
+│   └── python/
+├── results/        # Result type definitions and processors
+├── utils/          # Shared utilities and helpers
+└── mappers/        # Custom result mapping logic
 ```
 
-**TestOptimizer**
-```typescript
-class TestOptimizer {
-  // Strategy execution and test modification
-  async optimizeTestSuite(suite: TestSuite, options: OptimizationOptions): Promise<OptimizationResult>
+## Key Components
 
-  // Individual optimization application
-  applyOptimization(opportunity: OptimizationOpportunity, suite: TestSuite): TestSuite
+### 1. QueryEngine (Central Coordinator)
+- **Singleton Pattern**: Global instance for centralized query management
+- **Multi-Language Support**: Unified interface for all supported languages
+- **Parallel Execution**: Independent queries execute concurrently
+- **Type Safety**: Strongly typed query execution with result validation
 
-  // Result validation and verification
-  validateOptimization(original: TestSuite, optimized: TestSuite): boolean
-}
-```
+### 2. ParserFactory (Language Detection & Routing)
+- **File Extension Mapping**: Automatic language detection
+- **Parser Registration**: Centralized parser management
+- **Singleton Pattern**: Global parser instance management
+- **Language Isolation**: No direct cross-language dependencies
 
-**PerformanceTracker**
-```typescript
-class PerformanceTracker {
-  // Execution monitoring and metric collection
-  async trackTestSuiteExecution<T>(suite: TestSuite, fn: () => Promise<T>): Promise<T>
+### 3. BaseParser (Abstract Parser Interface)
+- **Pure Parsing Focus**: Source code → Tree-sitter AST only
+- **Performance Monitoring**: Built-in parsing metrics
+- **Standardized Interface**: Consistent API across all languages
+- **No Analysis Logic**: Analysis handled by query system
 
-  // Baseline establishment and management
-  async establishBaseline(suiteId: string): Promise<PerformanceBaseline>
+### 4. Language-Specific Parsers
+- **TypeScript/JavaScript**: Full import/export and type analysis
+- **Go**: Package management and struct analysis
+- **Java**: Class hierarchy and package analysis
+- **Python**: Module system and class analysis
 
-  // Real-time monitoring and alerting
-  async startRealTimeMonitoring(suiteId: string, options: MonitoringOptions): Promise<MonitoringSession>
-}
-```
+### 5. Query System
+- **Tree-sitter Queries**: S-expression based AST pattern matching
+- **Language-Specific**: Tailored queries for each language's syntax
+- **Type-Safe Results**: Strongly typed result processing
+- **Parallel Execution**: Independent query execution
 
-#### Utility Services
-- **TestDataFactory**: Test data generation and fixtures
-- **TestSetupManager**: Test environment setup/teardown
-- **TestAssertions**: Custom assertion helpers
-- **TestBenchmark**: Performance benchmarking utilities
-
-### Framework Entry Point (`src/optimization/`)
-
-**Unified API**
-```typescript
-class TestOptimizationFramework {
-  async initialize(): Promise<void>
-  async optimize(pattern: string): Promise<OptimizationResult>
-  async cleanup(): Promise<void>
-
-  getServices(): { analyzer, optimizer, tracker }
-  getConfig(): OptimizationServiceConfig
-  updateConfig(updates: Partial<OptimizationServiceConfig>): void
-}
-```
+### 6. Result Type System
+- **UnifiedQueryResultMap**: Complete type coverage for all languages
+- **BaseQueryResult**: Common result interface
+- **Language-Specific Results**: Specialized result types per language
+- **Custom Key Mapping**: User-friendly result access patterns
 
 ## Data Flow
 
-### 1. Analysis Phase
+### 1. Parse Phase
 ```
-Test Files (*.test.ts)
-    ↓ [File System Scan]
-TestAnalyzer
-    ↓ [AST Parsing & Analysis]
-TestSuite[] + OptimizationOpportunity[]
+Source Code → ParserFactory → Language Parser → Tree-sitter AST
 ```
 
-### 2. Optimization Phase
+### 2. Query Phase
 ```
-OptimizationOpportunity[]
-    ↓ [Strategy Selection & Prioritization]
-TestOptimizer
-    ↓ [Strategy Application & Validation]
-OptimizedTestSuite[] + OptimizationResult[]
+Tree-sitter AST → QueryEngine → Language Queries → Raw Results
 ```
 
-### 3. Performance Tracking Phase
+### 3. Processing Phase
 ```
-OptimizedTestSuite[]
-    ↓ [Execution Monitoring]
-PerformanceTracker
-    ↓ [Metric Collection & Analysis]
-PerformanceBaseline[] + ValidationResult[]
+Raw Results → Result Processors → Typed Results → CustomKeyMapper
 ```
 
-### 4. Reporting Phase
-```
-OptimizationResult[] + PerformanceMetrics[]
-    ↓ [Aggregation & Analysis]
-ComprehensiveReport
-    ↓ [Output Generation]
-Documentation + Metrics Dashboard
-```
+## Performance Characteristics
 
-## Service Layer
+### Parsing Performance
+- **Single File**: < 200ms parsing time
+- **Batch Processing**: < 10ms per file average
+- **Memory Usage**: < 100MB per session
+- **Cache Hit Rate**: > 80% for repeated operations
 
-### Service Responsibilities
+### Query Performance
+- **Query Execution**: < 50ms per query
+- **Result Processing**: < 10ms per query
+- **Parallel Operations**: Support for 10+ concurrent queries
+- **Memory Efficiency**: Minimal AST retention after processing
 
-#### TestAnalyzer
-- **File Discovery**: Scan file system for test files using glob patterns
-- **Test Parsing**: Extract test cases and metadata from source files
-- **Opportunity Identification**: Analyze tests for optimization potential
-- **Categorization**: Classify tests by priority and optimization strategy
-- **Duplicate Detection**: Identify similar or redundant test cases
+## Error Handling & Reliability
 
-#### TestOptimizer
-- **Strategy Execution**: Apply optimization strategies to test suites
-- **Risk Assessment**: Evaluate potential impact of optimizations
-- **Validation**: Verify that optimizations maintain test coverage
-- **Rollback Support**: Provide mechanisms to undo optimizations
-- **Batch Processing**: Handle multiple optimizations efficiently
+### Parse Error Handling
+- **Graceful Degradation**: Continue processing despite individual file errors
+- **Detailed Error Context**: File path, line number, and error description
+- **Recovery Strategies**: Fallback parsing methods for malformed code
 
-#### PerformanceTracker
-- **Execution Monitoring**: Track test execution metrics in real-time
-- **Baseline Management**: Establish and maintain performance baselines
-- **Regression Detection**: Identify performance degradations
-- **Alert System**: Notify of performance threshold violations
-- **Trend Analysis**: Track performance changes over time
+### Query Error Handling
+- **Query Validation**: Pre-execution query syntax validation
+- **Result Validation**: Type checking and structure validation
+- **Performance Monitoring**: Automatic detection of slow queries
 
-### Service Orchestration
+## Extensibility Points
 
-**OptimizationOrchestrator**
-```typescript
-class OptimizationOrchestrator {
-  // Coordinates all services for complete workflow
-  async optimizeTestSuite(pattern: string): Promise<{
-    analysis: TestSuiteAnalysis;
-    optimizations: OptimizationResult[];
-    performance: PerformanceMetrics;
-  }>
+### Adding New Languages
+1. Create parser in `src/parsers/{language}/`
+2. Implement language-specific queries in `src/queries/{language}/`
+3. Define result types in `src/results/{language}.ts`
+4. Register parser in ParserFactory
 
-  // Manages service lifecycle and configuration
-  async initialize(): Promise<void>
-  async cleanup(): Promise<void>
-}
-```
+### Adding New Query Types
+1. Define query in appropriate language directory
+2. Add result type to language's QueryResultMap
+3. Implement result processor function
+4. Register query in QueryEngine
 
-## Error Handling
+### Custom Result Processing
+1. Extend BaseQueryResult interface
+2. Implement custom processor function
+3. Add to CustomKeyMapping system
+4. Update type definitions
 
-### Error Hierarchy
-```typescript
-OptimizationError (base)
-├── TestAnalysisError
-├── TestOptimizationError
-├── PerformanceTrackingError
-├── ValidationError
-├── BaselineError
-├── ConfigurationError
-├── FileOperationError
-├── TimeoutError
-└── DependencyError
-```
+## Quality Assurance
 
-### Error Context
-Each error includes:
-- **Timestamp**: When the error occurred
-- **Context**: Relevant operation details
-- **Recovery Information**: Suggested next steps
-- **Stack Trace**: Full error trace for debugging
+### Code Quality Standards
+- **TypeScript Strict Mode**: All quality checks enabled
+- **Zero `any` Types**: Complete type safety
+- **Biome Linting**: Automated code formatting and quality
+- **Comprehensive Testing**: Unit, integration, and E2E tests
 
-### Error Handling Strategy
-1. **Fail Fast**: Detect errors early in the pipeline
-2. **Context Preservation**: Maintain operation context through error chain
-3. **User-Friendly Messages**: Convert technical errors to actionable messages
-4. **Recovery Guidance**: Provide clear next steps for error resolution
+### Testing Strategy
+- **Real AST Pipeline Tests**: Actual tree-sitter parser integration
+- **Multi-Language Coverage**: All supported languages tested
+- **Performance Benchmarking**: Automated performance regression detection
+- **Type Safety Validation**: Compile-time type checking
 
-## Performance Considerations
+## Security Considerations
 
-### Optimization Targets
-- **Execution Time**: <1.5 seconds (52% improvement from 3.17s baseline)
-- **Test Count**: ~250 tests (19% reduction from 309 baseline)
-- **Pass Rate**: >99% (improvement from 92.6% baseline)
-- **Memory Usage**: <100MB (17% reduction from 120MB baseline)
+### Code Safety
+- **No Code Execution**: Pure AST analysis, no code evaluation
+- **Sandboxed Parsing**: Isolated tree-sitter parsing environment
+- **Memory Management**: Bounded memory usage and cleanup
+- **Input Validation**: Source code sanitization and validation
 
-### Performance Strategies
+### Dependency Security
+- **Minimal Dependencies**: Lean dependency tree
+- **Version Pinning**: Locked dependency versions
+- **Security Auditing**: Regular dependency security scans
+- **Tree-sitter Safety**: Native library with safety guarantees
 
-#### Parallel Processing
-- **Concurrent Analysis**: Analyze multiple test files simultaneously
-- **Batch Optimization**: Apply optimizations in parallel where safe
-- **Async Operations**: Use Promise-based APIs for I/O operations
+## Future Architecture Evolution
 
-#### Memory Management
-- **Lazy Loading**: Load test data only when needed
-- **Memory Monitoring**: Track memory usage during optimization
-- **Garbage Collection**: Explicit cleanup of large objects
+### Planned Enhancements
+- **Language Server Protocol**: LSP integration for enhanced analysis
+- **Distributed Processing**: Multi-node analysis capabilities
+- **Incremental Parsing**: Delta parsing for large codebases
+- **Machine Learning**: AI-enhanced pattern recognition
 
-#### Caching Strategy
-- **AST Caching**: Cache parsed test file ASTs
-- **Baseline Caching**: Store performance baselines persistently
-- **Result Caching**: Cache optimization results for repeated runs
+### Scalability Roadmap
+- **Horizontal Scaling**: Multi-process query execution
+- **Cache Optimization**: Distributed caching layer
+- **Stream Processing**: Real-time code analysis pipelines
+- **Cloud Integration**: Serverless analysis functions
 
-#### Monitoring and Alerting
-- **Real-time Metrics**: Track performance during execution
-- **Threshold Alerts**: Notify when performance targets are exceeded
-- **Trend Analysis**: Monitor performance changes over time
+---
 
-### Scalability Considerations
-
-#### Horizontal Scaling
-- **Service Isolation**: Services can be deployed independently
-- **Stateless Design**: Services maintain no persistent state
-- **Load Distribution**: Work can be distributed across instances
-
-#### Vertical Scaling
-- **Memory Efficiency**: Optimized data structures and algorithms
-- **CPU Utilization**: Efficient processing algorithms
-- **I/O Optimization**: Minimized file system operations
-
-## Extension Points
-
-### Custom Optimization Strategies
-```typescript
-interface OptimizationStrategy {
-  analyze(suite: TestSuite): OptimizationOpportunity[];
-  apply(opportunity: OptimizationOpportunity, suite: TestSuite): TestSuite;
-  validate(original: TestSuite, optimized: TestSuite): boolean;
-}
-```
-
-### Custom Performance Metrics
-```typescript
-interface PerformanceMetric {
-  name: string;
-  collect(suite: TestSuite): Promise<number>;
-  validate(baseline: number, current: number): boolean;
-}
-```
-
-### Custom Analysis Rules
-```typescript
-interface AnalysisRule {
-  name: string;
-  matches(testCase: TestCase): boolean;
-  analyze(testCase: TestCase): OptimizationOpportunity[];
-}
-```
-
-This architecture provides a solid foundation for test optimization while maintaining flexibility for future enhancements and extensions.
+**Architecture Version**: 3.0.0
+**Last Updated**: 2025-09-29
+**Compliance**: Query-Centric Multi-Language AST Analysis Framework

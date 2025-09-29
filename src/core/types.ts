@@ -30,20 +30,12 @@ export const LANGUAGE_GROUPS: Record<LanguageGroup, SupportedLanguage[]> = {
 	python: ["python"],
 } as const;
 
-// ===== AST TYPES =====
-export interface ASTNode {
-	type: string;
-	text: string;
-	startPosition: { row: number; column: number };
-	endPosition: { row: number; column: number };
-	children?: ASTNode[];
-}
-
+// ===== TREE-SITTER NATIVE TYPES =====
 export interface QueryMatch<TCaptureNames extends string = string> {
-	node: ASTNode;
+	queryName: string;
 	captures: Array<{
 		name: TCaptureNames;
-		node: ASTNode;
+		node: Parser.SyntaxNode;
 	}>;
 }
 

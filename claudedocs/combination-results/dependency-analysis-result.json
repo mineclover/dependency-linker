@@ -1,233 +1,199 @@
 {
-  "timestamp": "2025-09-29T01:12:36.314Z",
-  "testSourceCode": "\nimport React, { useState, useEffect as useAsyncEffect } from 'react';\nimport { User, Profile } from './types/User';\nimport type { FC, ReactNode } from 'react';\nimport type { APIResponse } from '@/api/types';\nimport * as utils from './utils';\nimport defaultLogger from './logger';\nimport axios from 'axios';\n\n// 추가 import 패턴들\nimport { debounce } from 'lodash';\nimport type { ComponentProps } from 'react';\nimport * as Icons from '@heroicons/react/24/outline';\nimport moment from 'moment';\n\nexport const App: FC = () => {\n  const [user, setUser] = useState<User | null>(null);\n  const [data, setData] = useState<APIResponse | null>(null);\n\n  useAsyncEffect(() => {\n    // Component logic here\n    const debouncedFetch = debounce(() => {\n      axios.get('/api/user').then(response => {\n        setData(response.data);\n      });\n    }, 300);\n\n    debouncedFetch();\n  }, []);\n\n  return React.createElement('div', null,\n    React.createElement(Icons.UserIcon, null),\n    'Hello World - ',\n    moment().format('YYYY-MM-DD')\n  );\n};\n\nexport default App;\n",
-  "result": {
-    "analysisType": "dependency-analysis",
-    "externalDependencies": [
-      {
-        "packageName": "react",
-        "importCount": 6,
-        "importedItems": [
-          "React",
-          "useState",
-          "useEffect",
-          "FC",
-          "ReactNode",
-          "ComponentProps"
-        ],
-        "isDevDependency": false,
-        "usagePattern": "mixed"
-      },
-      {
-        "packageName": "axios",
-        "importCount": 1,
-        "importedItems": [
-          "axios"
-        ],
-        "isDevDependency": false,
-        "usagePattern": "runtime"
-      },
-      {
-        "packageName": "lodash",
-        "importCount": 1,
-        "importedItems": [
-          "debounce"
-        ],
-        "isDevDependency": false,
-        "usagePattern": "runtime"
-      },
-      {
-        "packageName": "@heroicons/react",
-        "importCount": 1,
-        "importedItems": [
-          "Icons"
-        ],
-        "isDevDependency": false,
-        "usagePattern": "runtime"
-      },
-      {
-        "packageName": "moment",
-        "importCount": 1,
-        "importedItems": [
-          "moment"
-        ],
-        "isDevDependency": false,
-        "usagePattern": "runtime"
-      },
-      {
-        "packageName": "@/api/types",
-        "importCount": 1,
-        "importedItems": [
-          "APIResponse"
-        ],
-        "isDevDependency": false,
-        "usagePattern": "types"
-      }
-    ],
-    "internalDependencies": [
-      {
-        "modulePath": "./types/User",
-        "importCount": 2,
-        "importedItems": [
-          "User",
-          "Profile"
-        ],
-        "relativeDepth": 1,
-        "moduleType": "types"
-      },
-      {
-        "modulePath": "./utils",
-        "importCount": 1,
-        "importedItems": [
-          "utils"
-        ],
-        "relativeDepth": 1,
-        "moduleType": "utility"
-      },
-      {
-        "modulePath": "./logger",
-        "importCount": 1,
-        "importedItems": [
-          "defaultLogger"
-        ],
-        "relativeDepth": 1,
-        "moduleType": "service"
-      }
-    ],
-    "dependencyGraph": {
-      "nodes": [
-        {
-          "id": "App.tsx",
-          "type": "entry"
-        },
-        {
-          "id": "react",
-          "type": "external"
-        },
-        {
-          "id": "./types/User",
-          "type": "internal"
-        },
-        {
-          "id": "@/api/types",
-          "type": "external"
-        },
-        {
-          "id": "./utils",
-          "type": "internal"
-        },
-        {
-          "id": "./logger",
-          "type": "internal"
-        },
-        {
-          "id": "axios",
-          "type": "external"
-        },
-        {
-          "id": "lodash",
-          "type": "external"
-        },
-        {
-          "id": "@heroicons/react/24/outline",
-          "type": "external"
-        },
-        {
-          "id": "moment",
-          "type": "external"
-        }
-      ],
-      "edges": [
-        {
-          "from": "App.tsx",
-          "to": "react",
-          "type": "import"
-        },
-        {
-          "from": "App.tsx",
-          "to": "./types/User",
-          "type": "import"
-        },
-        {
-          "from": "App.tsx",
-          "to": "@/api/types",
-          "type": "type-import"
-        },
-        {
-          "from": "App.tsx",
-          "to": "./utils",
-          "type": "import"
-        },
-        {
-          "from": "App.tsx",
-          "to": "./logger",
-          "type": "import"
-        },
-        {
-          "from": "App.tsx",
-          "to": "axios",
-          "type": "import"
-        },
-        {
-          "from": "App.tsx",
-          "to": "lodash",
-          "type": "import"
-        },
-        {
-          "from": "App.tsx",
-          "to": "@heroicons/react/24/outline",
-          "type": "import"
-        },
-        {
-          "from": "App.tsx",
-          "to": "moment",
-          "type": "import"
-        }
-      ]
-    },
-    "riskAnalysis": {
-      "circularDependencies": [],
-      "heavyDependencies": [
-        "react"
-      ],
-      "unusedImports": [],
-      "typeOnlyDependencies": [
-        "@/api/types"
-      ]
-    }
-  },
-  "metadata": {
-    "nodeVersion": "v22.17.1",
-    "testDescription": "Query combination execution results",
-    "totalImportStatements": 8,
-    "expectedPatterns": {
-      "namedImports": [
-        "useState",
-        "useEffect as useAsyncEffect",
-        "User",
-        "Profile",
-        "FC",
-        "ReactNode",
-        "APIResponse",
-        "debounce",
-        "ComponentProps"
-      ],
-      "defaultImports": [
-        "React",
-        "defaultLogger",
-        "axios",
-        "moment"
-      ],
-      "namespaceImports": [
-        "utils",
-        "Icons"
-      ],
-      "typeImports": [
-        "FC",
-        "ReactNode",
-        "APIResponse",
-        "ComponentProps"
-      ]
-    }
-  }
+	"timestamp": "2025-09-29T01:12:36.314Z",
+	"testSourceCode": "\nimport React, { useState, useEffect as useAsyncEffect } from 'react';\nimport { User, Profile } from './types/User';\nimport type { FC, ReactNode } from 'react';\nimport type { APIResponse } from '@/api/types';\nimport * as utils from './utils';\nimport defaultLogger from './logger';\nimport axios from 'axios';\n\n// 추가 import 패턴들\nimport { debounce } from 'lodash';\nimport type { ComponentProps } from 'react';\nimport * as Icons from '@heroicons/react/24/outline';\nimport moment from 'moment';\n\nexport const App: FC = () => {\n  const [user, setUser] = useState<User | null>(null);\n  const [data, setData] = useState<APIResponse | null>(null);\n\n  useAsyncEffect(() => {\n    // Component logic here\n    const debouncedFetch = debounce(() => {\n      axios.get('/api/user').then(response => {\n        setData(response.data);\n      });\n    }, 300);\n\n    debouncedFetch();\n  }, []);\n\n  return React.createElement('div', null,\n    React.createElement(Icons.UserIcon, null),\n    'Hello World - ',\n    moment().format('YYYY-MM-DD')\n  );\n};\n\nexport default App;\n",
+	"result": {
+		"analysisType": "dependency-analysis",
+		"externalDependencies": [
+			{
+				"packageName": "react",
+				"importCount": 6,
+				"importedItems": [
+					"React",
+					"useState",
+					"useEffect",
+					"FC",
+					"ReactNode",
+					"ComponentProps"
+				],
+				"isDevDependency": false,
+				"usagePattern": "mixed"
+			},
+			{
+				"packageName": "axios",
+				"importCount": 1,
+				"importedItems": ["axios"],
+				"isDevDependency": false,
+				"usagePattern": "runtime"
+			},
+			{
+				"packageName": "lodash",
+				"importCount": 1,
+				"importedItems": ["debounce"],
+				"isDevDependency": false,
+				"usagePattern": "runtime"
+			},
+			{
+				"packageName": "@heroicons/react",
+				"importCount": 1,
+				"importedItems": ["Icons"],
+				"isDevDependency": false,
+				"usagePattern": "runtime"
+			},
+			{
+				"packageName": "moment",
+				"importCount": 1,
+				"importedItems": ["moment"],
+				"isDevDependency": false,
+				"usagePattern": "runtime"
+			},
+			{
+				"packageName": "@/api/types",
+				"importCount": 1,
+				"importedItems": ["APIResponse"],
+				"isDevDependency": false,
+				"usagePattern": "types"
+			}
+		],
+		"internalDependencies": [
+			{
+				"modulePath": "./types/User",
+				"importCount": 2,
+				"importedItems": ["User", "Profile"],
+				"relativeDepth": 1,
+				"moduleType": "types"
+			},
+			{
+				"modulePath": "./utils",
+				"importCount": 1,
+				"importedItems": ["utils"],
+				"relativeDepth": 1,
+				"moduleType": "utility"
+			},
+			{
+				"modulePath": "./logger",
+				"importCount": 1,
+				"importedItems": ["defaultLogger"],
+				"relativeDepth": 1,
+				"moduleType": "service"
+			}
+		],
+		"dependencyGraph": {
+			"nodes": [
+				{
+					"id": "App.tsx",
+					"type": "entry"
+				},
+				{
+					"id": "react",
+					"type": "external"
+				},
+				{
+					"id": "./types/User",
+					"type": "internal"
+				},
+				{
+					"id": "@/api/types",
+					"type": "external"
+				},
+				{
+					"id": "./utils",
+					"type": "internal"
+				},
+				{
+					"id": "./logger",
+					"type": "internal"
+				},
+				{
+					"id": "axios",
+					"type": "external"
+				},
+				{
+					"id": "lodash",
+					"type": "external"
+				},
+				{
+					"id": "@heroicons/react/24/outline",
+					"type": "external"
+				},
+				{
+					"id": "moment",
+					"type": "external"
+				}
+			],
+			"edges": [
+				{
+					"from": "App.tsx",
+					"to": "react",
+					"type": "import"
+				},
+				{
+					"from": "App.tsx",
+					"to": "./types/User",
+					"type": "import"
+				},
+				{
+					"from": "App.tsx",
+					"to": "@/api/types",
+					"type": "type-import"
+				},
+				{
+					"from": "App.tsx",
+					"to": "./utils",
+					"type": "import"
+				},
+				{
+					"from": "App.tsx",
+					"to": "./logger",
+					"type": "import"
+				},
+				{
+					"from": "App.tsx",
+					"to": "axios",
+					"type": "import"
+				},
+				{
+					"from": "App.tsx",
+					"to": "lodash",
+					"type": "import"
+				},
+				{
+					"from": "App.tsx",
+					"to": "@heroicons/react/24/outline",
+					"type": "import"
+				},
+				{
+					"from": "App.tsx",
+					"to": "moment",
+					"type": "import"
+				}
+			]
+		},
+		"riskAnalysis": {
+			"circularDependencies": [],
+			"heavyDependencies": ["react"],
+			"unusedImports": [],
+			"typeOnlyDependencies": ["@/api/types"]
+		}
+	},
+	"metadata": {
+		"nodeVersion": "v22.17.1",
+		"testDescription": "Query combination execution results",
+		"totalImportStatements": 8,
+		"expectedPatterns": {
+			"namedImports": [
+				"useState",
+				"useEffect as useAsyncEffect",
+				"User",
+				"Profile",
+				"FC",
+				"ReactNode",
+				"APIResponse",
+				"debounce",
+				"ComponentProps"
+			],
+			"defaultImports": ["React", "defaultLogger", "axios", "moment"],
+			"namespaceImports": ["utils", "Icons"],
+			"typeImports": ["FC", "ReactNode", "APIResponse", "ComponentProps"]
+		}
+	}
 }

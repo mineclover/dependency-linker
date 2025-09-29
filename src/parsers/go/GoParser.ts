@@ -81,7 +81,6 @@ export class GoParser extends BaseParser {
 			);
 		}
 	}
-
 }
 
 export default GoParser;

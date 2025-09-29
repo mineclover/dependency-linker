@@ -32,12 +32,18 @@ export const pythonImportSources: QueryFunction<PythonImportSourceResult> = {
 		matches: QueryMatch[],
 		_context: QueryExecutionContext,
 	): PythonImportSourceResult[] => {
-		return matches.map((match) => ({
-			queryName: "python-import-sources",
-			source: extractPythonModulePath(match.node),
-			location: extractLocation(match.node),
-			nodeText: match.node.text,
-		}));
+		return matches
+			.map((match) => {
+				const node = match.captures[0]?.node;
+				if (!node) return null;
+				return {
+					queryName: "python-import-sources",
+					source: extractPythonModulePath(node),
+					location: extractLocation(node),
+					nodeText: node.text,
+				};
+			})
+			.filter((result): result is PythonImportSourceResult => result !== null);
 	},
 };
 
@@ -58,15 +64,25 @@ export const pythonImportStatements: QueryFunction<PythonImportStatementResult> 
 			matches: QueryMatch[],
 			_context: QueryExecutionContext,
 		): PythonImportStatementResult[] => {
-			return matches.map((match) => ({
-				queryName: "python-import-statements",
-				modulePath: extractPythonModulePath(match.node),
-				isFromImport: isFromImport(match.node),
-				isRelativeImport: isRelativeImport(match.node),
-				alias: extractImportAlias(match.node),
-				location: extractLocation(match.node),
-				nodeText: match.node.text,
-			}));
+			return matches
+				.map((match) => {
+					const node = match.captures[0]?.node;
+					if (!node) return null;
+					const alias = extractImportAlias(node);
+					const result: PythonImportStatementResult = {
+						queryName: "python-import-statements",
+						modulePath: extractPythonModulePath(node),
+						isFromImport: isFromImport(node),
+						isRelativeImport: isRelativeImport(node),
+						location: extractLocation(node),
+						nodeText: node.text,
+					};
+					if (alias) result.alias = alias;
+					return result;
+				})
+				.filter(
+					(result): result is PythonImportStatementResult => result !== null,
+				);
 		},
 	};
 
@@ -87,15 +103,19 @@ export const pythonFromImports: QueryFunction<PythonFromImportResult> = {
 		_context: QueryExecutionContext,
 	): PythonFromImportResult[] => {
 		return matches
-			.filter((match) => isFromImport(match.node))
-			.map((match) => ({
-				queryName: "python-from-imports",
-				modulePath: extractFromModulePath(match.node),
-				importedNames: extractFromImportNames(match.node),
-				isRelative: isRelativeImport(match.node),
-				location: extractLocation(match.node),
-				nodeText: match.node.text,
-			}));
+			.map((match) => {
+				const node = match.captures[0]?.node;
+				if (!node || !isFromImport(node)) return null;
+				return {
+					queryName: "python-from-imports",
+					modulePath: extractFromModulePath(node),
+					importedNames: extractFromImportNames(node),
+					isRelative: isRelativeImport(node),
+					location: extractLocation(node),
+					nodeText: node.text,
+				};
+			})
+			.filter((result): result is PythonFromImportResult => result !== null);
 	},
 };
 
@@ -116,15 +136,19 @@ export const pythonImportAs: QueryFunction<PythonImportAsResult> = {
 		_context: QueryExecutionContext,
 	): PythonImportAsResult[] => {
 		return matches
-			.filter((match) => hasImportAlias(match.node))
-			.map((match) => ({
-				queryName: "python-import-as",
-				modulePath: extractPythonModulePath(match.node),
-				originalName: extractOriginalName(match.node),
-				alias: extractImportAlias(match.node)!,
-				location: extractLocation(match.node),
-				nodeText: match.node.text,
-			}));
+			.map((match) => {
+				const node = match.captures[0]?.node;
+				if (!node || !hasImportAlias(node)) return null;
+				return {
+					queryName: "python-import-as",
+					modulePath: extractPythonModulePath(node),
+					originalName: extractOriginalName(node),
+					alias: extractImportAlias(node) || "",
+					location: extractLocation(node),
+					nodeText: node.text,
+				};
+			})
+			.filter((result): result is PythonImportAsResult => result !== null);
 	},
 };
 

@@ -81,7 +81,6 @@ export class PythonParser extends BaseParser {
 			);
 		}
 	}
-
 }
 
 export default PythonParser;

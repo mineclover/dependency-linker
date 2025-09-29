@@ -6,7 +6,7 @@
 import {
 	QueryRegistry,
 	getQueryRegistry,
-	getImportQueries
+	getImportQueries,
 } from "../src/extractors/primary-analysis/core/QueryRegistry";
 
 import {
@@ -14,7 +14,7 @@ import {
 	DynamicCombinationBuilder,
 	CombinationExecutor,
 	executeImportAnalysis,
-	executeJavaScriptAnalysis
+	executeJavaScriptAnalysis,
 } from "../src/extractors/primary-analysis/core/CombinableQuerySystem";
 
 /**
@@ -38,7 +38,7 @@ function testQueryRepository() {
 	// 개별 쿼리 확인
 	console.log("\n🔍 등록된 쿼리들:");
 	const allQueries = repository.getAllQueries();
-	allQueries.forEach(query => {
+	allQueries.forEach((query) => {
 		console.log(`- ${query.id}: ${query.name} (${query.languages.join(", ")})`);
 		console.log(`  Query: ${query.query.trim().substring(0, 50)}...`);
 	});
@@ -46,7 +46,7 @@ function testQueryRepository() {
 	// 개별 타입 확인
 	console.log("\n📋 등록된 타입들:");
 	const allTypes = repository.getAllTypes();
-	allTypes.forEach(type => {
+	allTypes.forEach((type) => {
 		console.log(`- ${type.typeId}: ${type.typeName}`);
 		console.log(`  설명: ${type.description}`);
 	});
@@ -66,7 +66,7 @@ function testQueryTypeBindings() {
 	// Import 분석용 호환 쿼리들 조회
 	const importQueries = registry.getImportAnalysisQueries();
 	console.log(`📦 Import 분석 쿼리들 (${importQueries.length}개):`);
-	importQueries.forEach(item => {
+	importQueries.forEach((item) => {
 		console.log(`- 쿼리: ${item.queryId} → 타입: ${item.typeId}`);
 		console.log(`  ${item.query.name} → ${item.type.typeName}`);
 	});
@@ -74,15 +74,19 @@ function testQueryTypeBindings() {
 	// TypeScript 전용 쿼리들
 	const tsQueries = registry.getTypeScriptQueries();
 	console.log(`\n📘 TypeScript 전용 쿼리들 (${tsQueries.length}개):`);
-	tsQueries.forEach(item => {
-		console.log(`- ${item.queryId} → ${item.typeId} (${item.query.languages.join(", ")})`);
+	tsQueries.forEach((item) => {
+		console.log(
+			`- ${item.queryId} → ${item.typeId} (${item.query.languages.join(", ")})`,
+		);
 	});
 
 	// JavaScript 호환 쿼리들
 	const jsQueries = registry.getJavaScriptQueries();
 	console.log(`\n📗 JavaScript 호환 쿼리들 (${jsQueries.length}개):`);
-	jsQueries.forEach(item => {
-		console.log(`- ${item.queryId} → ${item.typeId} (${item.query.languages.join(", ")})`);
+	jsQueries.forEach((item) => {
+		console.log(
+			`- ${item.queryId} → ${item.typeId} (${item.query.languages.join(", ")})`,
+		);
 	});
 
 	return { importQueries, tsQueries, jsQueries };
@@ -123,7 +127,7 @@ function testCombinableQuerySystem() {
 		"Minimal import analysis with only sources and named imports",
 		["import-sources", "named-imports"],
 		["typescript", "javascript"],
-		"MinimalAnalysisResult"
+		"MinimalAnalysisResult",
 	);
 	console.log("\n🎯 사용자 정의 조합:");
 	console.log(`- ID: ${customCombination.id}`);
@@ -144,11 +148,16 @@ async function testDynamicExecution() {
 	// Import 분석 조합 실행
 	console.log("📦 Import 분석 실행 중...");
 	const importCombination = factory.createImportAnalysisCombination();
-	const importResult = await executor.simulateExecution(importCombination, "typescript");
+	const importResult = await executor.simulateExecution(
+		importCombination,
+		"typescript",
+	);
 
 	console.log("✅ Import 분석 결과:");
 	console.log(`- 조합 ID: ${importResult.combinationId}`);
-	console.log(`- 실행된 쿼리: ${importResult.metadata.executedQueries}/${importResult.metadata.totalQueries}`);
+	console.log(
+		`- 실행된 쿼리: ${importResult.metadata.executedQueries}/${importResult.metadata.totalQueries}`,
+	);
 	console.log(`- 실행 시간: ${importResult.metadata.executionTime}ms`);
 	console.log("- 결과 타입들:");
 	Object.entries(importResult.results).forEach(([typeId, results]) => {
@@ -158,11 +167,16 @@ async function testDynamicExecution() {
 	// JavaScript 분석 조합 실행
 	console.log("\n📗 JavaScript 분석 실행 중...");
 	const jsCombination = factory.createJavaScriptCombination();
-	const jsResult = await executor.simulateExecution(jsCombination, "javascript");
+	const jsResult = await executor.simulateExecution(
+		jsCombination,
+		"javascript",
+	);
 
 	console.log("✅ JavaScript 분석 결과:");
 	console.log(`- 조합 ID: ${jsResult.combinationId}`);
-	console.log(`- 실행된 쿼리: ${jsResult.metadata.executedQueries}/${jsResult.metadata.totalQueries}`);
+	console.log(
+		`- 실행된 쿼리: ${jsResult.metadata.executedQueries}/${jsResult.metadata.totalQueries}`,
+	);
 	console.log("- 결과 타입들:");
 	Object.entries(jsResult.results).forEach(([typeId, results]) => {
 		console.log(`  ${typeId}: ${results.length}개 결과`);
@@ -217,19 +231,39 @@ function validateSystem() {
 
 	// 기본 요구사항 검증
 	const checks = [
-		{ name: "쿼리 저장", passed: report.totalQueries >= 4, detail: `${report.totalQueries}개 쿼리 등록됨` },
-		{ name: "타입 정의", passed: report.totalTypes >= 4, detail: `${report.totalTypes}개 타입 정의됨` },
-		{ name: "바인딩 연결", passed: report.totalBindings >= 4, detail: `${report.totalBindings}개 바인딩 생성됨` },
-		{ name: "다국어 지원", passed: report.languagesSupported.length >= 2, detail: `${report.languagesSupported.join(", ")} 지원` },
-		{ name: "조합 가능성", passed: true, detail: "Import/TypeScript/JavaScript 조합 가능" }
+		{
+			name: "쿼리 저장",
+			passed: report.totalQueries >= 4,
+			detail: `${report.totalQueries}개 쿼리 등록됨`,
+		},
+		{
+			name: "타입 정의",
+			passed: report.totalTypes >= 4,
+			detail: `${report.totalTypes}개 타입 정의됨`,
+		},
+		{
+			name: "바인딩 연결",
+			passed: report.totalBindings >= 4,
+			detail: `${report.totalBindings}개 바인딩 생성됨`,
+		},
+		{
+			name: "다국어 지원",
+			passed: report.languagesSupported.length >= 2,
+			detail: `${report.languagesSupported.join(", ")} 지원`,
+		},
+		{
+			name: "조합 가능성",
+			passed: true,
+			detail: "Import/TypeScript/JavaScript 조합 가능",
+		},
 	];
 
-	checks.forEach(check => {
+	checks.forEach((check) => {
 		const status = check.passed ? "✅" : "❌";
 		console.log(`${status} ${check.name}: ${check.detail}`);
 	});
 
-	const allPassed = checks.every(check => check.passed);
+	const allPassed = checks.every((check) => check.passed);
 	console.log(`\n🎉 전체 검증 결과: ${allPassed ? "성공" : "실패"}`);
 
 	return allPassed;
@@ -261,7 +295,9 @@ async function runAllTests() {
 		const validationResult = validateSystem();
 
 		console.log("\n🎊 === 테스트 완료 ===");
-		console.log(`전체 시스템이 ${validationResult ? "정상적으로" : "부분적으로"} 작동합니다!`);
+		console.log(
+			`전체 시스템이 ${validationResult ? "정상적으로" : "부분적으로"} 작동합니다!`,
+		);
 
 		return {
 			repositoryTest,
@@ -269,9 +305,8 @@ async function runAllTests() {
 			combinationTest,
 			executionTest,
 			typeSafeTest,
-			validationResult
+			validationResult,
 		};
-
 	} catch (error) {
 		console.error("❌ 테스트 실행 중 오류:", error);
 		return null;
@@ -280,7 +315,7 @@ async function runAllTests() {
 
 // 실행
 if (require.main === module) {
-	runAllTests().then(result => {
+	runAllTests().then((result) => {
 		if (result) {
 			console.log("\n✨ 모든 테스트가 완료되었습니다!");
 		}
@@ -294,5 +329,5 @@ export {
 	testDynamicExecution,
 	testTypeSafeCombinations,
 	validateSystem,
-	runAllTests
+	runAllTests,
 };

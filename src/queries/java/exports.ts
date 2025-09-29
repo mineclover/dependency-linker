@@ -33,17 +33,27 @@ export const javaClassDeclarations: QueryFunction<JavaClassDeclarationResult> =
 			matches: QueryMatch[],
 			_context: QueryExecutionContext,
 		): JavaClassDeclarationResult[] => {
-			return matches.map((match) => ({
-				queryName: "java-class-declarations",
-				className: extractJavaClassName(match.node),
-				isPublic: isPublicDeclaration(match.node),
-				isAbstract: isAbstractClass(match.node),
-				isFinal: isFinalClass(match.node),
-				superClass: extractSuperClass(match.node),
-				interfaces: extractImplementedInterfaces(match.node),
-				location: extractLocation(match.node),
-				nodeText: match.node.text,
-			}));
+			return matches
+				.map((match) => {
+					const node = match.captures[0]?.node;
+					if (!node) return null;
+					const superClass = extractSuperClass(node);
+					const result: JavaClassDeclarationResult = {
+						queryName: "java-class-declarations",
+						className: extractJavaClassName(node),
+						isPublic: isPublicDeclaration(node),
+						isAbstract: isAbstractClass(node),
+						isFinal: isFinalClass(node),
+						interfaces: extractImplementedInterfaces(node),
+						location: extractLocation(node),
+						nodeText: node.text,
+					};
+					if (superClass) result.superClass = superClass;
+					return result;
+				})
+				.filter(
+					(result): result is JavaClassDeclarationResult => result !== null,
+				);
 		},
 	};
 
@@ -64,14 +74,22 @@ export const javaInterfaceDeclarations: QueryFunction<JavaInterfaceDeclarationRe
 			matches: QueryMatch[],
 			_context: QueryExecutionContext,
 		): JavaInterfaceDeclarationResult[] => {
-			return matches.map((match) => ({
-				queryName: "java-interface-declarations",
-				interfaceName: extractJavaInterfaceName(match.node),
-				isPublic: isPublicDeclaration(match.node),
-				extendsInterfaces: extractExtendedInterfaces(match.node),
-				location: extractLocation(match.node),
-				nodeText: match.node.text,
-			}));
+			return matches
+				.map((match) => {
+					const node = match.captures[0]?.node;
+					if (!node) return null;
+					return {
+						queryName: "java-interface-declarations",
+						interfaceName: extractJavaInterfaceName(node),
+						isPublic: isPublicDeclaration(node),
+						extendsInterfaces: extractExtendedInterfaces(node),
+						location: extractLocation(node),
+						nodeText: node.text,
+					};
+				})
+				.filter(
+					(result): result is JavaInterfaceDeclarationResult => result !== null,
+				);
 		},
 	};
 
@@ -91,14 +109,20 @@ export const javaEnumDeclarations: QueryFunction<JavaEnumDeclarationResult> = {
 		matches: QueryMatch[],
 		_context: QueryExecutionContext,
 	): JavaEnumDeclarationResult[] => {
-		return matches.map((match) => ({
-			queryName: "java-enum-declarations",
-			enumName: extractJavaEnumName(match.node),
-			isPublic: isPublicDeclaration(match.node),
-			enumValues: extractEnumValues(match.node),
-			location: extractLocation(match.node),
-			nodeText: match.node.text,
-		}));
+		return matches
+			.map((match) => {
+				const node = match.captures[0]?.node;
+				if (!node) return null;
+				return {
+					queryName: "java-enum-declarations",
+					enumName: extractJavaEnumName(node),
+					isPublic: isPublicDeclaration(node),
+					enumValues: extractEnumValues(node),
+					location: extractLocation(node),
+					nodeText: node.text,
+				};
+			})
+			.filter((result): result is JavaEnumDeclarationResult => result !== null);
 	},
 };
 
@@ -119,18 +143,26 @@ export const javaMethodDeclarations: QueryFunction<JavaMethodDeclarationResult> 
 			matches: QueryMatch[],
 			_context: QueryExecutionContext,
 		): JavaMethodDeclarationResult[] => {
-			return matches.map((match) => ({
-				queryName: "java-method-declarations",
-				methodName: extractJavaMethodName(match.node),
-				returnType: extractMethodReturnType(match.node),
-				parameters: extractMethodParameters(match.node),
-				isPublic: isPublicDeclaration(match.node),
-				isStatic: isStaticMethod(match.node),
-				isAbstract: isAbstractMethod(match.node),
-				isFinal: isFinalMethod(match.node),
-				location: extractLocation(match.node),
-				nodeText: match.node.text,
-			}));
+			return matches
+				.map((match) => {
+					const node = match.captures[0]?.node;
+					if (!node) return null;
+					return {
+						queryName: "java-method-declarations",
+						methodName: extractJavaMethodName(node),
+						returnType: extractMethodReturnType(node),
+						parameters: extractMethodParameters(node),
+						isPublic: isPublicDeclaration(node),
+						isStatic: isStaticMethod(node),
+						isAbstract: isAbstractMethod(node),
+						isFinal: isFinalMethod(node),
+						location: extractLocation(node),
+						nodeText: node.text,
+					};
+				})
+				.filter(
+					(result): result is JavaMethodDeclarationResult => result !== null,
+				);
 		},
 	};
 

@@ -58,7 +58,7 @@ const context: QueryExecutionContext = {
   sourceCode: 'import React from "react";',
   language: "typescript",
   filePath: "app.tsx",
-  astNode: parsedASTNode
+  tree: treeSitterTree
 };
 
 // Single query execution
@@ -367,14 +367,13 @@ export const Component = () => <div>Hello</div>;
 `;
 
 const tree = parser.parse(sourceCode);
-const astNode = convertTreeSitterNode(tree.rootNode);
 
 // Execute queries on real AST
 const context = {
   sourceCode,
   language: "typescript",
   filePath: "Component.tsx",
-  astNode
+  tree
 };
 
 const results = await executeQuery("ts-import-sources", matches, context);

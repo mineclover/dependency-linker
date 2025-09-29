@@ -4,10 +4,7 @@
  */
 
 import type Parser from "tree-sitter";
-import type {
-	QueryExecutionContext,
-	SupportedLanguage,
-} from "../core/types";
+import type { QueryExecutionContext, SupportedLanguage } from "../core/types";
 
 export interface ParserOptions {
 	/** 파일 경로 (선택적) */
@@ -89,7 +86,10 @@ export abstract class BaseParser {
 	protected countTreeSitterNodes(node: Parser.SyntaxNode): number {
 		let count = 1;
 		for (let i = 0; i < node.childCount; i++) {
-			count += this.countTreeSitterNodes(node.child(i)!);
+			const child = node.child(i);
+			if (child) {
+				count += this.countTreeSitterNodes(child);
+			}
 		}
 		return count;
 	}

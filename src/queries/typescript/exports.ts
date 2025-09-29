@@ -3,30 +3,23 @@
  * TypeScript 전용 Export 관련 쿼리들
  */
 
+import type Parser from "tree-sitter";
 import type {
-	ASTNode,
-	ExtendedSourceLocation,
+	QueryExecutionContext,
 	QueryFunction,
+	QueryMatch,
 } from "../../core/types";
 import type {
 	ExportAssignmentResult,
 	ExportDeclarationResult,
 } from "../../results";
+import { extractLocation } from "../../utils/ast-helpers";
 
 // ===== UTILITY FUNCTIONS =====
-const extractStringFromNode = (node: ASTNode): string => {
+const extractStringFromNode = (node: Parser.SyntaxNode): string => {
 	const text = node.text;
 	return text.slice(1, -1); // 따옴표 제거
 };
-
-const extractLocation = (node: ASTNode): ExtendedSourceLocation => ({
-	line: node.startPosition.row + 1,
-	column: node.startPosition.column,
-	offset: 0,
-	endLine: node.endPosition.row + 1,
-	endColumn: node.endPosition.column,
-	endOffset: 0,
-});
 
 // ===== TYPESCRIPT EXPORT DECLARATION QUERY =====
 export const tsExportDeclarationQuery: QueryFunction<ExportDeclarationResult> =
@@ -75,7 +68,7 @@ export const tsExportDeclarationQuery: QueryFunction<ExportDeclarationResult> =
 		languages: ["typescript", "tsx"] as const,
 		priority: 95,
 		resultType: "ts-export-declarations",
-		processor: (matches, _context) => {
+		processor: (matches: QueryMatch[], _context: QueryExecutionContext) => {
 			const results: ExportDeclarationResult[] = [];
 
 			for (const match of matches) {
@@ -91,7 +84,10 @@ export const tsExportDeclarationQuery: QueryFunction<ExportDeclarationResult> =
 				);
 
 				// Default export 확인
-				const isDefault = match.node.text.includes("export default");
+				const matchNode = match.captures[0]?.node;
+				const isDefault = matchNode
+					? matchNode.text.includes("export default")
+					: false;
 
 				if (exportNameNodes.length > 0) {
 					exportNameNodes.forEach((nameNode, index) => {
@@ -101,7 +97,7 @@ export const tsExportDeclarationQuery: QueryFunction<ExportDeclarationResult> =
 						results.push({
 							queryName: "ts-export-declarations",
 							location: extractLocation(nameNode.node),
-							nodeText: match.node.text,
+							nodeText: matchNode ? matchNode.text : "",
 							exportType: isDefault
 								? "default"
 								: sourceNode
@@ -121,7 +117,7 @@ export const tsExportDeclarationQuery: QueryFunction<ExportDeclarationResult> =
 						results.push({
 							queryName: "ts-export-declarations",
 							location: extractLocation(expressionNode.node),
-							nodeText: match.node.text,
+							nodeText: matchNode ? matchNode.text : "",
 							exportType: "default",
 							exportName: "default", // Anonymous default export
 							isDefault: true,
@@ -145,7 +141,7 @@ export const tsExportAssignmentQuery: QueryFunction<ExportAssignmentResult> = {
 	languages: ["typescript", "tsx"] as const,
 	priority: 90,
 	resultType: "ts-export-assignments",
-	processor: (matches, _context) => {
+	processor: (matches: QueryMatch[], _context: QueryExecutionContext) => {
 		const results: ExportAssignmentResult[] = [];
 
 		for (const match of matches) {
@@ -154,12 +150,15 @@ export const tsExportAssignmentQuery: QueryFunction<ExportAssignmentResult> = {
 			);
 
 			expressionNodes.forEach((expressionNode) => {
-				const isDefault = match.node.text.includes("export =");
+				const matchNode = match.captures[0]?.node;
+				const isDefault = matchNode
+					? matchNode.text.includes("export =")
+					: false;
 
 				results.push({
 					queryName: "ts-export-assignments",
 					location: extractLocation(expressionNode.node),
-					nodeText: match.node.text,
+					nodeText: matchNode ? matchNode.text : "",
 					expression: expressionNode.node.text,
 					isDefault,
 				});

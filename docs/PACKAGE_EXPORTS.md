@@ -1,8 +1,8 @@
-# Package Exports Configuration
+# Package Exports Configuration (v3.0.0)
 
-## Current Package Structure (v2.4.1)
+## Current Package Structure
 
-The `@context-action/dependency-linker` package supports both main entry point and direct module imports for tree-shaking optimization.
+The `@context-action/dependency-linker` package follows a Query-Centric Architecture with tree-shaking optimization support.
 
 ### Main Entry Point
 
@@ -15,139 +15,171 @@ The `@context-action/dependency-linker` package supports both main entry point a
 
 **Usage:**
 ```typescript
-import { analyzeTypeScriptFile, traverse, getText } from '@context-action/dependency-linker';
+import {
+  QueryEngine,
+  globalQueryEngine,
+  executeQueriesWithCustomKeys,
+  ParserFactory
+} from '@context-action/dependency-linker';
 ```
 
 ## 🌳 Tree-Shaking Import Paths
 
 For optimal bundle size, you can import directly from specific modules:
 
-### Core API
+### Core Query System
 
 ```typescript
-// Factory Functions
-import { analyzeTypeScriptFile } from '@context-action/dependency-linker/dist/api/factory-functions';
+// Query Engine (Central coordinator)
+import { QueryEngine } from '@context-action/dependency-linker/dist/core/QueryEngine';
+import { globalQueryEngine } from '@context-action/dependency-linker/dist/core/QueryEngine';
 
-// Class-based API
-import { TypeScriptAnalyzer } from '@context-action/dependency-linker/dist/api/TypeScriptAnalyzer';
-import { BatchAnalyzer } from '@context-action/dependency-linker/dist/api/BatchAnalyzer';
+// Query Result Map (Type system)
+import { QueryResultMap } from '@context-action/dependency-linker/dist/core/QueryResultMap';
+
+// Core types
+import type {
+  QueryExecutionContext,
+  ParseResult,
+  SupportedLanguage
+} from '@context-action/dependency-linker/dist/core/types';
 ```
 
-### Enhanced Extractors (v2.4.1)
+### Custom Key Mapping System
 
 ```typescript
-// Enhanced dependency analysis
-import { EnhancedDependencyExtractor } from '@context-action/dependency-linker/dist/extractors/EnhancedDependencyExtractor';
+// Custom key mapping
+import {
+  CustomKeyMapper,
+  createCustomKeyMapper,
+  executeQueriesWithCustomKeys
+} from '@context-action/dependency-linker/dist/mappers/CustomKeyMapper';
 
-// Enhanced export analysis
-import { EnhancedExportExtractor } from '@context-action/dependency-linker/dist/extractors/EnhancedExportExtractor';
+// Predefined mappings
+import {
+  predefinedCustomMappings
+} from '@context-action/dependency-linker/dist/mappers/CustomKeyMapper';
 ```
 
-### Utility Functions (v2.4.1 Functional Refactor)
+### Parser System
 
 ```typescript
-// AST traversal utilities
-import {
-  traverse,
-  findNodes,
-  getChildren
-} from '@context-action/dependency-linker/dist/extractors/enhanced-export';
+// Parser factory
+import { ParserFactory } from '@context-action/dependency-linker/dist/parsers/ParserFactory';
 
-// Node utilities
-import {
-  getText,
-  getSourceLocation,
-  isAsync
-} from '@context-action/dependency-linker/dist/extractors/enhanced-export';
-
-// Text matching utilities
-import {
-  findAllExports,
-  parseNamedExports
-} from '@context-action/dependency-linker/dist/extractors/enhanced-export';
-```
-
-### Language Parsers
-
-```typescript
 // Individual parsers
-import { TypeScriptParser } from '@context-action/dependency-linker/dist/parsers/TypeScriptParser';
-import { JavaParser } from '@context-action/dependency-linker/dist/parsers/JavaParser';
-import { GoParser } from '@context-action/dependency-linker/dist/parsers/GoParser';
-import { MarkdownParser } from '@context-action/dependency-linker/dist/parsers/MarkdownParser';
+import { BaseParser } from '@context-action/dependency-linker/dist/parsers/base';
+import { TypeScriptParser } from '@context-action/dependency-linker/dist/parsers/typescript/TypeScriptParser';
+import { JavaParser } from '@context-action/dependency-linker/dist/parsers/java/JavaParser';
+import { PythonParser } from '@context-action/dependency-linker/dist/parsers/python/PythonParser';
+import { GoParser } from '@context-action/dependency-linker/dist/parsers/go/GoParser';
 ```
 
-### Core Services
+### Language-Specific Queries
 
 ```typescript
-// Analysis engine
-import { AnalysisEngine } from '@context-action/dependency-linker/dist/services/AnalysisEngine';
+// TypeScript queries
+import {
+  registerTypeScriptQueries
+} from '@context-action/dependency-linker/dist/queries/typescript';
 
-// Cache management
-import { CacheManager } from '@context-action/dependency-linker/dist/services/CacheManager';
+// Java queries
+import {
+  registerJavaQueries
+} from '@context-action/dependency-linker/dist/queries/java';
 
-// Registry services
-import { ExtractorRegistry } from '@context-action/dependency-linker/dist/services/ExtractorRegistry';
-import { InterpreterRegistry } from '@context-action/dependency-linker/dist/services/InterpreterRegistry';
-import { ParserRegistry } from '@context-action/dependency-linker/dist/services/ParserRegistry';
+// Python queries
+import {
+  registerPythonQueries
+} from '@context-action/dependency-linker/dist/queries/python';
+
+// Go queries
+import {
+  registerGoQueries
+} from '@context-action/dependency-linker/dist/queries/go';
 ```
 
-### Data Models
+### Result Type System
 
 ```typescript
-// Core models
-import { PathInfo, createPathInfo } from '@context-action/dependency-linker/dist/models/PathInfo';
-import type { AnalysisResult } from '@context-action/dependency-linker/dist/models/AnalysisResult';
-import type { PerformanceMetrics } from '@context-action/dependency-linker/dist/models/PerformanceMetrics';
+// All result types
+import type {
+  QueryKey,
+  QueryResult,
+  UnifiedQueryResultMap,
+  TypeScriptQueryResultMap,
+  JavaQueryResultMap,
+  PythonQueryResultMap,
+  GoQueryResultMap
+} from '@context-action/dependency-linker/dist/results';
+
+// Specific result types
+import type {
+  ImportSourceResult,
+  NamedImportResult,
+  ExportDeclarationResult
+} from '@context-action/dependency-linker/dist/results/imports';
+
+import type {
+  ClassDefinitionResult,
+  FunctionDeclarationResult
+} from '@context-action/dependency-linker/dist/results/classes';
 ```
 
-### Utilities
+### Utility Functions
 
 ```typescript
-// Path utilities
-import { normalizePath, isProjectPath } from '@context-action/dependency-linker/dist/utils/PathUtils';
+// AST utilities
+import {
+  countTreeSitterNodes
+} from '@context-action/dependency-linker/dist/utils/ast-helpers';
 
-// Logging
-import { createLogger } from '@context-action/dependency-linker/dist/utils/logger';
+// Performance utilities
+import {
+  createPerformanceTimer
+} from '@context-action/dependency-linker/dist/utils/performance';
 ```
 
 ## 📦 Bundle Size Optimization
 
 ### Import Strategies by Use Case
 
-#### Minimal TypeScript Analysis (30-45KB)
+#### Minimal Query Analysis (25-40KB)
 ```typescript
-import { TypeScriptParser } from '@context-action/dependency-linker/dist/parsers/TypeScriptParser';
-import { DependencyExtractor } from '@context-action/dependency-linker/dist/extractors/DependencyExtractor';
+import { globalQueryEngine } from '@context-action/dependency-linker/dist/core/QueryEngine';
+import { ParserFactory } from '@context-action/dependency-linker/dist/parsers/ParserFactory';
 ```
 
-#### Enhanced Analysis (80-120KB)
+#### Single Language Analysis (50-80KB)
 ```typescript
-import { EnhancedDependencyExtractor } from '@context-action/dependency-linker/dist/extractors/EnhancedDependencyExtractor';
-import { EnhancedExportExtractor } from '@context-action/dependency-linker/dist/extractors/EnhancedExportExtractor';
-import { TypeScriptParser } from '@context-action/dependency-linker/dist/parsers/TypeScriptParser';
+import { globalQueryEngine } from '@context-action/dependency-linker/dist/core/QueryEngine';
+import { TypeScriptParser } from '@context-action/dependency-linker/dist/parsers/typescript/TypeScriptParser';
+import { registerTypeScriptQueries } from '@context-action/dependency-linker/dist/queries/typescript';
 ```
 
-#### Multi-Language Support (150-200KB)
+#### Multi-Language Support (120-180KB)
 ```typescript
-import { TypeScriptParser } from '@context-action/dependency-linker/dist/parsers/TypeScriptParser';
-import { JavaParser } from '@context-action/dependency-linker/dist/parsers/JavaParser';
-import { GoParser } from '@context-action/dependency-linker/dist/parsers/GoParser';
-import { MarkdownParser } from '@context-action/dependency-linker/dist/parsers/MarkdownParser';
+import { QueryEngine } from '@context-action/dependency-linker/dist/core/QueryEngine';
+import { ParserFactory } from '@context-action/dependency-linker/dist/parsers/ParserFactory';
+import {
+  registerTypeScriptQueries,
+  registerJavaQueries,
+  registerPythonQueries
+} from '@context-action/dependency-linker/dist/queries';
 ```
 
-#### Utility Functions Only (15-30KB)
+#### Custom Key Mapping (80-120KB)
 ```typescript
 import {
-  traverse,
-  getText,
-  findAllExports
-} from '@context-action/dependency-linker/dist/extractors/enhanced-export';
+  CustomKeyMapper,
+  executeQueriesWithCustomKeys,
+  predefinedCustomMappings
+} from '@context-action/dependency-linker/dist/mappers/CustomKeyMapper';
 ```
 
 ## 🔮 Future Exports Configuration
 
-For future versions, we recommend adding explicit exports to package.json:
+For enhanced tree-shaking, we recommend adding explicit exports to package.json:
 
 ```json
 {
@@ -157,35 +189,35 @@ For future versions, we recommend adding explicit exports to package.json:
       "import": "./dist/index.js",
       "require": "./dist/index.js"
     },
-    "./api/*": {
-      "types": "./dist/api/*.d.ts",
-      "import": "./dist/api/*.js",
-      "require": "./dist/api/*.js"
+    "./core/*": {
+      "types": "./dist/core/*.d.ts",
+      "import": "./dist/core/*.js",
+      "require": "./dist/core/*.js"
     },
     "./parsers/*": {
       "types": "./dist/parsers/*.d.ts",
       "import": "./dist/parsers/*.js",
       "require": "./dist/parsers/*.js"
     },
-    "./extractors/*": {
-      "types": "./dist/extractors/*.d.ts",
-      "import": "./dist/extractors/*.js",
-      "require": "./dist/extractors/*.js"
+    "./queries/*": {
+      "types": "./dist/queries/*.d.ts",
+      "import": "./dist/queries/*.js",
+      "require": "./dist/queries/*.js"
     },
-    "./services/*": {
-      "types": "./dist/services/*.d.ts",
-      "import": "./dist/services/*.js",
-      "require": "./dist/services/*.js"
+    "./results/*": {
+      "types": "./dist/results/*.d.ts",
+      "import": "./dist/results/*.js",
+      "require": "./dist/results/*.js"
+    },
+    "./mappers/*": {
+      "types": "./dist/mappers/*.d.ts",
+      "import": "./dist/mappers/*.js",
+      "require": "./dist/mappers/*.js"
     },
     "./utils/*": {
       "types": "./dist/utils/*.d.ts",
       "import": "./dist/utils/*.js",
       "require": "./dist/utils/*.js"
-    },
-    "./models/*": {
-      "types": "./dist/models/*.d.ts",
-      "import": "./dist/models/*.js",
-      "require": "./dist/models/*.js"
     }
   }
 }
@@ -195,9 +227,9 @@ This would enable cleaner imports:
 
 ```typescript
 // With exports configuration
-import { analyzeTypeScriptFile } from '@context-action/dependency-linker';
-import { TypeScriptParser } from '@context-action/dependency-linker/parsers/TypeScriptParser';
-import { traverse } from '@context-action/dependency-linker/extractors/enhanced-export';
+import { QueryEngine } from '@context-action/dependency-linker';
+import { TypeScriptParser } from '@context-action/dependency-linker/parsers/typescript/TypeScriptParser';
+import { CustomKeyMapper } from '@context-action/dependency-linker/mappers/CustomKeyMapper';
 ```
 
 ## 📊 Bundle Analysis Results
@@ -206,10 +238,10 @@ import { traverse } from '@context-action/dependency-linker/extractors/enhanced-
 
 | Import Method | Bundle Size | First Load | Parse Time |
 |---------------|-------------|------------|------------|
-| Full package import | ~250KB | ~80ms | ~15ms |
-| Selective main imports | ~180KB | ~60ms | ~12ms |
-| Direct module imports | ~120KB | ~40ms | ~8ms |
-| Individual function imports | ~45KB | ~15ms | ~5ms |
+| Full package import | ~180KB | ~60ms | ~12ms |
+| Core system only | ~120KB | ~40ms | ~8ms |
+| Single language | ~80KB | ~30ms | ~6ms |
+| Query functions only | ~40KB | ~15ms | ~4ms |
 
 ### Tree-Shaking Effectiveness
 
@@ -221,9 +253,9 @@ Modern bundlers (Webpack 5+, Rollup 3+, Vite 4+) can effectively tree-shake the 
 
 ### Best Practices
 
-1. **Use specific imports** for libraries and applications
-2. **Import from main entry** for prototyping and development
-3. **Use direct paths** for maximum optimization in production
+1. **Use specific imports** for production applications
+2. **Import core system** for multi-language analysis
+3. **Use query-specific imports** for single-purpose analysis
 4. **Monitor bundle size** with tools like webpack-bundle-analyzer
 
 ## 🛠️ Integration Examples
@@ -278,38 +310,72 @@ export default {
 
 ## 📚 Module Map
 
-Complete reference of all available modules and their exports:
+Complete reference of all available modules in the Query-Centric Architecture:
 
 ```
 @context-action/dependency-linker/
 ├── dist/
 │   ├── index.js (main entry - all exports)
-│   ├── api/
-│   │   ├── factory-functions.js (analyzeTypeScriptFile, etc.)
-│   │   ├── TypeScriptAnalyzer.js (class-based API)
-│   │   └── BatchAnalyzer.js (batch processing)
-│   ├── extractors/
-│   │   ├── DependencyExtractor.js
-│   │   ├── EnhancedDependencyExtractor.js
-│   │   ├── EnhancedExportExtractor.js
-│   │   └── enhanced-export/
-│   │       └── index.js (utility functions)
+│   ├── core/
+│   │   ├── QueryEngine.js (central coordinator)
+│   │   ├── QueryResultMap.js (type system)
+│   │   └── types.js (core type definitions)
 │   ├── parsers/
-│   │   ├── TypeScriptParser.js
-│   │   ├── JavaParser.js
-│   │   ├── GoParser.js
-│   │   └── MarkdownParser.js
-│   ├── services/
-│   │   ├── AnalysisEngine.js
-│   │   ├── CacheManager.js
-│   │   └── *Registry.js
-│   ├── models/
-│   │   ├── PathInfo.js
-│   │   ├── AnalysisResult.js
-│   │   └── PerformanceMetrics.js
+│   │   ├── base.js (abstract parser)
+│   │   ├── ParserFactory.js (parser registry)
+│   │   ├── typescript/TypeScriptParser.js
+│   │   ├── java/JavaParser.js
+│   │   ├── python/PythonParser.js
+│   │   └── go/GoParser.js
+│   ├── queries/
+│   │   ├── typescript/ (TypeScript queries)
+│   │   ├── java/ (Java queries)
+│   │   ├── python/ (Python queries)
+│   │   └── go/ (Go queries)
+│   ├── results/
+│   │   ├── index.js (unified result types)
+│   │   ├── imports.js (import result types)
+│   │   ├── exports.js (export result types)
+│   │   ├── classes.js (class result types)
+│   │   ├── functions.js (function result types)
+│   │   ├── java.js (Java-specific results)
+│   │   └── python.js (Python-specific results)
+│   ├── mappers/
+│   │   └── CustomKeyMapper.js (user-friendly mapping)
 │   └── utils/
-│       ├── PathUtils.js
-│       └── logger.js
+│       ├── ast-helpers.js (AST utilities)
+│       └── performance.js (performance monitoring)
 ```
 
-This modular structure allows for precise control over bundle size and loading performance while maintaining full functionality.
+## 🎯 Usage Patterns
+
+### Core System Import Pattern
+```typescript
+// Full core system (recommended for most use cases)
+import {
+  QueryEngine,
+  ParserFactory,
+  executeQueriesWithCustomKeys
+} from '@context-action/dependency-linker';
+```
+
+### Language-Specific Import Pattern
+```typescript
+// TypeScript-only analysis
+import { globalQueryEngine } from '@context-action/dependency-linker/dist/core/QueryEngine';
+import { registerTypeScriptQueries } from '@context-action/dependency-linker/dist/queries/typescript';
+import type { TypeScriptQueryResultMap } from '@context-action/dependency-linker/dist/results';
+```
+
+### Custom Analysis Pattern
+```typescript
+// Custom key mapping with predefined mappings
+import {
+  CustomKeyMapper,
+  predefinedCustomMappings
+} from '@context-action/dependency-linker/dist/mappers/CustomKeyMapper';
+
+const mapper = new CustomKeyMapper(predefinedCustomMappings.typeScriptAnalysis);
+```
+
+This modular Query-Centric structure allows for precise control over bundle size and loading performance while maintaining complete type safety and multi-language support.

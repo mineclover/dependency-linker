@@ -149,4 +149,3 @@ export type LanguageQueryKey<L extends LanguageGroup> = L extends "typescript"
 				: keyof PythonQueryResultMap;
 
 export type QueryResult<K extends QueryKey> = UnifiedQueryResultMap[K];
-

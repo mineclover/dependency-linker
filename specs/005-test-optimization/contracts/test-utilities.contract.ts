@@ -32,7 +32,6 @@ export interface Tree {
 	getLanguage(): string;
 }
 
-
 export interface LanguageParser {
 	supports(language: string): boolean;
 	parse(content: string): Promise<Tree>;

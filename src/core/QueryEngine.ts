@@ -308,12 +308,14 @@ export class QueryEngine {
 			this.performanceMetrics.set(queryKey, []);
 		}
 
-		const history = this.performanceMetrics.get(queryKey)!;
-		history.push(metrics);
+		const history = this.performanceMetrics.get(queryKey);
+		if (history) {
+			history.push(metrics);
 
-		// 최근 100개 기록만 유지
-		if (history.length > 100) {
-			history.shift();
+			// 최근 100개 기록만 유지
+			if (history.length > 100) {
+				history.shift();
+			}
 		}
 	}
 

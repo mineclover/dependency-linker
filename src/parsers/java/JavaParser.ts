@@ -81,7 +81,6 @@ export class JavaParser extends BaseParser {
 			);
 		}
 	}
-
 }
 
 export default JavaParser;

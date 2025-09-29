@@ -26,9 +26,9 @@ export * from "./core/types";
 export * from "./mappers/CustomKeyMapper";
 // ===== PARSERS =====
 export * from "./parsers";
+// ===== QUERY SYSTEMS =====
 export { javaQueries, registerJavaQueries } from "./queries/java";
 export { pythonQueries, registerPythonQueries } from "./queries/python";
-// ===== QUERY SYSTEMS =====
 export {
 	registerTypeScriptQueries,
 	typeScriptQueries,

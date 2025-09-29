@@ -10,14 +10,14 @@ import {
 	StandardQueryPatterns,
 	QueryIntegrationWorkflow,
 	QueryValidator,
-	type QueryDefinitionTemplate
+	type QueryDefinitionTemplate,
 } from "../src/extractors/primary-analysis/conventions/QueryWorkflowConventions";
 
 import {
 	ExportAnalysisQueryExample,
 	ClassAnalysisQueryExample,
 	QueryAutoGenerator,
-	QueryTestTemplate
+	QueryTestTemplate,
 } from "../src/extractors/primary-analysis/conventions/QueryApplicationTemplates";
 
 /**
@@ -40,14 +40,15 @@ async function demo1_StandardWorkflow() {
 		domain: "variable",
 		target: "declarations",
 		action: "extract",
-		description: "Extract variable declarations with their types and initial values",
+		description:
+			"Extract variable declarations with their types and initial values",
 		languages: ["typescript", "javascript"],
 		expectedData: [
 			"variableName: string",
 			"variableType?: string",
 			"declarationType: 'let' | 'const' | 'var'",
-			"hasInitialValue: boolean"
-		]
+			"hasInitialValue: boolean",
+		],
 	};
 	console.log("✅ 요구사항 정의 완료:", requirements);
 
@@ -61,7 +62,12 @@ async function demo1_StandardWorkflow() {
 				type: (type_annotation)? @variable_type
 				value: (_)? @initial_value))
 	`;
-	const captureNames = ["declaration_type", "variable_name", "variable_type", "initial_value"];
+	const captureNames = [
+		"declaration_type",
+		"variable_name",
+		"variable_type",
+		"initial_value",
+	];
 	console.log("✅ 쿼리 패턴 설계 완료");
 	console.log("📝 캡처 그룹:", captureNames);
 
@@ -70,13 +76,16 @@ async function demo1_StandardWorkflow() {
 	const queryId = QueryNamingConvention.generateQueryId(
 		requirements.domain,
 		requirements.target,
-		requirements.action
+		requirements.action,
 	);
 	console.log("🆔 쿼리 ID:", queryId);
 
 	// 문법 검증
 	const syntaxValidation = QueryValidator.validateSyntax(queryPattern);
-	const captureValidation = QueryValidator.validateCaptures(queryPattern, captureNames);
+	const captureValidation = QueryValidator.validateCaptures(
+		queryPattern,
+		captureNames,
+	);
 
 	console.log("🔍 문법 검증:", syntaxValidation.valid ? "✅ 통과" : "❌ 실패");
 	if (!syntaxValidation.valid) {
@@ -92,7 +101,7 @@ async function demo1_StandardWorkflow() {
 	console.log("\n4️⃣ 결과 타입 매핑");
 	const resultTypeName = QueryNamingConvention.generateResultTypeName(
 		requirements.target,
-		requirements.action
+		requirements.action,
 	);
 	console.log("📋 결과 타입 이름:", resultTypeName);
 
@@ -115,7 +124,7 @@ interface ${resultTypeName} extends BaseQueryResult {
 	console.log("\n5️⃣ 프로세서 구현");
 	const processorName = QueryNamingConvention.generateProcessorName(
 		requirements.target,
-		requirements.action
+		requirements.action,
 	);
 	console.log("⚙️ 프로세서 이름:", processorName);
 
@@ -131,11 +140,15 @@ interface ${resultTypeName} extends BaseQueryResult {
 		[
 			{ name: "variableName", type: "string", value: "myVar" },
 			{ name: "variableType", type: "string", value: "string" },
-			{ name: "declarationType", type: '"let" | "const" | "var"', value: "const" },
+			{
+				name: "declarationType",
+				type: '"let" | "const" | "var"',
+				value: "const",
+			},
 			{ name: "hasInitialValue", type: "boolean", value: true },
-			{ name: "initialValue", type: "string", value: '"hello"' }
+			{ name: "initialValue", type: "string", value: '"hello"' },
 		],
-		70
+		70,
 	);
 
 	console.log("✅ 통합 등록 완료");
@@ -146,7 +159,7 @@ interface ${resultTypeName} extends BaseQueryResult {
 		queryId,
 		resultTypeName,
 		processorName,
-		integration
+		integration,
 	};
 }
 
@@ -162,11 +175,11 @@ async function demo2_AutoGeneration() {
 	// 빠른 스켈레톤 생성
 	console.log("🏗️ 스켈레톤 자동 생성");
 	const skeleton = QueryAutoGenerator.generateQuerySkeleton(
-		"function",        // domain
-		"parameters",      // target
-		"analyze",         // action
+		"function", // domain
+		"parameters", // target
+		"analyze", // action
 		["typescript", "javascript"], // languages
-		["function_name", "param_list", "return_type"] // captures
+		["function_name", "param_list", "return_type"], // captures
 	);
 
 	console.log("✅ 스켈레톤 생성 완료:");
@@ -195,14 +208,22 @@ async function demo2_AutoGeneration() {
 			{ name: "interfaceName", type: "string", description: "Interface name" },
 			{ name: "propertyName", type: "string", description: "Property name" },
 			{ name: "propertyType", type: "string", description: "Property type" },
-			{ name: "isOptional", type: "boolean", description: "Is optional property" }
-		]
+			{
+				name: "isOptional",
+				type: "boolean",
+				description: "Is optional property",
+			},
+		],
 	});
 
 	console.log("✅ 빠른 쿼리 생성 완료:");
 	console.log("🆔 쿼리 ID:", quickQuery.queryId);
 	console.log("📋 타입 이름:", quickQuery.typeName);
-	console.log("📝 인터페이스 코드 길이:", quickQuery.interfaceCode.length, "문자");
+	console.log(
+		"📝 인터페이스 코드 길이:",
+		quickQuery.interfaceCode.length,
+		"문자",
+	);
 	console.log("⚙️ 프로세서 코드 길이:", quickQuery.processorCode.length, "문자");
 
 	return { skeleton, quickQuery };
@@ -224,7 +245,7 @@ async function demo3_StandardPatterns() {
 		named: StandardQueryPatterns.getImportPattern("named"),
 		default: StandardQueryPatterns.getImportPattern("default"),
 		namespace: StandardQueryPatterns.getImportPattern("namespace"),
-		type: StandardQueryPatterns.getImportPattern("type")
+		type: StandardQueryPatterns.getImportPattern("type"),
 	};
 
 	Object.entries(importPatterns).forEach(([type, pattern]) => {
@@ -236,7 +257,7 @@ async function demo3_StandardPatterns() {
 	const exportPatterns = {
 		named: StandardQueryPatterns.getExportPattern("named"),
 		default: StandardQueryPatterns.getExportPattern("default"),
-		all: StandardQueryPatterns.getExportPattern("all")
+		all: StandardQueryPatterns.getExportPattern("all"),
 	};
 
 	Object.entries(exportPatterns).forEach(([type, pattern]) => {
@@ -248,7 +269,7 @@ async function demo3_StandardPatterns() {
 	const functionPatterns = {
 		declaration: StandardQueryPatterns.getFunctionPattern("declaration"),
 		expression: StandardQueryPatterns.getFunctionPattern("expression"),
-		arrow: StandardQueryPatterns.getFunctionPattern("arrow")
+		arrow: StandardQueryPatterns.getFunctionPattern("arrow"),
 	};
 
 	Object.entries(functionPatterns).forEach(([type, pattern]) => {
@@ -260,7 +281,7 @@ async function demo3_StandardPatterns() {
 	const classPatterns = {
 		declaration: StandardQueryPatterns.getClassPattern("declaration"),
 		method: StandardQueryPatterns.getClassPattern("method"),
-		property: StandardQueryPatterns.getClassPattern("property")
+		property: StandardQueryPatterns.getClassPattern("property"),
 	};
 
 	Object.entries(classPatterns).forEach(([type, pattern]) => {
@@ -286,12 +307,14 @@ async function demo4_ComplexExamples() {
 
 	// Class 분석 쿼리 예시들
 	console.log("\n🏛️ Class 분석 쿼리 예시들");
-	const classMethodExample = ClassAnalysisQueryExample.createMethodExtractionQuery();
+	const classMethodExample =
+		ClassAnalysisQueryExample.createMethodExtractionQuery();
 	console.log("✅ Class 메서드 쿼리 설계:");
 	console.log("  도메인:", classMethodExample.requirements.domain);
 	console.log("  패턴 길이:", classMethodExample.queryPattern.length, "문자");
 
-	const classPropertyExample = ClassAnalysisQueryExample.createPropertyExtractionQuery();
+	const classPropertyExample =
+		ClassAnalysisQueryExample.createPropertyExtractionQuery();
 	console.log("✅ Class 속성 쿼리 설계:");
 	console.log("  도메인:", classPropertyExample.requirements.domain);
 	console.log("  패턴 길이:", classPropertyExample.queryPattern.length, "문자");
@@ -313,30 +336,34 @@ async function demo5_TestGeneration() {
 		{
 			name: "extract const variable",
 			sourceCode: `const myVar: string = "hello";`,
-			expectedResults: [{
-				variableName: "myVar",
-				variableType: "string",
-				declarationType: "const",
-				hasInitialValue: true,
-				initialValue: '"hello"'
-			}]
+			expectedResults: [
+				{
+					variableName: "myVar",
+					variableType: "string",
+					declarationType: "const",
+					hasInitialValue: true,
+					initialValue: '"hello"',
+				},
+			],
 		},
 		{
 			name: "extract let variable without type",
 			sourceCode: `let count = 0;`,
-			expectedResults: [{
-				variableName: "count",
-				declarationType: "let",
-				hasInitialValue: true,
-				initialValue: "0"
-			}]
-		}
+			expectedResults: [
+				{
+					variableName: "count",
+					declarationType: "let",
+					hasInitialValue: true,
+					initialValue: "0",
+				},
+			],
+		},
 	];
 
 	// 기본 테스트 생성
 	const basicTest = QueryTestTemplate.generateBasicTest(
 		"variable-declarations-extract",
-		testCases
+		testCases,
 	);
 
 	console.log("✅ 기본 테스트 생성 완료");
@@ -356,15 +383,15 @@ async function demo5_TestGeneration() {
 				variables: [
 					{ variableName: "message", declarationType: "const" },
 					{ variableName: "count", declarationType: "let" },
-					{ variableName: "flag", declarationType: "var" }
-				]
-			}
-		}
+					{ variableName: "flag", declarationType: "var" },
+				],
+			},
+		},
 	];
 
 	const integrationTest = QueryTestTemplate.generateIntegrationTest(
 		"variable-analysis",
-		integrationScenarios
+		integrationScenarios,
 	);
 
 	console.log("✅ 통합 테스트 생성 완료");
@@ -401,8 +428,12 @@ async function runAllDemos() {
 		console.log(`   빠른 쿼리: ${demo2Result.quickQuery.queryId}`);
 
 		console.log("✅ 데모 3 - 표준 패턴 라이브러리: 성공");
-		console.log(`   Import 패턴 수: ${Object.keys(demo3Result.importPatterns).length}개`);
-		console.log(`   Export 패턴 수: ${Object.keys(demo3Result.exportPatterns).length}개`);
+		console.log(
+			`   Import 패턴 수: ${Object.keys(demo3Result.importPatterns).length}개`,
+		);
+		console.log(
+			`   Export 패턴 수: ${Object.keys(demo3Result.exportPatterns).length}개`,
+		);
 
 		console.log("✅ 데모 4 - 복합 쿼리 예시: 성공");
 		console.log(`   Export 쿼리: ${demo4Result.exportExample.queryDef.id}`);
@@ -411,7 +442,9 @@ async function runAllDemos() {
 		console.log(`   기본 테스트 길이: ${demo5Result.basicTest.length}문자`);
 
 		console.log("\n🚀 컨벤션 적용 완료!");
-		console.log("💡 이제 표준화된 방식으로 Tree-sitter 쿼리를 만들 수 있습니다.");
+		console.log(
+			"💡 이제 표준화된 방식으로 Tree-sitter 쿼리를 만들 수 있습니다.",
+		);
 
 		return {
 			demo1: demo1Result,
@@ -419,14 +452,13 @@ async function runAllDemos() {
 			demo3: demo3Result,
 			demo4: demo4Result,
 			demo5: demo5Result,
-			success: true
+			success: true,
 		};
-
 	} catch (error) {
 		console.error("❌ 데모 실행 중 오류:", error);
 		return {
 			error,
-			success: false
+			success: false,
 		};
 	}
 }
@@ -445,13 +477,23 @@ function validateConventions() {
 		structure: true,
 		typing: true,
 		testing: true,
-		documentation: true
+		documentation: true,
 	};
 
 	// 네이밍 컨벤션 검증
-	const testId = QueryNamingConvention.generateQueryId("test", "demo", "validate");
-	const testType = QueryNamingConvention.generateResultTypeName("demo", "validate");
-	const testProcessor = QueryNamingConvention.generateProcessorName("demo", "validate");
+	const testId = QueryNamingConvention.generateQueryId(
+		"test",
+		"demo",
+		"validate",
+	);
+	const testType = QueryNamingConvention.generateResultTypeName(
+		"demo",
+		"validate",
+	);
+	const testProcessor = QueryNamingConvention.generateProcessorName(
+		"demo",
+		"validate",
+	);
 
 	console.log("✅ 네이밍 컨벤션:");
 	console.log(`   쿼리 ID: ${testId}`);
@@ -463,14 +505,16 @@ function validateConventions() {
 	const syntaxCheck = QueryValidator.validateSyntax(testPattern);
 	console.log(`✅ 패턴 검증: ${syntaxCheck.valid ? "통과" : "실패"}`);
 
-	console.log(`\n🎯 전체 컨벤션 준수도: ${Object.values(validationResults).every(v => v) ? "100%" : "부분적"}`);
+	console.log(
+		`\n🎯 전체 컨벤션 준수도: ${Object.values(validationResults).every((v) => v) ? "100%" : "부분적"}`,
+	);
 
 	return validationResults;
 }
 
 // 실행
 if (require.main === module) {
-	runAllDemos().then(result => {
+	runAllDemos().then((result) => {
 		if (result && result.success) {
 			validateConventions();
 			console.log("\n✨ 모든 데모가 성공적으로 완료되었습니다!");
@@ -485,5 +529,5 @@ export {
 	demo4_ComplexExamples,
 	demo5_TestGeneration,
 	runAllDemos,
-	validateConventions
+	validateConventions,
 };
