@@ -60,6 +60,11 @@ describe("Language-Specific Query Tests", () => {
 
       const results = await engine.execute("ts-import-sources", matches, context);
 
+      console.log("🔍 ts-import-sources 쿼리 실행 결과:");
+      console.log("   - 결과 타입:", typeof results);
+      console.log("   - 결과 길이:", results.length);
+      console.log("   - 실제 결과:", JSON.stringify(results, null, 2));
+
       expect(Array.isArray(results)).toBe(true);
       // Mock 데이터에서는 결과가 나올 수도 있고 없을 수도 있음
       expect(results.length).toBeGreaterThanOrEqual(0);
@@ -132,6 +137,10 @@ describe("Language-Specific Query Tests", () => {
       const matches = [createMockMatch("import_declaration", sourceCode)];
 
       const results = await engine.execute("java-import-sources", matches, context);
+
+      console.log("🔍 java-import-sources 쿼리 실행 결과:");
+      console.log("   - 결과 길이:", results.length);
+      console.log("   - 실제 결과:", JSON.stringify(results, null, 2));
 
       expect(Array.isArray(results)).toBe(true);
       expect(results.length).toBe(1);
@@ -206,6 +215,10 @@ describe("Language-Specific Query Tests", () => {
       const matches = [createMockMatch("import_statement", sourceCode)];
 
       const results = await engine.execute("python-import-sources", matches, context);
+
+      console.log("🔍 python-import-sources 쿼리 실행 결과:");
+      console.log("   - 결과 길이:", results.length);
+      console.log("   - 실제 결과:", JSON.stringify(results, null, 2));
 
       expect(Array.isArray(results)).toBe(true);
       expect(results.length).toBe(1);

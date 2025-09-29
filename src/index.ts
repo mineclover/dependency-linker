@@ -24,6 +24,8 @@ export {
 export * from "./core/types";
 // ===== MAPPING SYSTEMS =====
 export * from "./mappers/CustomKeyMapper";
+// ===== PARSERS =====
+export * from "./parsers";
 export { javaQueries, registerJavaQueries } from "./queries/java";
 export { pythonQueries, registerPythonQueries } from "./queries/python";
 // ===== QUERY SYSTEMS =====
@@ -50,7 +52,6 @@ export {
 	TypeImportResult,
 	UnifiedQueryResultMap,
 } from "./results";
-
 // ===== UTILITIES =====
 export * from "./utils";
 
@@ -89,10 +90,26 @@ export const CustomKeyMapping = {
 	predefined: predefinedCustomMappings,
 };
 
+export const Parsers = {
+	parseFile: (filePath: string) =>
+		import("./parsers").then((p) => p.parseFile(filePath)),
+	parseCode: (sourceCode: string, language: any, filePath?: string) =>
+		import("./parsers").then((p) =>
+			p.parseCode(sourceCode, language, filePath),
+		),
+	createParser: (language: any) =>
+		import("./parsers").then((p) => p.createParser(language)),
+	isFileSupported: (filePath: string) =>
+		import("./parsers").then((p) => p.isFileSupported(filePath)),
+	getSupportedLanguages: () =>
+		import("./parsers").then((p) => p.getSupportedLanguages()),
+};
+
 // ===== DEFAULT EXPORT =====
 export default {
 	QueryEngine,
 	CustomKeyMapping,
+	Parsers,
 	predefinedMappings: predefinedCustomMappings,
 	registerTypeScriptQueries,
 	registerJavaQueries,

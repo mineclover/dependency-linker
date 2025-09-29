@@ -3,6 +3,8 @@
  * 쿼리 시스템의 핵심 타입 정의
  */
 
+import type Parser from "tree-sitter";
+
 // ===== LANGUAGE SUPPORT =====
 export type SupportedLanguage =
 	| "typescript"
@@ -50,7 +52,7 @@ export interface QueryExecutionContext {
 	sourceCode: string;
 	language: SupportedLanguage;
 	filePath: string;
-	astNode: ASTNode;
+	tree: Parser.Tree;
 }
 
 // ===== SOURCE LOCATION =====
