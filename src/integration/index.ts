@@ -14,6 +14,19 @@ export type {
   IntegrationResult,
 } from './DependencyToGraph';
 
+// 단일 파일 분석 API
+export {
+  SingleFileAnalyzer,
+  analyzeSingleFile,
+  analyzeMultipleFiles,
+  SingleFileAnalysisError,
+} from './SingleFileAnalysis';
+
+export type {
+  SingleFileAnalysisOptions,
+  SingleFileAnalysisResult,
+} from './SingleFileAnalysis';
+
 // 메인 API에서 사용할 수 있도록 재출력
 export { createGraphAnalysisSystem } from '../database';
 export type { GraphQueryResult, QueryFilter } from '../database';

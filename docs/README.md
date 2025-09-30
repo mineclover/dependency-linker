@@ -69,10 +69,11 @@ Complete graph database and inference capabilities.
 
 Dependency analysis and graph features.
 
-| Document | Description | Status |
-|----------|-------------|--------|
-| [DEPENDENCY_GRAPH_ANALYSIS.md](DEPENDENCY_GRAPH_ANALYSIS.md) | Graph analysis capabilities | ✅ |
-| [CustomKeyMapper-Guide.md](CustomKeyMapper-Guide.md) | Custom key mapping guide | ✅ |
+| Document | Description | Status | Priority |
+|----------|-------------|--------|----------|
+| [single-file-analysis-api.md](single-file-analysis-api.md) | **Single file analysis API** | ✅ NEW | 🔴 Primary |
+| [DEPENDENCY_GRAPH_ANALYSIS.md](DEPENDENCY_GRAPH_ANALYSIS.md) | Graph analysis capabilities | ✅ | 🟡 Reference |
+| [CustomKeyMapper-Guide.md](CustomKeyMapper-Guide.md) | Custom key mapping guide | ✅ | 🟢 Supporting |
 
 ---
 
