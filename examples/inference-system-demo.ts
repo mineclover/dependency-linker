@@ -6,8 +6,7 @@
 
 import { GraphDatabase } from '../src/database/GraphDatabase';
 import { FileDependencyAnalyzer, ImportSource } from '../src/database/services/FileDependencyAnalyzer';
-import { EdgeTypeRegistry } from '../src/database/types/EdgeTypeRegistry';
-import { InferenceEngine } from '../src/database/core/InferenceEngine';
+import { EdgeTypeRegistry, InferenceEngine } from '../src/database/inference';
 import * as fs from 'fs';
 import * as path from 'path';
 

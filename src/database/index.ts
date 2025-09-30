@@ -7,6 +7,9 @@ export { GraphDatabase, createGraphDatabase } from './GraphDatabase';
 export { GraphStorage, createGraphStorage } from './GraphStorage';
 export { GraphQueryEngine, createGraphQueryEngine } from './GraphQueryEngine';
 
+// Inference module - centralized inference capabilities
+export * from './inference';
+
 export type {
   GraphNode,
   GraphRelationship,
@@ -32,6 +35,9 @@ export type {
 /**
  * 통합 그래프 분석 시스템
  */
+import { GraphStorage } from './GraphStorage';
+import { GraphQueryEngine } from './GraphQueryEngine';
+
 export class GraphAnalysisSystem {
   private storage: GraphStorage;
   private queryEngine: GraphQueryEngine;

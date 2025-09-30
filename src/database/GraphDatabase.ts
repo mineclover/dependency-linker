@@ -1088,7 +1088,7 @@ export class GraphDatabase {
     const { includeChildren = true, includeParents = false } = options;
 
     // Dynamic import to avoid circular dependency
-    const { EdgeTypeRegistry } = await import('./types/EdgeTypeRegistry');
+    const { EdgeTypeRegistry } = await import('./inference/EdgeTypeRegistry');
     const relatedTypes = new Set<string>([edgeType]);
 
     // 자식 타입 수집

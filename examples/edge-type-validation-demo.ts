@@ -3,7 +3,7 @@
  * EdgeTypeRegistry의 계층 구조 검증 및 시각화
  */
 
-import { EdgeTypeRegistry } from '../src/database/types/EdgeTypeRegistry';
+import { EdgeTypeRegistry } from '../src/database/inference/EdgeTypeRegistry';
 
 console.log('\n' + '='.repeat(80));
 console.log('🔍 Edge Type Registry Validation');

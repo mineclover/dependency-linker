@@ -12,7 +12,7 @@ import {
   generateLibraryIdentifier,
   normalizePath
 } from '../utils/IdentifierGenerator';
-import { EdgeTypeRegistry } from '../types/EdgeTypeRegistry';
+import { EdgeTypeRegistry } from '../inference/EdgeTypeRegistry';
 
 export interface ImportSource {
   /** import 구문의 타입 */

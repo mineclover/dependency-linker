@@ -69,3 +69,4 @@ legacy/
 .DS_Store
 .deplink/
 .deplink-*.json
+.tmp/

@@ -6,7 +6,7 @@
  */
 
 import { GraphDatabase } from '../GraphDatabase';
-import { EdgeTypeRegistry } from '../types/EdgeTypeRegistry';
+import { EdgeTypeRegistry } from './EdgeTypeRegistry';
 import {
   InferredRelationship,
   InferencePath,
@@ -18,7 +18,7 @@ import {
   InferenceStatistics,
   InferenceCacheEntry,
   InferenceValidationResult,
-} from '../types/InferenceTypes';
+} from './InferenceTypes';
 
 export class InferenceEngine {
   private database: GraphDatabase;
