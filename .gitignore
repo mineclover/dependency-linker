@@ -70,3 +70,9 @@ legacy/
 .deplink/
 .deplink-*.json
 .tmp/
+
+# Scenarios output (generated during demo runs)
+scenarios/*.db
+scenarios/.dependency-linker/
+scenarios/output/
+scenarios/.tmp/
