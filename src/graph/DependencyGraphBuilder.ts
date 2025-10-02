@@ -3,6 +3,7 @@
  * 의존성 그래프 생성 및 관리
  */
 
+import { readFile } from "node:fs/promises";
 import { resolve } from "node:path";
 import { analyzeDependencies } from "../api/analysis";
 import type { SupportedLanguage } from "../core/types";
@@ -160,8 +161,11 @@ export class DependencyGraphBuilder {
 			const language = this.detectLanguage(filePath);
 			const resolver = this.pathResolver.withBasePath(filePath);
 
+			// 파일 내용 읽기
+			const sourceCode = await readFile(filePath, "utf-8");
+
 			// 의존성 분석 실행
-			const analysis = await analyzeDependencies("", language, filePath);
+			const analysis = await analyzeDependencies(sourceCode, language, filePath);
 
 			// 경로 해결
 			const allImports = [
