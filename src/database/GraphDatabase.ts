@@ -30,7 +30,7 @@ export interface GraphRelationship {
   label?: string;
   metadata?: Record<string, any>;
   weight?: number;
-  sourceFile: string;
+  sourceFile?: string;
 }
 
 export interface ProjectInfo {
@@ -254,7 +254,7 @@ export class GraphDatabase {
 
       this.db!.get(sql, [
         relationship.fromNodeId, relationship.toNodeId, relationship.type,
-        relationship.label, metadata, relationship.weight || 1.0, relationship.sourceFile
+        relationship.label, metadata, relationship.weight || 1.0, relationship.sourceFile || null
       ], (err: Error | null, row: any) => {
         if (err) {
           reject(new Error(`Failed to upsert relationship: ${err.message}`));

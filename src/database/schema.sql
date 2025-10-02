@@ -60,7 +60,8 @@ CREATE TABLE edges (
   weight REAL DEFAULT 1.0,
   -- Source file path (for analyzer-specific cleanup)
   -- This allows each analyzer to clean up only its own relationships
-  source_file TEXT NOT NULL,
+  -- Optional: Some relationships may not have a specific source file
+  source_file TEXT,
   -- Timestamps
   created_at DATETIME DEFAULT CURRENT_TIMESTAMP,
   updated_at DATETIME DEFAULT CURRENT_TIMESTAMP,

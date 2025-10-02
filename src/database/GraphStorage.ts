@@ -4,7 +4,6 @@
  */
 
 import { join } from 'node:path';
-import type { ParseResult } from '../core/types';
 import type { SupportedLanguage } from '../core/types';
 import { createGraphDatabase, type GraphDatabase, type GraphNode, type GraphRelationship, type ProjectInfo } from './GraphDatabase';
 
@@ -13,6 +12,29 @@ export interface StorageOptions {
   projectName?: string;
   sessionName?: string;
   dbPath?: string;
+}
+
+export interface ParseResult {
+  imports?: string[];
+  exports?: string[];
+  declarations?: Array<{
+    name: string;
+    type: string;
+    location?: {
+      start?: { line: number; column: number };
+      end?: { line: number; column: number };
+    };
+    metadata?: Record<string, any>;
+  }>;
+  functionCalls?: Array<{
+    name: string;
+    location?: any;
+  }>;
+  metadata?: {
+    fileSize?: number;
+    lastModified?: string;
+    [key: string]: any;
+  };
 }
 
 export interface StorageResult {
@@ -32,10 +54,10 @@ export class GraphStorage {
 
   constructor(options: StorageOptions) {
     this.options = {
-      projectName: 'Dependency Analysis',
-      sessionName: `Analysis-${new Date().toISOString()}`,
-      dbPath: join(options.projectRoot, '.dependency-linker', 'graph.db'),
       ...options,
+      projectName: options.projectName || 'Dependency Analysis',
+      sessionName: options.sessionName || `Analysis-${new Date().toISOString()}`,
+      dbPath: options.dbPath || join(options.projectRoot, '.dependency-linker', 'graph.db'),
     };
 
     this.db = createGraphDatabase(this.options.dbPath);

@@ -128,6 +128,8 @@ export const TREE_SITTER_QUERY_MAP: Record<
 	go: {},
 	java: {},
 	python: {},
+	external: {},
+	unknown: {},
 } as const;
 
 /**

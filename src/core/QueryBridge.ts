@@ -166,12 +166,37 @@ export function initializeTreeSitterQueries(): void {
 
 /**
  * Tree-sitter 파서를 쿼리 엔진에 설정
- * (실제 구현에서는 각 언어의 파서 모듈에서 호출해야 함)
+ * ParserFactory를 통해 파서를 생성하고 TreeSitterQueryEngine에 등록
  */
 export function setLanguageParsers(): void {
-	// TODO: 실제 파서 인스턴스를 설정해야 함
-	// 현재는 각 언어별 파서 모듈에서 개별적으로 설정되어야 함
-	console.warn("Language parsers should be set by individual parser modules");
+	try {
+		// ParserFactory를 동적으로 import하여 순환 참조 방지
+		const { globalParserFactory } = require("../parsers/ParserFactory");
+
+		const supportedLanguages: SupportedLanguage[] = [
+			"typescript",
+			"tsx",
+			"javascript",
+			"jsx",
+			"java",
+			"python",
+			"go"
+		];
+
+		for (const language of supportedLanguages) {
+			try {
+				const parser = globalParserFactory.createParser(language);
+				if (parser && parser.parser) {
+					globalTreeSitterQueryEngine.setParser(language, parser.parser);
+				}
+			} catch (error) {
+				// 파서 생성 실패는 무시 (선택적 언어 지원)
+				console.debug(`Parser for ${language} not available:`, error);
+			}
+		}
+	} catch (error) {
+		console.warn("Failed to initialize language parsers:", error);
+	}
 }
 
 /**

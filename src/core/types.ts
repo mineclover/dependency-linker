@@ -13,7 +13,9 @@ export type SupportedLanguage =
 	| "jsx"
 	| "go"
 	| "java"
-	| "python";
+	| "python"
+	| "external"
+	| "unknown";
 
 export type LanguageGroup =
 	| "typescript"

@@ -710,7 +710,9 @@ export class DependencyAnalysisHelpers {
       jsx: ['.jsx'],
       go: ['.go'],
       java: ['.java'],
-      python: ['.py']
+      python: ['.py'],
+      external: [],
+      unknown: []
     };
 
     return extensions[sourceLanguage] || ['.ts'];

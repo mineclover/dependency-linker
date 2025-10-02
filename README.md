@@ -2,7 +2,7 @@
 
 🎯 **Tree-sitter Based AST Analysis with Custom Key Mapping**
 
-[![Version](https://img.shields.io/badge/version-2.4.1-blue.svg)](https://www.npmjs.com/package/@context-action/dependency-linker)
+[![Version](https://img.shields.io/badge/version-3.0.0-blue.svg)](https://www.npmjs.com/package/@context-action/dependency-linker)
 [![TypeScript](https://img.shields.io/badge/TypeScript-5.0+-blue.svg)](https://www.typescriptlang.org/)
 [![License](https://img.shields.io/badge/license-MIT-green.svg)](LICENSE)
 

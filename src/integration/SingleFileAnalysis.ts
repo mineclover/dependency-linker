@@ -7,7 +7,7 @@ import { existsSync, statSync } from 'node:fs';
 import { dirname, isAbsolute } from 'node:path';
 import { analyzeDependencies } from '../api/analysis';
 import { createGraphAnalysisSystem } from '../database';
-import type { SupportedLanguage, ParseResult } from '../core/types';
+import type { SupportedLanguage } from '../core/types';
 import type { StorageResult, GraphAnalysisSystem } from '../database';
 
 /**
@@ -65,9 +65,13 @@ export interface SingleFileAnalysisResult {
   language: SupportedLanguage;
 
   /**
-   * 파싱 결과 (imports, exports, declarations 등)
+   * 의존성 분석 결과 (internal, external, builtin imports)
    */
-  parseResult: ParseResult;
+  parseResult: {
+    internal: string[];
+    external: string[];
+    builtin: string[];
+  };
 
   /**
    * 그래프 저장 결과
@@ -191,7 +195,17 @@ export class SingleFileAnalyzer {
       }
 
       // 5. 파일 분석
-      const parseResult = await analyzeDependencies('', language, filePath);
+      const analysisResult = await analyzeDependencies('', language, filePath);
+
+      // Transform to ParseResult format for GraphStorage
+      const parseResult = {
+        imports: [...analysisResult.internal, ...analysisResult.external],
+        metadata: {
+          internalImports: analysisResult.internal,
+          externalImports: analysisResult.external,
+          builtinImports: analysisResult.builtin,
+        }
+      };
 
       // 6. 그래프 DB에 저장
       const storageResult = await this.graphSystem.store([
@@ -214,12 +228,12 @@ export class SingleFileAnalyzer {
       return {
         filePath,
         language,
-        parseResult,
+        parseResult: analysisResult,
         storageResult,
         inferenceCount,
         stats: {
           nodesCreated: storageResult.nodesCreated,
-          edgesCreated: storageResult.edgesCreated,
+          edgesCreated: storageResult.relationshipsCreated,
           processingTime,
         },
       };

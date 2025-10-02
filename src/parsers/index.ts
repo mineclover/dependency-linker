@@ -4,52 +4,16 @@
  */
 
 // ===== BASE INTERFACES =====
-export * from "./base";
-export * from "./go";
-export * from "./java";
+export type { BaseParser, ParserFactory as IParserFactory, ParserOptions, ParseResult } from "./base";
+
 // ===== PARSER FACTORY =====
 export * from "./ParserFactory";
-export {
-	createParser,
-	createParserForFile,
-	getSupportedExtensions,
-	getSupportedLanguages,
-	globalParserFactory,
-	isFileSupported,
-	ParserFactory,
-	parseCode,
-	parseFile,
-} from "./ParserFactory";
-export * from "./python";
+
+// ===== PARSER MANAGER =====
+export * from "./ParserManager";
+
 // ===== LANGUAGE PARSERS =====
 export * from "./typescript";
-
-// ===== CONVENIENCE EXPORTS =====
-import {
-	createParser,
-	createParserForFile,
-	getSupportedExtensions,
-	getSupportedLanguages,
-	globalParserFactory,
-	isFileSupported,
-	parseCode,
-	parseFile,
-} from "./ParserFactory";
-
-export const Parsers = {
-	// Factory methods
-	createParser,
-	createParserForFile,
-	parseCode,
-	parseFile,
-
-	// Utility methods
-	isFileSupported,
-	getSupportedLanguages,
-	getSupportedExtensions,
-
-	// Global factory
-	factory: globalParserFactory,
-};
-
-export default Parsers;
+export * from "./java";
+export * from "./python";
+export * from "./go";

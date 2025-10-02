@@ -35,8 +35,8 @@ export type {
 /**
  * 통합 그래프 분석 시스템
  */
-import { GraphStorage } from './GraphStorage';
-import { GraphQueryEngine } from './GraphQueryEngine';
+import { GraphStorage, createGraphStorage } from './GraphStorage';
+import { GraphQueryEngine, createGraphQueryEngine } from './GraphQueryEngine';
 
 export class GraphAnalysisSystem {
   private storage: GraphStorage;

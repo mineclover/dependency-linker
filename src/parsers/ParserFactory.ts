@@ -125,6 +125,8 @@ export class ParserFactory implements IParserFactory {
 			java: ["java"],
 			python: ["py", "pyi"],
 			go: ["go"],
+			external: [],
+			unknown: [],
 		};
 
 		for (const [language, extensions] of Object.entries(languageExtensions)) {

@@ -37,7 +37,7 @@ export interface InferredRelationship {
   /** 추론 시점 */
   inferredAt: Date;
   /** 출처 파일 (경로 상 첫 번째 edge의 source_file) */
-  sourceFile: string;
+  sourceFile?: string;
 }
 
 /**
