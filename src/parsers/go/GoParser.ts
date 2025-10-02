@@ -13,10 +13,23 @@ export class GoParser extends BaseParser {
 	protected language = "go" as const;
 	protected fileExtensions = ["go"];
 
+	// Cache parser instance for reuse
+	private parser: Parser | null = null;
+
 	private createParser(): Parser {
 		const parser = new Parser();
 		parser.setLanguage(Go);
 		return parser;
+	}
+
+	/**
+	 * Get tree-sitter Parser instance for query execution
+	 */
+	getParser(): Parser {
+		if (!this.parser) {
+			this.parser = this.createParser();
+		}
+		return this.parser;
 	}
 
 	/**

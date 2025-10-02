@@ -67,6 +67,60 @@ export function testFunction() {
       await analyzer.close();
     });
 
+    it('should extract internal dependencies correctly', async () => {
+      const analyzer = new SingleFileAnalyzer();
+
+      const result = await analyzer.analyze(testFile, {
+        projectRoot: tempDir,
+        dbPath: join(tempDir, 'test.db'),
+      });
+
+      // Verify internal imports are extracted
+      expect(result.parseResult.internal).toHaveLength(1);
+      expect(result.parseResult.internal[0]).toBe('./foo');
+
+      await analyzer.close();
+    });
+
+    it('should extract external dependencies correctly', async () => {
+      const analyzer = new SingleFileAnalyzer();
+
+      const result = await analyzer.analyze(testFile, {
+        projectRoot: tempDir,
+        dbPath: join(tempDir, 'test.db'),
+      });
+
+      // Verify external imports are extracted
+      expect(result.parseResult.external).toHaveLength(1);
+      expect(result.parseResult.external[0]).toBe('bar');
+
+      await analyzer.close();
+    });
+
+    it('should classify builtin modules correctly', async () => {
+      const nodeFile = join(tempDir, 'node-test.ts');
+      writeFileSync(
+        nodeFile,
+        `
+import { readFileSync } from 'fs';
+import * as path from 'path';
+import { MyClass } from './my-class';
+`
+      );
+
+      const analyzer = new SingleFileAnalyzer();
+      const result = await analyzer.analyze(nodeFile, {
+        projectRoot: tempDir,
+        dbPath: join(tempDir, 'test.db'),
+      });
+
+      expect(result.parseResult.builtin).toContain('fs');
+      expect(result.parseResult.builtin).toContain('path');
+      expect(result.parseResult.internal).toContain('./my-class');
+
+      await analyzer.close();
+    });
+
     it('should detect language from file extension', async () => {
       const tsxFile = join(tempDir, 'test.tsx');
       writeFileSync(

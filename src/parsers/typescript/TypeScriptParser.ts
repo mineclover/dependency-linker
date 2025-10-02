@@ -13,10 +13,25 @@ export class TypeScriptParser extends BaseParser {
 	protected language = "typescript" as const;
 	protected fileExtensions = ["ts", "tsx", "js", "jsx"];
 
+	// Cache parser instances for reuse
+	private tsParser: Parser | null = null;
+	private tsxParser: Parser | null = null;
+
 	private createParser(isTsx: boolean): Parser {
 		const parser = new Parser();
 		parser.setLanguage(isTsx ? TypeScript.tsx : TypeScript.typescript);
 		return parser;
+	}
+
+	/**
+	 * Get tree-sitter Parser instance for query execution
+	 * Returns TypeScript parser by default (works for both TS and TSX)
+	 */
+	getParser(): Parser {
+		if (!this.tsParser) {
+			this.tsParser = this.createParser(false);
+		}
+		return this.tsParser;
 	}
 
 	/**
@@ -35,11 +50,28 @@ export class TypeScriptParser extends BaseParser {
 				(sourceCode.includes("<") &&
 					(sourceCode.includes("/>") || sourceCode.includes("</")));
 
-			const parser = this.createParser(isTsx);
+			// Use cached parsers
+			let parser: Parser;
+			if (isTsx) {
+				if (!this.tsxParser) {
+					this.tsxParser = this.createParser(true);
+				}
+				parser = this.tsxParser;
+			} else {
+				if (!this.tsParser) {
+					this.tsParser = this.createParser(false);
+				}
+				parser = this.tsParser;
+			}
+
 			const tree = parser.parse(sourceCode);
 
-			if (!tree.rootNode) {
-				throw new Error("Failed to parse TypeScript code");
+			// tree-sitter always returns a tree with a rootNode
+			// Even if there are syntax errors, it returns a best-effort AST
+			if (!tree || !tree.rootNode) {
+				throw new Error(
+					"Failed to parse TypeScript code: No tree or rootNode returned",
+				);
 			}
 
 			const parseTime = performance.now() - startTime;

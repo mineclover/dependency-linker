@@ -180,14 +180,15 @@ export function setLanguageParsers(): void {
 			"jsx",
 			"java",
 			"python",
-			"go"
+			"go",
 		];
 
 		for (const language of supportedLanguages) {
 			try {
 				const parser = globalParserFactory.createParser(language);
-				if (parser && parser.parser) {
-					globalTreeSitterQueryEngine.setParser(language, parser.parser);
+				if (parser) {
+					const treeSitterParser = parser.getParser();
+					globalTreeSitterQueryEngine.setParser(language, treeSitterParser);
 				}
 			} catch (error) {
 				// 파서 생성 실패는 무시 (선택적 언어 지원)

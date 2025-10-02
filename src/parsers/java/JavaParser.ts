@@ -13,10 +13,23 @@ export class JavaParser extends BaseParser {
 	protected language = "java" as const;
 	protected fileExtensions = ["java"];
 
+	// Cache parser instance for reuse
+	private parser: Parser | null = null;
+
 	private createParser(): Parser {
 		const parser = new Parser();
 		parser.setLanguage(Java);
 		return parser;
+	}
+
+	/**
+	 * Get tree-sitter Parser instance for query execution
+	 */
+	getParser(): Parser {
+		if (!this.parser) {
+			this.parser = this.createParser();
+		}
+		return this.parser;
 	}
 
 	/**

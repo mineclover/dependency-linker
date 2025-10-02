@@ -3,7 +3,7 @@
  * Tree-sitter 쿼리를 실행하여 QueryMatch 객체를 생성하는 엔진
  */
 
-import type Parser from "tree-sitter";
+import Parser from "tree-sitter";
 import type { QueryMatch, SupportedLanguage } from "./types";
 
 /**
@@ -50,38 +50,30 @@ export class TreeSitterQueryEngine {
 				throw new Error(`No parser available for language: ${language}`);
 			}
 
-			// Tree-sitter Query 객체 생성
-			const query = parser.getLanguage().query(queryString);
+			// Tree-sitter Query 객체 생성 (올바른 API 사용)
+			const parserLanguage = parser.getLanguage();
+			const query = new Parser.Query(parserLanguage, queryString);
 
 			// 쿼리 실행
 			const captures = query.captures(tree.rootNode);
 
+			// 캡처가 없으면 빈 배열 반환
+			if (captures.length === 0) {
+				return [];
+			}
+
 			// 캡처를 QueryMatch 형태로 변환
-			const matches: QueryMatch[] = [];
-			const captureGroups = new Map<
-				number,
-				Array<{ name: string; node: Parser.SyntaxNode }>
-			>();
-
-			// 캡처들을 패턴별로 그룹화
-			for (const capture of captures) {
-				const patternIndex = capture.pattern;
-				if (!captureGroups.has(patternIndex)) {
-					captureGroups.set(patternIndex, []);
-				}
-				captureGroups.get(patternIndex)?.push({
-					name: capture.name,
-					node: capture.node,
-				});
-			}
-
-			// 각 패턴 그룹을 QueryMatch로 변환
-			for (const [_patternIndex, captures] of captureGroups) {
-				matches.push({
+			// captures()는 모든 캡처를 평탄화하여 반환하므로
+			// 하나의 QueryMatch로 묶음
+			const matches: QueryMatch[] = [
+				{
 					queryName: queryName,
-					captures: captures,
-				});
-			}
+					captures: captures.map((c) => ({
+						name: c.name,
+						node: c.node,
+					})),
+				},
+			];
 
 			return matches;
 		} catch (error) {

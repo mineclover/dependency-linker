@@ -1,6 +1,20 @@
-// Jest setup for QueryResultMap-based tests
+/**
+ * Global Jest Setup
+ * Initialize analysis system once for all tests to avoid race conditions
+ */
+
+import { initializeAnalysisSystem } from '../src/api/analysis';
+
 // Extend timeout for AST analysis operations
 jest.setTimeout(10000);
+
+// Initialize analysis system globally before any tests run
+// This prevents race conditions when tests run in parallel
+// Note: setupFilesAfterEnv runs in each worker, so we use a marker to ensure single init
+if (!(global as any).__ANALYSIS_SYSTEM_INITIALIZED__) {
+	initializeAnalysisSystem();
+	(global as any).__ANALYSIS_SYSTEM_INITIALIZED__ = true;
+}
 
 // Global test utilities can be added here
 declare global {

@@ -8,11 +8,15 @@ import {
 	executeMultipleTreeSitterQueries,
 	initializeQueryBridge,
 } from "../core/QueryBridge";
+import { globalQueryEngine } from "../core/QueryEngine";
 import type { QueryKey, QueryResult } from "../core/QueryResultMap";
 import type { QueryExecutionContext, SupportedLanguage } from "../core/types";
 import type { CustomKeyMapping } from "../mappers/CustomKeyMapper";
 import { createCustomKeyMapper } from "../mappers/CustomKeyMapper";
 import { parseCode } from "../parsers";
+import { registerJavaQueries } from "../queries/java";
+import { registerPythonQueries } from "../queries/python";
+import { registerTypeScriptQueries } from "../queries/typescript";
 
 // ===== ANALYSIS RESULT TYPES =====
 
@@ -401,5 +405,11 @@ function isBuiltinModule(source: string, language: SupportedLanguage): boolean {
  */
 export function initializeAnalysisSystem(): void {
 	initializeQueryBridge();
+
+	// Register query processors for all languages
+	registerTypeScriptQueries(globalQueryEngine);
+	registerJavaQueries(globalQueryEngine);
+	registerPythonQueries(globalQueryEngine);
+
 	console.log("✅ Analysis system initialized");
 }

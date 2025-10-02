@@ -3,393 +3,433 @@
  * 단일 파일 경로(절대경로)를 받아서 의존성 분석 후 그래프 DB에 적재하는 API
  */
 
-import { existsSync, statSync } from 'node:fs';
-import { dirname, isAbsolute } from 'node:path';
-import { analyzeDependencies } from '../api/analysis';
-import { createGraphAnalysisSystem } from '../database';
-import type { SupportedLanguage } from '../core/types';
-import type { StorageResult, GraphAnalysisSystem } from '../database';
+import { existsSync, readFileSync, statSync } from "node:fs";
+import { dirname, isAbsolute } from "node:path";
+import { analyzeDependencies } from "../api/analysis";
+import type { SupportedLanguage } from "../core/types";
+import type { GraphAnalysisSystem, StorageResult } from "../database";
+import { createGraphAnalysisSystem } from "../database";
 
 /**
  * 단일 파일 분석 옵션
  */
 export interface SingleFileAnalysisOptions {
-  /**
-   * 그래프 데이터베이스 경로 (기본: 파일과 동일 디렉토리의 .dependency-linker/graph.db)
-   */
-  dbPath?: string;
+	/**
+	 * 그래프 데이터베이스 경로 (기본: 파일과 동일 디렉토리의 .dependency-linker/graph.db)
+	 */
+	dbPath?: string;
 
-  /**
-   * 프로젝트 루트 경로 (기본: 파일의 디렉토리)
-   */
-  projectRoot?: string;
+	/**
+	 * 프로젝트 루트 경로 (기본: 파일의 디렉토리)
+	 */
+	projectRoot?: string;
 
-  /**
-   * 프로젝트 이름 (기본: 'Single File Analysis')
-   */
-  projectName?: string;
+	/**
+	 * 프로젝트 이름 (기본: 'Single File Analysis')
+	 */
+	projectName?: string;
 
-  /**
-   * 추론 관계 계산 활성화 여부 (기본: true)
-   */
-  enableInference?: boolean;
+	/**
+	 * 추론 관계 계산 활성화 여부 (기본: true)
+	 */
+	enableInference?: boolean;
 
-  /**
-   * 기존 파일 데이터 삭제 후 재분석 여부 (기본: true)
-   */
-  replaceExisting?: boolean;
+	/**
+	 * 기존 파일 데이터 삭제 후 재분석 여부 (기본: true)
+	 */
+	replaceExisting?: boolean;
 
-  /**
-   * 언어 자동 감지 여부 (false인 경우 language 옵션 필수)
-   */
-  autoDetectLanguage?: boolean;
+	/**
+	 * 언어 자동 감지 여부 (false인 경우 language 옵션 필수)
+	 */
+	autoDetectLanguage?: boolean;
 
-  /**
-   * 명시적 언어 지정 (autoDetectLanguage가 false인 경우 필수)
-   */
-  language?: SupportedLanguage;
+	/**
+	 * 명시적 언어 지정 (autoDetectLanguage가 false인 경우 필수)
+	 */
+	language?: SupportedLanguage;
 }
 
 /**
  * 단일 파일 분석 결과
  */
 export interface SingleFileAnalysisResult {
-  /**
-   * 분석된 파일 경로 (절대경로)
-   */
-  filePath: string;
+	/**
+	 * 분석된 파일 경로 (절대경로)
+	 */
+	filePath: string;
 
-  /**
-   * 감지된 언어
-   */
-  language: SupportedLanguage;
+	/**
+	 * 감지된 언어
+	 */
+	language: SupportedLanguage;
 
-  /**
-   * 의존성 분석 결과 (internal, external, builtin imports)
-   */
-  parseResult: {
-    internal: string[];
-    external: string[];
-    builtin: string[];
-  };
+	/**
+	 * 의존성 분석 결과 (internal, external, builtin imports)
+	 */
+	parseResult: {
+		internal: string[];
+		external: string[];
+		builtin: string[];
+	};
 
-  /**
-   * 그래프 저장 결과
-   */
-  storageResult: StorageResult;
+	/**
+	 * 그래프 저장 결과
+	 */
+	storageResult: StorageResult;
 
-  /**
-   * 추론 관계 개수 (enableInference가 true인 경우)
-   */
-  inferenceCount?: number;
+	/**
+	 * 추론 관계 개수 (enableInference가 true인 경우)
+	 */
+	inferenceCount?: number;
 
-  /**
-   * 분석 통계
-   */
-  stats: {
-    /**
-     * 생성된 노드 수
-     */
-    nodesCreated: number;
+	/**
+	 * 분석 통계
+	 */
+	stats: {
+		/**
+		 * 생성된 노드 수
+		 */
+		nodesCreated: number;
 
-    /**
-     * 생성된 엣지 수
-     */
-    edgesCreated: number;
+		/**
+		 * 생성된 엣지 수
+		 */
+		edgesCreated: number;
 
-    /**
-     * 처리 시간 (ms)
-     */
-    processingTime: number;
-  };
+		/**
+		 * 처리 시간 (ms)
+		 */
+		processingTime: number;
+	};
 }
 
 /**
  * 단일 파일 분석 에러
  */
 export class SingleFileAnalysisError extends Error {
-  constructor(
-    message: string,
-    public code: string,
-    public filePath?: string
-  ) {
-    super(message);
-    this.name = 'SingleFileAnalysisError';
-  }
+	constructor(
+		message: string,
+		public code: string,
+		public filePath?: string,
+	) {
+		super(message);
+		this.name = "SingleFileAnalysisError";
+	}
 }
 
 /**
  * 단일 파일 분석 클래스
  */
 export class SingleFileAnalyzer {
-  private graphSystem?: GraphAnalysisSystem;
-  private shouldCloseGraphSystem = false;
+	private graphSystem?: GraphAnalysisSystem;
+	private shouldCloseGraphSystem = false;
 
-  /**
-   * 기존 GraphAnalysisSystem 인스턴스를 재사용하는 생성자
-   */
-  constructor(graphSystem?: GraphAnalysisSystem) {
-    if (graphSystem) {
-      this.graphSystem = graphSystem;
-      this.shouldCloseGraphSystem = false;
-    }
-  }
+	/**
+	 * 기존 GraphAnalysisSystem 인스턴스를 재사용하는 생성자
+	 */
+	constructor(graphSystem?: GraphAnalysisSystem) {
+		if (graphSystem) {
+			this.graphSystem = graphSystem;
+			this.shouldCloseGraphSystem = false;
+		}
+	}
 
-  /**
-   * 단일 파일 분석 및 그래프 DB 적재
-   *
-   * @param filePath - 분석할 파일의 절대경로
-   * @param options - 분석 옵션
-   * @returns 분석 결과
-   *
-   * @throws {SingleFileAnalysisError} 파일 검증 실패 또는 분석 실패 시
-   *
-   * @example
-   * ```typescript
-   * const analyzer = new SingleFileAnalyzer();
-   * const result = await analyzer.analyze('/absolute/path/to/file.ts');
-   * console.log(`Nodes: ${result.stats.nodesCreated}, Edges: ${result.stats.edgesCreated}`);
-   * await analyzer.close();
-   * ```
-   */
-  async analyze(
-    filePath: string,
-    options: SingleFileAnalysisOptions = {}
-  ): Promise<SingleFileAnalysisResult> {
-    const startTime = Date.now();
+	/**
+	 * 단일 파일 분석 및 그래프 DB 적재
+	 *
+	 * @param filePath - 분석할 파일의 절대경로
+	 * @param options - 분석 옵션
+	 * @returns 분석 결과
+	 *
+	 * @throws {SingleFileAnalysisError} 파일 검증 실패 또는 분석 실패 시
+	 *
+	 * @example
+	 * ```typescript
+	 * const analyzer = new SingleFileAnalyzer();
+	 * const result = await analyzer.analyze('/absolute/path/to/file.ts');
+	 * console.log(`Nodes: ${result.stats.nodesCreated}, Edges: ${result.stats.edgesCreated}`);
+	 * await analyzer.close();
+	 * ```
+	 */
+	async analyze(
+		filePath: string,
+		options: SingleFileAnalysisOptions = {},
+	): Promise<SingleFileAnalysisResult> {
+		const startTime = Date.now();
 
-    // 옵션 기본값 설정
-    const {
-      dbPath,
-      projectRoot,
-      projectName = 'Single File Analysis',
-      enableInference = true,
-      replaceExisting = true,
-      autoDetectLanguage = true,
-      language: explicitLanguage,
-    } = options;
+		// 옵션 기본값 설정
+		const {
+			dbPath,
+			projectRoot,
+			projectName = "Single File Analysis",
+			enableInference = true,
+			replaceExisting = true,
+			autoDetectLanguage = true,
+			language: explicitLanguage,
+		} = options;
 
-    try {
-      // 1. 파일 경로 검증
-      this.validateFilePath(filePath);
+		try {
+			// 1. 파일 경로 검증
+			this.validateFilePath(filePath);
 
-      // 2. 언어 감지
-      const language = autoDetectLanguage
-        ? this.detectLanguage(filePath)
-        : explicitLanguage || this.detectLanguage(filePath);
+			// 2. 언어 감지
+			const language = autoDetectLanguage
+				? this.detectLanguage(filePath)
+				: explicitLanguage || this.detectLanguage(filePath);
 
-      // 3. GraphAnalysisSystem 초기화 (없는 경우)
-      if (!this.graphSystem) {
-        const rootPath = projectRoot || dirname(filePath);
-        this.graphSystem = createGraphAnalysisSystem({
-          projectRoot: rootPath,
-          projectName,
-          dbPath,
-        });
-        this.shouldCloseGraphSystem = true;
-      }
+			// 3. GraphAnalysisSystem 초기화 (없는 경우)
+			if (!this.graphSystem) {
+				const rootPath = projectRoot || dirname(filePath);
+				this.graphSystem = createGraphAnalysisSystem({
+					projectRoot: rootPath,
+					projectName,
+					dbPath,
+				});
+				this.shouldCloseGraphSystem = true;
+			}
 
-      // 4. 기존 파일 데이터 삭제 (replaceExisting이 true인 경우)
-      if (replaceExisting) {
-        await this.removeExistingFileData(filePath);
-      }
+			// 4. 기존 파일 데이터 삭제 (replaceExisting이 true인 경우)
+			if (replaceExisting) {
+				await this.removeExistingFileData(filePath);
+			}
 
-      // 5. 파일 분석
-      const analysisResult = await analyzeDependencies('', language, filePath);
+			// 5. 파일 내용 읽기
+			let sourceCode: string;
+			try {
+				sourceCode = readFileSync(filePath, "utf-8");
+			} catch (error) {
+				if ((error as NodeJS.ErrnoException).code === "ENOENT") {
+					throw new SingleFileAnalysisError(
+						`File not found: ${filePath}`,
+						"FILE_NOT_FOUND",
+						filePath,
+					);
+				}
+				if ((error as NodeJS.ErrnoException).code === "EACCES") {
+					throw new SingleFileAnalysisError(
+						`Permission denied: ${filePath}`,
+						"PERMISSION_DENIED",
+						filePath,
+					);
+				}
+				throw new SingleFileAnalysisError(
+					`Failed to read file: ${error instanceof Error ? error.message : String(error)}`,
+					"FILE_READ_ERROR",
+					filePath,
+				);
+			}
 
-      // Transform to ParseResult format for GraphStorage
-      const parseResult = {
-        imports: [...analysisResult.internal, ...analysisResult.external],
-        metadata: {
-          internalImports: analysisResult.internal,
-          externalImports: analysisResult.external,
-          builtinImports: analysisResult.builtin,
-        }
-      };
+			// 6. 파일 분석
+			const analysisResult = await analyzeDependencies(
+				sourceCode,
+				language,
+				filePath,
+			);
 
-      // 6. 그래프 DB에 저장
-      const storageResult = await this.graphSystem.store([
-        {
-          filePath,
-          language,
-          result: parseResult,
-        },
-      ]);
+			// Transform to ParseResult format for GraphStorage
+			const parseResult = {
+				imports: [...analysisResult.internal, ...analysisResult.external],
+				metadata: {
+					internalImports: analysisResult.internal,
+					externalImports: analysisResult.external,
+					builtinImports: analysisResult.builtin,
+				},
+			};
 
-      // 7. 추론 관계 계산
-      let inferenceCount: number | undefined;
-      if (enableInference) {
-        inferenceCount = await this.graphSystem.computeInferences();
-      }
+			// 7. 그래프 DB에 저장
+			const storageResult = await this.graphSystem.store([
+				{
+					filePath,
+					language,
+					result: parseResult,
+				},
+			]);
 
-      // 8. 통계 계산
-      const processingTime = Date.now() - startTime;
+			// 8. 추론 관계 계산
+			let inferenceCount: number | undefined;
+			if (enableInference) {
+				inferenceCount = await this.graphSystem.computeInferences();
+			}
 
-      return {
-        filePath,
-        language,
-        parseResult: analysisResult,
-        storageResult,
-        inferenceCount,
-        stats: {
-          nodesCreated: storageResult.nodesCreated,
-          edgesCreated: storageResult.relationshipsCreated,
-          processingTime,
-        },
-      };
-    } catch (error) {
-      if (error instanceof SingleFileAnalysisError) {
-        throw error;
-      }
+			// 9. 통계 계산
+			const processingTime = Date.now() - startTime;
 
-      throw new SingleFileAnalysisError(
-        `Failed to analyze file: ${error instanceof Error ? error.message : String(error)}`,
-        'ANALYSIS_FAILED',
-        filePath
-      );
-    }
-  }
+			return {
+				filePath,
+				language,
+				parseResult: analysisResult,
+				storageResult,
+				inferenceCount,
+				stats: {
+					nodesCreated: storageResult.nodesCreated,
+					edgesCreated: storageResult.relationshipsCreated,
+					processingTime,
+				},
+			};
+		} catch (error) {
+			if (error instanceof SingleFileAnalysisError) {
+				throw error;
+			}
 
-  /**
-   * 여러 파일 분석 (배치 처리)
-   *
-   * @param filePaths - 분석할 파일들의 절대경로 배열
-   * @param options - 분석 옵션
-   * @returns 각 파일의 분석 결과 배열
-   *
-   * @example
-   * ```typescript
-   * const analyzer = new SingleFileAnalyzer();
-   * const results = await analyzer.analyzeMultiple([
-   *   '/path/to/file1.ts',
-   *   '/path/to/file2.ts'
-   * ]);
-   * await analyzer.close();
-   * ```
-   */
-  async analyzeMultiple(
-    filePaths: string[],
-    options: SingleFileAnalysisOptions = {}
-  ): Promise<SingleFileAnalysisResult[]> {
-    const results: SingleFileAnalysisResult[] = [];
+			throw new SingleFileAnalysisError(
+				`Failed to analyze file: ${error instanceof Error ? error.message : String(error)}`,
+				"ANALYSIS_FAILED",
+				filePath,
+			);
+		}
+	}
 
-    // 첫 번째 파일에서 GraphAnalysisSystem 초기화
-    if (filePaths.length === 0) {
-      return results;
-    }
+	/**
+	 * 여러 파일 분석 (배치 처리)
+	 *
+	 * @param filePaths - 분석할 파일들의 절대경로 배열
+	 * @param options - 분석 옵션
+	 * @returns 각 파일의 분석 결과 배열
+	 *
+	 * @example
+	 * ```typescript
+	 * const analyzer = new SingleFileAnalyzer();
+	 * const results = await analyzer.analyzeMultiple([
+	 *   '/path/to/file1.ts',
+	 *   '/path/to/file2.ts'
+	 * ]);
+	 * await analyzer.close();
+	 * ```
+	 */
+	async analyzeMultiple(
+		filePaths: string[],
+		options: SingleFileAnalysisOptions = {},
+	): Promise<SingleFileAnalysisResult[]> {
+		const results: SingleFileAnalysisResult[] = [];
 
-    // replaceExisting을 false로 설정하여 한 번에 처리
-    const batchOptions = { ...options, replaceExisting: false };
+		// 첫 번째 파일에서 GraphAnalysisSystem 초기화
+		if (filePaths.length === 0) {
+			return results;
+		}
 
-    for (const filePath of filePaths) {
-      try {
-        const result = await this.analyze(filePath, batchOptions);
-        results.push(result);
-      } catch (error) {
-        console.warn(`Failed to analyze ${filePath}:`, error);
-        // 개별 파일 실패는 전체 배치를 중단하지 않음
-      }
-    }
+		// replaceExisting을 false로 설정하여 한 번에 처리
+		const batchOptions = { ...options, replaceExisting: false };
 
-    return results;
-  }
+		for (const filePath of filePaths) {
+			try {
+				const result = await this.analyze(filePath, batchOptions);
+				results.push(result);
+			} catch (error) {
+				console.warn(`Failed to analyze ${filePath}:`, error);
+				// 개별 파일 실패는 전체 배치를 중단하지 않음
+			}
+		}
 
-  /**
-   * 그래프 DB 연결 종료
-   */
-  async close(): Promise<void> {
-    if (this.graphSystem && this.shouldCloseGraphSystem) {
-      await this.graphSystem.close();
-      this.graphSystem = undefined;
-    }
-  }
+		return results;
+	}
 
-  /**
-   * 파일 경로 검증
-   */
-  private validateFilePath(filePath: string): void {
-    // 절대경로 확인
-    if (!isAbsolute(filePath)) {
-      throw new SingleFileAnalysisError(
-        `File path must be absolute: ${filePath}`,
-        'INVALID_PATH',
-        filePath
-      );
-    }
+	/**
+	 * 그래프 DB 연결 종료
+	 */
+	async close(): Promise<void> {
+		if (this.graphSystem && this.shouldCloseGraphSystem) {
+			await this.graphSystem.close();
+			this.graphSystem = undefined;
+		}
+	}
 
-    // 파일 존재 확인
-    if (!existsSync(filePath)) {
-      throw new SingleFileAnalysisError(
-        `File does not exist: ${filePath}`,
-        'FILE_NOT_FOUND',
-        filePath
-      );
-    }
+	/**
+	 * 파일 경로 검증
+	 */
+	private validateFilePath(filePath: string): void {
+		// 절대경로 확인
+		if (!isAbsolute(filePath)) {
+			throw new SingleFileAnalysisError(
+				`File path must be absolute: ${filePath}`,
+				"INVALID_PATH",
+				filePath,
+			);
+		}
 
-    // 파일 타입 확인 (디렉토리가 아닌지)
-    const stats = statSync(filePath);
-    if (!stats.isFile()) {
-      throw new SingleFileAnalysisError(
-        `Path is not a file: ${filePath}`,
-        'NOT_A_FILE',
-        filePath
-      );
-    }
+		// 파일 존재 확인
+		if (!existsSync(filePath)) {
+			throw new SingleFileAnalysisError(
+				`File does not exist: ${filePath}`,
+				"FILE_NOT_FOUND",
+				filePath,
+			);
+		}
 
-    // 지원되는 파일 확장자 확인
-    const supportedExtensions = ['.ts', '.tsx', '.js', '.jsx', '.java', '.py', '.go'];
-    const hasValidExtension = supportedExtensions.some(ext => filePath.endsWith(ext));
+		// 파일 타입 확인 (디렉토리가 아닌지)
+		const stats = statSync(filePath);
+		if (!stats.isFile()) {
+			throw new SingleFileAnalysisError(
+				`Path is not a file: ${filePath}`,
+				"NOT_A_FILE",
+				filePath,
+			);
+		}
 
-    if (!hasValidExtension) {
-      throw new SingleFileAnalysisError(
-        `Unsupported file type. Supported: ${supportedExtensions.join(', ')}`,
-        'UNSUPPORTED_FILE_TYPE',
-        filePath
-      );
-    }
-  }
+		// 지원되는 파일 확장자 확인
+		const supportedExtensions = [
+			".ts",
+			".tsx",
+			".js",
+			".jsx",
+			".java",
+			".py",
+			".go",
+		];
+		const hasValidExtension = supportedExtensions.some((ext) =>
+			filePath.endsWith(ext),
+		);
 
-  /**
-   * 파일 확장자로부터 언어 감지
-   */
-  private detectLanguage(filePath: string): SupportedLanguage {
-    if (filePath.endsWith('.tsx')) return 'tsx';
-    if (filePath.endsWith('.ts')) return 'typescript';
-    if (filePath.endsWith('.jsx')) return 'jsx';
-    if (filePath.endsWith('.js')) return 'javascript';
-    if (filePath.endsWith('.java')) return 'java';
-    if (filePath.endsWith('.py')) return 'python';
-    if (filePath.endsWith('.go')) return 'go';
+		if (!hasValidExtension) {
+			throw new SingleFileAnalysisError(
+				`Unsupported file type. Supported: ${supportedExtensions.join(", ")}`,
+				"UNSUPPORTED_FILE_TYPE",
+				filePath,
+			);
+		}
+	}
 
-    // 기본값
-    return 'typescript';
-  }
+	/**
+	 * 파일 확장자로부터 언어 감지
+	 */
+	private detectLanguage(filePath: string): SupportedLanguage {
+		if (filePath.endsWith(".tsx")) return "tsx";
+		if (filePath.endsWith(".ts")) return "typescript";
+		if (filePath.endsWith(".jsx")) return "jsx";
+		if (filePath.endsWith(".js")) return "javascript";
+		if (filePath.endsWith(".java")) return "java";
+		if (filePath.endsWith(".py")) return "python";
+		if (filePath.endsWith(".go")) return "go";
 
-  /**
-   * 기존 파일 데이터 삭제
-   */
-  private async removeExistingFileData(filePath: string): Promise<void> {
-    if (!this.graphSystem) {
-      return;
-    }
+		// 기본값
+		return "typescript";
+	}
 
-    // FileDependencyAnalyzer의 cleanup 로직 사용
-    // 해당 파일의 모든 노드와 엣지 삭제
-    const db = (this.graphSystem as any).db;
-    if (db) {
-      await db.run(
-        `DELETE FROM edges WHERE start_node_id IN (
+	/**
+	 * 기존 파일 데이터 삭제
+	 */
+	private async removeExistingFileData(filePath: string): Promise<void> {
+		if (!this.graphSystem) {
+			return;
+		}
+
+		// FileDependencyAnalyzer의 cleanup 로직 사용
+		// 해당 파일의 모든 노드와 엣지 삭제
+		const db = (this.graphSystem as any).db;
+		if (db) {
+			await db.run(
+				`DELETE FROM edges WHERE start_node_id IN (
           SELECT id FROM nodes WHERE source_file = ?
         ) OR end_node_id IN (
           SELECT id FROM nodes WHERE source_file = ?
         )`,
-        filePath,
-        filePath
-      );
+				filePath,
+				filePath,
+			);
 
-      await db.run(`DELETE FROM nodes WHERE source_file = ?`, filePath);
-    }
-  }
+			await db.run(`DELETE FROM nodes WHERE source_file = ?`, filePath);
+		}
+	}
 }
 
 /**
@@ -419,16 +459,16 @@ export class SingleFileAnalyzer {
  * ```
  */
 export async function analyzeSingleFile(
-  filePath: string,
-  options?: SingleFileAnalysisOptions
+	filePath: string,
+	options?: SingleFileAnalysisOptions,
 ): Promise<SingleFileAnalysisResult> {
-  const analyzer = new SingleFileAnalyzer();
+	const analyzer = new SingleFileAnalyzer();
 
-  try {
-    return await analyzer.analyze(filePath, options);
-  } finally {
-    await analyzer.close();
-  }
+	try {
+		return await analyzer.analyze(filePath, options);
+	} finally {
+		await analyzer.close();
+	}
 }
 
 /**
@@ -453,14 +493,14 @@ export async function analyzeSingleFile(
  * ```
  */
 export async function analyzeMultipleFiles(
-  filePaths: string[],
-  options?: SingleFileAnalysisOptions
+	filePaths: string[],
+	options?: SingleFileAnalysisOptions,
 ): Promise<SingleFileAnalysisResult[]> {
-  const analyzer = new SingleFileAnalyzer();
+	const analyzer = new SingleFileAnalyzer();
 
-  try {
-    return await analyzer.analyzeMultiple(filePaths, options);
-  } finally {
-    await analyzer.close();
-  }
+	try {
+		return await analyzer.analyzeMultiple(filePaths, options);
+	} finally {
+		await analyzer.close();
+	}
 }

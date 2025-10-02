@@ -4,16 +4,18 @@
  */
 
 // ===== BASE INTERFACES =====
-export type { BaseParser, ParserFactory as IParserFactory, ParserOptions, ParseResult } from "./base";
-
+export type {
+	BaseParser,
+	ParseResult,
+	ParserFactory as IParserFactory,
+	ParserOptions,
+} from "./base";
+export * from "./go";
+export * from "./java";
 // ===== PARSER FACTORY =====
 export * from "./ParserFactory";
-
 // ===== PARSER MANAGER =====
 export * from "./ParserManager";
-
+export * from "./python";
 // ===== LANGUAGE PARSERS =====
 export * from "./typescript";
-export * from "./java";
-export * from "./python";
-export * from "./go";

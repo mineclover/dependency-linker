@@ -88,9 +88,6 @@ describe("Essential Parser System Tests", () => {
 
 			console.log(`🚀 Batch processing: 10 files in ${totalTime.toFixed(2)}ms`);
 			console.log(`📊 Average: ${(totalTime / 10).toFixed(2)}ms per file`);
-
-			// 정리
-			globalParserManager.dispose();
 		});
 
 		test("should maintain parsing consistency", async () => {
@@ -110,9 +107,6 @@ describe("Essential Parser System Tests", () => {
 			});
 
 			console.log(`🔄 Consistency test: ${iterations} iterations, ${firstNodeCount} nodes each`);
-
-			// 정리
-			globalParserManager.dispose();
 		});
 	});
 

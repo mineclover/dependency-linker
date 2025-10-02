@@ -26,11 +26,10 @@ export const TYPESCRIPT_TREE_SITTER_QUERIES = {
 	 */
 	"ts-named-imports": `
 		(import_statement
-			import_clause: (import_clause
-				named_imports: (named_imports
+			(import_clause
+				(named_imports
 					(import_specifier
-						name: (identifier) @name
-						alias: (identifier)? @alias))))
+						(identifier) @name))))
 	`,
 
 	/**
@@ -39,8 +38,8 @@ export const TYPESCRIPT_TREE_SITTER_QUERIES = {
 	 */
 	"ts-default-imports": `
 		(import_statement
-			import_clause: (import_clause
-				name: (identifier) @import_name)
+			(import_clause
+				(identifier) @import_name)
 			source: (string) @source)
 	`,
 
@@ -51,11 +50,10 @@ export const TYPESCRIPT_TREE_SITTER_QUERIES = {
 	"ts-type-imports": `
 		(import_statement
 			"type"
-			import_clause: (import_clause
-				named_imports: (named_imports
+			(import_clause
+				(named_imports
 					(import_specifier
-						name: (identifier) @name
-						alias: (identifier)? @alias)))
+						(identifier) @name)))
 			source: (string) @source)
 	`,
 

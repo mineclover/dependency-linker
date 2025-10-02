@@ -7,32 +7,29 @@
  * - Type-safe inference interfaces and options
  */
 
-// Core inference engine
-export { InferenceEngine } from './InferenceEngine';
+export type { EdgeTypeDefinition } from "./EdgeTypeRegistry";
 
 // Edge type management
-export { EdgeTypeRegistry } from './EdgeTypeRegistry';
-export type { EdgeTypeDefinition } from './EdgeTypeRegistry';
+export { EdgeTypeRegistry } from "./EdgeTypeRegistry";
+// Core inference engine
+export { InferenceEngine } from "./InferenceEngine";
 
 // Type definitions
 export type {
-  // Inference types
-  InferredRelationType,
-  InferencePath,
-  InferredRelationship,
-
-  // Query options
-  HierarchicalQueryOptions,
-  TransitiveQueryOptions,
-  InheritableQueryOptions,
-
-  // Cache and configuration
-  InferenceCacheEntry,
-  InferenceStatistics,
-  InferenceEngineConfig,
-  InferenceResult,
-
-  // Rules and validation
-  EdgeTypeInferenceRule,
-  InferenceValidationResult,
-} from './InferenceTypes';
+	// Rules and validation
+	EdgeTypeInferenceRule,
+	// Query options
+	HierarchicalQueryOptions,
+	// Cache and configuration
+	InferenceCacheEntry,
+	InferenceEngineConfig,
+	InferencePath,
+	InferenceResult,
+	InferenceStatistics,
+	InferenceValidationResult,
+	InferredRelationship,
+	// Inference types
+	InferredRelationType,
+	InheritableQueryOptions,
+	TransitiveQueryOptions,
+} from "./InferenceTypes";

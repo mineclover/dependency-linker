@@ -35,6 +35,11 @@ export abstract class BaseParser {
 	protected abstract fileExtensions: string[];
 
 	/**
+	 * tree-sitter Parser 인스턴스 반환 (query 실행용)
+	 */
+	abstract getParser(): Parser;
+
+	/**
 	 * 소스 코드 파싱
 	 */
 	abstract parse(

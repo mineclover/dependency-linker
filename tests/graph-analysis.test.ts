@@ -12,14 +12,9 @@ import {
 	createDependencyAnalyzer,
 	analyzeDependencyGraph,
 } from "../src/graph";
-import { initializeAnalysisSystem } from "../src/api/analysis";
 
 describe("Dependency Graph Analysis", () => {
 	const testProjectRoot = resolve(__dirname, "..");
-
-	beforeAll(() => {
-		initializeAnalysisSystem();
-	});
 
 	describe("PathResolver", () => {
 		it("should resolve relative paths correctly", async () => {
