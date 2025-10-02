@@ -7,7 +7,7 @@ PRAGMA foreign_keys = ON;
 -- ===== CORE GRAPH TABLES =====
 
 -- Nodes: Represents any entity in the codebase (files, classes, methods, variables, etc.)
-CREATE TABLE nodes (
+CREATE TABLE IF NOT EXISTS nodes (
   id INTEGER PRIMARY KEY AUTOINCREMENT,
   -- Unique identifier: file_path::type::name format for guaranteed uniqueness
   -- Examples:
@@ -37,14 +37,14 @@ CREATE TABLE nodes (
 );
 
 -- Indexes for fast lookups on nodes table
-CREATE INDEX idx_nodes_type ON nodes (type);
-CREATE INDEX idx_nodes_source_file ON nodes (source_file);
-CREATE INDEX idx_nodes_language ON nodes (language);
-CREATE INDEX idx_nodes_identifier ON nodes (identifier);
-CREATE INDEX idx_nodes_name ON nodes (name);
+CREATE INDEX IF NOT EXISTS idx_nodes_type ON nodes (type);
+CREATE INDEX IF NOT EXISTS idx_nodes_source_file ON nodes (source_file);
+CREATE INDEX IF NOT EXISTS idx_nodes_language ON nodes (language);
+CREATE INDEX IF NOT EXISTS idx_nodes_identifier ON nodes (identifier);
+CREATE INDEX IF NOT EXISTS idx_nodes_name ON nodes (name);
 
 -- Edges: Represents all relationships between nodes
-CREATE TABLE edges (
+CREATE TABLE IF NOT EXISTS edges (
   id INTEGER PRIMARY KEY AUTOINCREMENT,
   -- Source node
   start_node_id INTEGER NOT NULL,
@@ -74,18 +74,18 @@ CREATE TABLE edges (
 );
 
 -- Indexes for fast graph traversal on edges table
-CREATE INDEX idx_edges_start ON edges (start_node_id);
-CREATE INDEX idx_edges_end ON edges (end_node_id);
-CREATE INDEX idx_edges_type ON edges (type);
-CREATE INDEX idx_edges_start_type ON edges (start_node_id, type);
-CREATE INDEX idx_edges_end_type ON edges (end_node_id, type);
+CREATE INDEX IF NOT EXISTS idx_edges_start ON edges (start_node_id);
+CREATE INDEX IF NOT EXISTS idx_edges_end ON edges (end_node_id);
+CREATE INDEX IF NOT EXISTS idx_edges_type ON edges (type);
+CREATE INDEX IF NOT EXISTS idx_edges_start_type ON edges (start_node_id, type);
+CREATE INDEX IF NOT EXISTS idx_edges_end_type ON edges (end_node_id, type);
 -- Index for analyzer-specific cleanup by source_file and type
-CREATE INDEX idx_edges_source_file_type ON edges (source_file, type);
+CREATE INDEX IF NOT EXISTS idx_edges_source_file_type ON edges (source_file, type);
 
 -- ===== PROJECT METADATA =====
 
 -- Projects: Root container for analysis sessions
-CREATE TABLE projects (
+CREATE TABLE IF NOT EXISTS projects (
   id INTEGER PRIMARY KEY AUTOINCREMENT,
   name TEXT NOT NULL,
   root_path TEXT NOT NULL UNIQUE,
@@ -97,7 +97,7 @@ CREATE TABLE projects (
 );
 
 -- Analysis Sessions: Track different analysis runs
-CREATE TABLE analysis_sessions (
+CREATE TABLE IF NOT EXISTS analysis_sessions (
   id INTEGER PRIMARY KEY AUTOINCREMENT,
   project_id INTEGER NOT NULL,
   name TEXT,
@@ -112,12 +112,12 @@ CREATE TABLE analysis_sessions (
 );
 
 -- Index for analysis sessions
-CREATE INDEX idx_analysis_sessions_project ON analysis_sessions (project_id);
+CREATE INDEX IF NOT EXISTS idx_analysis_sessions_project ON analysis_sessions (project_id);
 
 -- ===== EDGE TYPE DEFINITIONS =====
 
 -- Edge Types: Define valid edge types and their hierarchical relationships
-CREATE TABLE edge_types (
+CREATE TABLE IF NOT EXISTS edge_types (
   type TEXT PRIMARY KEY,
   description TEXT,
   -- JSON schema for metadata validation
@@ -140,12 +140,12 @@ CREATE TABLE edge_types (
 );
 
 -- Index for edge types
-CREATE INDEX idx_edge_types_parent ON edge_types (parent_type);
+CREATE INDEX IF NOT EXISTS idx_edge_types_parent ON edge_types (parent_type);
 
 -- ===== PERFORMANCE OPTIMIZATION TABLES =====
 
 -- Edge Inference Cache: For fast hierarchical and transitive relationship queries
-CREATE TABLE edge_inference_cache (
+CREATE TABLE IF NOT EXISTS edge_inference_cache (
   start_node_id INTEGER NOT NULL,
   end_node_id INTEGER NOT NULL,
   inferred_type TEXT NOT NULL,
@@ -164,13 +164,13 @@ CREATE TABLE edge_inference_cache (
 );
 
 -- Indexes for edge inference cache
-CREATE INDEX idx_inference_start ON edge_inference_cache (start_node_id);
-CREATE INDEX idx_inference_end ON edge_inference_cache (end_node_id);
-CREATE INDEX idx_inference_type ON edge_inference_cache (inferred_type);
-CREATE INDEX idx_inference_depth ON edge_inference_cache (depth);
+CREATE INDEX IF NOT EXISTS idx_inference_start ON edge_inference_cache (start_node_id);
+CREATE INDEX IF NOT EXISTS idx_inference_end ON edge_inference_cache (end_node_id);
+CREATE INDEX IF NOT EXISTS idx_inference_type ON edge_inference_cache (inferred_type);
+CREATE INDEX IF NOT EXISTS idx_inference_depth ON edge_inference_cache (depth);
 
 -- Graph Statistics: Pre-computed metrics for performance
-CREATE TABLE graph_stats (
+CREATE TABLE IF NOT EXISTS graph_stats (
   id INTEGER PRIMARY KEY AUTOINCREMENT,
   session_id INTEGER,
   node_type TEXT,
@@ -183,12 +183,12 @@ CREATE TABLE graph_stats (
 );
 
 -- Indexes for graph stats
-CREATE INDEX idx_stats_session ON graph_stats (session_id);
-CREATE INDEX idx_stats_metric ON graph_stats (metric_name);
+CREATE INDEX IF NOT EXISTS idx_stats_session ON graph_stats (session_id);
+CREATE INDEX IF NOT EXISTS idx_stats_metric ON graph_stats (metric_name);
 
 -- ===== PREDEFINED EDGE TYPES =====
 
-INSERT INTO edge_types (type, description, schema, is_directed, parent_type, is_transitive, is_inheritable) VALUES
+INSERT OR IGNORE INTO edge_types (type, description, schema, is_directed, parent_type, is_transitive, is_inheritable) VALUES
   -- Basic structural relationships
   ('contains', 'Contains relationship (A contains B)', '{}', TRUE, NULL, TRUE, TRUE),
   ('declares', 'Declaration relationship (A declares B)', '{}', TRUE, 'contains', FALSE, TRUE),
@@ -224,7 +224,7 @@ INSERT INTO edge_types (type, description, schema, is_directed, parent_type, is_
 -- ===== USEFUL VIEWS =====
 
 -- Direct edges with type information
-CREATE VIEW edges_with_types AS
+CREATE VIEW IF NOT EXISTS edges_with_types AS
 SELECT
   e.id,
   e.start_node_id,
@@ -241,7 +241,7 @@ FROM edges e
 JOIN edge_types et ON e.type = et.type;
 
 -- All relationships (direct + inferred)
-CREATE VIEW all_relationships AS
+CREATE VIEW IF NOT EXISTS all_relationships AS
 SELECT
   start_node_id,
   end_node_id,
@@ -263,7 +263,7 @@ SELECT
 FROM edge_inference_cache;
 
 -- File dependencies (direct and inferred)
-CREATE VIEW file_dependencies AS
+CREATE VIEW IF NOT EXISTS file_dependencies AS
 SELECT
   n1.identifier as from_file,
   n2.identifier as to_file,
@@ -277,7 +277,7 @@ WHERE n1.type = 'file' AND n2.type = 'file'
   AND ar.type IN ('imports', 'depends_on');
 
 -- Method calls with context
-CREATE VIEW method_calls AS
+CREATE VIEW IF NOT EXISTS method_calls AS
 SELECT
   m1.identifier as caller,
   m2.identifier as callee,
@@ -293,7 +293,7 @@ WHERE e.type = 'calls'
   AND m2.type IN ('method', 'function');
 
 -- Containment hierarchy (files -> classes -> methods)
-CREATE VIEW containment_hierarchy AS
+CREATE VIEW IF NOT EXISTS containment_hierarchy AS
 SELECT
   parent.identifier as parent,
   child.identifier as child,
@@ -307,7 +307,7 @@ JOIN nodes child ON ar.end_node_id = child.id
 WHERE ar.type IN ('contains', 'declares');
 
 -- Node statistics
-CREATE VIEW node_stats AS
+CREATE VIEW IF NOT EXISTS node_stats AS
 SELECT
   type,
   language,
@@ -317,7 +317,7 @@ FROM nodes
 GROUP BY type, language;
 
 -- Edge statistics
-CREATE VIEW edge_stats AS
+CREATE VIEW IF NOT EXISTS edge_stats AS
 SELECT
   type,
   COUNT(*) as count,
@@ -328,21 +328,21 @@ GROUP BY type;
 -- ===== TRIGGERS FOR MAINTENANCE =====
 
 -- Update timestamps on node changes
-CREATE TRIGGER update_node_timestamp
+CREATE TRIGGER IF NOT EXISTS update_node_timestamp
 AFTER UPDATE ON nodes
 BEGIN
   UPDATE nodes SET updated_at = CURRENT_TIMESTAMP WHERE id = NEW.id;
 END;
 
 -- Update timestamps on edge changes
-CREATE TRIGGER update_edge_timestamp
+CREATE TRIGGER IF NOT EXISTS update_edge_timestamp
 AFTER UPDATE ON edges
 BEGIN
   UPDATE edges SET updated_at = CURRENT_TIMESTAMP WHERE id = NEW.id;
 END;
 
 -- Maintain edge inference cache for transitive relationships
-CREATE TRIGGER maintain_edge_inference_insert
+CREATE TRIGGER IF NOT EXISTS maintain_edge_inference_insert
 AFTER INSERT ON edges
 BEGIN
   -- Clear existing inference cache for affected nodes
@@ -354,7 +354,7 @@ BEGIN
 END;
 
 -- Clean up inference cache on edge deletion
-CREATE TRIGGER maintain_edge_inference_delete
+CREATE TRIGGER IF NOT EXISTS maintain_edge_inference_delete
 AFTER DELETE ON edges
 BEGIN
   -- Clear inference cache that might have depended on this edge
@@ -363,7 +363,7 @@ BEGIN
 END;
 
 -- Invalidate inference cache when edge types change
-CREATE TRIGGER invalidate_inference_on_type_change
+CREATE TRIGGER IF NOT EXISTS invalidate_inference_on_type_change
 AFTER UPDATE ON edge_types
 WHEN OLD.is_transitive != NEW.is_transitive
   OR OLD.is_inheritable != NEW.is_inheritable
