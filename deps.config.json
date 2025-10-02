@@ -1,0 +1,43 @@
+{
+  "default": "source",
+  "namespaces": {
+    "source": {
+      "filePatterns": [
+        "src/**/*.ts"
+      ],
+      "excludePatterns": [
+        "**/*.d.ts",
+        "**/*.test.ts"
+      ],
+      "description": "Source code files"
+    },
+    "tests": {
+      "filePatterns": [
+        "tests/**/*.ts",
+        "**/*.test.ts"
+      ],
+      "excludePatterns": [],
+      "description": "Test files"
+    },
+    "configs": {
+      "filePatterns": [
+        "*.json",
+        "*.config.*",
+        "tsconfig.json"
+      ],
+      "excludePatterns": [
+        "package-lock.json",
+        "node_modules/**"
+      ],
+      "description": "Configuration files"
+    },
+    "docs": {
+      "filePatterns": [
+        "*.md",
+        "docs/**/*.md"
+      ],
+      "excludePatterns": [],
+      "description": "Documentation files"
+    }
+  }
+}

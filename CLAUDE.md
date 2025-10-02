@@ -6,10 +6,11 @@ Query-based AST analysis library with QueryResultMap-centric architecture. TypeS
 ## Current Architecture (v3.0.0)
 - **Version**: 3.0.0
 - **Language**: TypeScript 5.x, Node.js 18+
-- **Architecture**: QueryResultMap-centric with type-safe query system
+- **Architecture**: QueryResultMap-centric with type-safe query system + Namespace integration
 - **Dependencies**: tree-sitter with language-specific parsers
 - **Testing**: Jest with 82+ passing tests
 - **Type Safety**: Zero `any` types, complete type inference
+- **Namespace System**: Glob-based file organization with batch dependency analysis
 
 ## Core Components
 ```
@@ -20,6 +21,13 @@ QueryEngine (central coordinator)
 ├── ParserFactory (parser creation)
 ├── ParserManager (parser caching & high-level APIs)
 └── CustomKeyMapper (user-friendly query composition)
+
+Namespace Module (file organization)
+├── ConfigManager (namespace configuration)
+├── FilePatternMatcher (glob pattern matching)
+├── NamespaceDependencyAnalyzer (batch analysis)
+├── NamespaceGraphDB (GraphDB integration)
+└── CLI (namespace-analyzer tool)
 ```
 
 ## Query-Based Architecture
@@ -47,18 +55,31 @@ QueryEngine (central coordinator)
 - Concurrency: 10 parallel analyses
 
 ## Recent Architecture Improvements (2025-10-02)
+
+### Phase 1: Core System Stabilization
 - **Parser Initialization**: Automatic parser registration via `initializeAnalysisSystem()`
 - **Type Safety**: Fixed `GraphRelationship.sourceFile` optional field
 - **Export Structure**: Cleaned up duplicate exports and resolved naming conflicts
 - **Import Paths**: Corrected module import paths (`ParseResult` from `parsers/base`)
 - **Test Coverage**: Core parser and query tests at 100% pass rate
 
+### Phase 2: Namespace Integration (2025-10-02)
+- **Namespace System**: Integrated namespace-based file organization from deps-cli
+- **Batch Analysis**: NamespaceDependencyAnalyzer for analyzing multiple files by namespace
+- **CLI Tool**: Complete namespace-analyzer CLI with 8 commands (list, create, delete, analyze, query)
+- **GraphDB Integration**: NamespaceGraphDB for storing namespace-tagged dependency data
+- **Glob Patterns**: FilePatternMatcher with include/exclude pattern support
+- **Test Results**: 76 files analyzed with 81% feature pass rate (26/32 tests passed)
+- **Known Issues**: Edge detection (0 edges), database re-initialization
+
 ## System Capabilities
 - **Multi-Language Support**: TypeScript, TSX, JavaScript, JSX, Java, Python, Go
 - **Graph Database**: SQLite-based code relationship storage with circular dependency detection
+- **Namespace Organization**: Glob-based file grouping with batch dependency analysis
 - **Inference System**: Hierarchical, transitive, and inheritable edge type inference
 - **Custom Queries**: User-defined key mapping with type-safe execution
 - **Performance Tracking**: Built-in metrics and benchmarking
+- **CLI Tools**: Single-file analysis and namespace batch operations
 
 ## Code Quality Status
 - **TypeScript**: Strict mode enabled, zero `any` types
@@ -70,10 +91,10 @@ QueryEngine (central coordinator)
 ## Package Distribution
 - **Name**: `@context-action/dependency-linker`
 - **Version**: 3.0.0
-- **Architecture**: QueryResultMap-centric with type safety
+- **Architecture**: QueryResultMap-centric with type safety + Namespace integration
 - **Supported Languages**: TypeScript, JavaScript, Java, Python, Go
 - **Module System**: ESM with tree-shaking support
-- **CLI Tools**: `analyze-file` for single-file analysis
+- **CLI Tools**: `analyze-file` (single-file), `namespace-analyzer` (batch operations)
 
 ## Key Design Patterns
 - **Singleton**: `globalQueryEngine`, `globalParserFactory`, `globalTreeSitterQueryEngine`

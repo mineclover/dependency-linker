@@ -81,5 +81,24 @@ export { globalParserManager, ParserManager } from "./parsers/ParserManager";
 export { PythonParser } from "./parsers/python";
 export { TypeScriptParser } from "./parsers/typescript";
 
+// ===== NAMESPACE MODULE EXPORTS =====
+export type {
+	CategorizedFiles,
+	ConfigFile,
+	NamespaceConfig,
+	NamespaceDependencyResult,
+	NamespaceList,
+	NamespaceWithFiles,
+} from "./namespace/types";
+export {
+	ConfigManager,
+	configManager,
+	FilePatternMatcher,
+	filePatternMatcher,
+	NamespaceDependencyAnalyzer,
+	namespaceDependencyAnalyzer,
+	NamespaceGraphDB,
+} from "./namespace";
+
 // ===== VERSION =====
-export const VERSION = "2.4.1";
+export const VERSION = "3.0.0";

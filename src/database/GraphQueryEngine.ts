@@ -557,7 +557,6 @@ export class GraphQueryEngine {
 		}
 
 		if (query.includes("stats")) {
-			// @ts-expect-error
 			result.stats = await this.db.getStats();
 		}
 

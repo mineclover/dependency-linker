@@ -12,6 +12,14 @@ A comprehensive AST analysis framework with custom key mapping for query composi
 
 ## 🌟 Key Features
 
+### 🆕 Namespace-Based Dependency Analysis
+- **📁 Pattern-Based File Discovery**: Glob patterns with include/exclude support
+- **🏷️ Namespace Configuration**: Organize files by logical groups (source, tests, docs)
+- **🔄 Batch Analysis**: Analyze entire namespaces with one command
+- **💾 GraphDB Integration**: SQLite storage for dependency relationships
+- **🔍 Cross-Namespace Dependencies**: Track dependencies between namespaces
+- **⚡ CLI Tool**: Complete command-line interface for namespace operations
+
 ### ✅ Custom Key Mapping System
 - **✅ Real-time Validation**: Automatic mapping validation against registered queries
 - **🎯 Conditional Execution**: Selective query execution with user-defined conditions
@@ -20,7 +28,7 @@ A comprehensive AST analysis framework with custom key mapping for query composi
 
 ### ✅ Complete Tree-sitter Integration
 - **🔍 Native Query Strings**: Direct Tree-sitter query execution with pattern matching
-- **🌐 Multi-Language Support**: TypeScript/TSX, JavaScript/JSX, Java, Python
+- **🌐 Multi-Language Support**: TypeScript/TSX, JavaScript/JSX, Java, Python, Go
 - **⚡ High Performance**: Native AST parsing with optimized query execution
 - **🎭 Query Bridge**: Seamless connection between Tree-sitter queries and processors
 - **📊 Query Execution Engine**: Complete pipeline from AST to results
@@ -769,11 +777,148 @@ const result = await analyzeTypeScriptFile(sourceCode, "Component.tsx");
 - ✅ Comprehensive error handling and validation
 - ✅ Production-ready stability and type safety
 
+## 🏷️ Namespace-Based Dependency Analysis
+
+### 🎯 Overview
+
+Organize and analyze files by logical groups (namespaces) using glob patterns. Analyze entire namespaces with dependency tracking and GraphDB storage.
+
+### 📦 Configuration
+
+Create a `deps.config.json` file:
+
+```json
+{
+  "default": "source",
+  "namespaces": {
+    "source": {
+      "filePatterns": ["src/**/*.ts"],
+      "excludePatterns": ["**/*.d.ts", "**/*.test.ts"],
+      "description": "Source code files"
+    },
+    "tests": {
+      "filePatterns": ["tests/**/*.ts", "**/*.test.ts"],
+      "excludePatterns": [],
+      "description": "Test files"
+    }
+  }
+}
+```
+
+### 🔧 CLI Usage
+
+```bash
+# Build the project first
+npm run build
+cp src/database/schema.sql dist/database/
+
+# List all namespaces
+node dist/cli/namespace-analyzer.js list-namespaces
+
+# List files in a namespace
+node dist/cli/namespace-analyzer.js list-files source
+
+# Analyze namespace dependencies
+node dist/cli/namespace-analyzer.js analyze source
+
+# Analyze with JSON output
+node dist/cli/namespace-analyzer.js analyze source --json
+
+# Analyze all namespaces
+node dist/cli/namespace-analyzer.js analyze-all
+
+# Query namespace data
+node dist/cli/namespace-analyzer.js query source --stats
+node dist/cli/namespace-analyzer.js query source --files
+node dist/cli/namespace-analyzer.js query source --deps
+
+# Cross-namespace dependencies
+node dist/cli/namespace-analyzer.js cross-namespace
+```
+
+### 💻 Programmatic API
+
+```typescript
+import {
+  configManager,
+  namespaceDependencyAnalyzer,
+  NamespaceGraphDB
+} from '@context-action/dependency-linker';
+
+// List files in namespace
+const files = await configManager.listFiles(
+  'source',
+  'deps.config.json'
+);
+console.log(`Found ${files.length} files`);
+
+// Analyze namespace
+const result = await namespaceDependencyAnalyzer.analyzeNamespace(
+  'source',
+  'deps.config.json',
+  { projectRoot: process.cwd() }
+);
+
+console.log(`Analyzed ${result.analyzedFiles}/${result.totalFiles} files`);
+console.log(`Graph: ${result.graphStats.nodes} nodes, ${result.graphStats.edges} edges`);
+
+// Store in database
+const { graph } = await namespaceDependencyAnalyzer.analyzeNamespaceWithGraph(
+  'source',
+  'deps.config.json',
+  { projectRoot: process.cwd() }
+);
+
+const db = new NamespaceGraphDB('.dependency-linker/graph.db');
+await db.initialize();
+await db.storeNamespaceDependencies('source', graph, process.cwd());
+
+// Query from database
+const stats = await db.getNamespaceStats('source');
+console.log(`Database: ${stats.nodes} nodes, ${stats.edges} edges`);
+
+await db.close();
+```
+
+### 📊 Example Output
+
+```bash
+$ node dist/cli/namespace-analyzer.js analyze source
+
+🔍 Analyzing namespace: source
+📂 Base directory: /Users/user/project
+
+✅ Analysis complete!
+━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━
+Namespace: source
+Total files: 76
+Analyzed files: 76
+Failed files: 0
+
+Graph Statistics:
+  Nodes: 76
+  Edges: 245
+  Circular dependencies: 2
+
+Database:
+  Path: /Users/user/project/.dependency-linker/graph.db
+  Stored nodes: 76
+  Stored edges: 245
+  Stored files: 76
+```
+
+### 📖 Documentation
+
+- **[NAMESPACE-ANALYZER.md](NAMESPACE-ANALYZER.md)**: Complete namespace guide
+- **[FEATURE-CHECKLIST.md](FEATURE-CHECKLIST.md)**: Feature testing checklist (26/32 passed)
+- **[TEST-RESULTS.md](TEST-RESULTS.md)**: Detailed test results
+
 ## 📚 Documentation
 
 - **[README.md](README.md)**: This comprehensive guide
 - **[example-usage.ts](example-usage.ts)**: Basic usage examples
 - **[test-end-to-end.ts](test-end-to-end.ts)**: Complete system demonstration
+- **[NAMESPACE-ANALYZER.md](NAMESPACE-ANALYZER.md)**: Namespace analysis guide
 - **[src/](src/)**: Well-documented TypeScript implementation
 
 ## 📄 License

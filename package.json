@@ -4,6 +4,9 @@
 	"description": "Query-Based AST Analysis Library - TypeScript-first AST analysis with extensible query system. QueryResultMap-centric architecture with language-specific query grouping and custom key mapping.",
 	"main": "dist/index.js",
 	"types": "dist/index.d.ts",
+	"bin": {
+		"namespace-analyzer": "./dist/cli/namespace-analyzer.js"
+	},
 	"scripts": {
 		"build": "tsc",
 		"build:clean": "rm -rf dist && npm run build",
@@ -20,6 +23,7 @@
 		"typecheck": "tsc --noEmit",
 		"dev": "tsc --watch",
 		"start": "node dist/cli/analyze-file.js",
+		"namespace": "node dist/cli/namespace-analyzer.js",
 		"verify-separation": "bash scripts/verify-separation.sh",
 		"validate-types": "node scripts/validate-types.js",
 		"diagnostic": "node scripts/diagnostic-cli.js",
