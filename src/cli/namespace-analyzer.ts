@@ -7,6 +7,7 @@ import { configManager } from "../namespace/ConfigManager";
 import { namespaceDependencyAnalyzer } from "../namespace/NamespaceDependencyAnalyzer";
 import { NamespaceGraphDB } from "../namespace/NamespaceGraphDB";
 import type { NamespaceConfig } from "../namespace/types";
+import { createContextDocumentGenerator } from "../context/ContextDocumentGenerator";
 
 // Initialize the analysis system
 initializeAnalysisSystem();
@@ -457,6 +458,188 @@ program
 					console.log("💡 Use --detailed flag to see individual file dependencies");
 				}
 			}
+		} catch (error) {
+			console.error("❌ Error:", error instanceof Error ? error.message : error);
+			process.exit(1);
+		}
+	});
+
+// Generate context document for a specific file
+program
+	.command("generate-context <file>")
+	.description("Generate context markdown document for a specific file")
+	.option("--cwd <path>", "Working directory", process.cwd())
+	.option("-d, --db <path>", "Database path", ".dependency-linker/graph.db")
+	.action(async (file, options) => {
+		try {
+			const baseDir = path.resolve(options.cwd);
+			const dbPath = path.resolve(baseDir, options.db);
+			const targetFile = path.resolve(baseDir, file);
+			const relativeFile = path.relative(baseDir, targetFile);
+
+			console.log("📝 Generating Context Document");
+			console.log("━".repeat(40));
+			console.log(`File: ${relativeFile}`);
+			console.log("");
+
+			// Open database
+			const db = new NamespaceGraphDB(dbPath);
+			await db.initialize();
+
+			// Find the node
+			const nodes = await (db as any).db.findNodes({
+				sourceFiles: [relativeFile],
+			});
+
+			if (nodes.length === 0) {
+				console.log("❌ File not found in database");
+				console.log("💡 Run 'analyze-all' first to build the dependency graph");
+				await db.close();
+				process.exit(1);
+			}
+
+			const node = nodes[0];
+
+			// Get dependencies and dependents
+			const dependencies = await (db as any).db.findNodeDependencies(node.id);
+			const dependents = await (db as any).db.findNodeDependents(node.id);
+
+			const depFiles = dependencies.map((d: any) => d.sourceFile || d.name);
+			const depentFiles = dependents.map((d: any) => d.sourceFile || d.name);
+
+			await db.close();
+
+			// Generate context document
+			const generator = createContextDocumentGenerator(baseDir);
+			const docPath = await generator.generateFileContext(
+				node,
+				depFiles,
+				depentFiles,
+			);
+
+			console.log("✅ Context document generated");
+			console.log(`📄 Path: ${path.relative(baseDir, docPath)}`);
+			console.log("");
+			console.log("💡 Edit the document to add:");
+			console.log("  - File purpose and responsibilities");
+			console.log("  - Key concepts and patterns");
+			console.log("  - Implementation notes and decisions");
+		} catch (error) {
+			console.error("❌ Error:", error instanceof Error ? error.message : error);
+			process.exit(1);
+		}
+	});
+
+// Generate context documents for all files in database
+program
+	.command("generate-context-all")
+	.description("Generate context documents for all files in the dependency graph")
+	.option("--cwd <path>", "Working directory", process.cwd())
+	.option("-d, --db <path>", "Database path", ".dependency-linker/graph.db")
+	.option("--force", "Overwrite existing documents")
+	.action(async (options) => {
+		try {
+			const baseDir = path.resolve(options.cwd);
+			const dbPath = path.resolve(baseDir, options.db);
+
+			console.log("📝 Generating Context Documents for All Files");
+			console.log("━".repeat(40));
+			console.log("");
+
+			// Open database
+			const db = new NamespaceGraphDB(dbPath);
+			await db.initialize();
+
+			// Get all nodes
+			const allNodes = await (db as any).db.findNodes({});
+			console.log(`Found ${allNodes.length} nodes in database`);
+			console.log("");
+
+			const generator = createContextDocumentGenerator(baseDir);
+
+			let created = 0;
+			let skipped = 0;
+
+			for (const node of allNodes) {
+				// Get dependencies and dependents
+				const dependencies = await (db as any).db.findNodeDependencies(node.id);
+				const dependents = await (db as any).db.findNodeDependents(node.id);
+
+				const depFiles = dependencies.map((d: any) => d.sourceFile || d.name);
+				const depentFiles = dependents.map((d: any) => d.sourceFile || d.name);
+
+				// Check if document already exists
+				const exists = await generator.documentExists(
+					node.sourceFile || node.name,
+				);
+
+				if (exists && !options.force) {
+					skipped++;
+					continue;
+				}
+
+				// Generate context document
+				await generator.generateFileContext(node, depFiles, depentFiles);
+				created++;
+
+				if (created % 10 === 0) {
+					console.log(`  Generated ${created} documents...`);
+				}
+			}
+
+			await db.close();
+
+			console.log("");
+			console.log("✅ Context document generation complete");
+			console.log(`  Created: ${created} documents`);
+			console.log(`  Skipped: ${skipped} existing documents`);
+			console.log("");
+			console.log("💡 Use --force to overwrite existing documents");
+		} catch (error) {
+			console.error("❌ Error:", error instanceof Error ? error.message : error);
+			process.exit(1);
+		}
+	});
+
+// List all context documents
+program
+	.command("list-context")
+	.description("List all generated context documents")
+	.option("--cwd <path>", "Working directory", process.cwd())
+	.action(async (options) => {
+		try {
+			const baseDir = path.resolve(options.cwd);
+			const generator = createContextDocumentGenerator(baseDir);
+
+			console.log("📚 Context Documents");
+			console.log("━".repeat(40));
+
+			const { files, symbols } = await generator.listDocuments();
+
+			console.log("");
+			console.log(`📁 File-level documents: ${files.length}`);
+			if (files.length > 0) {
+				for (const file of files.slice(0, 10)) {
+					console.log(`  - ${file}`);
+				}
+				if (files.length > 10) {
+					console.log(`  ... and ${files.length - 10} more`);
+				}
+			}
+
+			console.log("");
+			console.log(`🔧 Symbol-level documents: ${symbols.length}`);
+			if (symbols.length > 0) {
+				for (const symbol of symbols.slice(0, 10)) {
+					console.log(`  - ${symbol}`);
+				}
+				if (symbols.length > 10) {
+					console.log(`  ... and ${symbols.length - 10} more`);
+				}
+			}
+
+			console.log("");
+			console.log(`📊 Total: ${files.length + symbols.length} documents`);
 		} catch (error) {
 			console.error("❌ Error:", error instanceof Error ? error.message : error);
 			process.exit(1);
