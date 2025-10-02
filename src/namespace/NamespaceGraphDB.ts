@@ -82,6 +82,81 @@ export class NamespaceGraphDB {
 	}
 
 	/**
+	 * Store unified graph with namespace information for all files
+	 */
+	async storeUnifiedGraph(
+		graph: DependencyGraph,
+		filesByNamespace: Record<string, string[]>,
+		baseDir: string,
+	): Promise<void> {
+		// Create a map from absolute path to namespace
+		const pathToNamespace = new Map<string, string>();
+		for (const [namespace, files] of Object.entries(filesByNamespace)) {
+			for (const file of files) {
+				pathToNamespace.set(file, namespace);
+			}
+		}
+
+		// Store all nodes with namespace metadata
+		for (const [nodePath, node] of graph.nodes) {
+			const relativePath = path.relative(baseDir, nodePath);
+			const namespace = pathToNamespace.get(nodePath) || "unknown";
+
+			await this.db.upsertNode({
+				identifier: relativePath,
+				name: path.basename(relativePath),
+				type: node.type,
+				sourceFile: relativePath,
+				language: node.language || "typescript",
+				metadata: {
+					namespace,
+					exists: node.exists,
+					filePath: node.filePath,
+				},
+			});
+		}
+
+		// Store all edges with namespace metadata
+		for (const edge of graph.edges) {
+			const sourceRelative = path.relative(baseDir, edge.from);
+			const targetRelative = path.relative(baseDir, edge.to);
+
+			// Get namespaces for source and target
+			const sourceNamespace = pathToNamespace.get(edge.from) || "unknown";
+			const targetNamespace = pathToNamespace.get(edge.to) || "unknown";
+
+			// Find node IDs
+			const sourceNodes = await this.db.findNodes({
+				sourceFiles: [sourceRelative],
+			});
+
+			const targetNodes = await this.db.findNodes({
+				sourceFiles: [targetRelative],
+			});
+
+			if (sourceNodes.length > 0 && targetNodes.length > 0) {
+				const sourceId = sourceNodes[0].id;
+				const targetId = targetNodes[0].id;
+
+				if (sourceId !== undefined && targetId !== undefined) {
+					await this.db.upsertRelationship({
+						fromNodeId: sourceId,
+						toNodeId: targetId,
+						type: edge.type,
+						metadata: {
+							sourceNamespace,
+							targetNamespace,
+							importStatement: edge.importStatement,
+							lineNumber: edge.lineNumber,
+						},
+						sourceFile: sourceRelative,
+					});
+				}
+			}
+		}
+	}
+
+	/**
 	 * Get namespace dependency statistics
 	 */
 	async getNamespaceStats(namespace: string): Promise<{
@@ -169,6 +244,7 @@ export class NamespaceGraphDB {
 
 	/**
 	 * Get cross-namespace dependencies
+	 * Reads from edge metadata which contains sourceNamespace and targetNamespace
 	 */
 	async getCrossNamespaceDependencies(): Promise<
 		Array<{
@@ -179,8 +255,62 @@ export class NamespaceGraphDB {
 			type: string;
 		}>
 	> {
-		// Simplified implementation
-		return [];
+		// Get all nodes to create a node map
+		const allNodes = await this.db.findNodes({});
+		const nodeMap = new Map(
+			allNodes.map((node) => [node.id, node]),
+		);
+
+		// Get all relationships and filter for cross-namespace
+		const crossDeps: Array<{
+			sourceNamespace: string;
+			targetNamespace: string;
+			source: string;
+			target: string;
+			type: string;
+		}> = [];
+
+		for (const node of allNodes) {
+			if (node.id === undefined) continue;
+
+			// Get dependencies for this node
+			const deps = await this.db.findNodeDependencies(node.id);
+
+			for (const dep of deps) {
+				// Get source and target nodes
+				const sourceNode = nodeMap.get(node.id);
+				const targetNode = nodeMap.get(dep.id);
+
+				if (!sourceNode || !targetNode) continue;
+
+				// Try to get namespaces from edge metadata first (from storeUnifiedGraph)
+				// Fall back to node metadata (from storeNamespaceDependencies)
+				const edgeMetadata = dep.metadata as any;
+				let sourceNamespace = edgeMetadata?.sourceNamespace;
+				let targetNamespace = edgeMetadata?.targetNamespace;
+
+				// Fallback to node metadata if edge metadata doesn't have namespace info
+				if (!sourceNamespace) {
+					sourceNamespace = (sourceNode.metadata as any)?.namespace || "unknown";
+				}
+				if (!targetNamespace) {
+					targetNamespace = (targetNode.metadata as any)?.namespace || "unknown";
+				}
+
+				// Only include if namespaces are different
+				if (sourceNamespace !== targetNamespace) {
+					crossDeps.push({
+						sourceNamespace,
+						targetNamespace,
+						source: sourceNode.sourceFile || "",
+						target: targetNode.sourceFile || "",
+						type: dep.type,
+					});
+				}
+			}
+		}
+
+		return crossDeps;
 	}
 
 	/**

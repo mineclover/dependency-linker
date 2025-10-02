@@ -17,9 +17,12 @@ A comprehensive AST analysis framework with custom key mapping for query composi
 - **🏷️ Namespace Configuration**: Organize files by logical groups (source, tests, docs)
 - **🔄 Batch Analysis**: Analyze entire namespaces with one command (153 edges detected in 76 files)
 - **💾 GraphDB Integration**: SQLite storage with safe re-initialization for multi-project workflows
-- **🔍 Cross-Namespace Dependencies**: Track dependencies between namespaces
-- **⚡ CLI Tool**: Complete command-line interface with 8 commands for namespace operations
-- **🎯 Quality**: 95% test pass rate (42/44 tests), all critical issues resolved
+- **🔍 Cross-Namespace Dependencies**: Track and analyze dependencies between namespaces (27 cross-deps detected)
+  - Unified graph analysis across all namespaces
+  - Detailed dependency tracking with source/target namespace information
+  - CLI commands: `analyze-all --show-cross` and `cross-namespace --detailed`
+- **⚡ CLI Tool**: Complete command-line interface with 9 commands for namespace operations
+- **🎯 Quality**: 95% test pass rate (42/44 tests), all critical issues resolved (Issue #1, #2, #3)
 
 ### ✅ Custom Key Mapping System
 - **✅ Real-time Validation**: Automatic mapping validation against registered queries
@@ -825,16 +828,16 @@ node dist/cli/namespace-analyzer.js analyze source
 # Analyze with JSON output
 node dist/cli/namespace-analyzer.js analyze source --json
 
-# Analyze all namespaces
-node dist/cli/namespace-analyzer.js analyze-all
+# Analyze all namespaces with cross-namespace dependency tracking
+node dist/cli/namespace-analyzer.js analyze-all --show-cross
 
 # Query namespace data
 node dist/cli/namespace-analyzer.js query source --stats
 node dist/cli/namespace-analyzer.js query source --files
 node dist/cli/namespace-analyzer.js query source --deps
 
-# Cross-namespace dependencies
-node dist/cli/namespace-analyzer.js cross-namespace
+# Cross-namespace dependencies (detailed view)
+node dist/cli/namespace-analyzer.js cross-namespace --detailed
 ```
 
 ### 💻 Programmatic API
@@ -878,34 +881,74 @@ await db.storeNamespaceDependencies('source', graph, process.cwd());
 const stats = await db.getNamespaceStats('source');
 console.log(`Database: ${stats.nodes} nodes, ${stats.edges} edges`);
 
+// Cross-namespace dependency analysis
+const { results, graph: unifiedGraph, crossNamespaceDependencies } =
+  await namespaceDependencyAnalyzer.analyzeAll(
+    'deps.config.json',
+    { projectRoot: process.cwd() }
+  );
+
+console.log(`Cross-namespace dependencies: ${crossNamespaceDependencies.length}`);
+for (const dep of crossNamespaceDependencies) {
+  console.log(`${dep.sourceNamespace} → ${dep.targetNamespace}: ${dep.source} → ${dep.target}`);
+}
+
+// Store unified graph with namespace information
+const filesByNamespace = {}; // Map of namespace -> file paths
+await db.storeUnifiedGraph(unifiedGraph, filesByNamespace, process.cwd());
+
+// Query cross-namespace dependencies from DB
+const crossDeps = await db.getCrossNamespaceDependencies();
+console.log(`Stored cross-namespace deps: ${crossDeps.length}`);
+
 await db.close();
 ```
 
 ### 📊 Example Output
 
 ```bash
-$ node dist/cli/namespace-analyzer.js analyze source
+$ node dist/cli/namespace-analyzer.js analyze-all --show-cross
 
-🔍 Analyzing namespace: source
+🔍 Analyzing 4 namespace(s) with cross-namespace dependency tracking
 📂 Base directory: /Users/user/project
 
-✅ Analysis complete!
+📦 source: 75/76 files, 153 edges
+📦 tests: 14/14 files, 26 edges
+📦 configs: 5/5 files, 0 edges
+📦 docs: 44/44 files, 5 edges
+
+✅ All namespaces analyzed!
+📊 Database: /Users/user/project/.dependency-linker/graph.db
+🔗 Cross-namespace dependencies: 27
+
+🔗 Cross-Namespace Dependencies Summary:
 ━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━
-Namespace: source
-Total files: 76
-Analyzed files: 76
-Failed files: 0
+  tests → source: 22 dependencies
+  docs → source: 3 dependencies
+  tests → unknown: 1 dependencies
+  docs → unknown: 1 dependencies
 
-Graph Statistics:
-  Nodes: 76
-  Edges: 245
-  Circular dependencies: 2
+💡 Use 'cross-namespace' command for detailed view
 
-Database:
-  Path: /Users/user/project/.dependency-linker/graph.db
-  Stored nodes: 76
-  Stored edges: 245
-  Stored files: 76
+$ node dist/cli/namespace-analyzer.js cross-namespace --detailed
+
+🔗 Cross-Namespace Dependencies
+━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━
+Found 27 cross-namespace dependencies
+
+📊 Summary by Namespace Pair:
+  tests → source: 22 dependencies
+  docs → source: 3 dependencies
+
+📋 Detailed Dependencies:
+━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━
+
+tests → source (22 dependencies):
+  📄 tests/core-functionality.test.ts
+  └─→ src/core/QueryEngine.ts (internal)
+  📄 tests/database/graph-analysis.test.ts
+  └─→ src/database/GraphDatabase.ts (internal)
+  ...
 ```
 
 ### 📖 Documentation

@@ -219,6 +219,150 @@ export class NamespaceDependencyAnalyzer {
 
 		return results;
 	}
+
+	/**
+	 * Analyze all namespaces together to detect cross-namespace dependencies
+	 */
+	async analyzeAll(
+		configPath: string,
+		options: {
+			cwd?: string;
+			projectRoot?: string;
+		} = {},
+	): Promise<{
+		results: Record<string, NamespaceDependencyResult>;
+		graph: DependencyGraph;
+		crossNamespaceDependencies: Array<{
+			sourceNamespace: string;
+			targetNamespace: string;
+			source: string;
+			target: string;
+			type: string;
+		}>;
+	}> {
+		const cwd = options.cwd || process.cwd();
+		const projectRoot = options.projectRoot || cwd;
+
+		// Get all namespaces from config
+		const config = await configManager.loadConfig(configPath);
+		const namespaceNames = Object.keys(config.namespaces || {});
+
+		// Collect all files with their namespace
+		const filesByNamespace: Record<string, string[]> = {};
+		const allFiles: string[] = [];
+
+		for (const namespace of namespaceNames) {
+			const namespaceData = await configManager.getNamespaceWithFiles(
+				namespace,
+				configPath,
+				cwd,
+			);
+
+			const absoluteFiles = namespaceData.files.map((file) =>
+				path.resolve(projectRoot, file),
+			);
+
+			filesByNamespace[namespace] = absoluteFiles;
+			allFiles.push(...absoluteFiles);
+		}
+
+		// Build unified dependency graph with all files
+		const builder = createDependencyGraphBuilder({
+			projectRoot,
+			entryPoints: allFiles,
+		});
+
+		const buildResult: GraphBuildResult = await builder.build();
+
+		// Analyze results per namespace
+		const results: Record<string, NamespaceDependencyResult> = {};
+
+		for (const namespace of namespaceNames) {
+			const namespaceFiles = filesByNamespace[namespace];
+			const namespaceFileSet = new Set(namespaceFiles);
+
+			// Count nodes and edges for this namespace
+			let namespaceNodes = 0;
+			let namespaceEdges = 0;
+
+			for (const [nodePath, _] of buildResult.graph.nodes) {
+				if (namespaceFileSet.has(nodePath)) {
+					namespaceNodes++;
+				}
+			}
+
+			for (const edge of buildResult.graph.edges) {
+				if (namespaceFileSet.has(edge.from)) {
+					namespaceEdges++;
+				}
+			}
+
+			// Collect errors for this namespace
+			const errors = buildResult.errors
+				.filter((err) => namespaceFileSet.has(err.filePath))
+				.map((err) => ({
+					file: path.relative(projectRoot, err.filePath),
+					error: err.error,
+				}));
+
+			const failedFiles = [...new Set(errors.map((e) => e.file))];
+
+			results[namespace] = {
+				namespace,
+				totalFiles: namespaceFiles.length,
+				analyzedFiles: namespaceFiles.length - failedFiles.length,
+				failedFiles,
+				errors,
+				graphStats: {
+					nodes: namespaceNodes,
+					edges: namespaceEdges,
+					circularDependencies:
+						buildResult.analysis.circularDependencies.totalCycles,
+				},
+			};
+		}
+
+		// Detect cross-namespace dependencies
+		const crossDeps: Array<{
+			sourceNamespace: string;
+			targetNamespace: string;
+			source: string;
+			target: string;
+			type: string;
+		}> = [];
+
+		for (const edge of buildResult.graph.edges) {
+			// Find namespaces for source and target
+			let sourceNamespace = "unknown";
+			let targetNamespace = "unknown";
+
+			for (const [namespace, files] of Object.entries(filesByNamespace)) {
+				if (files.includes(edge.from)) {
+					sourceNamespace = namespace;
+				}
+				if (files.includes(edge.to)) {
+					targetNamespace = namespace;
+				}
+			}
+
+			// Only include if namespaces are different
+			if (sourceNamespace !== targetNamespace) {
+				crossDeps.push({
+					sourceNamespace,
+					targetNamespace,
+					source: path.relative(projectRoot, edge.from),
+					target: path.relative(projectRoot, edge.to),
+					type: edge.type,
+				});
+			}
+		}
+
+		return {
+			results,
+			graph: buildResult.graph,
+			crossNamespaceDependencies: crossDeps,
+		};
+	}
 }
 
 export const namespaceDependencyAnalyzer = new NamespaceDependencyAnalyzer();

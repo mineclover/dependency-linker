@@ -205,11 +205,12 @@ program
 // Analyze all namespaces command
 program
 	.command("analyze-all")
-	.description("Analyze all configured namespaces")
+	.description("Analyze all configured namespaces with cross-namespace dependencies")
 	.option("-c, --config <path>", "Config file path", "deps.config.json")
 	.option("--cwd <path>", "Working directory", process.cwd())
 	.option("-d, --db <path>", "Database path", ".dependency-linker/graph.db")
 	.option("--json", "Output as JSON")
+	.option("--show-cross", "Show cross-namespace dependencies summary")
 	.action(async (options) => {
 		try {
 			const configPath = path.resolve(options.config);
@@ -222,49 +223,75 @@ program
 				return;
 			}
 
-			console.log(`🔍 Analyzing ${namespaces.length} namespace(s)`);
+			console.log(`🔍 Analyzing ${namespaces.length} namespace(s) with cross-namespace dependency tracking`);
 			console.log(`📂 Base directory: ${baseDir}`);
 			console.log("");
 
-			const results: Record<string, unknown> = {};
+			// Use analyzeAll to detect cross-namespace dependencies
+			const { results, graph, crossNamespaceDependencies } =
+				await namespaceDependencyAnalyzer.analyzeAll(
+					configPath,
+					{ cwd: baseDir, projectRoot: baseDir }
+				);
 
+			// Build filesByNamespace map for database storage
+			const filesByNamespace: Record<string, string[]> = {};
 			for (const namespace of namespaces) {
-				console.log(`Analyzing: ${namespace}...`);
-
-				const { result, graph } =
-					await namespaceDependencyAnalyzer.analyzeNamespaceWithGraph(
-						namespace,
-						configPath,
-						{ cwd: baseDir, projectRoot: baseDir },
-					);
-
-				// Store in database
-				const dbPath = path.resolve(baseDir, options.db);
-				const db = new NamespaceGraphDB(dbPath);
-				await db.initialize();
-				await db.storeNamespaceDependencies(namespace, graph, baseDir);
-
-				const dbStats = await db.getNamespaceStats(namespace);
-				await db.close();
-
-				results[namespace] = {
-					...result,
-					database: {
-						stats: dbStats,
-					},
-				};
-
-				console.log(
-					`  ✓ ${result.analyzedFiles}/${result.totalFiles} files analyzed`,
+				const namespaceData = await configManager.getNamespaceWithFiles(
+					namespace,
+					configPath,
+					baseDir
+				);
+				filesByNamespace[namespace] = namespaceData.files.map(file =>
+					path.resolve(baseDir, file)
 				);
 			}
 
+			// Store unified graph in database with namespace information
+			const dbPath = path.resolve(baseDir, options.db);
+			const db = new NamespaceGraphDB(dbPath);
+			await db.initialize();
+			await db.storeUnifiedGraph(graph, filesByNamespace, baseDir);
+			await db.close();
+
 			if (options.json) {
-				console.log(JSON.stringify(results, null, 2));
+				console.log(JSON.stringify({
+					namespaces: results,
+					crossNamespaceDependencies
+				}, null, 2));
 			} else {
+				// Show per-namespace results
+				for (const [namespace, result] of Object.entries(results)) {
+					console.log(`📦 ${namespace}: ${result.analyzedFiles}/${result.totalFiles} files, ${result.graphStats.edges} edges`);
+				}
+
 				console.log("");
 				console.log("✅ All namespaces analyzed!");
-				console.log(`📊 Database: ${path.resolve(baseDir, options.db)}`);
+				console.log(`📊 Database: ${dbPath}`);
+				console.log(`🔗 Cross-namespace dependencies: ${crossNamespaceDependencies.length}`);
+
+				// Show cross-namespace summary if requested
+				if (options.showCross && crossNamespaceDependencies.length > 0) {
+					console.log("");
+					console.log("🔗 Cross-Namespace Dependencies Summary:");
+					console.log("━".repeat(40));
+
+					const grouped = new Map<string, typeof crossNamespaceDependencies>();
+					for (const dep of crossNamespaceDependencies) {
+						const key = `${dep.sourceNamespace} → ${dep.targetNamespace}`;
+						if (!grouped.has(key)) {
+							grouped.set(key, []);
+						}
+						grouped.get(key)?.push(dep);
+					}
+
+					for (const [key, deps] of grouped) {
+						console.log(`  ${key}: ${deps.length} dependencies`);
+					}
+
+					console.log("");
+					console.log("💡 Use 'cross-namespace' command for detailed view");
+				}
 			}
 		} catch (error) {
 			console.error("❌ Error:", error instanceof Error ? error.message : error);
@@ -373,6 +400,7 @@ program
 	.description("Show dependencies between namespaces")
 	.option("--cwd <path>", "Working directory", process.cwd())
 	.option("-d, --db <path>", "Database path", ".dependency-linker/graph.db")
+	.option("--detailed", "Show detailed dependency information")
 	.option("--json", "Output as JSON")
 	.action(async (options) => {
 		try {
@@ -392,6 +420,12 @@ program
 				console.log("━".repeat(40));
 				console.log(`Found ${crossDeps.length} cross-namespace dependencies\n`);
 
+				if (crossDeps.length === 0) {
+					console.log("No cross-namespace dependencies found.");
+					console.log("This means all dependencies are within their respective namespaces.");
+					return;
+				}
+
 				const grouped = new Map<string, typeof crossDeps>();
 				for (const dep of crossDeps) {
 					const key = `${dep.sourceNamespace} → ${dep.targetNamespace}`;
@@ -401,12 +435,26 @@ program
 					grouped.get(key)?.push(dep);
 				}
 
+				// Show summary
+				console.log("📊 Summary by Namespace Pair:");
 				for (const [key, deps] of grouped) {
-					console.log(`${key} (${deps.length}):`);
-					for (const dep of deps) {
-						console.log(`  ${dep.source} → ${dep.target} (${dep.type})`);
+					console.log(`  ${key}: ${deps.length} dependencies`);
+				}
+				console.log("");
+
+				// Show detailed view if requested
+				if (options.detailed) {
+					console.log("📋 Detailed Dependencies:");
+					console.log("━".repeat(40));
+					for (const [key, deps] of grouped) {
+						console.log(`\n${key} (${deps.length} dependencies):`);
+						for (const dep of deps) {
+							console.log(`  📄 ${dep.source}`);
+							console.log(`  └─→ ${dep.target} (${dep.type})`);
+						}
 					}
-					console.log("");
+				} else {
+					console.log("💡 Use --detailed flag to see individual file dependencies");
 				}
 			}
 		} catch (error) {
