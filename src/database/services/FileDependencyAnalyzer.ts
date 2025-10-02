@@ -66,6 +66,15 @@ export interface MissingLink {
   type: 'file_not_found' | 'library_not_resolved' | 'broken_reference';
   /** 원본 import 정보 */
   originalImport: ImportSource;
+  /** 진단 정보 (시도된 경로들, 추천 사항 등) */
+  diagnostic?: {
+    /** 시도된 파일 경로들 */
+    attemptedPaths?: string[];
+    /** 추천 해결 방법 */
+    suggestion?: string;
+    /** 언어별 예상 확장자 */
+    expectedExtensions?: string[];
+  };
 }
 
 /**
@@ -253,15 +262,15 @@ export class FileDependencyAnalyzer {
     importSource: ImportSource,
     language: SupportedLanguage
   ): Promise<{ node?: GraphNode; missingLink?: MissingLink }> {
-    const resolvedPath = await this.resolveImportPath(sourceFile, importSource);
+    const resolution = await this.resolveImportPath(sourceFile, importSource, language);
 
     // 라이브러리인 경우
     if (importSource.type === 'library' || importSource.type === 'builtin') {
-      return await this.processLibraryImport(sourceFile, importSource, resolvedPath);
+      return await this.processLibraryImport(sourceFile, importSource, resolution.path);
     }
 
     // 파일인 경우
-    return await this.processFileImport(sourceFile, importSource, resolvedPath, language);
+    return await this.processFileImport(sourceFile, importSource, resolution, language);
   }
 
   /**
@@ -303,10 +312,10 @@ export class FileDependencyAnalyzer {
   private async processFileImport(
     sourceFile: string,
     importSource: ImportSource,
-    targetFilePath: string,
+    resolution: { path: string; attempted: string[]; found: boolean },
     language: SupportedLanguage
   ): Promise<{ node?: GraphNode; missingLink?: MissingLink }> {
-    const fileExists = await this.fileExists(targetFilePath);
+    const { path: targetFilePath, attempted, found } = resolution;
 
     // 새로운 identifier 생성 전략: 파일 경로 포함
     const identifier = generateFileIdentifier(targetFilePath, this.projectRoot);
@@ -320,7 +329,7 @@ export class FileDependencyAnalyzer {
       metadata: {
         fullPath: targetFilePath,
         relativePath: this.getRelativePath(targetFilePath),
-        exists: fileExists,
+        exists: found,
         referencedBy: [sourceFile],
         importedItems: importSource.imports.map(item => ({
           name: item.name,
@@ -334,18 +343,59 @@ export class FileDependencyAnalyzer {
     const nodeId = await this.database.upsertNode(node);
     const createdNode = { ...node, id: nodeId };
 
-    // 미싱 링크 체크
+    // 미싱 링크 체크 및 진단 정보 생성
     let missingLink: MissingLink | undefined;
-    if (!fileExists) {
+    if (!found) {
+      const sourceLanguage = this.detectLanguageFromPath(sourceFile);
+      const expectedExtensions = DependencyAnalysisHelpers.inferFileExtension(
+        importSource.source,
+        sourceLanguage
+      );
+
+      // 추천 해결 방법 생성
+      const suggestion = this.generateMissingFileSuggestion(
+        importSource.source,
+        attempted,
+        expectedExtensions
+      );
+
       missingLink = {
         from: sourceFile,
         to: targetFilePath,
         type: 'file_not_found',
-        originalImport: importSource
+        originalImport: importSource,
+        diagnostic: {
+          attemptedPaths: attempted,
+          suggestion,
+          expectedExtensions
+        }
       };
+
+      console.warn(`⚠️ Missing file: ${importSource.source}`);
+      console.warn(`   From: ${sourceFile}`);
+      console.warn(`   Attempted: ${attempted.join(', ')}`);
+      console.warn(`   Suggestion: ${suggestion}`);
     }
 
     return { node: createdNode, missingLink };
+  }
+
+  /**
+   * 미싱 파일에 대한 해결 방법 제안
+   */
+  private generateMissingFileSuggestion(
+    originalPath: string,
+    attemptedPaths: string[],
+    expectedExtensions: string[]
+  ): string {
+    const hasExtension = /\.[a-zA-Z0-9]+$/.test(originalPath);
+
+    if (!hasExtension) {
+      const extList = expectedExtensions.join(', ');
+      return `Add file extension (${extList}) or create the file at one of these locations:\n${attemptedPaths.slice(0, 3).map(p => `  - ${p}`).join('\n')}`;
+    }
+
+    return `Create the file or check if the import path is correct:\n${attemptedPaths.map(p => `  - ${p}`).join('\n')}`;
   }
 
   /**
@@ -390,26 +440,38 @@ export class FileDependencyAnalyzer {
   /**
    * Import 경로 해결
    */
-  private async resolveImportPath(sourceFile: string, importSource: ImportSource): Promise<string> {
+  private async resolveImportPath(
+    sourceFile: string,
+    importSource: ImportSource,
+    language?: SupportedLanguage
+  ): Promise<{ path: string; attempted: string[]; found: boolean }> {
     const { type, source } = importSource;
 
     switch (type) {
       case 'relative':
-        return await this.resolveRelativePath(sourceFile, source);
-      case 'absolute':
-        return this.resolveAbsolutePath(source);
+        return await this.resolveRelativePath(sourceFile, source, language);
+      case 'absolute': {
+        const absPath = this.resolveAbsolutePath(source);
+        const exists = await this.fileExists(absPath);
+        return { path: absPath, attempted: [absPath], found: exists };
+      }
       case 'library':
       case 'builtin':
-        return source; // 라이브러리 이름 그대로 사용
+        // 라이브러리는 항상 존재한다고 가정
+        return { path: source, attempted: [source], found: true };
       default:
-        return source;
+        return { path: source, attempted: [source], found: false };
     }
   }
 
   /**
-   * 상대 경로 해결
+   * 상대 경로 해결 (언어별 확장자 추론 포함)
    */
-  private async resolveRelativePath(sourceFile: string, relativePath: string): Promise<string> {
+  private async resolveRelativePath(
+    sourceFile: string,
+    relativePath: string,
+    language?: SupportedLanguage
+  ): Promise<{ path: string; attempted: string[]; found: boolean }> {
     const sourceDir = sourceFile.substring(0, sourceFile.lastIndexOf('/'));
     let resolved = `${sourceDir}/${relativePath}`;
 
@@ -421,28 +483,66 @@ export class FileDependencyAnalyzer {
     // ./ 처리
     resolved = resolved.replace(/\/\.\//g, '/');
 
-    // 확장자 추가 (필요시)
-    if (!this.hasFileExtension(resolved)) {
-      const possibleExtensions = ['.ts', '.tsx', '.js', '.jsx', '.vue'];
-      for (const ext of possibleExtensions) {
-        if (await this.fileExists(`${resolved}${ext}`)) {
-          resolved = `${resolved}${ext}`;
-          break;
-        }
-      }
+    const attemptedPaths: string[] = [];
 
-      // index 파일 체크
-      if (!this.hasFileExtension(resolved)) {
-        for (const ext of possibleExtensions) {
-          if (await this.fileExists(`${resolved}/index${ext}`)) {
-            resolved = `${resolved}/index${ext}`;
-            break;
-          }
-        }
+    // 이미 확장자가 있으면 존재 여부만 확인
+    if (this.hasFileExtension(resolved)) {
+      attemptedPaths.push(resolved);
+      const exists = await this.fileExists(resolved);
+      return { path: resolved, attempted: attemptedPaths, found: exists };
+    }
+
+    // 언어별 확장자 추론
+    const sourceLanguage = language || this.detectLanguageFromPath(sourceFile);
+    const preferredExtensions = DependencyAnalysisHelpers.inferFileExtension(
+      relativePath,
+      sourceLanguage
+    );
+
+    // 일반적인 확장자들도 추가 (fallback)
+    const allExtensions = [
+      ...preferredExtensions,
+      '.ts', '.tsx', '.js', '.jsx', '.mjs', '.cjs'
+    ];
+
+    // 중복 제거
+    const uniqueExtensions = Array.from(new Set(allExtensions));
+
+    // 1. 직접 파일로 확장자 추가 시도
+    for (const ext of uniqueExtensions) {
+      const candidate = `${resolved}${ext}`;
+      attemptedPaths.push(candidate);
+      if (await this.fileExists(candidate)) {
+        return { path: candidate, attempted: attemptedPaths, found: true };
       }
     }
 
-    return resolved;
+    // 2. index 파일 시도 (디렉토리 import)
+    for (const ext of uniqueExtensions) {
+      const indexCandidate = `${resolved}/index${ext}`;
+      attemptedPaths.push(indexCandidate);
+      if (await this.fileExists(indexCandidate)) {
+        return { path: indexCandidate, attempted: attemptedPaths, found: true };
+      }
+    }
+
+    // 3. 파일을 찾지 못한 경우, 가장 우선순위 높은 확장자로 반환
+    const fallbackPath = `${resolved}${preferredExtensions[0] || '.ts'}`;
+    return { path: fallbackPath, attempted: attemptedPaths, found: false };
+  }
+
+  /**
+   * 파일 경로에서 언어 감지
+   */
+  private detectLanguageFromPath(filePath: string): SupportedLanguage {
+    if (filePath.endsWith('.tsx')) return 'tsx';
+    if (filePath.endsWith('.ts')) return 'typescript';
+    if (filePath.endsWith('.jsx')) return 'jsx';
+    if (filePath.endsWith('.js') || filePath.endsWith('.mjs') || filePath.endsWith('.cjs')) return 'javascript';
+    if (filePath.endsWith('.java')) return 'java';
+    if (filePath.endsWith('.py')) return 'python';
+    if (filePath.endsWith('.go')) return 'go';
+    return 'typescript'; // 기본값
   }
 
   /**
