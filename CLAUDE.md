@@ -78,10 +78,25 @@ Namespace Module (file organization)
   - CLI commands for cross-namespace analysis and querying
 - **Production Status**: ✅ All issues resolved (Issue #1, #2, #3), system production-ready
 
+### Phase 3: Symbol Dependency Tracking (2025-10-03)
+- **Symbol Extraction**: Fine-grained symbol-level dependency tracking for TypeScript/JavaScript
+- **Dependency Types**: Call, Instantiation, TypeReference, Extends, Implements
+- **Tree-sitter Queries**: 6 new dependency tracking queries added
+  - `ts-call-expressions`: Function/method calls including super()
+  - `ts-new-expressions`: Class instantiation (new operator)
+  - `ts-member-expressions`: Property access patterns
+  - `ts-type-references`: Type references in annotations
+  - `ts-extends-clause`: Class inheritance
+  - `ts-implements-clause`: Interface implementation
+- **Multi-Capture Fix**: Fixed tree-sitter query processing to handle multiple captures per match
+- **Test Coverage**: 9/9 dependency tracking tests passing with comprehensive validation
+- **Production Status**: ✅ Symbol dependency tracking production-ready
+
 ## System Capabilities
 - **Multi-Language Support**: TypeScript, TSX, JavaScript, JSX, Java, Python, Go
 - **Graph Database**: SQLite-based code relationship storage with circular dependency detection
 - **Namespace Organization**: Glob-based file grouping with batch dependency analysis
+- **Symbol Dependency Tracking**: Fine-grained symbol-level relationships (calls, instantiation, inheritance, type refs)
 - **Inference System**: Hierarchical, transitive, and inheritable edge type inference
 - **Custom Queries**: User-defined key mapping with type-safe execution
 - **Performance Tracking**: Built-in metrics and benchmarking
@@ -92,7 +107,7 @@ Namespace Module (file organization)
 - **Type Safety**: Complete type inference throughout query pipeline
 - **Build System**: Incremental builds with type checking
 - **Linting**: Biome with strict rules
-- **Testing**: 82+ passing tests with core systems at 100%
+- **Testing**: 146 passing tests with symbol dependency tracking at 100%
 
 ## Package Distribution
 - **Name**: `@context-action/dependency-linker`
@@ -109,4 +124,4 @@ Namespace Module (file organization)
 - **Strategy**: Query processors for language-specific result processing
 
 ---
-*Updated - 2025-10-02*
+*Updated - 2025-10-03*

@@ -10,13 +10,17 @@ import path from "node:path";
 import Parser from "tree-sitter";
 import type { ParseResult } from "../parsers/base";
 import { globalParserManager } from "../parsers/ParserManager";
+import {
+	JAVASCRIPT_TREE_SITTER_QUERIES,
+	TYPESCRIPT_TREE_SITTER_QUERIES,
+} from "../queries/typescript/tree-sitter-queries";
 import { globalTreeSitterQueryEngine } from "./TreeSitterQueryEngine";
 import type { QueryMatch, SupportedLanguage } from "./types";
 import {
 	type ParameterInfo,
 	type SourceLocation,
 	type SymbolDependency,
-	type SymbolDependencyType,
+	SymbolDependencyType,
 	type SymbolExtractionResult,
 	type SymbolInfo,
 	SymbolKind,
@@ -524,12 +528,371 @@ export class SymbolExtractor {
 	): Promise<SymbolDependency[]> {
 		const dependencies: SymbolDependency[] = [];
 
-		// TODO: Implement dependency extraction
-		// - Method calls
-		// - Class instantiations
-		// - Property accesses
-		// - Type references
-		// - Inheritance relationships
+		// Delegate to language-specific dependency extraction
+		if (language === "typescript" || language === "tsx") {
+			return this.extractTypeScriptDependencies(
+				symbols,
+				parseResult,
+				language,
+			);
+		}
+
+		if (language === "javascript" || language === "jsx") {
+			return this.extractJavaScriptDependencies(
+				symbols,
+				parseResult,
+				language,
+			);
+		}
+
+		// Other languages not yet implemented
+		return dependencies;
+	}
+
+	/**
+	 * Extract TypeScript/TSX dependencies
+	 */
+	private extractTypeScriptDependencies(
+		symbols: SymbolInfo[],
+		parseResult: ParseResult,
+		language: SupportedLanguage,
+	): SymbolDependency[] {
+		const dependencies: SymbolDependency[] = [];
+		const tree = parseResult.tree;
+		const filePath = parseResult.metadata.filePath || "";
+
+		// Extract call expressions (function/method calls)
+		const callMatches = globalTreeSitterQueryEngine.executeQuery(
+			"ts-call-expressions",
+			TYPESCRIPT_TREE_SITTER_QUERIES["ts-call-expressions"],
+			tree,
+			language,
+		);
+
+		for (const match of callMatches) {
+			// Get all "call" captures from this match
+			const callCaptures = match.captures.filter(
+				(c: { name: string }) => c.name === "call",
+			);
+
+			for (const callCapture of callCaptures) {
+				const callNode = callCapture.node;
+
+				// Find captures that belong to this specific call node
+				const relatedCaptures = match.captures.filter(
+					(c: any) =>
+						c !== callCapture &&
+						c.node.startPosition.row === callNode.startPosition.row &&
+						c.node.startPosition.column >= callNode.startPosition.column &&
+						c.node.endPosition.column <= callNode.endPosition.column,
+				);
+
+				const functionNameCapture = relatedCaptures.find(
+					(c: { name: string }) => c.name === "function_name",
+				);
+				const methodNameCapture = relatedCaptures.find(
+					(c: { name: string }) => c.name === "method_name",
+				);
+				const superCallCapture = relatedCaptures.find(
+					(c: { name: string }) => c.name === "super_call",
+				);
+
+				const targetName = methodNameCapture
+					? methodNameCapture.node.text
+					: superCallCapture
+						? "super"
+						: functionNameCapture?.node.text;
+
+				if (targetName) {
+					dependencies.push({
+						from: filePath,
+						to: `/${targetName}`,
+						type: SymbolDependencyType.Call,
+						location: {
+							line: callNode.startPosition.row + 1,
+							column: callNode.startPosition.column,
+						},
+						context: callNode.text.split("\n")[0],
+					});
+				}
+			}
+		}
+
+		// Extract new expressions (class instantiations)
+		const newMatches = globalTreeSitterQueryEngine.executeQuery(
+			"ts-new-expressions",
+			TYPESCRIPT_TREE_SITTER_QUERIES["ts-new-expressions"],
+			tree,
+			language,
+		);
+
+		for (const match of newMatches) {
+			// Get all "new_expr" captures from this match
+			const newExprCaptures = match.captures.filter(
+				(c: { name: string }) => c.name === "new_expr",
+			);
+
+			for (const newExprCapture of newExprCaptures) {
+				const newNode = newExprCapture.node;
+
+				// Find captures that belong to this specific new expression
+				const relatedCaptures = match.captures.filter(
+					(c: any) =>
+						c !== newExprCapture &&
+						c.node.startPosition.row === newNode.startPosition.row &&
+						c.node.startPosition.column >= newNode.startPosition.column &&
+						c.node.endPosition.column <= newNode.endPosition.column,
+				);
+
+				const classNameCapture = relatedCaptures.find(
+					(c: { name: string }) => c.name === "class_name",
+				);
+
+				if (classNameCapture) {
+					dependencies.push({
+						from: filePath,
+						to: `/${classNameCapture.node.text}`,
+						type: SymbolDependencyType.Instantiation,
+						location: {
+							line: newNode.startPosition.row + 1,
+							column: newNode.startPosition.column,
+						},
+						context: newNode.text.split("\n")[0],
+					});
+				}
+			}
+		}
+
+		// Extract type references
+		const typeRefMatches = globalTreeSitterQueryEngine.executeQuery(
+			"ts-type-references",
+			TYPESCRIPT_TREE_SITTER_QUERIES["ts-type-references"],
+			tree,
+			language,
+		);
+
+		for (const match of typeRefMatches) {
+			// Get all "type_name" captures from this match
+			const typeNameCaptures = match.captures.filter(
+				(c: { name: string }) => c.name === "type_name",
+			);
+
+			for (const typeNameCapture of typeNameCaptures) {
+				const typeName = typeNameCapture.node.text;
+				const typeNameNode = typeNameCapture.node;
+
+				dependencies.push({
+					from: filePath,
+					to: `/${typeName}`,
+					type: SymbolDependencyType.TypeReference,
+					location: {
+						line: typeNameNode.startPosition.row + 1,
+						column: typeNameNode.startPosition.column,
+					},
+				});
+			}
+		}
+
+		// Extract extends clauses (class inheritance)
+		const extendsMatches = globalTreeSitterQueryEngine.executeQuery(
+			"ts-extends-clause",
+			TYPESCRIPT_TREE_SITTER_QUERIES["ts-extends-clause"],
+			tree,
+			language,
+		);
+
+		for (const match of extendsMatches) {
+			const baseClassCapture = match.captures.find(
+				(c: { name: string }) => c.name === "base_class",
+			);
+
+			if (baseClassCapture) {
+				const baseClass = baseClassCapture.node.text;
+				const extendsNode = match.captures[0]?.node;
+				dependencies.push({
+					from: filePath,
+					to: `/${baseClass}`,
+					type: SymbolDependencyType.Extends,
+					location: {
+						line: extendsNode.startPosition.row + 1,
+						column: extendsNode.startPosition.column,
+					},
+				});
+			}
+		}
+
+		// Extract implements clauses (interface implementation)
+		const implementsMatches = globalTreeSitterQueryEngine.executeQuery(
+			"ts-implements-clause",
+			TYPESCRIPT_TREE_SITTER_QUERIES["ts-implements-clause"],
+			tree,
+			language,
+		);
+
+		for (const match of implementsMatches) {
+			const interfaceNameCapture = match.captures.find(
+				(c: { name: string }) => c.name === "interface_name",
+			);
+
+			if (interfaceNameCapture) {
+				const interfaceName = interfaceNameCapture.node.text;
+				const implementsNode = match.captures[0]?.node;
+				dependencies.push({
+					from: filePath,
+					to: `/${interfaceName}`,
+					type: SymbolDependencyType.Implements,
+					location: {
+						line: implementsNode.startPosition.row + 1,
+						column: implementsNode.startPosition.column,
+					},
+				});
+			}
+		}
+
+		return dependencies;
+	}
+
+	/**
+	 * Extract JavaScript/JSX dependencies
+	 */
+	private extractJavaScriptDependencies(
+		symbols: SymbolInfo[],
+		parseResult: ParseResult,
+		language: SupportedLanguage,
+	): SymbolDependency[] {
+		const dependencies: SymbolDependency[] = [];
+		const tree = parseResult.tree;
+		const filePath = parseResult.metadata.filePath || "";
+
+		// Extract call expressions (function/method calls)
+		const callMatches = globalTreeSitterQueryEngine.executeQuery(
+			"js-call-expressions",
+			JAVASCRIPT_TREE_SITTER_QUERIES["js-call-expressions"],
+			tree,
+			language,
+		);
+
+		for (const match of callMatches) {
+			// Get all "call" captures from this match
+			const callCaptures = match.captures.filter(
+				(c: { name: string }) => c.name === "call",
+			);
+
+			for (const callCapture of callCaptures) {
+				const callNode = callCapture.node;
+
+				// Find captures that belong to this specific call node
+				const relatedCaptures = match.captures.filter(
+					(c: any) =>
+						c !== callCapture &&
+						c.node.startPosition.row === callNode.startPosition.row &&
+						c.node.startPosition.column >= callNode.startPosition.column &&
+						c.node.endPosition.column <= callNode.endPosition.column,
+				);
+
+				const functionNameCapture = relatedCaptures.find(
+					(c: { name: string }) => c.name === "function_name",
+				);
+				const methodNameCapture = relatedCaptures.find(
+					(c: { name: string }) => c.name === "method_name",
+				);
+				const superCallCapture = relatedCaptures.find(
+					(c: { name: string }) => c.name === "super_call",
+				);
+
+				const targetName = methodNameCapture
+					? methodNameCapture.node.text
+					: superCallCapture
+						? "super"
+						: functionNameCapture?.node.text;
+
+				if (targetName) {
+					dependencies.push({
+						from: filePath,
+						to: `/${targetName}`,
+						type: SymbolDependencyType.Call,
+						location: {
+							line: callNode.startPosition.row + 1,
+							column: callNode.startPosition.column,
+						},
+						context: callNode.text.split("\n")[0],
+					});
+				}
+			}
+		}
+
+		// Extract new expressions (class instantiations)
+		const newMatches = globalTreeSitterQueryEngine.executeQuery(
+			"js-new-expressions",
+			JAVASCRIPT_TREE_SITTER_QUERIES["js-new-expressions"],
+			tree,
+			language,
+		);
+
+		for (const match of newMatches) {
+			// Get all "new_expr" captures from this match
+			const newExprCaptures = match.captures.filter(
+				(c: { name: string }) => c.name === "new_expr",
+			);
+
+			for (const newExprCapture of newExprCaptures) {
+				const newNode = newExprCapture.node;
+
+				// Find captures that belong to this specific new expression
+				const relatedCaptures = match.captures.filter(
+					(c: any) =>
+						c !== newExprCapture &&
+						c.node.startPosition.row === newNode.startPosition.row &&
+						c.node.startPosition.column >= newNode.startPosition.column &&
+						c.node.endPosition.column <= newNode.endPosition.column,
+				);
+
+				const classNameCapture = relatedCaptures.find(
+					(c: { name: string }) => c.name === "class_name",
+				);
+
+				if (classNameCapture) {
+					dependencies.push({
+						from: filePath,
+						to: `/${classNameCapture.node.text}`,
+						type: SymbolDependencyType.Instantiation,
+						location: {
+							line: newNode.startPosition.row + 1,
+							column: newNode.startPosition.column,
+						},
+						context: newNode.text.split("\n")[0],
+					});
+				}
+			}
+		}
+
+		// Extract extends clauses (class inheritance)
+		const extendsMatches = globalTreeSitterQueryEngine.executeQuery(
+			"js-extends-clause",
+			JAVASCRIPT_TREE_SITTER_QUERIES["js-extends-clause"],
+			tree,
+			language,
+		);
+
+		for (const match of extendsMatches) {
+			const baseClassCapture = match.captures.find(
+				(c: { name: string }) => c.name === "base_class",
+			);
+
+			if (baseClassCapture) {
+				const baseClass = baseClassCapture.node.text;
+				const extendsNode = match.captures[0]?.node;
+				dependencies.push({
+					from: filePath,
+					to: `/${baseClass}`,
+					type: SymbolDependencyType.Extends,
+					location: {
+						line: extendsNode.startPosition.row + 1,
+						column: extendsNode.startPosition.column,
+					},
+				});
+			}
+		}
 
 		return dependencies;
 	}

@@ -206,6 +206,85 @@ export const TYPESCRIPT_TREE_SITTER_QUERIES = {
 			type: (type_annotation)? @property_type
 			value: (_)? @property_value) @property
 	`,
+
+	// ===== DEPENDENCY TRACKING QUERIES =====
+
+	/**
+	 * Function/method calls (함수/메서드 호출)
+	 * 예: someFunction(), obj.method(), this.helper(), super()
+	 */
+	"ts-call-expressions": `
+		(call_expression
+			function: [
+				(identifier) @function_name
+				(super) @super_call
+				(member_expression
+					object: (_) @object
+					property: (property_identifier) @method_name)
+			]
+			arguments: (arguments) @args) @call
+	`,
+
+	/**
+	 * Class instantiation (클래스 인스턴스화)
+	 * 예: new MyClass(), new pkg.MyClass()
+	 */
+	"ts-new-expressions": `
+		(new_expression
+			constructor: [
+				(identifier) @class_name
+				(member_expression
+					property: (property_identifier) @class_name)
+			]
+			arguments: (arguments)? @args) @new_expr
+	`,
+
+	/**
+	 * Property access (속성 접근)
+	 * 예: obj.property, this.field
+	 */
+	"ts-member-expressions": `
+		(member_expression
+			object: (_) @object
+			property: (property_identifier) @property_name) @member_access
+	`,
+
+	/**
+	 * Type references in annotations (타입 참조)
+	 * 예: param: SomeType, : ReturnType
+	 */
+	"ts-type-references": `
+		(type_annotation
+			[
+				(type_identifier) @type_name
+				(generic_type
+					name: (type_identifier) @type_name)
+			]) @type_ref
+	`,
+
+	/**
+	 * Class inheritance (클래스 상속)
+	 * 예: class MyClass extends BaseClass
+	 */
+	"ts-extends-clause": `
+		(class_heritage
+			(extends_clause
+				value: [
+					(identifier) @base_class
+					(member_expression
+						property: (property_identifier) @base_class)
+				])) @extends
+	`,
+
+	/**
+	 * Interface implementation (인터페이스 구현)
+	 * 예: class MyClass implements IInterface
+	 */
+	"ts-implements-clause": `
+		(class_heritage
+			(implements_clause
+				(type_identifier) @interface_name)) @implements
+	`,
 } as const;
 
 /**
@@ -233,6 +312,13 @@ export const JAVASCRIPT_TREE_SITTER_QUERIES = {
 		TYPESCRIPT_TREE_SITTER_QUERIES["ts-arrow-function-definitions"],
 	"js-property-definitions":
 		TYPESCRIPT_TREE_SITTER_QUERIES["ts-property-definitions"],
+
+	// Dependency tracking queries (타입 참조 제외)
+	"js-call-expressions": TYPESCRIPT_TREE_SITTER_QUERIES["ts-call-expressions"],
+	"js-new-expressions": TYPESCRIPT_TREE_SITTER_QUERIES["ts-new-expressions"],
+	"js-member-expressions":
+		TYPESCRIPT_TREE_SITTER_QUERIES["ts-member-expressions"],
+	"js-extends-clause": TYPESCRIPT_TREE_SITTER_QUERIES["ts-extends-clause"],
 	// JavaScript에는 interface, type, enum 없음
 } as const;
 
