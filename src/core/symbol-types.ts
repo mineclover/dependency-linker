@@ -83,6 +83,9 @@ export interface SymbolInfo {
 	/** Programming language */
 	language: SupportedLanguage;
 
+	/** Semantic tags for categorization (e.g., ["api", "internal", "deprecated"]) */
+	semanticTags?: string[];
+
 	/** Full signature (for functions/methods) */
 	signature?: string;
 

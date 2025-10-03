@@ -269,12 +269,11 @@ export async function markdownResultToGraph(
 				name: headingText,
 				sourceFile: result.filePath,
 				language: result.language,
+				semanticTags: heading.tags || [],
 				metadata: {
 					level: heading.level,
 					line: heading.line,
 					fullText: heading.text,
-					semanticTypes: heading.tags || [],
-					tags: heading.tags || [],
 				},
 			});
 
@@ -288,7 +287,6 @@ export async function markdownResultToGraph(
 				metadata: {
 					level: heading.level,
 					line: heading.line,
-					semanticTypes: heading.tags || [],
 				},
 			});
 
@@ -472,7 +470,7 @@ export async function queryHeadingsBySemanticType(
 	// Filter by semantic type
 	const matchingHeadings = headingNodes
 		.filter((node) => {
-			const types = node.metadata?.semanticTypes || [];
+			const types = node.semanticTags || [];
 			return Array.isArray(types) && types.includes(semanticType);
 		})
 		.map((node) => ({
@@ -480,7 +478,7 @@ export async function queryHeadingsBySemanticType(
 			sourceFile: node.sourceFile || "",
 			level: (node.metadata?.level as number) || 0,
 			line: (node.metadata?.line as number) || 0,
-			allTypes: (node.metadata?.semanticTypes as string[]) || [],
+			allTypes: (node.semanticTags as string[]) || [],
 		}));
 
 	return matchingHeadings;
@@ -511,7 +509,7 @@ export async function queryFileHeadings(
 			heading: node.name || "",
 			level: (node.metadata?.level as number) || 0,
 			line: (node.metadata?.line as number) || 0,
-			semanticTypes: (node.metadata?.semanticTypes as string[]) || [],
+			semanticTypes: (node.semanticTags as string[]) || [],
 		}))
 		.sort((a, b) => a.line - b.line);
 }
@@ -528,7 +526,7 @@ export async function getAllSemanticTypes(
 	const typeCounts = new Map<string, number>();
 
 	for (const node of headingNodes) {
-		const types = (node.metadata?.semanticTypes as string[]) || [];
+		const types = (node.semanticTags as string[]) || [];
 		for (const type of types) {
 			typeCounts.set(type, (typeCounts.get(type) || 0) + 1);
 		}

@@ -16,13 +16,43 @@ Quick start guides and initial setup.
 
 ---
 
+### 🔄 Pipeline & Data Flow
+
+**Complete data processing pipeline from extraction to inference.**
+
+| Document | Description | Status | Priority |
+|----------|-------------|--------|----------|
+| [pipeline-overview.md](pipeline-overview.md) | **Complete pipeline: Extraction → Storage → Analysis → Inference** | ✅ NEW | 🔴 **START HERE** |
+| [implementation-status.md](implementation-status.md) | **Implementation status & completion details** | ✅ NEW | 🔴 **IMPORTANT** |
+| [type-system.md](type-system.md) | Type definitions (Node/Edge 대상 식별) | ✅ NEW | 🔴 Primary |
+| [semantic-tags.md](semantic-tags.md) | Semantic tags (복합적 의미 표현, 선택적) | ✅ NEW | 🔴 Primary |
+
+**Pipeline Stages** (✅ COMPLETE):
+1. **Extraction**: AST parsing → Symbol extraction → **Edge extraction** ✅
+2. **Storage**: GraphDB nodes + edges + **Edge Type 관리** ✅
+3. **Analysis**: **Node Type/Edge Type 기반 분석**, Pattern analysis ✅
+4. **Inference**: Hierarchical, Transitive, Inheritable relationships ✅
+
+**Completion Status**:
+- ✅ **Edge 추출 + Edge Type 관리**: 의존성 분석 완성
+- ✅ **Node Type 기반 분석**: 대상 식별 및 검색
+- ✅ **Edge Type 기반 분석**: 관계 유형 검색
+- ✅ **추론 엔진**: 3가지 추론 모두 작동
+- 💡 **Semantic Tags**: 선택적 기능 (마크다운 헤딩 지원, 일반 코드는 필요시 구현)
+
+**Quick Start**:
+1. Read [pipeline-overview.md](pipeline-overview.md) for complete data flow
+2. Check [implementation-status.md](implementation-status.md) for completion status & optional features
+
+---
+
 ### 🏗️ Architecture & System Design
 
 Core system architecture and module organization.
 
 | Document | Description | Status |
 |----------|-------------|--------|
-| [module-organization.md](module-organization.md) | Module structure and organization guide | ✅ NEW |
+| [module-organization.md](module-organization.md) | Module structure and organization guide | ✅ |
 | [PARSER_SYSTEM.md](PARSER_SYSTEM.md) | Parser system architecture | ✅ |
 | [PACKAGE_EXPORTS.md](PACKAGE_EXPORTS.md) | Package export structure | ✅ |
 
@@ -90,14 +120,22 @@ Performance tuning and optimization guides.
 ## 🎯 Quick Start Paths
 
 ### For New Users
-1. [Setup-Guide.md](Setup-Guide.md) - Install and configure
-2. [API.md](API.md) - Learn basic API usage
-3. [inference-system.md](inference-system.md) - Understand inference capabilities
+1. **[pipeline-overview.md](pipeline-overview.md)** - 📌 **START HERE** - Complete data flow understanding
+2. [Setup-Guide.md](Setup-Guide.md) - Install and configure
+3. [API.md](API.md) - Learn basic API usage
+4. [inference-system.md](inference-system.md) - Understand inference capabilities
+
+### For Understanding the System
+1. **[pipeline-overview.md](pipeline-overview.md)** - Complete pipeline: Extraction → Storage → Analysis → Inference
+2. [type-system.md](type-system.md) - Type definitions (실제 데이터 형태)
+3. [semantic-tags.md](semantic-tags.md) - Semantic tags & extraction rules
+4. [inference-system.md](inference-system.md) - Inference API and capabilities
 
 ### For Developers
 1. [module-organization.md](module-organization.md) - Understand codebase structure
-2. [inference-system.md](inference-system.md) - Learn inference API
-3. [graph-maintenance-conventions.md](graph-maintenance-conventions.md) - Follow conventions
+2. **[pipeline-overview.md](pipeline-overview.md)** - Data flow and processing stages
+3. [inference-system.md](inference-system.md) - Learn inference API
+4. [graph-maintenance-conventions.md](graph-maintenance-conventions.md) - Follow conventions
 4. [analyzer-ownership-pattern.md](analyzer-ownership-pattern.md) - Create analyzers
 
 ### For Maintainers

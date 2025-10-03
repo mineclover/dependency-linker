@@ -15,6 +15,8 @@ export interface GraphNode {
 	name: string;
 	sourceFile: string;
 	language: SupportedLanguage;
+	/** Semantic tags for categorization and context (e.g., ["api", "public", "deprecated"]) */
+	semanticTags?: string[];
 	metadata?: Record<string, any>;
 	startLine?: number;
 	startColumn?: number;
@@ -207,16 +209,18 @@ export class GraphDatabase {
 		if (!this.db) throw new Error("Database not initialized");
 
 		const metadata = JSON.stringify(node.metadata || {});
+		const semanticTags = JSON.stringify(node.semanticTags || []);
 
 		return new Promise((resolve, reject) => {
 			const sql = `
-        INSERT INTO nodes (identifier, type, name, source_file, language, metadata, start_line, start_column, end_line, end_column)
-        VALUES (?, ?, ?, ?, ?, ?, ?, ?, ?, ?)
+        INSERT INTO nodes (identifier, type, name, source_file, language, semantic_tags, metadata, start_line, start_column, end_line, end_column)
+        VALUES (?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?)
         ON CONFLICT(identifier) DO UPDATE SET
           type = excluded.type,
           name = excluded.name,
           source_file = excluded.source_file,
           language = excluded.language,
+          semantic_tags = excluded.semantic_tags,
           metadata = excluded.metadata,
           start_line = excluded.start_line,
           start_column = excluded.start_column,
@@ -234,6 +238,7 @@ export class GraphDatabase {
 					node.name,
 					node.sourceFile,
 					node.language,
+					semanticTags,
 					metadata,
 					node.startLine,
 					node.startColumn,
@@ -331,7 +336,7 @@ export class GraphDatabase {
 		const offsetClause = options.offset ? `OFFSET ${options.offset}` : "";
 
 		const sql = `
-      SELECT id, identifier, type, name, source_file, language, metadata,
+      SELECT id, identifier, type, name, source_file, language, semantic_tags, metadata,
              start_line, start_column, end_line, end_column
       FROM nodes
       ${whereClause}
@@ -351,6 +356,7 @@ export class GraphDatabase {
 						name: row.name,
 						sourceFile: row.source_file,
 						language: row.language as SupportedLanguage,
+						semanticTags: JSON.parse(row.semantic_tags || "[]"),
 						metadata: JSON.parse(row.metadata || "{}"),
 						startLine: row.start_line,
 						startColumn: row.start_column,

@@ -442,7 +442,7 @@ Content with details.
 			const archNode = headingNodes.find((n) =>
 				n.name?.includes("Architecture"),
 			);
-			expect(archNode?.metadata?.semanticTypes).toEqual([
+			expect(archNode?.semanticTags).toEqual([
 				"architecture",
 				"system-design",
 			]);
@@ -450,7 +450,7 @@ Content with details.
 			const authNode = headingNodes.find((n) =>
 				n.name?.includes("Authentication"),
 			);
-			expect(authNode?.metadata?.semanticTypes).toEqual([
+			expect(authNode?.semanticTags).toEqual([
 				"security",
 				"implementation",
 			]);
