@@ -143,6 +143,9 @@ export const MARKDOWN_PATTERNS = {
 
 	/** Hashtag: #tag or #태그 (inline tags without spaces, not headings) */
 	HASHTAG: /#([A-Za-z가-힣][A-Za-z가-힣0-9_-]*)/g,
+
+	/** Semantic tag: English-only tags for heading type classification */
+	SEMANTIC_TAG: /#([A-Za-z][A-Za-z0-9_-]*)/g,
 } as const;
 
 /**

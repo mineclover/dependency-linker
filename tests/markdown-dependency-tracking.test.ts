@@ -369,13 +369,13 @@ Content.
 
 		it("should extract headings with semantic tags", () => {
 			const content = `
-# API 설계 #architecture #design
+# API Design #architecture #design
 
-## 사용자 인증 #security #api
+## User Authentication #security #api
 
-### JWT 토큰 #implementation
+### JWT Token #implementation
 
-## 데이터베이스 스키마
+## Database Schema
 
 Content here.
 `;
@@ -386,21 +386,21 @@ Content here.
 
 			// Heading with multiple tags
 			const heading1 = result.headings?.[0];
-			expect(heading1?.text).toBe("API 설계 #architecture #design");
-			expect(heading1?.cleanText).toBe("API 설계");
+			expect(heading1?.text).toBe("API Design #architecture #design");
+			expect(heading1?.cleanText).toBe("API Design");
 			expect(heading1?.tags).toEqual(["architecture", "design"]);
 			expect(heading1?.level).toBe(1);
 
 			// Heading with tags
 			const heading2 = result.headings?.[1];
-			expect(heading2?.text).toBe("사용자 인증 #security #api");
-			expect(heading2?.cleanText).toBe("사용자 인증");
+			expect(heading2?.text).toBe("User Authentication #security #api");
+			expect(heading2?.cleanText).toBe("User Authentication");
 			expect(heading2?.tags).toEqual(["security", "api"]);
 
 			// Heading with single tag
 			const heading3 = result.headings?.[2];
 			expect(heading3?.tags).toEqual(["implementation"]);
-			expect(heading3?.cleanText).toBe("JWT 토큰");
+			expect(heading3?.cleanText).toBe("JWT Token");
 
 			// Heading without tags
 			const heading4 = result.headings?.[3];
@@ -507,6 +507,228 @@ Reference to @TestClass in code.
 
 			expect(deps.length).toBeGreaterThanOrEqual(2);
 			expect(deps.some((d) => d.type === "md-link")).toBe(true);
+		});
+	});
+
+	describe("Semantic Type Query and Flow", () => {
+		it("should query headings by semantic type", async () => {
+			// Create multiple files with semantic tags
+			const file1Content = `
+# Architecture Overview #architecture #system-design
+
+## Database Design #architecture #database
+
+Content here.
+`;
+
+			const file2Content = `
+# API Design #architecture #api
+
+## Authentication #security #api
+
+Details here.
+`;
+
+			const file3Content = `
+# Testing Strategy #testing #quality
+
+Content.
+`;
+
+			// Process all files
+			const result1 = extractMarkdownDependencies("arch.md", file1Content);
+			const result2 = extractMarkdownDependencies("api.md", file2Content);
+			const result3 = extractMarkdownDependencies("test.md", file3Content);
+
+			await markdownResultToGraph(db, result1, {
+				sessionId: "semantic-query-test",
+			});
+			await markdownResultToGraph(db, result2, {
+				sessionId: "semantic-query-test",
+			});
+			await markdownResultToGraph(db, result3, {
+				sessionId: "semantic-query-test",
+			});
+
+			// Query by semantic type
+			const {
+				queryHeadingsBySemanticType,
+			} = require("../src/integration/MarkdownToGraph");
+
+			const archHeadings =
+				await queryHeadingsBySemanticType(db, "architecture");
+			expect(archHeadings.length).toBe(3);
+			expect(
+				archHeadings.every((h: { allTypes: string[] }) =>
+					h.allTypes.includes("architecture"),
+				),
+			).toBe(true);
+
+			const apiHeadings = await queryHeadingsBySemanticType(db, "api");
+			expect(apiHeadings.length).toBe(2);
+
+			const securityHeadings =
+				await queryHeadingsBySemanticType(db, "security");
+			expect(securityHeadings.length).toBeGreaterThanOrEqual(1);
+			const authHeading = securityHeadings.find(
+				(h: { heading: string }) => h.heading.includes("Authentication"),
+			);
+			expect(authHeading).toBeDefined();
+		});
+
+		it("should query headings from specific file", async () => {
+			const content = `
+# Main Title #architecture
+
+## Section 1 #implementation #backend
+
+### Subsection 1.1 #api
+
+## Section 2 #frontend
+
+Content.
+`;
+
+			const result = extractMarkdownDependencies("doc.md", content);
+			await markdownResultToGraph(db, result, {
+				sessionId: "file-query-test",
+			});
+
+			const { queryFileHeadings } = require("../src/integration/MarkdownToGraph");
+			const headings = await queryFileHeadings(db, "doc.md");
+
+			expect(headings.length).toBe(4);
+			expect(headings[0].semanticTypes).toEqual(["architecture"]);
+			expect(headings[1].semanticTypes).toEqual(["implementation", "backend"]);
+			expect(headings[2].semanticTypes).toEqual(["api"]);
+			expect(headings[3].semanticTypes).toEqual(["frontend"]);
+
+			// Verify ordering by line number
+			expect(headings[0].line).toBeLessThan(headings[1].line);
+		});
+
+		it("should get all semantic types statistics", async () => {
+			const content1 = `
+# Architecture #architecture
+
+## Design #design #architecture
+
+Content.
+`;
+
+			const content2 = `
+# Security #security
+
+## Testing #testing #security
+
+More content.
+`;
+
+			const result1 = extractMarkdownDependencies("arch2.md", content1);
+			const result2 = extractMarkdownDependencies("sec.md", content2);
+
+			await markdownResultToGraph(db, result1, {
+				sessionId: "stats-test",
+			});
+			await markdownResultToGraph(db, result2, {
+				sessionId: "stats-test",
+			});
+
+			const { getAllSemanticTypes } = require("../src/integration/MarkdownToGraph");
+			const types = await getAllSemanticTypes(db);
+
+			expect(types.get("architecture")).toBeGreaterThanOrEqual(2);
+			expect(types.get("security")).toBeGreaterThanOrEqual(2);
+			expect(types.get("design")).toBeGreaterThanOrEqual(1);
+			expect(types.get("testing")).toBeGreaterThanOrEqual(1);
+		});
+
+		it("should only accept English semantic tags in headings", () => {
+			const content = `
+# English Title #architecture #design
+
+## Korean Title #한글태그 #security
+
+### Mixed Title #api #테스트 #implementation
+
+Content.
+`;
+
+			const result = extractMarkdownDependencies("mixed.md", content);
+
+			// Check first heading - should have English tags only
+			const heading1 = result.headings?.[0];
+			expect(heading1?.tags).toEqual(["architecture", "design"]);
+			expect(heading1?.cleanText).toBe("English Title");
+
+			// Check second heading - Korean tag should be ignored
+			const heading2 = result.headings?.[1];
+			expect(heading2?.tags).toEqual(["security"]);
+			expect(heading2?.cleanText).toContain("한글태그"); // Korean tag stays in text
+
+			// Check third heading - only English tags extracted
+			const heading3 = result.headings?.[2];
+			expect(heading3?.tags).toEqual(["api", "implementation"]);
+			expect(heading3?.cleanText).toContain("테스트"); // Korean tag stays in text
+		});
+
+		it("should support complete workflow: extract → store → query", async () => {
+			// Step 1: Extract from markdown
+			const content = `
+# Project Documentation #documentation
+
+## API Reference #api #reference
+
+### Authentication Endpoints #api #security #implementation
+
+The authentication system uses JWT tokens.
+
+### Data Endpoints #api #data
+
+Data access layer.
+
+## Architecture #architecture #system-design
+
+System architecture overview.
+`;
+
+			const result = extractMarkdownDependencies("project.md", content);
+
+			// Verify extraction
+			expect(result.headings?.length).toBe(5);
+
+			// Step 2: Store in GraphDB
+			const graphResult = await markdownResultToGraph(db, result, {
+				sessionId: "workflow-test",
+			});
+
+			expect(graphResult.nodesCreated).toBeGreaterThan(0);
+			expect(graphResult.relationshipsCreated).toBeGreaterThan(0);
+
+			// Step 3: Query by semantic type
+			const {
+				queryHeadingsBySemanticType,
+				queryFileHeadings,
+			} = require("../src/integration/MarkdownToGraph");
+
+			const apiHeadings = await queryHeadingsBySemanticType(db, "api");
+			expect(apiHeadings.length).toBeGreaterThanOrEqual(3);
+
+			const securityHeadings =
+				await queryHeadingsBySemanticType(db, "security");
+			expect(securityHeadings.length).toBeGreaterThanOrEqual(1);
+
+			// Step 4: Query by file
+			const fileHeadings = await queryFileHeadings(db, "project.md");
+			expect(fileHeadings.length).toBe(5);
+
+			const archHeading = fileHeadings.find(
+				(h: { heading: string }) => h.heading.includes("Architecture"),
+			);
+			expect(archHeading?.semanticTypes).toEqual([
+				"architecture",
+				"system-design",
+			]);
 		});
 	});
 

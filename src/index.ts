@@ -77,9 +77,12 @@ export {
 } from "./core/MarkdownDependencyExtractor";
 export type { MarkdownToGraphOptions } from "./integration/MarkdownToGraph";
 export {
+	getAllSemanticTypes,
 	markdownDirectoryToGraph,
 	markdownFileToGraph,
 	markdownResultToGraph,
+	queryFileHeadings,
+	queryHeadingsBySemanticType,
 	queryMarkdownDependencies,
 	registerMarkdownEdgeTypes,
 } from "./integration/MarkdownToGraph";

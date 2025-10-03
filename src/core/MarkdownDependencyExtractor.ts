@@ -88,18 +88,18 @@ function extractHeadings(content: string): Array<{
 		if (match) {
 			const fullText = match[2].trim();
 
-			// Extract hashtags from heading text
+			// Extract semantic tags from heading text (English only)
 			const tags: string[] = [];
-			const hashtagPattern = /#([A-Za-z가-힣][A-Za-z가-힣0-9_-]*)/g;
-			let hashtagMatch: RegExpExecArray | null;
+			MARKDOWN_PATTERNS.SEMANTIC_TAG.lastIndex = 0;
+			let tagMatch: RegExpExecArray | null;
 
-			while ((hashtagMatch = hashtagPattern.exec(fullText)) !== null) {
-				tags.push(hashtagMatch[1]);
+			while ((tagMatch = MARKDOWN_PATTERNS.SEMANTIC_TAG.exec(fullText)) !== null) {
+				tags.push(tagMatch[1]);
 			}
 
-			// Remove hashtags to get clean text
+			// Remove semantic tags to get clean text
 			const cleanText = fullText
-				.replace(hashtagPattern, "")
+				.replace(MARKDOWN_PATTERNS.SEMANTIC_TAG, "")
 				.trim()
 				.replace(/\s+/g, " "); // Normalize whitespace
 

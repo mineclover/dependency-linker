@@ -449,3 +449,90 @@ export async function queryMarkdownDependencies(
 		};
 	});
 }
+
+/**
+ * Query heading symbols by semantic type
+ */
+export async function queryHeadingsBySemanticType(
+	db: GraphDatabase,
+	semanticType: string,
+): Promise<
+	Array<{
+		heading: string;
+		sourceFile: string;
+		level: number;
+		line: number;
+		allTypes: string[];
+	}>
+> {
+	// Find all heading symbol nodes
+	const allNodes = await db.findNodes({});
+	const headingNodes = allNodes.filter((n) => n.type === "heading-symbol");
+
+	// Filter by semantic type
+	const matchingHeadings = headingNodes
+		.filter((node) => {
+			const types = node.metadata?.semanticTypes || [];
+			return Array.isArray(types) && types.includes(semanticType);
+		})
+		.map((node) => ({
+			heading: node.name || "",
+			sourceFile: node.sourceFile || "",
+			level: (node.metadata?.level as number) || 0,
+			line: (node.metadata?.line as number) || 0,
+			allTypes: (node.metadata?.semanticTypes as string[]) || [],
+		}));
+
+	return matchingHeadings;
+}
+
+/**
+ * Query headings from specific file
+ */
+export async function queryFileHeadings(
+	db: GraphDatabase,
+	filePath: string,
+): Promise<
+	Array<{
+		heading: string;
+		level: number;
+		line: number;
+		semanticTypes: string[];
+	}>
+> {
+	const allNodes = await db.findNodes({
+		sourceFiles: [filePath],
+	});
+
+	const headingNodes = allNodes.filter((n) => n.type === "heading-symbol");
+
+	return headingNodes
+		.map((node) => ({
+			heading: node.name || "",
+			level: (node.metadata?.level as number) || 0,
+			line: (node.metadata?.line as number) || 0,
+			semanticTypes: (node.metadata?.semanticTypes as string[]) || [],
+		}))
+		.sort((a, b) => a.line - b.line);
+}
+
+/**
+ * Get all semantic types used in the database
+ */
+export async function getAllSemanticTypes(
+	db: GraphDatabase,
+): Promise<Map<string, number>> {
+	const allNodes = await db.findNodes({});
+	const headingNodes = allNodes.filter((n) => n.type === "heading-symbol");
+
+	const typeCounts = new Map<string, number>();
+
+	for (const node of headingNodes) {
+		const types = (node.metadata?.semanticTypes as string[]) || [];
+		for (const type of types) {
+			typeCounts.set(type, (typeCounts.get(type) || 0) + 1);
+		}
+	}
+
+	return typeCounts;
+}
