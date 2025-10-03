@@ -3,13 +3,11 @@
  * Verifies that SymbolExtractor can track dependencies between symbols
  */
 
+import { describe, it, expect, beforeAll } from "@jest/globals";
 import path from "node:path";
 import { initializeAnalysisSystem } from "../src/api/analysis";
 import { createSymbolExtractor } from "../src/core/SymbolExtractor";
 import { SymbolDependencyType } from "../src/core/symbol-types";
-
-// Initialize the analysis system (parsers, queries, etc.)
-initializeAnalysisSystem();
 
 // Sample TypeScript code with various dependencies
 const sampleCode = `
@@ -91,18 +89,20 @@ export function createUser(data: IUser): BaseUser {
 }
 `;
 
-async function testDependencyTracking() {
-	console.log("🔗 Testing Dependency Tracking");
-	console.log("━".repeat(60));
-
-	const extractor = createSymbolExtractor({
-		projectRoot: process.cwd(),
-		includeNested: true,
-		extractDocs: true,
+describe("Symbol Dependency Tracking", () => {
+	beforeEach(() => {
+		// Initialize the analysis system before each test to ensure clean state
+		initializeAnalysisSystem();
 	});
 
-	try {
-		// Create a temporary test file
+	it("should extract symbols and dependencies from TypeScript code", async () => {
+		const extractor = createSymbolExtractor({
+			projectRoot: process.cwd(),
+			includeNested: true,
+			extractDocs: true,
+		});
+
+		// Create a test file path (file doesn't need to exist, we pass sourceCode directly)
 		const testFilePath = path.join(process.cwd(), "test-dependency-sample.ts");
 
 		// Extract symbols and dependencies
@@ -112,47 +112,165 @@ async function testDependencyTracking() {
 			sampleCode,
 		);
 
-		console.log(`\n📁 File: ${result.filePath}`);
-		console.log(`🔤 Language: ${result.language}`);
-		console.log(`📊 Symbols extracted: ${result.symbols.length}`);
-		console.log(`🔗 Dependencies found: ${result.dependencies.length}`);
-		console.log("");
+		// Basic assertions
+		expect(result.filePath).toBe("test-dependency-sample.ts");
+		expect(result.language).toBe("typescript");
+		expect(result.symbols.length).toBeGreaterThan(0);
+		expect(result.dependencies.length).toBeGreaterThan(0);
+	});
 
-		// Group dependencies by type
-		const depsByType = new Map<string, typeof result.dependencies>();
-		for (const dep of result.dependencies) {
-			const type = dep.type;
-			if (!depsByType.has(type)) {
-				depsByType.set(type, []);
-			}
-			depsByType.get(type)?.push(dep);
-		}
+	it("should detect extends relationship", async () => {
+		const extractor = createSymbolExtractor({
+			projectRoot: process.cwd(),
+			includeNested: true,
+			extractDocs: true,
+		});
 
-		// Display dependencies by type
-		for (const [type, deps] of depsByType.entries()) {
-			console.log(`\n${getDependencyTypeIcon(type)} ${type.toUpperCase()}`);
-			console.log("─".repeat(60));
+		const testFilePath = path.join(process.cwd(), "test-dependency-sample.ts");
+		const result = await extractor.extractFromFile(
+			testFilePath,
+			"typescript",
+			sampleCode,
+		);
 
-			for (const dep of deps) {
-				console.log(`  ${dep.from} → ${dep.to}`);
-				console.log(`     Location: ${dep.location.line}:${dep.location.column}`);
-				if (dep.context) {
-					console.log(`     Context: ${dep.context.substring(0, 60)}...`);
-				}
-				console.log("");
-			}
-		}
+		// Find extends dependency
+		const extendsDep = result.dependencies.find(
+			(d) => d.to === "/BaseUser" && d.type === SymbolDependencyType.Extends,
+		);
 
-		// Summary
-		console.log("━".repeat(60));
-		console.log("📈 Dependency Summary:");
-		console.log(`   Total dependencies: ${result.dependencies.length}`);
-		for (const [type, deps] of depsByType.entries()) {
-			console.log(`   ${type}: ${deps.length}`);
-		}
+		expect(extendsDep).toBeDefined();
+		expect(extendsDep?.type).toBe(SymbolDependencyType.Extends);
+	});
 
-		// Verify expected dependencies
-		console.log("\n✅ Verification:");
+	it("should detect implements relationship", async () => {
+		const extractor = createSymbolExtractor({
+			projectRoot: process.cwd(),
+			includeNested: true,
+			extractDocs: true,
+		});
+
+		const testFilePath = path.join(process.cwd(), "test-dependency-sample.ts");
+		const result = await extractor.extractFromFile(
+			testFilePath,
+			"typescript",
+			sampleCode,
+		);
+
+		// Find implements dependency
+		const implementsDep = result.dependencies.find(
+			(d) => d.to === "/IUser" && d.type === SymbolDependencyType.Implements,
+		);
+
+		expect(implementsDep).toBeDefined();
+		expect(implementsDep?.type).toBe(SymbolDependencyType.Implements);
+	});
+
+	it("should detect function calls", async () => {
+		const extractor = createSymbolExtractor({
+			projectRoot: process.cwd(),
+			includeNested: true,
+			extractDocs: true,
+		});
+
+		const testFilePath = path.join(process.cwd(), "test-dependency-sample.ts");
+		const result = await extractor.extractFromFile(
+			testFilePath,
+			"typescript",
+			sampleCode,
+		);
+
+		// Find call dependencies
+		const callDeps = result.dependencies.filter(
+			(d) => d.type === SymbolDependencyType.Call,
+		);
+
+		expect(callDeps.length).toBeGreaterThan(0);
+
+		// Check for specific calls
+		const validateEmailCall = callDeps.find((d) => d.to === "/validateEmail");
+		const sendCall = callDeps.find((d) => d.to === "/send");
+
+		expect(validateEmailCall).toBeDefined();
+		expect(sendCall).toBeDefined();
+	});
+
+	it("should detect class instantiation", async () => {
+		const extractor = createSymbolExtractor({
+			projectRoot: process.cwd(),
+			includeNested: true,
+			extractDocs: true,
+		});
+
+		const testFilePath = path.join(process.cwd(), "test-dependency-sample.ts");
+		const result = await extractor.extractFromFile(
+			testFilePath,
+			"typescript",
+			sampleCode,
+		);
+
+		// Find instantiation dependencies
+		const instantiationDeps = result.dependencies.filter(
+			(d) => d.type === SymbolDependencyType.Instantiation,
+		);
+
+		expect(instantiationDeps.length).toBeGreaterThan(0);
+
+		// Check for specific instantiations
+		const notificationNew = instantiationDeps.find(
+			(d) => d.to === "/Notification",
+		);
+		const userServiceNew = instantiationDeps.find(
+			(d) => d.to === "/UserService",
+		);
+
+		expect(notificationNew).toBeDefined();
+		expect(userServiceNew).toBeDefined();
+	});
+
+	it("should detect type references", async () => {
+		const extractor = createSymbolExtractor({
+			projectRoot: process.cwd(),
+			includeNested: true,
+			extractDocs: true,
+		});
+
+		const testFilePath = path.join(process.cwd(), "test-dependency-sample.ts");
+		const result = await extractor.extractFromFile(
+			testFilePath,
+			"typescript",
+			sampleCode,
+		);
+
+		// Find type reference dependencies
+		const typeRefDeps = result.dependencies.filter(
+			(d) => d.type === SymbolDependencyType.TypeReference,
+		);
+
+		expect(typeRefDeps.length).toBeGreaterThan(0);
+
+		// Check for type references in createUser function
+		const iUserRef = typeRefDeps.find((d) => d.to === "/IUser");
+		const baseUserRef = typeRefDeps.find((d) => d.to === "/BaseUser");
+
+		expect(iUserRef).toBeDefined();
+		expect(baseUserRef).toBeDefined();
+	});
+
+	it("should track all expected dependency types", async () => {
+		const extractor = createSymbolExtractor({
+			projectRoot: process.cwd(),
+			includeNested: true,
+			extractDocs: true,
+		});
+
+		const testFilePath = path.join(process.cwd(), "test-dependency-sample.ts");
+		const result = await extractor.extractFromFile(
+			testFilePath,
+			"typescript",
+			sampleCode,
+		);
+
+		// Expected dependencies
 		const expectedDependencies = [
 			{
 				to: "/BaseUser",
@@ -201,54 +319,13 @@ async function testDependencyTracking() {
 			},
 		];
 
-		let passed = 0;
-		let failed = 0;
-
+		// Check each expected dependency
 		for (const expected of expectedDependencies) {
 			const found = result.dependencies.find(
-				(d: { to: string; type: string }) =>
-					d.to === expected.to && d.type === expected.type,
+				(d) => d.to === expected.to && d.type === expected.type,
 			);
 
-			if (found) {
-				console.log(`   ✓ ${expected.description}`);
-				passed++;
-			} else {
-				console.log(`   ✗ ${expected.description} - NOT FOUND`);
-				failed++;
-			}
+			expect(found).toBeDefined();
 		}
-
-		console.log(`\n   Passed: ${passed}/${expectedDependencies.length}`);
-		console.log(`   Failed: ${failed}/${expectedDependencies.length}`);
-
-		if (failed === 0) {
-			console.log("\n🎉 All dependency tests passed!");
-		} else {
-			console.log("\n⚠️  Some dependency tests failed");
-		}
-	} catch (error) {
-		console.error("❌ Error:", error);
-		throw error;
-	}
-}
-
-function getDependencyTypeIcon(type: string): string {
-	const icons: Record<string, string> = {
-		call: "📞",
-		instantiation: "🆕",
-		"property-access": "📦",
-		"type-reference": "🏷️",
-		extends: "⬆️",
-		implements: "✅",
-		import: "📥",
-		"type-parameter": "🔤",
-	};
-	return icons[type] || "🔗";
-}
-
-// Run test
-testDependencyTracking().catch((error) => {
-	console.error("Test failed:", error);
-	process.exit(1);
+	});
 });
