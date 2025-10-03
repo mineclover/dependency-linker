@@ -2,6 +2,20 @@
 
 전체 파이프라인 구현 현황 및 완성 상태
 
+## 목차
+- [개요](#개요)
+- [1. EXTRACTION (데이터 추출) - ✅ 완료](#1-extraction-데이터-추출----완료)
+- [2. STORAGE (데이터 저장) - ✅ 완료](#2-storage-데이터-저장----완료)
+  - [Semantic Tag Generation (선택적 기능)](#semantic-tag-generation-선택적-기능)
+- [3. ANALYSIS (의존성 분석) - ✅ 완료](#3-analysis-의존성-분석----완료)
+- [4. INFERENCE (추론) - ✅ 완료](#4-inference-추론----완료)
+- [선택적 기능: Semantic Tag Extraction Rules](#선택적-기능-semantic-tag-extraction-rules)
+  - [필요시 구현 방법](#필요시-구현-방법)
+- [구현 우선순위](#구현-우선순위)
+- [현재 작동하는 기능](#현재-작동하는-기능)
+- [검증 방법](#검증-방법)
+- [결론](#결론)
+
 ## 개요
 
 **파이프라인 완성 상태**: ✅ **COMPLETE**

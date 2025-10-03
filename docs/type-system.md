@@ -2,6 +2,29 @@
 
 GraphDB의 Node Type과 Edge Type 정의 시스템 (대상 및 관계 식별)
 
+## 목차
+- [개요](#개요)
+  - [Type의 목적](#type의-목적)
+  - [Type vs Semantic Tags](#type-vs-semantic-tags)
+- [Node Type 분류](#node-type-분류)
+  - [1. File & Resource Types](#1-file--resource-types)
+  - [2. Code Symbol Types](#2-code-symbol-types)
+  - [3. Declaration Types](#3-declaration-types)
+  - [4. Documentation Types](#4-documentation-types)
+  - [5. Error Types](#5-error-types)
+- [Edge Type 분류](#edge-type-분류)
+  - [1. Structural Relationships](#1-structural-relationships-구조적-관계)
+  - [2. Dependency Relationships](#2-dependency-relationships-의존성-관계)
+  - [3. Code Execution Relationships](#3-code-execution-relationships-실행-관계)
+  - [4. Type System Relationships](#4-type-system-relationships-타입-관계)
+  - [5. Modification Relationships](#5-modification-relationships-변경-관계)
+  - [6. Documentation Relationships](#6-documentation-relationships-문서-관계)
+  - [7. Meta Relationships](#7-meta-relationships-메타-관계)
+- [Type-to-SemanticTag 매핑](#type-to-semantictag-매핑)
+- [Type Registry 구현](#type-registry-구현)
+- [Type 계층 구조](#type-계층-구조)
+- [Best Practices](#best-practices)
+
 ## 개요
 
 **Type은 노드와 엣지의 대상을 식별합니다.**

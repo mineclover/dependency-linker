@@ -2,6 +2,30 @@
 
 전체 데이터 처리 파이프라인: 추출 → 저장 → 분석 → 추론
 
+## 목차
+- [개요](#개요)
+- [1. EXTRACTION (데이터 추출)](#1-extraction-데이터-추출)
+  - [1.1 Parser Layer](#11-parser-layer-파서-레이어)
+  - [1.2 Symbol Extraction](#12-symbol-extraction-심볼-추출)
+  - [1.3 Dependency Detection](#13-dependency-detection-의존성-감지)
+- [2. STORAGE (데이터 저장)](#2-storage-데이터-저장)
+  - [2.1 Node Storage](#21-node-storage-노드-저장)
+  - [2.2 Edge Storage](#22-edge-storage-엣지-저장)
+  - [2.3 Edge Type 관리](#23-edge-type-관리--완료)
+  - [2.4 Semantic Tag Generation](#24-semantic-tag-generation--선택적-기능)
+- [3. ANALYSIS (의존성 분석)](#3-analysis-의존성-분석)
+  - [3.1 Direct Analysis](#31-direct-analysis-직접-분석)
+  - [3.2 Pattern Analysis](#32-pattern-analysis-패턴-분석)
+  - [3.3 Domain Analysis](#33-domain-analysis-도메인-분석)
+- [4. INFERENCE (추론)](#4-inference-추론)
+  - [4.1 Hierarchical Inference](#41-hierarchical-inference-계층적-추론)
+  - [4.2 Transitive Inference](#42-transitive-inference-전이적-추론)
+  - [4.3 Inheritable Inference](#43-inheritable-inference-상속-가능-추론)
+- [5. 전체 플로우 예시](#5-전체-플로우-예시)
+- [6. 데이터 흐름도](#6-데이터-흐름도)
+- [7. 핵심 개념 요약](#7-핵심-개념-요약)
+- [8. 관련 문서](#8-관련-문서)
+
 ## 개요
 
 Dependency Linker는 4단계 파이프라인으로 코드베이스를 분석합니다:
