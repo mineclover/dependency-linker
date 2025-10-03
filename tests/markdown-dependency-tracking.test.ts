@@ -366,6 +366,95 @@ Content.
 				line: 4,
 			});
 		});
+
+		it("should extract headings with semantic tags", () => {
+			const content = `
+# API 설계 #architecture #design
+
+## 사용자 인증 #security #api
+
+### JWT 토큰 #implementation
+
+## 데이터베이스 스키마
+
+Content here.
+`;
+
+			const result = extractMarkdownDependencies("design.md", content);
+
+			expect(result.headings).toHaveLength(4);
+
+			// Heading with multiple tags
+			const heading1 = result.headings?.[0];
+			expect(heading1?.text).toBe("API 설계 #architecture #design");
+			expect(heading1?.cleanText).toBe("API 설계");
+			expect(heading1?.tags).toEqual(["architecture", "design"]);
+			expect(heading1?.level).toBe(1);
+
+			// Heading with tags
+			const heading2 = result.headings?.[1];
+			expect(heading2?.text).toBe("사용자 인증 #security #api");
+			expect(heading2?.cleanText).toBe("사용자 인증");
+			expect(heading2?.tags).toEqual(["security", "api"]);
+
+			// Heading with single tag
+			const heading3 = result.headings?.[2];
+			expect(heading3?.tags).toEqual(["implementation"]);
+			expect(heading3?.cleanText).toBe("JWT 토큰");
+
+			// Heading without tags
+			const heading4 = result.headings?.[3];
+			expect(heading4?.tags).toBeUndefined();
+			expect(heading4?.cleanText).toBeUndefined();
+		});
+
+		it("should create heading symbols in GraphDB", async () => {
+			const content = `
+# Architecture Overview #architecture #system-design
+
+## Authentication System #security #implementation
+
+Content with details.
+`;
+
+			const result = extractMarkdownDependencies("arch.md", content);
+
+			const graphResult = await markdownResultToGraph(db, result, {
+				sessionId: "heading-test",
+				createMissingNodes: true,
+			});
+
+			// Should create: 1 file node + 2 heading symbol nodes
+			expect(graphResult.nodesCreated).toBeGreaterThanOrEqual(3);
+
+			// Should create: 2 md-contains-heading relationships
+			expect(graphResult.relationshipsCreated).toBeGreaterThanOrEqual(2);
+
+			// Verify heading nodes exist
+			const nodes = await db.findNodes({
+				sourceFiles: ["arch.md"],
+			});
+
+			const headingNodes = nodes.filter((n) => n.type === "heading-symbol");
+			expect(headingNodes.length).toBe(2);
+
+			// Verify semantic types are stored
+			const archNode = headingNodes.find((n) =>
+				n.name?.includes("Architecture"),
+			);
+			expect(archNode?.metadata?.semanticTypes).toEqual([
+				"architecture",
+				"system-design",
+			]);
+
+			const authNode = headingNodes.find((n) =>
+				n.name?.includes("Authentication"),
+			);
+			expect(authNode?.metadata?.semanticTypes).toEqual([
+				"security",
+				"implementation",
+			]);
+		});
 	});
 
 	describe("GraphDB Integration", () => {
@@ -394,7 +483,8 @@ Reference to @TestClass in code.
 			});
 
 			expect(graphResult.nodesCreated).toBeGreaterThan(0);
-			expect(graphResult.relationshipsCreated).toBe(3);
+			// 3 dependencies + 1 heading = 4 relationships
+			expect(graphResult.relationshipsCreated).toBe(4);
 		});
 
 		it("should query markdown dependencies from GraphDB", async () => {

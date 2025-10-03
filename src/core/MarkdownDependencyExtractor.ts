@@ -64,24 +64,51 @@ export function extractMarkdownDependencies(
 }
 
 /**
- * Extract headings from markdown content
+ * Extract headings from markdown content with semantic tags
  */
 function extractHeadings(content: string): Array<{
 	level: number;
 	text: string;
 	line: number;
+	tags?: string[];
+	cleanText?: string;
 }> {
-	const headings: Array<{ level: number; text: string; line: number }> = [];
+	const headings: Array<{
+		level: number;
+		text: string;
+		line: number;
+		tags?: string[];
+		cleanText?: string;
+	}> = [];
 	const lines = content.split("\n");
 
 	for (let i = 0; i < lines.length; i++) {
 		const line = lines[i];
 		const match = /^(#{1,6})\s+(.+)$/.exec(line);
 		if (match) {
+			const fullText = match[2].trim();
+
+			// Extract hashtags from heading text
+			const tags: string[] = [];
+			const hashtagPattern = /#([A-Za-z가-힣][A-Za-z가-힣0-9_-]*)/g;
+			let hashtagMatch: RegExpExecArray | null;
+
+			while ((hashtagMatch = hashtagPattern.exec(fullText)) !== null) {
+				tags.push(hashtagMatch[1]);
+			}
+
+			// Remove hashtags to get clean text
+			const cleanText = fullText
+				.replace(hashtagPattern, "")
+				.trim()
+				.replace(/\s+/g, " "); // Normalize whitespace
+
 			headings.push({
 				level: match[1].length,
-				text: match[2].trim(),
+				text: fullText,
 				line: i + 1,
+				tags: tags.length > 0 ? tags : undefined,
+				cleanText: tags.length > 0 ? cleanText : undefined,
 			});
 		}
 	}

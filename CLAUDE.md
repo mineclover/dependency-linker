@@ -97,6 +97,12 @@ Namespace Module (file organization)
 - **Dependency Types**: Link, Image, WikiLink, SymbolReference, Include, CodeBlockReference, Anchor, Hashtag (8 types)
 - **GraphDB Integration**: Markdown edge types with transitive relationship support
 - **Pattern Extraction**: Regex-based extraction with front matter and heading structure support
+- **Heading Symbols**: Headings as first-class symbols with semantic type tagging
+  - Headings stored as `heading-symbol` nodes in GraphDB
+  - File path + heading text forms unique symbol identifier
+  - Semantic types defined via hashtags: `# API Design #architecture #design`
+  - Multiple semantic types supported per heading
+  - `md-contains-heading` hierarchical relationship from file to headings
 - **Features**:
   - Standard markdown links: `[text](url)`
   - Images: `![alt](url)`
@@ -106,8 +112,9 @@ Namespace Module (file organization)
   - Include directives: `<!-- include:path -->`
   - Internal anchors: `[text](#anchor)`
   - Hashtags: `#tag`, `#태그` (inline tags without spaces)
-- **Test Coverage**: 17/17 markdown dependency tests passing (4 hashtag tests)
-- **Production Status**: ✅ Markdown dependency tracking production-ready with hashtag support
+  - Heading symbols: `# Heading Text #type1 #type2`
+- **Test Coverage**: 19/19 markdown dependency tests passing (2 heading symbol tests)
+- **Production Status**: ✅ Markdown dependency tracking production-ready with heading symbols and semantic tagging
 
 ## System Capabilities
 - **Multi-Language Support**: TypeScript, TSX, JavaScript, JSX, Java, Python, Go, Markdown

@@ -73,6 +73,7 @@ const MARKDOWN_EDGE_TYPES: Record<
 export async function registerMarkdownEdgeTypes(
 	db: GraphDatabase,
 ): Promise<void> {
+	// Register dependency edge types
 	for (const [type, config] of Object.entries(MARKDOWN_EDGE_TYPES)) {
 		await db.createEdgeType({
 			name: config.name,
@@ -82,6 +83,15 @@ export async function registerMarkdownEdgeTypes(
 			isInheritable: false,
 		});
 	}
+
+	// Register heading symbol edge type
+	await db.createEdgeType({
+		name: "md-contains-heading",
+		description: "Markdown file contains heading symbol with semantic types",
+		isTransitive: false,
+		isHierarchical: true,
+		isInheritable: false,
+	});
 }
 
 /**
@@ -244,6 +254,46 @@ export async function markdownResultToGraph(
 		});
 
 		relationshipsCreated++;
+	}
+
+	// Process headings as symbols with semantic types
+	if (result.headings && result.headings.length > 0) {
+		for (const heading of result.headings) {
+			// Create heading symbol node
+			const headingText = heading.cleanText || heading.text;
+			const headingIdentifier = `heading:${result.filePath}#${headingText}`;
+
+			const headingNodeId = await db.upsertNode({
+				identifier: headingIdentifier,
+				type: "heading-symbol",
+				name: headingText,
+				sourceFile: result.filePath,
+				language: result.language,
+				metadata: {
+					level: heading.level,
+					line: heading.line,
+					fullText: heading.text,
+					semanticTypes: heading.tags || [],
+					tags: heading.tags || [],
+				},
+			});
+
+			nodesCreated++;
+
+			// Create relationship from file to heading
+			await db.upsertRelationship({
+				fromNodeId: sourceNodeId,
+				toNodeId: headingNodeId,
+				type: "md-contains-heading",
+				metadata: {
+					level: heading.level,
+					line: heading.line,
+					semanticTypes: heading.tags || [],
+				},
+			});
+
+			relationshipsCreated++;
+		}
 	}
 
 	return {

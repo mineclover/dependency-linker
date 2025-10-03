@@ -103,6 +103,10 @@ export interface MarkdownExtractionResult {
 		level: number;
 		text: string;
 		line: number;
+		/** Semantic tags extracted from heading (#tag1 #tag2) */
+		tags?: string[];
+		/** Clean text without hashtags */
+		cleanText?: string;
 	}>;
 
 	/** Language (always 'markdown') */
