@@ -1,5 +1,21 @@
 # Parser System Documentation
 
+Multi-language AST 파서 시스템으로, Tree-sitter를 기반으로 TypeScript, Java, Python, Go를 지원합니다. 테스트 격리와 실제 사용 최적화를 모두 고려한 이중 전략 설계입니다.
+
+## 목차
+- [개요](#개요)
+- [아키텍처](#아키텍처)
+- [사용법](#사용법)
+- [지원 언어](#지원-언어)
+- [성능 특성](#성능-특성)
+- [테스트 전략](#테스트-전략)
+- [캐시 관리](#캐시-관리)
+- [API 레퍼런스](#api-레퍼런스)
+- [설정](#설정)
+- [문제해결](#문제해결)
+- [버전 호환성](#버전-호환성)
+- [라이선스](#라이선스)
+
 ## 개요
 
 Multi-language AST 파서 시스템으로, Tree-sitter를 기반으로 TypeScript, Java, Python, Go를 지원합니다. 테스트 격리와 실제 사용 최적화를 모두 고려한 이중 전략 설계입니다.
@@ -151,6 +167,80 @@ npm test -- query-interface-validation core-functionality parser-reuse-validatio
 npm test
 ```
 
+## 캐시 관리
+
+### 파서 캐시 시스템
+
+파서 인스턴스는 성능 향상을 위해 캐시됩니다. 테스트 격리를 위한 캐시 클리어 메커니즘이 제공됩니다.
+
+### 캐시 클리어 API
+
+```typescript
+import { globalParserManager } from './src/parsers/ParserManager';
+
+// 모든 파서 내부 캐시 클리어
+globalParserManager.clearCache();
+
+// 특정 언어 파서 리셋
+globalParserManager.resetParser('typescript');
+
+// 리소스 완전 정리
+globalParserManager.dispose();
+```
+
+### 테스트에서 캐시 관리
+
+```typescript
+import { globalParserManager } from '../src/parsers/ParserManager';
+
+describe("Parser Tests", () => {
+  // 각 테스트 후 캐시 클리어 (권장)
+  afterEach(() => {
+    globalParserManager.clearCache();
+  });
+
+  // 또는 모든 테스트 후 한 번
+  afterAll(() => {
+    globalParserManager.clearCache();
+  });
+
+  it("should parse without state pollution", async () => {
+    const result = await globalParserManager.analyzeFile(code, 'typescript');
+    expect(result.tree).toBeDefined();
+  });
+});
+```
+
+### 캐시 전략
+
+#### Production 환경
+```typescript
+// 캐시 유지로 최대 성능
+const manager = new ParserManager();
+for (const file of files) {
+  await manager.analyzeFile(file.content, file.language);
+}
+// 파서 인스턴스 재사용으로 10-15배 빠름
+```
+
+#### Long-running Service
+```typescript
+// 주기적 정리로 메모리 관리
+const manager = new ParserManager();
+
+setInterval(() => {
+  manager.cleanup(300000); // 5분 이상 미사용 파서 제거
+}, 60000); // 1분마다 체크
+```
+
+#### Testing 환경
+```typescript
+// 각 테스트 후 캐시 클리어
+afterEach(() => {
+  globalParserManager.clearCache();
+});
+```
+
 ## API 레퍼런스
 
 ### ParserFactory
@@ -179,11 +269,16 @@ class ParserManager {
   // 프로젝트 전체 분석
   analyzeProject(projectFiles: ProjectFile[]): Promise<ProjectAnalysis>;
 
+  // 파서 캐시 관리 (Phase 6 추가)
+  clearCache(): void;                                   // 모든 파서 캐시 클리어
+  resetParser(language: SupportedLanguage): void;      // 특정 언어 파서 리셋
+
   // 성능 통계
   getStats(): ParserStats;
 
   // 메모리 정리
   cleanup(maxIdleTime?: number): void;
+  dispose(): void;                                     // 완전 정리
 }
 ```
 
@@ -195,6 +290,9 @@ abstract class BaseParser {
 
   // 파일 파싱
   abstract parseFile(filePath: string, options?: ParserOptions): Promise<ParseResult>;
+
+  // 캐시 관리 (Phase 6 추가)
+  abstract clearCache(): void;                          // 파서별 캐시 클리어
 
   // 지원 확장자
   abstract getSupportedExtensions(): string[];
@@ -261,3 +359,7 @@ console.log('Parser usage:', stats);
 ## 라이선스
 
 프로젝트 루트의 LICENSE 파일 참조
+
+---
+
+*Last Updated: 2025-10-04*

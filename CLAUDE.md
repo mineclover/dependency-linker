@@ -130,6 +130,36 @@ Namespace Module (file organization)
 - **Verification**: 158 nodes analyzed with semantic tags correctly applied across 4 namespaces
 - **Production Status**: ✅ Namespace-semantic tags integration production-ready
 
+### Phase 6: Parser Cache Management & Test Isolation (2025-10-04)
+- **Parser Lifecycle Analysis**: Comprehensive analysis of parser instance management and caching patterns
+  - Identified `globalParserManager` singleton pattern (ParserManager.ts:338)
+  - Analyzed TypeScript parser dual-cache system (`tsParser`, `tsxParser`)
+  - Documented parser instance reuse across all language parsers
+- **Cache Clearing Mechanism**: Implemented systematic cache management for test isolation
+  - Added `abstract clearCache(): void` to `BaseParser` interface
+  - Implemented `clearCache()` in all parser classes (TypeScript, Java, Python, Go)
+  - TypeScriptParser clears both `tsParser` and `tsxParser` instances
+  - Other parsers clear single parser instance cache
+- **ParserManager Cache Control**: High-level cache management API
+  - `clearCache()`: Clears internal cache of all registered parsers
+  - `resetParser(language)`: Resets and removes specific language parser
+  - Integrated with existing `dispose()` for complete cleanup
+- **Test Isolation Strategy**: Jest test environment improvements
+  - Added `globalParserManager` import to `tests/setup.ts`
+  - Documented manual cache clearing for specific tests
+  - Avoided global `afterEach` hook due to concurrent execution issues
+  - Tests can opt-in to cache clearing per-suite or per-test basis
+- **Test Results**: Individual tests all passing, parser cache mechanism working correctly
+- **Usage Pattern**:
+  ```typescript
+  import { globalParserManager } from '../src/parsers/ParserManager';
+
+  afterEach(() => {
+    globalParserManager.clearCache(); // Clear parser state between tests
+  });
+  ```
+- **Production Status**: ✅ Parser cache management production-ready, test isolation improved
+
 ## System Capabilities
 - **Multi-Language Support**: TypeScript, TSX, JavaScript, JSX, Java, Python, Go, Markdown
 - **Graph Database**: SQLite-based code relationship storage with circular dependency detection
@@ -139,6 +169,7 @@ Namespace Module (file organization)
 - **Inference System**: Hierarchical, transitive, and inheritable edge type inference
 - **Custom Queries**: User-defined key mapping with type-safe execution
 - **Performance Tracking**: Built-in metrics and benchmarking
+- **Parser Cache Management**: Systematic parser lifecycle and cache control for test isolation
 - **CLI Tools**: Single-file analysis and namespace batch operations with semantic tagging
 - **Markdown Analysis**: Complete markdown dependency tracking with 8 dependency types (including hashtags)
 - **Symbol Tracking**: Fine-grained symbol-level dependency analysis for TypeScript/JavaScript
@@ -148,7 +179,8 @@ Namespace Module (file organization)
 - **Type Safety**: Complete type inference throughout query pipeline
 - **Build System**: Incremental builds with type checking
 - **Linting**: Biome with strict rules
-- **Testing**: 159 passing tests (146 existing + 13 markdown) with comprehensive coverage
+- **Testing**: 157+ passing tests with parser cache management and test isolation improvements
+- **Test Isolation**: Parser cache clearing mechanism for independent test execution
 
 ## Package Distribution
 - **Name**: `@context-action/dependency-linker`
@@ -159,10 +191,11 @@ Namespace Module (file organization)
 - **CLI Tools**: `analyze-file` (single-file), `namespace-analyzer` (batch operations)
 
 ## Key Design Patterns
-- **Singleton**: `globalQueryEngine`, `globalParserFactory`, `globalTreeSitterQueryEngine`
+- **Singleton**: `globalQueryEngine`, `globalParserFactory`, `globalTreeSitterQueryEngine`, `globalParserManager`
 - **Factory**: `ParserFactory` for language-specific parser creation
 - **Builder**: `DependencyGraphBuilder` for graph construction
 - **Strategy**: Query processors for language-specific result processing
+- **Template Method**: `BaseParser.clearCache()` abstract method for parser-specific cache management
 
 ## Documentation References
 - **Type System**: [docs/type-system.md](docs/type-system.md) - Node and Edge type definitions, classification hierarchy, and type registry
@@ -330,5 +363,413 @@ Namespace Module (file organization)
 - 아카이브 사유 README에 기록
 - 대체 문서 링크 제공
 
+## Testing Best Practices
+
+### Test Structure Guidelines
+
+#### Test Organization
+```
+tests/
+├── unit/                    # 단위 테스트
+├── integration/             # 통합 테스트
+├── *.test.ts               # 기능별 테스트
+└── setup.ts                # Jest 전역 설정
+```
+
+#### Test File Naming
+- Unit tests: `[component].test.ts`
+- Integration tests: `[feature].integration.test.ts`
+- E2E tests: `[workflow].e2e.test.ts`
+
+### Test Isolation Principles
+
+#### Parser Cache Management
+```typescript
+import { globalParserManager } from '../src/parsers/ParserManager';
+
+describe("Feature Tests", () => {
+  // Option 1: Clear after each test
+  afterEach(() => {
+    globalParserManager.clearCache();
+  });
+
+  // Option 2: Clear after all tests
+  afterAll(() => {
+    globalParserManager.clearCache();
+  });
+
+  // Option 3: Reset specific parser
+  beforeEach(() => {
+    globalParserManager.resetParser('typescript');
+  });
+});
+```
+
+#### When to Clear Parser Cache
+- **After Each Test**: Tests that parse the same file multiple times
+- **After Test Suite**: Tests that create parser state but don't interfere
+- **Before Each Test**: Tests that need fresh parser instances
+- **Manual**: Tests with specific parser state requirements
+
+#### Analysis System Initialization
+```typescript
+import { initializeAnalysisSystem } from '../src/api/analysis';
+
+// ✅ Good: Initialize once per worker
+beforeAll(() => {
+  initializeAnalysisSystem();
+});
+
+// ❌ Bad: Initialize before each test (causes race conditions)
+beforeEach(() => {
+  initializeAnalysisSystem(); // Don't do this
+});
+```
+
+### Test Data Management
+
+#### Temporary Files
+```typescript
+import { mkdtemp, rm } from 'node:fs/promises';
+import { tmpdir } from 'node:os';
+import { join } from 'node:path';
+
+let tempDir: string;
+
+beforeEach(async () => {
+  tempDir = await mkdtemp(join(tmpdir(), 'test-'));
+});
+
+afterEach(async () => {
+  await rm(tempDir, { recursive: true, force: true });
+});
+```
+
+#### Test Code Samples
+```typescript
+// ✅ Good: Inline test code
+const testCode = `
+export class TestClass {
+  method(): void {}
+}
+`;
+
+// ❌ Bad: External file dependencies
+const testCode = fs.readFileSync('./fixtures/test.ts'); // Fragile
+```
+
+### Jest Configuration Best Practices
+
+#### Test Execution
+```javascript
+// jest.config.js
+{
+  testMatch: ["**/tests/**/*.test.ts"],
+  testPathIgnorePatterns: ["/node_modules/", "/build/", "/dist/"],
+
+  // Test isolation
+  clearMocks: true,
+  resetMocks: false,  // Don't reset between tests
+  restoreMocks: true,
+
+  // Performance
+  maxWorkers: "50%",
+  maxConcurrency: 4,
+
+  // Resource management
+  forceExit: true,
+  detectOpenHandles: true,
+  workerIdleMemoryLimit: "200MB",
+}
+```
+
+#### Setup Files
+```javascript
+// jest.config.js
+{
+  setupFilesAfterEnv: ["<rootDir>/tests/setup.ts"],
+}
+```
+
+```typescript
+// tests/setup.ts
+import { initializeAnalysisSystem } from '../src/api/analysis';
+
+// Global initialization (runs once per worker)
+if (!(global as any).__ANALYSIS_SYSTEM_INITIALIZED__) {
+  initializeAnalysisSystem();
+  (global as any).__ANALYSIS_SYSTEM_INITIALIZED__ = true;
+}
+
+// Extend timeout for AST operations
+jest.setTimeout(10000);
+```
+
+### Test Debugging
+
+#### Verbose Output
+```bash
+npm test -- --verbose
+```
+
+#### Run Specific Test
+```bash
+npm test -- path/to/test.test.ts
+npm test -- -t "test name pattern"
+```
+
+#### Debug Mode
+```bash
+node --inspect-brk node_modules/.bin/jest --runInBand
+```
+
+#### Parser State Inspection
+```typescript
+it("should verify parser state", () => {
+  const stats = globalParserManager.getStats();
+  console.log("Parser stats:", stats);
+
+  expect(stats.typescript.isActive).toBe(true);
+});
+```
+
+### Performance Testing
+
+#### Test Timeouts
+```typescript
+it("should parse within time limit", async () => {
+  const start = performance.now();
+
+  await parser.parse(sourceCode);
+
+  const duration = performance.now() - start;
+  expect(duration).toBeLessThan(200); // < 200ms
+}, 10000); // 10s timeout
+```
+
+#### Memory Testing
+```typescript
+it("should not leak memory", async () => {
+  const initialMemory = process.memoryUsage().heapUsed;
+
+  for (let i = 0; i < 100; i++) {
+    await parser.parse(testCode);
+    globalParserManager.clearCache();
+  }
+
+  global.gc?.(); // Requires --expose-gc
+  const finalMemory = process.memoryUsage().heapUsed;
+  const leaked = finalMemory - initialMemory;
+
+  expect(leaked).toBeLessThan(10 * 1024 * 1024); // < 10MB
+});
+```
+
+### Common Testing Patterns
+
+#### Database Testing
+```typescript
+import { GraphAnalysisSystem } from '../src/integration/GraphAnalysisSystem';
+
+let db: GraphAnalysisSystem;
+
+beforeEach(async () => {
+  db = new GraphAnalysisSystem(':memory:');
+  await db.initialize();
+});
+
+afterEach(async () => {
+  await db.close();
+});
+```
+
+#### Error Testing
+```typescript
+it("should handle parsing errors", async () => {
+  const invalidCode = "class {";
+
+  await expect(parser.parse(invalidCode))
+    .rejects
+    .toThrow("Failed to parse TypeScript code");
+});
+```
+
+#### Snapshot Testing (Use Sparingly)
+```typescript
+it("should match AST structure", async () => {
+  const result = await parser.parse(testCode);
+
+  // Only snapshot stable structures
+  expect(result.metadata).toMatchSnapshot({
+    parseTime: expect.any(Number), // Exclude volatile fields
+  });
+});
+```
+
+### Testing Checklist
+
+#### Before Committing Tests
+- [ ] All tests pass individually
+- [ ] All tests pass in suite (`npm test`)
+- [ ] No console warnings or errors
+- [ ] Parser cache cleared appropriately
+- [ ] Temporary files cleaned up
+- [ ] No hardcoded paths or dependencies
+- [ ] Tests run in < 30s total
+
+#### Test Quality Standards
+- [ ] **Isolation**: Tests don't depend on execution order
+- [ ] **Clarity**: Test names describe what is tested
+- [ ] **Coverage**: Critical paths have tests
+- [ ] **Speed**: Fast tests (< 1s each)
+- [ ] **Reliability**: No flaky tests
+- [ ] **Maintainability**: Easy to update when code changes
+
+## Parser Management Guidelines
+
+### Parser Lifecycle
+
+#### Parser Creation
+```typescript
+// Automatic via ParserManager (recommended)
+const manager = new ParserManager();
+const result = await manager.analyzeFile(code, 'typescript');
+
+// Manual creation (for specific use cases)
+import { TypeScriptParser } from './parsers/typescript';
+const parser = new TypeScriptParser();
+```
+
+#### Parser Reuse
+```typescript
+// ✅ Good: Reuse via ParserManager
+const manager = new ParserManager();
+await manager.analyzeFile(code1, 'typescript'); // Creates parser
+await manager.analyzeFile(code2, 'typescript'); // Reuses parser
+
+// ❌ Bad: Create new parser each time
+for (const code of files) {
+  const parser = new TypeScriptParser(); // Memory waste
+  await parser.parse(code);
+}
+```
+
+#### Parser Cleanup
+```typescript
+// In production code
+const manager = new ParserManager();
+// ... use manager ...
+manager.dispose(); // Clean up all parsers
+
+// In tests
+afterEach(() => {
+  globalParserManager.clearCache(); // Clear parser state
+});
+```
+
+### Cache Management Strategies
+
+#### Strategy 1: No Cache Clearing (Production)
+```typescript
+// Production: Maximize performance through caching
+const manager = new ParserManager();
+for (const file of files) {
+  await manager.analyzeFile(file.content, file.language);
+}
+// Parsers cached throughout entire batch
+```
+
+#### Strategy 2: Periodic Cache Clearing (Long-running Services)
+```typescript
+// Long-running service: Balance performance and memory
+const manager = new ParserManager();
+
+setInterval(() => {
+  manager.cleanup(300000); // Remove idle parsers (5min)
+}, 60000); // Check every minute
+```
+
+#### Strategy 3: Full Cache Clearing (Testing)
+```typescript
+// Testing: Ensure isolation between tests
+afterEach(() => {
+  globalParserManager.clearCache();
+});
+```
+
+#### Strategy 4: Language-specific Reset
+```typescript
+// When changing TypeScript configurations
+globalParserManager.resetParser('typescript');
+globalParserManager.resetParser('tsx');
+```
+
+### Performance Optimization
+
+#### Batch Processing
+```typescript
+// ✅ Good: Batch with single manager
+const manager = new ParserManager();
+const results = await manager.analyzeFiles(files);
+
+// ❌ Bad: Sequential with new managers
+for (const file of files) {
+  const manager = new ParserManager(); // Creates new parsers each time
+  await manager.analyzeFile(file.content, file.language);
+}
+```
+
+#### Parallel Analysis
+```typescript
+// Parallel analysis with shared manager
+const manager = new ParserManager();
+const results = await Promise.all(
+  files.map(file =>
+    manager.analyzeFile(file.content, file.language)
+  )
+);
+```
+
+#### Memory Monitoring
+```typescript
+const stats = manager.getStats();
+
+console.log(`TypeScript parser:
+  Files processed: ${stats.typescript.filesProcessed}
+  Avg parse time: ${stats.typescript.avgParseTime}ms
+  Last used: ${stats.typescript.lastUsed}
+  Active: ${stats.typescript.isActive}
+`);
+```
+
+### Error Handling
+
+#### Parser Errors
+```typescript
+try {
+  const result = await parser.parse(sourceCode);
+} catch (error) {
+  if (error.message.includes('No tree or rootNode')) {
+    // Parser state issue - try clearing cache
+    globalParserManager.clearCache();
+    const result = await parser.parse(sourceCode);
+  } else {
+    throw error;
+  }
+}
+```
+
+#### Graceful Degradation
+```typescript
+async function analyzeWithFallback(code: string) {
+  try {
+    return await manager.analyzeFile(code, 'typescript');
+  } catch (error) {
+    console.warn('TypeScript parsing failed, trying JavaScript:', error);
+    return await manager.analyzeFile(code, 'javascript');
+  }
+}
+```
+
 ---
-*Updated - 2025-10-03*
+*Updated - 2025-10-04*

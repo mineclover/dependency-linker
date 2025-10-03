@@ -6,6 +6,21 @@
 
 프로젝트에서 사용되는 주요 용어들의 정의입니다.
 
+## 목차
+- [Core Concepts](#core-concepts)
+- [Graph Database Terms](#graph-database-terms)
+- [Node Types](#node-types)
+- [Relationship Types](#relationship-types)
+- [Inference System](#inference-system)
+- [Analysis Types](#analysis-types)
+- [Storage & Query](#storage--query)
+- [API Methods](#api-methods)
+- [Metadata Fields](#metadata-fields)
+- [Classification Rules](#classification-rules)
+- [File Organization](#file-organization)
+- [Common Abbreviations](#common-abbreviations)
+- [Related Documents](#related-documents)
+
 ---
 
 ## Core Concepts
@@ -347,6 +362,4 @@ function isExternalPackage(importPath: string): boolean {
 
 ---
 
-**Last Updated**: 2025-10-02
-**Maintainer**: Development Team
-**Status**: Active
+*Last Updated: 2025-10-04*
