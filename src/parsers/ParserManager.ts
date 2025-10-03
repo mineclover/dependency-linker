@@ -283,6 +283,29 @@ export class ParserManager {
 	}
 
 	/**
+	 * 파서 캐시 클리어 (테스트 격리용)
+	 */
+	clearCache(): void {
+		// 모든 파서의 내부 캐시 클리어
+		for (const parser of this.parsers.values()) {
+			parser.clearCache();
+		}
+		console.log("🧹 Parser cache cleared");
+	}
+
+	/**
+	 * 특정 언어 파서 리셋
+	 */
+	resetParser(language: SupportedLanguage): void {
+		const parser = this.parsers.get(language);
+		if (parser) {
+			parser.clearCache();
+		}
+		this.parsers.delete(language);
+		console.log(`🧹 Reset ${language} parser`);
+	}
+
+	/**
 	 * 리소스 정리
 	 */
 	dispose(): void {

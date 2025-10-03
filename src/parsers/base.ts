@@ -98,6 +98,11 @@ export abstract class BaseParser {
 		}
 		return count;
 	}
+
+	/**
+	 * 파서 캐시 클리어 (테스트 격리용)
+	 */
+	abstract clearCache(): void;
 }
 
 /**

@@ -4,6 +4,7 @@
  */
 
 import { initializeAnalysisSystem } from '../src/api/analysis';
+import { globalParserManager } from '../src/parsers/ParserManager';
 
 // Extend timeout for AST analysis operations
 jest.setTimeout(10000);
@@ -15,6 +16,9 @@ if (!(global as any).__ANALYSIS_SYSTEM_INITIALIZED__) {
 	initializeAnalysisSystem();
 	(global as any).__ANALYSIS_SYSTEM_INITIALIZED__ = true;
 }
+
+// Note: Parser cache clearing moved to specific test files that need it
+// Global afterEach hook caused issues with concurrent test execution
 
 // Global test utilities can be added here
 declare global {

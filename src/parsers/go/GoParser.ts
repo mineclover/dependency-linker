@@ -33,6 +33,13 @@ export class GoParser extends BaseParser {
 	}
 
 	/**
+	 * 파서 캐시 클리어 (테스트 격리용)
+	 */
+	clearCache(): void {
+		this.parser = null;
+	}
+
+	/**
 	 * 소스 코드 파싱
 	 */
 	override async parse(
