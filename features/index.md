@@ -151,6 +151,64 @@ Dependency Linker는 멀티 언어 AST 분석 프레임워크로, TypeScript/Jav
 
 ---
 
+### 7. [Scenario System](./scenario-system/)
+**핵심**: 재사용 가능한 분석 명세로서의 시나리오 시스템
+
+**Components**:
+- ScenarioSpec - 분석 방법의 완전한 정의 (nodeTypes, edgeTypes, semanticTags, queryPatterns)
+- ScenarioRegistry - 중앙 시나리오 관리 및 검증
+- BaseScenarioAnalyzer - 일관된 분석 패턴 제공
+
+**Key Innovation**:
+> 분석 방법을 코드가 아닌 명세(Spec)로 정의하여 수평적 확장 가능
+
+**Built-in Scenarios**:
+- `basic-structure` - 기본 코드 구조 추출
+- `file-dependency` - 파일 레벨 의존성
+- `symbol-dependency` - 심볼 레벨 의존성
+- `markdown-linking` - 마크다운 링크 추적
+
+**Use Cases**:
+- 새 분석 타입 추가 (명세 작성만으로)
+- 분석 방법 재사용 (여러 컨텍스트에서)
+- 타입 시스템 확장 (EdgeType, NodeType, SemanticTag)
+
+---
+
+### 8. [Namespace-Scenario Integration](./namespace-scenario-integration/)
+**핵심**: Namespace가 Scenario를 선택하여 진정한 수평적 확장 실현
+
+**Key Concept**:
+```
+새 분석 = Namespace 추가 + Scenario 조합 선택
+```
+
+**Extended NamespaceConfig**:
+```json
+{
+  "frontend": {
+    "filePatterns": ["src/**/*.tsx"],
+    "scenarios": ["react-component", "file-dependency"],
+    "scenarioConfig": {
+      "react-component": { "detectPropsDrilling": true }
+    }
+  }
+}
+```
+
+**Benefits**:
+- **비용 최적화**: 필요한 분석만 실행 (문서는 markdown만, UI는 React 전용)
+- **맥락 기반 분석**: 같은 파일도 namespace에 따라 다르게 분석
+- **재사용성**: 시나리오 한 번 정의, 여러 namespace에서 재사용
+- **확장성**: 코드 변경 없이 설정만으로 새 분석 추가
+
+**CLI Commands**:
+- `analyze <namespace> --scenarios <list>` - 시나리오 선택
+- `scenarios` - 사용 가능한 시나리오 목록
+- `scenarios <namespace>` - 특정 namespace의 시나리오 확인
+
+---
+
 ## 🔄 Typical Workflows
 
 ### Workflow 1: 초기 프로젝트 분석
@@ -306,6 +364,8 @@ node dist/cli/namespace-analyzer.js analyze integration-tests
 - GraphDB storage with safe re-initialization
 
 ### In Development 🚧
+- **Scenario System** - 재사용 가능한 분석 명세 아키텍처
+- **Namespace-Scenario Integration** - 수평적 확장 가능한 분석 시스템
 - Symbol-level context documents
 - Advanced inference algorithms
 - Visualization tools
@@ -327,6 +387,8 @@ node dist/cli/namespace-analyzer.js analyze integration-tests
 - [Context Documents](./context-documents/) - 컨텍스트 문서 시스템
 - [Query System](./query/) - 의존성 쿼리
 - [Inference System](./inference/) - 추론 시스템
+- [Scenario System](./scenario-system/) - 시나리오 기반 분석 아키텍처
+- [Namespace-Scenario Integration](./namespace-scenario-integration/) - 수평적 확장 시스템
 
 ---
 
