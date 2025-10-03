@@ -166,7 +166,169 @@ Namespace Module (file organization)
 
 ## Documentation References
 - **Type System**: [docs/type-system.md](docs/type-system.md) - Node and Edge type definitions, classification hierarchy, and type registry
-- **Semantic Tags Guide**: [docs/semantic-tags.md](docs/semantic-tags.md) - Hierarchical tag system with 10 namespaced categories for contextual symbol classification
+- **Semantic Tags Guide**: [docs/semantic-tags.md](docs/semantic-tags.md) - Path-based semantic tagging via namespace configuration
+- **Development Guide**: [DEVELOPMENT.md](DEVELOPMENT.md) - Development environment setup and structure
+- **Contributing Guide**: [CONTRIBUTING.md](CONTRIBUTING.md) - Contribution workflow and code style
+
+## Documentation Guidelines
+
+### 문서 구조
+```
+프로젝트 루트/
+├── README.md              # 프로젝트 개요 및 Quick Start
+├── CLAUDE.md              # AI 개발 컨텍스트 (본 문서)
+├── CONTRIBUTING.md        # 기여 가이드 및 워크플로우
+├── DEVELOPMENT.md         # 개발 환경 구조 및 설정
+└── docs/
+    ├── README.md          # 문서 인덱스
+    ├── pipeline-overview.md        # 아키텍처: 4단계 파이프라인
+    ├── implementation-status.md    # 구현 상태 추적
+    ├── type-system.md              # 타입 시스템 설계
+    ├── semantic-tags.md            # Semantic Tags 가이드
+    ├── API.md                      # API 레퍼런스
+    ├── GLOSSARY.md                 # 용어집
+    └── [feature-name].md           # 기능별 상세 문서
+```
+
+### 문서 작성 규칙
+
+#### 1. 문서 헤더 필수 요소
+```markdown
+# [문서 제목]
+
+[1-2줄 요약]
+
+## 개요
+[배경 및 목적]
+
+## 목차
+- [섹션 1](#섹션-1)
+- [섹션 2](#섹션-2)
+
+---
+*Last Updated: YYYY-MM-DD*
+```
+
+#### 2. 코드 블록 규칙
+- 언어 명시: ` ```typescript `, ` ```bash `
+- 실행 가능한 예제 제공
+- 주석으로 설명 추가
+- 예상 출력 포함
+
+#### 3. 링크 규칙
+- 상대 경로 사용: `[text](../path/to/file.md)`
+- 내부 링크: `[section](#section-name)`
+- 외부 링크: 전체 URL 명시
+
+#### 4. 섹션 구조
+```markdown
+## 주제
+### 하위 주제
+#### 상세 설명
+
+**강조 포인트**:
+- 항목 1
+- 항목 2
+
+```typescript
+// 코드 예제
+```
+
+**결과**:
+[예상 결과나 출력]
+```
+
+### 문서 업데이트 규칙
+
+#### 코드 변경 시 문서 업데이트 필수
+1. **API 변경**: API.md 업데이트
+2. **타입 추가/수정**: type-system.md 업데이트
+3. **새 기능**: 해당 기능 문서 작성
+4. **파이프라인 변경**: pipeline-overview.md 업데이트
+5. **구현 완료**: implementation-status.md 상태 변경
+
+#### 버전 정보 업데이트
+```markdown
+---
+*Last Updated: YYYY-MM-DD*
+*Version: X.Y.Z*
+```
+
+#### CLAUDE.md 업데이트 시점
+- Phase 완료 시 (Phase N 섹션 추가)
+- System Capabilities 변경 시
+- 주요 아키텍처 결정 시
+- 문서 구조 변경 시
+
+### 문서 검증 체크리스트
+
+#### 새 문서 작성 시
+- [ ] 제목과 1-2줄 요약 포함
+- [ ] 목차 (섹션이 3개 이상인 경우)
+- [ ] 코드 예제에 언어 명시
+- [ ] 실행 가능한 예제 제공
+- [ ] 관련 문서 링크 추가
+- [ ] Last Updated 날짜 표시
+- [ ] README.md 또는 docs/README.md에 인덱스 추가
+
+#### 문서 업데이트 시
+- [ ] Last Updated 날짜 변경
+- [ ] 변경된 코드 예제 검증
+- [ ] 깨진 링크 확인
+- [ ] 관련 문서 일관성 확인
+- [ ] CLAUDE.md 업데이트 필요 여부 확인
+
+#### 문서 품질 기준
+- [ ] **정확성**: 코드와 문서 일치
+- [ ] **완전성**: 필요한 정보 모두 포함
+- [ ] **명확성**: 이해하기 쉬운 설명
+- [ ] **실행 가능성**: 예제 코드 동작
+- [ ] **최신성**: 현재 구현 반영
+
+### 문서 카테고리별 가이드
+
+#### 아키텍처 문서
+- 시스템 전체 그림 제공
+- 구성 요소 간 관계 명시
+- 설계 결정 배경 설명
+- 다이어그램 활용 권장
+
+#### API 문서
+- 함수 시그니처 명시
+- 파라미터 설명
+- 반환값 설명
+- 사용 예제 필수
+- 에러 케이스 문서화
+
+#### 가이드 문서
+- Step-by-step 설명
+- 실행 가능한 예제
+- 일반적인 문제 해결법
+- Best practices 포함
+
+#### 상태 추적 문서
+- 명확한 상태 정의 (✅ 완료, ⚠️ 진행중, ❌ 미완료)
+- 업데이트 날짜 필수
+- 다음 단계 명시
+
+### 문서 유지보수
+
+#### 정기 점검 (월 1회)
+1. 깨진 링크 확인
+2. 코드 예제 검증
+3. 버전 정보 업데이트
+4. 더 이상 유효하지 않은 문서 아카이브
+
+#### 즉시 업데이트 필요 시점
+- Breaking changes 발생
+- 새 기능 추가
+- API 변경
+- 중요 버그 수정
+
+#### 문서 아카이브
+- `docs/archive/` 디렉토리 사용
+- 아카이브 사유 README에 기록
+- 대체 문서 링크 제공
 
 ---
 *Updated - 2025-10-03*
