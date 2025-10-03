@@ -95,13 +95,124 @@ export const TYPESCRIPT_TREE_SITTER_QUERIES = {
 				(identifier) @export_assignment)
 		]
 	`,
+
+	// ===== SYMBOL DEFINITION QUERIES =====
+
+	/**
+	 * Class definitions (클래스 정의)
+	 * 예: class MyClass extends BaseClass implements IMyInterface
+	 */
+	"ts-class-definitions": `
+		(class_declaration
+			name: (type_identifier) @class_name
+			type_parameters: (type_parameters)? @type_params
+			(class_heritage)? @heritage
+			body: (class_body) @class_body) @class
+	`,
+
+	/**
+	 * Interface definitions (인터페이스 정의)
+	 * 예: interface IMyInterface extends BaseInterface
+	 */
+	"ts-interface-definitions": `
+		(interface_declaration
+			name: (type_identifier) @interface_name
+			type_parameters: (type_parameters)? @type_params
+			body: (object_type) @interface_body) @interface
+	`,
+
+	/**
+	 * Function definitions (함수 정의)
+	 * 예: function myFunction(param: string): number
+	 */
+	"ts-function-definitions": `
+		(function_declaration
+			name: (identifier) @function_name
+			type_parameters: (type_parameters)? @type_params
+			parameters: (formal_parameters) @params
+			return_type: (type_annotation)? @return_type
+			body: (statement_block) @function_body) @function
+	`,
+
+	/**
+	 * Method definitions (메서드 정의)
+	 * 예: myMethod(param: string): void
+	 */
+	"ts-method-definitions": `
+		(method_definition
+			name: [
+				(property_identifier) @method_name
+				(computed_property_name) @computed_name
+			]
+			parameters: (formal_parameters) @params
+			return_type: (type_annotation)? @return_type
+			body: (statement_block) @method_body) @method
+	`,
+
+	/**
+	 * Type alias definitions (타입 별칭 정의)
+	 * 예: type MyType = string | number
+	 */
+	"ts-type-definitions": `
+		(type_alias_declaration
+			name: (type_identifier) @type_name
+			type_parameters: (type_parameters)? @type_params
+			value: (_) @type_value) @type_def
+	`,
+
+	/**
+	 * Enum definitions (열거형 정의)
+	 * 예: enum Color { Red, Green, Blue }
+	 */
+	"ts-enum-definitions": `
+		(enum_declaration
+			name: (identifier) @enum_name
+			body: (enum_body) @enum_body) @enum
+	`,
+
+	/**
+	 * Variable declarations (변수 선언)
+	 * 예: const myVar: string = "hello"
+	 */
+	"ts-variable-definitions": `
+		(lexical_declaration
+			(variable_declarator
+				name: (identifier) @var_name
+				type: (type_annotation)? @var_type
+				value: (_)? @var_value)) @variable
+	`,
+
+	/**
+	 * Arrow function declarations (화살표 함수)
+	 * 예: const myFunc = (param: string): number => { }
+	 */
+	"ts-arrow-function-definitions": `
+		(lexical_declaration
+			(variable_declarator
+				name: (identifier) @function_name
+				value: (arrow_function
+					parameters: (_) @params
+					return_type: (type_annotation)? @return_type
+					body: (_) @function_body))) @arrow_function
+	`,
+
+	/**
+	 * Property definitions (클래스 프로퍼티)
+	 * 예: private myProperty: string;
+	 */
+	"ts-property-definitions": `
+		(public_field_definition
+			name: (property_identifier) @property_name
+			type: (type_annotation)? @property_type
+			value: (_)? @property_value) @property
+	`,
 } as const;
 
 /**
  * JavaScript 전용 Tree-sitter 쿼리 (TypeScript와 유사하지만 타입 관련 제외)
  */
 export const JAVASCRIPT_TREE_SITTER_QUERIES = {
-	// JavaScript는 타입 관련 쿼리 제외하고 TypeScript와 동일
+	// Import/Export queries
 	"js-import-sources": TYPESCRIPT_TREE_SITTER_QUERIES["ts-import-sources"],
 	"js-named-imports": TYPESCRIPT_TREE_SITTER_QUERIES["ts-named-imports"],
 	"js-default-imports": TYPESCRIPT_TREE_SITTER_QUERIES["ts-default-imports"],
@@ -109,6 +220,20 @@ export const JAVASCRIPT_TREE_SITTER_QUERIES = {
 		TYPESCRIPT_TREE_SITTER_QUERIES["ts-export-declarations"],
 	"js-export-assignments":
 		TYPESCRIPT_TREE_SITTER_QUERIES["ts-export-assignments"],
+
+	// Symbol definition queries (타입 관련 쿼리 제외)
+	"js-class-definitions": TYPESCRIPT_TREE_SITTER_QUERIES["ts-class-definitions"],
+	"js-function-definitions":
+		TYPESCRIPT_TREE_SITTER_QUERIES["ts-function-definitions"],
+	"js-method-definitions":
+		TYPESCRIPT_TREE_SITTER_QUERIES["ts-method-definitions"],
+	"js-variable-definitions":
+		TYPESCRIPT_TREE_SITTER_QUERIES["ts-variable-definitions"],
+	"js-arrow-function-definitions":
+		TYPESCRIPT_TREE_SITTER_QUERIES["ts-arrow-function-definitions"],
+	"js-property-definitions":
+		TYPESCRIPT_TREE_SITTER_QUERIES["ts-property-definitions"],
+	// JavaScript에는 interface, type, enum 없음
 } as const;
 
 /**
