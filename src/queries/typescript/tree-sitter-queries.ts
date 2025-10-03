@@ -118,7 +118,7 @@ export const TYPESCRIPT_TREE_SITTER_QUERIES = {
 		(interface_declaration
 			name: (type_identifier) @interface_name
 			type_parameters: (type_parameters)? @type_params
-			body: (object_type) @interface_body) @interface
+			body: (interface_body) @interface_body) @interface
 	`,
 
 	/**

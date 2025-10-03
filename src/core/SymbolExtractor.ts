@@ -237,7 +237,7 @@ export class SymbolExtractor {
 			`(interface_declaration
 				name: (type_identifier) @interface_name
 				type_parameters: (type_parameters)? @type_params
-				body: (object_type) @interface_body) @interface`,
+				body: (interface_body) @interface_body) @interface`,
 			tree,
 			language,
 		);
@@ -452,22 +452,21 @@ export class SymbolExtractor {
 			const parserLanguage = parserInstance.getLanguage();
 			const query = new Parser.Query(parserLanguage, queryString);
 
-			const captures = query.captures(node);
+			// Use query.matches() to get properly grouped matches
+			const matches = query.matches(node);
 
-			if (captures.length === 0) {
+			if (matches.length === 0) {
 				return [];
 			}
 
-			// Group captures by match
-			return [
-				{
-					queryName: "nested-query",
-					captures: captures.map((c) => ({
-						name: c.name,
-						node: c.node,
-					})),
-				},
-			];
+			// Convert tree-sitter matches to QueryMatch format
+			return matches.map((match) => ({
+				queryName: "nested-query",
+				captures: match.captures.map((c) => ({
+					name: c.name,
+					node: c.node,
+				})),
+			}));
 		} catch (error) {
 			console.warn(`Query execution failed on node:`, error);
 			return [];
