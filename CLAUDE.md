@@ -116,15 +116,30 @@ Namespace Module (file organization)
 - **Test Coverage**: 19/19 markdown dependency tests passing (2 heading symbol tests)
 - **Production Status**: ✅ Markdown dependency tracking production-ready with heading symbols and semantic tagging
 
+### Phase 5: Namespace-based Semantic Tags (2025-10-03)
+- **Namespace Integration**: Semantic tags automatically assigned based on namespace configuration
+- **Configuration System**: Extended `NamespaceConfig` with `semanticTags?: string[]` field
+- **Path-based Tagging**: Files matched by namespace patterns receive configured semantic tags
+- **Database Integration**: NamespaceGraphDB stores and applies semantic tags during analysis
+- **CLI Support**: Both `analyze` and `analyze-all` commands support semantic tag assignment
+- **Example Tags**:
+  - Source files (`src/**/*.ts`) → `["source", "production"]`
+  - Test files (`tests/**/*.ts`) → `["test", "quality-assurance"]`
+  - Config files (`*.config.*`) → `["config", "infrastructure"]`
+  - Documentation (`docs/**/*.md`) → `["documentation", "knowledge"]`
+- **Verification**: 158 nodes analyzed with semantic tags correctly applied across 4 namespaces
+- **Production Status**: ✅ Namespace-semantic tags integration production-ready
+
 ## System Capabilities
 - **Multi-Language Support**: TypeScript, TSX, JavaScript, JSX, Java, Python, Go, Markdown
 - **Graph Database**: SQLite-based code relationship storage with circular dependency detection
-- **Namespace Organization**: Glob-based file grouping with batch dependency analysis
+- **Namespace Organization**: Glob-based file grouping with batch dependency analysis and semantic tag assignment
 - **Symbol Dependency Tracking**: Fine-grained symbol-level relationships (calls, instantiation, inheritance, type refs)
+- **Semantic Tags**: Path-based automatic tagging via namespace configuration for contextual classification
 - **Inference System**: Hierarchical, transitive, and inheritable edge type inference
 - **Custom Queries**: User-defined key mapping with type-safe execution
 - **Performance Tracking**: Built-in metrics and benchmarking
-- **CLI Tools**: Single-file analysis and namespace batch operations
+- **CLI Tools**: Single-file analysis and namespace batch operations with semantic tagging
 - **Markdown Analysis**: Complete markdown dependency tracking with 8 dependency types (including hashtags)
 - **Symbol Tracking**: Fine-grained symbol-level dependency analysis for TypeScript/JavaScript
 
@@ -148,6 +163,10 @@ Namespace Module (file organization)
 - **Factory**: `ParserFactory` for language-specific parser creation
 - **Builder**: `DependencyGraphBuilder` for graph construction
 - **Strategy**: Query processors for language-specific result processing
+
+## Documentation References
+- **Type System**: [docs/type-system.md](docs/type-system.md) - Node and Edge type definitions, classification hierarchy, and type registry
+- **Semantic Tags Guide**: [docs/semantic-tags.md](docs/semantic-tags.md) - Hierarchical tag system with 10 namespaced categories for contextual symbol classification
 
 ---
 *Updated - 2025-10-03*

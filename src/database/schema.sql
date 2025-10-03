@@ -24,6 +24,8 @@ CREATE TABLE IF NOT EXISTS nodes (
   source_file TEXT NOT NULL,
   -- Programming language
   language TEXT NOT NULL,
+  -- Semantic tags for categorization (JSON array of strings)
+  semantic_tags TEXT DEFAULT '[]',
   -- JSON metadata specific to node type
   metadata TEXT DEFAULT '{}',
   -- Source location information

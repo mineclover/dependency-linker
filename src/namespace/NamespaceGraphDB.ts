@@ -27,8 +27,11 @@ export class NamespaceGraphDB {
 		namespace: string,
 		graph: DependencyGraph,
 		baseDir: string,
+		options?: {
+			semanticTags?: string[];
+		},
 	): Promise<void> {
-		// Store nodes with namespace metadata
+		// Store nodes with namespace metadata and semantic tags
 		for (const [nodePath, node] of graph.nodes) {
 			const relativePath = path.relative(baseDir, nodePath);
 
@@ -38,6 +41,7 @@ export class NamespaceGraphDB {
 				type: node.type,
 				sourceFile: relativePath,
 				language: node.language || "typescript",
+				semanticTags: options?.semanticTags || [],
 				metadata: {
 					namespace,
 					exists: node.exists,
@@ -88,6 +92,9 @@ export class NamespaceGraphDB {
 		graph: DependencyGraph,
 		filesByNamespace: Record<string, string[]>,
 		baseDir: string,
+		options?: {
+			namespaceConfigs?: Record<string, { semanticTags?: string[] }>;
+		},
 	): Promise<void> {
 		// Create a map from absolute path to namespace
 		const pathToNamespace = new Map<string, string>();
@@ -97,10 +104,12 @@ export class NamespaceGraphDB {
 			}
 		}
 
-		// Store all nodes with namespace metadata
+		// Store all nodes with namespace metadata and semantic tags
 		for (const [nodePath, node] of graph.nodes) {
 			const relativePath = path.relative(baseDir, nodePath);
 			const namespace = pathToNamespace.get(nodePath) || "unknown";
+			const namespaceConfig = options?.namespaceConfigs?.[namespace];
+			const semanticTags = namespaceConfig?.semanticTags || [];
 
 			await this.db.upsertNode({
 				identifier: relativePath,
@@ -108,6 +117,7 @@ export class NamespaceGraphDB {
 				type: node.type,
 				sourceFile: relativePath,
 				language: node.language || "typescript",
+				semanticTags,
 				metadata: {
 					namespace,
 					exists: node.exists,

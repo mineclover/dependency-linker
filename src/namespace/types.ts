@@ -12,6 +12,8 @@ export interface NamespaceConfig {
 	excludePatterns?: string[];
 	/** Optional description of the namespace */
 	description?: string;
+	/** Semantic tags to apply to files in this namespace */
+	semanticTags?: string[];
 }
 
 /**

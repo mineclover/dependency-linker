@@ -17,6 +17,10 @@ A comprehensive AST analysis framework with custom key mapping for query composi
 - **🏷️ Namespace Configuration**: Organize files by logical groups (source, tests, docs)
 - **🔄 Batch Analysis**: Analyze entire namespaces with one command (153 edges detected in 76 files)
 - **💾 GraphDB Integration**: SQLite storage with safe re-initialization for multi-project workflows
+- **🏷️ Semantic Tags**: Automatic tag assignment based on namespace configuration
+  - Path-based semantic tagging via `semanticTags` field in namespace config
+  - Tags automatically applied to all files matching namespace patterns
+  - Example: `tests/**/*.ts` → `["test", "quality-assurance"]`
 - **🔍 Cross-Namespace Dependencies**: Track and analyze dependencies between namespaces (27 cross-deps detected)
   - Unified graph analysis across all namespaces
   - Detailed dependency tracking with source/target namespace information
@@ -798,12 +802,26 @@ Create a `deps.config.json` file:
     "source": {
       "filePatterns": ["src/**/*.ts"],
       "excludePatterns": ["**/*.d.ts", "**/*.test.ts"],
-      "description": "Source code files"
+      "description": "Source code files",
+      "semanticTags": ["source", "production"]
     },
     "tests": {
       "filePatterns": ["tests/**/*.ts", "**/*.test.ts"],
       "excludePatterns": [],
-      "description": "Test files"
+      "description": "Test files",
+      "semanticTags": ["test", "quality-assurance"]
+    },
+    "configs": {
+      "filePatterns": ["*.config.*", "*.json"],
+      "excludePatterns": ["package-lock.json"],
+      "description": "Configuration files",
+      "semanticTags": ["config", "infrastructure"]
+    },
+    "docs": {
+      "filePatterns": ["docs/**/*.md", "*.md"],
+      "excludePatterns": [],
+      "description": "Documentation files",
+      "semanticTags": ["documentation", "knowledge"]
     }
   }
 }

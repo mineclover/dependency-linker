@@ -148,7 +148,16 @@ program
 			const dbPath = path.resolve(baseDir, options.db);
 			const db = new NamespaceGraphDB(dbPath);
 			await db.initialize();
-			await db.storeNamespaceDependencies(namespace, graph, baseDir);
+			// Get namespace config for semantic tags
+			const namespaceData = await configManager.getNamespaceWithFiles(
+				namespace,
+				configPath,
+				baseDir,
+			);
+
+			await db.storeNamespaceDependencies(namespace, graph, baseDir, {
+				semanticTags: namespaceData.metadata.semanticTags,
+			});
 
 			// Get updated stats from database
 			const dbStats = await db.getNamespaceStats(namespace);
@@ -235,8 +244,9 @@ program
 					{ cwd: baseDir, projectRoot: baseDir }
 				);
 
-			// Build filesByNamespace map for database storage
+			// Build filesByNamespace map and collect configs for database storage
 			const filesByNamespace: Record<string, string[]> = {};
+			const namespaceConfigs: Record<string, { semanticTags?: string[] }> = {};
 			for (const namespace of namespaces) {
 				const namespaceData = await configManager.getNamespaceWithFiles(
 					namespace,
@@ -246,13 +256,18 @@ program
 				filesByNamespace[namespace] = namespaceData.files.map(file =>
 					path.resolve(baseDir, file)
 				);
+				namespaceConfigs[namespace] = {
+					semanticTags: namespaceData.metadata.semanticTags
+				};
 			}
 
-			// Store unified graph in database with namespace information
+			// Store unified graph in database with namespace information and semantic tags
 			const dbPath = path.resolve(baseDir, options.db);
 			const db = new NamespaceGraphDB(dbPath);
 			await db.initialize();
-			await db.storeUnifiedGraph(graph, filesByNamespace, baseDir);
+			await db.storeUnifiedGraph(graph, filesByNamespace, baseDir, {
+				namespaceConfigs
+			});
 			await db.close();
 
 			if (options.json) {

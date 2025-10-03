@@ -9,7 +9,8 @@
         "**/*.d.ts",
         "**/*.test.ts"
       ],
-      "description": "Source code files"
+      "description": "Source code files",
+      "semanticTags": ["source", "production"]
     },
     "tests": {
       "filePatterns": [
@@ -17,7 +18,8 @@
         "**/*.test.ts"
       ],
       "excludePatterns": [],
-      "description": "Test files"
+      "description": "Test files",
+      "semanticTags": ["test", "quality-assurance"]
     },
     "configs": {
       "filePatterns": [
@@ -29,7 +31,8 @@
         "package-lock.json",
         "node_modules/**"
       ],
-      "description": "Configuration files"
+      "description": "Configuration files",
+      "semanticTags": ["config", "infrastructure"]
     },
     "docs": {
       "filePatterns": [
@@ -37,7 +40,8 @@
         "docs/**/*.md"
       ],
       "excludePatterns": [],
-      "description": "Documentation files"
+      "description": "Documentation files",
+      "semanticTags": ["documentation", "knowledge"]
     }
   }
 }
