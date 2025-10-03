@@ -51,6 +51,7 @@ export function extractMarkdownDependencies(
 	dependencies.push(...extractSymbolReferences(filePath, lines));
 	dependencies.push(...extractIncludes(filePath, lines));
 	dependencies.push(...extractCodeBlockReferences(filePath, lines));
+	dependencies.push(...extractHashtags(filePath, lines));
 
 	return {
 		filePath,
@@ -276,6 +277,51 @@ function extractCodeBlockReferences(
 			};
 		},
 	);
+}
+
+/**
+ * Extract hashtags (#tag, #태그)
+ */
+function extractHashtags(
+	filePath: string,
+	lines: string[],
+): MarkdownDependency[] {
+	const dependencies: MarkdownDependency[] = [];
+	const seenTags = new Set<string>(); // Track unique tags per file
+
+	for (let i = 0; i < lines.length; i++) {
+		const line = lines[i];
+		const lineNum = i + 1;
+
+		// Skip heading lines (they start with # and have space)
+		if (/^#{1,6}\s/.test(line.trim())) {
+			continue;
+		}
+
+		// Reset regex
+		MARKDOWN_PATTERNS.HASHTAG.lastIndex = 0;
+
+		let match: RegExpExecArray | null;
+		while ((match = MARKDOWN_PATTERNS.HASHTAG.exec(line)) !== null) {
+			const tag = match[1];
+			const tagKey = `${lineNum}:${tag}`; // Make unique per line to avoid duplicates
+
+			if (!seenTags.has(tagKey)) {
+				seenTags.add(tagKey);
+
+				dependencies.push({
+					from: filePath,
+					to: `#${tag}`, // Keep # prefix for tag identifier
+					type: "hashtag" as MarkdownDependencyType,
+					location: { line: lineNum, column: match.index },
+					text: tag,
+					context: line.trim(),
+				});
+			}
+		}
+	}
+
+	return dependencies;
 }
 
 /**

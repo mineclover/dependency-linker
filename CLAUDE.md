@@ -94,7 +94,7 @@ Namespace Module (file organization)
 
 ### Phase 4: Markdown Dependency Tracking (2025-10-03)
 - **Markdown Support**: Complete markdown dependency extraction and analysis system
-- **Dependency Types**: Link, Image, WikiLink, SymbolReference, Include, CodeBlockReference, Anchor (7 types)
+- **Dependency Types**: Link, Image, WikiLink, SymbolReference, Include, CodeBlockReference, Anchor, Hashtag (8 types)
 - **GraphDB Integration**: Markdown edge types with transitive relationship support
 - **Pattern Extraction**: Regex-based extraction with front matter and heading structure support
 - **Features**:
@@ -105,8 +105,9 @@ Namespace Module (file organization)
   - Code block file references: `` ```language:filepath ``
   - Include directives: `<!-- include:path -->`
   - Internal anchors: `[text](#anchor)`
-- **Test Coverage**: 13/13 markdown dependency tests passing
-- **Production Status**: ✅ Markdown dependency tracking production-ready
+  - Hashtags: `#tag`, `#태그` (inline tags without spaces)
+- **Test Coverage**: 17/17 markdown dependency tests passing (4 hashtag tests)
+- **Production Status**: ✅ Markdown dependency tracking production-ready with hashtag support
 
 ## System Capabilities
 - **Multi-Language Support**: TypeScript, TSX, JavaScript, JSX, Java, Python, Go, Markdown
@@ -117,7 +118,7 @@ Namespace Module (file organization)
 - **Custom Queries**: User-defined key mapping with type-safe execution
 - **Performance Tracking**: Built-in metrics and benchmarking
 - **CLI Tools**: Single-file analysis and namespace batch operations
-- **Markdown Analysis**: Complete markdown dependency tracking with 7 dependency types
+- **Markdown Analysis**: Complete markdown dependency tracking with 8 dependency types (including hashtags)
 - **Symbol Tracking**: Fine-grained symbol-level dependency analysis for TypeScript/JavaScript
 
 ## Code Quality Status

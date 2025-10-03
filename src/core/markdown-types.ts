@@ -31,6 +31,9 @@ export enum MarkdownDependencyType {
 
 	/** Custom anchor link: [text](#anchor) */
 	Anchor = "anchor",
+
+	/** Hashtag reference: #tag or #태그 (inline tags without spaces) */
+	Hashtag = "hashtag",
 }
 
 /**
@@ -133,6 +136,9 @@ export const MARKDOWN_PATTERNS = {
 
 	/** Heading: # text */
 	HEADING: /^(#{1,6})\s+(.+)$/gm,
+
+	/** Hashtag: #tag or #태그 (inline tags without spaces, not headings) */
+	HASHTAG: /#([A-Za-z가-힣][A-Za-z가-힣0-9_-]*)/g,
 } as const;
 
 /**

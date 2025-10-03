@@ -60,6 +60,11 @@ const MARKDOWN_EDGE_TYPES: Record<
 		name: "md-anchor",
 		description: "Internal anchor link",
 	},
+	hashtag: {
+		name: "md-hashtag",
+		description: "Hashtag reference (#tag, #태그)",
+		isTransitive: false,
+	},
 };
 
 /**

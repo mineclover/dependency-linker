@@ -173,6 +173,99 @@ The @Logger interface provides logging capabilities.
 		});
 	});
 
+	describe("Hashtag References", () => {
+		it("should extract hashtags (English)", () => {
+			const content = `
+# Project Notes
+
+This project uses #typescript and #react for development.
+Related to #backend-api and #frontend components.
+`;
+
+			const result = extractMarkdownDependencies("notes.md", content);
+
+			const hashtags = result.dependencies.filter(
+				(d) => d.type === "hashtag",
+			);
+			expect(hashtags.length).toBeGreaterThanOrEqual(4);
+
+			const tagNames = hashtags.map((h) => h.to);
+			expect(tagNames).toContain("#typescript");
+			expect(tagNames).toContain("#react");
+			expect(tagNames).toContain("#backend-api");
+			expect(tagNames).toContain("#frontend");
+		});
+
+		it("should extract hashtags (Korean)", () => {
+			const content = `
+# 프로젝트 메모
+
+이 프로젝트는 #타입스크립트 와 #리액트 를 사용합니다.
+#백엔드 #프론트엔드 #데이터베이스 관련 작업이 필요합니다.
+`;
+
+			const result = extractMarkdownDependencies("memo.md", content);
+
+			const hashtags = result.dependencies.filter(
+				(d) => d.type === "hashtag",
+			);
+			expect(hashtags.length).toBeGreaterThanOrEqual(5);
+
+			const tagNames = hashtags.map((h) => h.to);
+			expect(tagNames).toContain("#타입스크립트");
+			expect(tagNames).toContain("#리액트");
+			expect(tagNames).toContain("#백엔드");
+		});
+
+		it("should not extract headings as hashtags", () => {
+			const content = `
+# Main Heading
+## Subheading
+### Another Heading
+
+Content with #actualtag here.
+`;
+
+			const result = extractMarkdownDependencies("test.md", content);
+
+			const hashtags = result.dependencies.filter(
+				(d) => d.type === "hashtag",
+			);
+			expect(hashtags).toHaveLength(1);
+			expect(hashtags[0].to).toBe("#actualtag");
+		});
+
+		it("should handle mixed content with hashtags", () => {
+			const content = `
+# Documentation
+
+See [API Reference](./api.md) for #api-documentation.
+The @UserService uses #authentication and #authorization.
+Related: [[Security]] #security-best-practices
+`;
+
+			const result = extractMarkdownDependencies("doc.md", content);
+
+			const hashtags = result.dependencies.filter(
+				(d) => d.type === "hashtag",
+			);
+			expect(hashtags.length).toBeGreaterThanOrEqual(3);
+
+			// Should also have other dependency types
+			const links = result.dependencies.filter((d) => d.type === "link");
+			const symbols = result.dependencies.filter(
+				(d) => d.type === "symbol-reference",
+			);
+			const wikilinks = result.dependencies.filter(
+				(d) => d.type === "wikilink",
+			);
+
+			expect(links.length).toBeGreaterThanOrEqual(1);
+			expect(symbols.length).toBeGreaterThanOrEqual(1);
+			expect(wikilinks.length).toBeGreaterThanOrEqual(1);
+		});
+	});
+
 	describe("Code Block and Include References", () => {
 		it("should extract code block file references", () => {
 			const content = `
@@ -351,6 +444,7 @@ Related notes: [[ProjectOverview]] and [[TechnicalSpecs|Specs]]
 ## Symbol References
 
 The @UserController handles requests. Use @authenticate() middleware.
+Tags: #authentication #security #api
 
 ## Code Examples
 
@@ -373,8 +467,8 @@ Steps here.
 
 			const result = extractMarkdownDependencies("comprehensive.md", content);
 
-			// Should have all dependency types (10 total: 2 links, 1 image, 2 wiki, 2 symbols, 1 code, 1 include, 1 anchor)
-			expect(result.dependencies.length).toBeGreaterThanOrEqual(10);
+			// Should have all dependency types (13 total: 2 links, 1 image, 2 wiki, 2 symbols, 1 code, 1 include, 1 anchor, 3 hashtags)
+			expect(result.dependencies.length).toBeGreaterThanOrEqual(13);
 			expect(result.dependencies.some((d) => d.type === "link")).toBe(
 				true,
 			);
@@ -396,6 +490,9 @@ Steps here.
 				true,
 			);
 			expect(result.dependencies.some((d) => d.type === "anchor")).toBe(
+				true,
+			);
+			expect(result.dependencies.some((d) => d.type === "hashtag")).toBe(
 				true,
 			);
 
