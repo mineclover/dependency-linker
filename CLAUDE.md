@@ -8,7 +8,7 @@ Query-based AST analysis library with QueryResultMap-centric architecture. TypeS
 - **Language**: TypeScript 5.x, Node.js 18+
 - **Architecture**: QueryResultMap-centric with type-safe query system + Namespace integration
 - **Dependencies**: tree-sitter with language-specific parsers
-- **Testing**: Jest with 82+ passing tests
+- **Testing**: Jest with 157+ passing tests (94 scenario tests, 63+ core tests)
 - **Type Safety**: Zero `any` types, complete type inference
 - **Namespace System**: Glob-based file organization with batch dependency analysis
 
@@ -160,6 +160,53 @@ Namespace Module (file organization)
   ```
 - **Production Status**: ✅ Parser cache management production-ready, test isolation improved
 
+### Phase 7: Scenario System - Horizontal Scalability (2025-10-04)
+- **Scenario Architecture**: Complete reusable analysis specification system for horizontal scalability
+- **Core Components**:
+  - ScenarioSpec interface with identity, dependencies, type specs, and analyzer config
+  - ScenarioRegistry for registration, validation, and dependency resolution
+  - BaseScenarioAnalyzer abstract class with execution lifecycle hooks
+  - Global registry with auto-initialization of built-in scenarios
+- **Type System**:
+  - NodeTypeSpec: Node type definitions (file, class, function, symbol, etc.)
+  - EdgeTypeSpec: Relationship types with parent hierarchy, transitivity, inheritance
+  - SemanticTagSpec: Contextual classification tags with auto-tagging rules
+  - TypeCollection: Aggregated types from extends chain
+- **Built-in Scenarios** (4 scenarios):
+  - `basic-structure`: File/directory nodes for all languages (foundation)
+  - `file-dependency`: Import/require tracking (TypeScript/JavaScript)
+  - `symbol-dependency`: Symbol-level dependencies (calls, instantiation, type refs)
+  - `markdown-linking`: Markdown link analysis (8 dependency types)
+- **Scenario Dependencies**:
+  - `extends`: Type inheritance - child inherits all parent types
+  - `requires`: Execution order - prerequisite scenarios without type inheritance
+  - Topological sort (Kahn's algorithm) for execution order calculation
+  - Circular dependency detection for both extends and requires
+- **Execution Lifecycle**:
+  - beforeAnalyze hook: Pre-analysis setup and validation
+  - analyze method: Core scenario-specific analysis logic
+  - afterAnalyze hook: Post-processing and result transformation
+  - AnalysisContext: Shared data and previous results between scenarios
+- **Type Hierarchy Examples**:
+  - Edge types: `imports_file` → parent: `depends_on` (transitive)
+  - Edge types: `calls` → parent: `uses` (transitive)
+  - Hierarchical: `contains` (directory → file), `extends-class` (OOP inheritance)
+  - Inheritable: `extends-class` (properties pass through inheritance)
+- **Global Registry API**:
+  - `globalScenarioRegistry`: Pre-configured with built-ins
+  - `getScenario(id)`, `hasScenario(id)`, `listScenarios()`
+  - `getExecutionOrder(ids)`: Calculate execution sequence
+  - `collectTypes(id)`: Aggregate types from extends chain
+  - `validateTypeConsistency()`: Cross-scenario type validation
+  - `registerScenario(spec)`: Add custom scenarios with validation
+- **Test Coverage**: 94 passing tests across 5 test suites
+  - 25 tests: Type validation and circular dependency detection
+  - 19 tests: Registry operations and execution order
+  - 15 tests: BaseScenarioAnalyzer lifecycle and helpers
+  - 16 tests: Built-in scenario specifications
+  - 19 tests: Global registry and public API
+- **Production Status**: ✅ Complete scenario system production-ready with horizontal scalability
+
 ## System Capabilities
 - **Multi-Language Support**: TypeScript, TSX, JavaScript, JSX, Java, Python, Go, Markdown
 - **Graph Database**: SQLite-based code relationship storage with circular dependency detection
@@ -167,6 +214,11 @@ Namespace Module (file organization)
 - **Symbol Dependency Tracking**: Fine-grained symbol-level relationships (calls, instantiation, inheritance, type refs)
 - **Semantic Tags**: Path-based automatic tagging via namespace configuration for contextual classification
 - **Inference System**: Hierarchical, transitive, and inheritable edge type inference
+- **Scenario System**: Reusable analysis specifications with type inheritance and execution lifecycle
+  - 4 built-in scenarios: basic-structure, file-dependency, symbol-dependency, markdown-linking
+  - Scenario composition via extends (type inheritance) and requires (execution order)
+  - Global registry with auto-initialization and type consistency validation
+  - BaseScenarioAnalyzer with beforeAnalyze/analyze/afterAnalyze hooks
 - **Custom Queries**: User-defined key mapping with type-safe execution
 - **Performance Tracking**: Built-in metrics and benchmarking
 - **Parser Cache Management**: Systematic parser lifecycle and cache control for test isolation
