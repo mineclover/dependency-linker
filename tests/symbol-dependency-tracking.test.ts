@@ -4,9 +4,9 @@
  */
 
 import path from "node:path";
-import { initializeAnalysisSystem } from "./src/api/analysis";
-import { createSymbolExtractor } from "./src/core/SymbolExtractor";
-import { SymbolDependencyType } from "./src/core/symbol-types";
+import { initializeAnalysisSystem } from "../src/api/analysis";
+import { createSymbolExtractor } from "../src/core/SymbolExtractor";
+import { SymbolDependencyType } from "../src/core/symbol-types";
 
 // Initialize the analysis system (parsers, queries, etc.)
 initializeAnalysisSystem();
@@ -206,7 +206,8 @@ async function testDependencyTracking() {
 
 		for (const expected of expectedDependencies) {
 			const found = result.dependencies.find(
-				(d) => d.to === expected.to && d.type === expected.type,
+				(d: { to: string; type: string }) =>
+					d.to === expected.to && d.type === expected.type,
 			);
 
 			if (found) {
