@@ -30,6 +30,31 @@ export {
 	TreeSitterQueryEngine,
 } from "./core/TreeSitterQueryEngine";
 export type { QueryExecutionContext, SupportedLanguage } from "./core/types";
+
+// ===== SYMBOL EXTRACTION EXPORTS =====
+export type {
+	ParameterInfo,
+	SourceLocation,
+	SymbolDependency,
+	SymbolDependencyType,
+	SymbolExtractionResult,
+	SymbolInfo,
+	SymbolQueryOptions,
+} from "./core/symbol-types";
+export {
+	generateSymbolNamePath,
+	getParentSymbolPath,
+	getSymbolName,
+	isCallableSymbol,
+	isContainerSymbol,
+	parseSymbolNamePath,
+	SymbolKind,
+} from "./core/symbol-types";
+export type { SymbolExtractorConfig } from "./core/SymbolExtractor";
+export {
+	createSymbolExtractor,
+	SymbolExtractor,
+} from "./core/SymbolExtractor";
 export {
 	analyzeDependencyGraph,
 	analyzeFileImpact,
