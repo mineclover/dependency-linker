@@ -14,6 +14,7 @@ export type SupportedLanguage =
 	| "go"
 	| "java"
 	| "python"
+	| "markdown"
 	| "external"
 	| "unknown";
 

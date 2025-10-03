@@ -125,6 +125,7 @@ export class ParserFactory implements IParserFactory {
 			java: ["java"],
 			python: ["py", "pyi"],
 			go: ["go"],
+			markdown: ["md", "markdown", "mdx"],
 			external: [],
 			unknown: [],
 		};

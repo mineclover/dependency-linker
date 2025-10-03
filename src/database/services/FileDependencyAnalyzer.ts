@@ -858,6 +858,7 @@ export class DependencyAnalysisHelpers {
 			go: [".go"],
 			java: [".java"],
 			python: [".py"],
+			markdown: [".md", ".markdown", ".mdx"],
 			external: [],
 			unknown: [],
 		};

@@ -337,6 +337,7 @@ export const TREE_SITTER_QUERY_MAP: Record<
 	go: {},
 	java: {},
 	python: {},
+	markdown: {}, // Markdown uses custom parser, not tree-sitter
 	external: {},
 	unknown: {},
 } as const;

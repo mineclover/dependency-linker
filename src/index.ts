@@ -55,6 +55,34 @@ export {
 	createSymbolExtractor,
 	SymbolExtractor,
 } from "./core/SymbolExtractor";
+
+// ===== MARKDOWN DEPENDENCY EXPORTS =====
+export type {
+	MarkdownDependency,
+	MarkdownDependencyType,
+	MarkdownExtractionResult,
+	MarkdownLocation,
+} from "./core/markdown-types";
+export {
+	extractFrontMatter,
+	isAnchorLink,
+	isExternalUrl,
+	MARKDOWN_PATTERNS,
+	normalizeMarkdownPath,
+	parseUrl,
+} from "./core/markdown-types";
+export {
+	createMarkdownDependencyExtractor,
+	extractMarkdownDependencies,
+} from "./core/MarkdownDependencyExtractor";
+export type { MarkdownToGraphOptions } from "./integration/MarkdownToGraph";
+export {
+	markdownDirectoryToGraph,
+	markdownFileToGraph,
+	markdownResultToGraph,
+	queryMarkdownDependencies,
+	registerMarkdownEdgeTypes,
+} from "./integration/MarkdownToGraph";
 export {
 	analyzeDependencyGraph,
 	analyzeFileImpact,

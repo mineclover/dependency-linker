@@ -54,7 +54,7 @@ Namespace Module (file organization)
 - Cache hit rate: >80%
 - Concurrency: 10 parallel analyses
 
-## Recent Architecture Improvements (2025-10-02)
+## Recent Architecture Improvements
 
 ### Phase 1: Core System Stabilization
 - **Parser Initialization**: Automatic parser registration via `initializeAnalysisSystem()`
@@ -92,8 +92,24 @@ Namespace Module (file organization)
 - **Test Coverage**: 9/9 dependency tracking tests passing with comprehensive validation
 - **Production Status**: ✅ Symbol dependency tracking production-ready
 
+### Phase 4: Markdown Dependency Tracking (2025-10-03)
+- **Markdown Support**: Complete markdown dependency extraction and analysis system
+- **Dependency Types**: Link, Image, WikiLink, SymbolReference, Include, CodeBlockReference, Anchor (7 types)
+- **GraphDB Integration**: Markdown edge types with transitive relationship support
+- **Pattern Extraction**: Regex-based extraction with front matter and heading structure support
+- **Features**:
+  - Standard markdown links: `[text](url)`
+  - Images: `![alt](url)`
+  - Wiki-style links: `[[target]]` or `[[target|text]]`
+  - Symbol references: `@ClassName`, `@function()`
+  - Code block file references: `` ```language:filepath ``
+  - Include directives: `<!-- include:path -->`
+  - Internal anchors: `[text](#anchor)`
+- **Test Coverage**: 13/13 markdown dependency tests passing
+- **Production Status**: ✅ Markdown dependency tracking production-ready
+
 ## System Capabilities
-- **Multi-Language Support**: TypeScript, TSX, JavaScript, JSX, Java, Python, Go
+- **Multi-Language Support**: TypeScript, TSX, JavaScript, JSX, Java, Python, Go, Markdown
 - **Graph Database**: SQLite-based code relationship storage with circular dependency detection
 - **Namespace Organization**: Glob-based file grouping with batch dependency analysis
 - **Symbol Dependency Tracking**: Fine-grained symbol-level relationships (calls, instantiation, inheritance, type refs)
@@ -101,13 +117,15 @@ Namespace Module (file organization)
 - **Custom Queries**: User-defined key mapping with type-safe execution
 - **Performance Tracking**: Built-in metrics and benchmarking
 - **CLI Tools**: Single-file analysis and namespace batch operations
+- **Markdown Analysis**: Complete markdown dependency tracking with 7 dependency types
+- **Symbol Tracking**: Fine-grained symbol-level dependency analysis for TypeScript/JavaScript
 
 ## Code Quality Status
 - **TypeScript**: Strict mode enabled, zero `any` types
 - **Type Safety**: Complete type inference throughout query pipeline
 - **Build System**: Incremental builds with type checking
 - **Linting**: Biome with strict rules
-- **Testing**: 146 passing tests with symbol dependency tracking at 100%
+- **Testing**: 159 passing tests (146 existing + 13 markdown) with comprehensive coverage
 
 ## Package Distribution
 - **Name**: `@context-action/dependency-linker`
