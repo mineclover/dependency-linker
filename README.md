@@ -978,11 +978,26 @@ tests → source (22 dependencies):
 
 ## 📚 Documentation
 
+### Getting Started
 - **[README.md](README.md)**: This comprehensive guide
+- **[CONTRIBUTING.md](CONTRIBUTING.md)**: Contribution guide and workflow
+- **[DEVELOPMENT.md](DEVELOPMENT.md)**: Development environment setup
+
+### Core Documentation
+- **[docs/pipeline-overview.md](docs/pipeline-overview.md)**: 4-stage pipeline architecture
+- **[docs/implementation-status.md](docs/implementation-status.md)**: Implementation status and roadmap
+- **[docs/type-system.md](docs/type-system.md)**: Node/Edge type system
+- **[docs/semantic-tags.md](docs/semantic-tags.md)**: Semantic tags guide
+
+### Feature Guides
+- **[NAMESPACE-ANALYZER.md](NAMESPACE-ANALYZER.md)**: Namespace analysis guide
+- **[docs/API.md](docs/API.md)**: Complete API reference
+- **[docs/CustomKeyMapper-Guide.md](docs/CustomKeyMapper-Guide.md)**: Custom key mapping
+
+### Reference
+- **[docs/GLOSSARY.md](docs/GLOSSARY.md)**: Terminology and concepts
 - **[example-usage.ts](example-usage.ts)**: Basic usage examples
 - **[test-end-to-end.ts](test-end-to-end.ts)**: Complete system demonstration
-- **[NAMESPACE-ANALYZER.md](NAMESPACE-ANALYZER.md)**: Namespace analysis guide
-- **[src/](src/)**: Well-documented TypeScript implementation
 
 ## 📄 License
 

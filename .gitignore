@@ -42,6 +42,12 @@ report.[0-9]_.[0-9]_.[0-9]_.[0-9]_.json
 .cache
 *.tsbuildinfo
 
+# AI tool directories
+.claude/
+.gemini/
+.serena/
+.specify/
+
 # project specific temporary files
 .deplink-*
 coordinate-index.db
@@ -55,9 +61,11 @@ test-*.js
 test-*.md
 demo-*.js
 *-backup*
+*.bak
 *downloaded*
 enhanced-download-test.md
 scripts/temp/
+.test-optimization-backups/
 
 # Legacy code archive
 legacy/

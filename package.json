@@ -8,8 +8,9 @@
 		"namespace-analyzer": "./dist/cli/namespace-analyzer.js"
 	},
 	"scripts": {
-		"build": "tsc",
+		"build": "tsc && npm run copy:schema",
 		"build:clean": "rm -rf dist && npm run build",
+		"copy:schema": "cp src/database/schema.sql dist/database/",
 		"test": "jest --runInBand",
 		"test:parallel": "jest",
 		"test:watch": "jest --watch",
