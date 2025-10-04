@@ -8,6 +8,7 @@ import { namespaceDependencyAnalyzer } from "../namespace/NamespaceDependencyAna
 import { NamespaceGraphDB } from "../namespace/NamespaceGraphDB";
 import type { NamespaceConfig } from "../namespace/types";
 import { createContextDocumentGenerator } from "../context/ContextDocumentGenerator";
+import { listScenarios, getScenario } from "../scenarios";
 
 // Initialize the analysis system
 initializeAnalysisSystem();
@@ -55,6 +56,14 @@ program
 	.option("-p, --patterns <patterns...>", "File patterns to include")
 	.option("-e, --exclude <patterns...>", "File patterns to exclude")
 	.option("-d, --description <text>", "Namespace description")
+	.option(
+		"--scenarios <scenarios>",
+		"Comma-separated scenario IDs (defaults to basic-structure,file-dependency)",
+	)
+	.option(
+		"--scenario-config <json>",
+		"JSON string with scenario-specific configuration",
+	)
 	.action(async (name, options) => {
 		try {
 			const configPath = path.resolve(options.config);
@@ -65,9 +74,29 @@ program
 				description: options.description,
 			};
 
+			// Add scenarios if provided
+			if (options.scenarios) {
+				namespaceConfig.scenarios = options.scenarios
+					.split(",")
+					.map((s: string) => s.trim());
+			}
+
+			// Add scenario config if provided
+			if (options.scenarioConfig) {
+				try {
+					namespaceConfig.scenarioConfig = JSON.parse(options.scenarioConfig);
+				} catch (error) {
+					console.error("❌ Invalid JSON in --scenario-config");
+					process.exit(1);
+				}
+			}
+
 			await configManager.setNamespaceConfig(name, namespaceConfig, configPath);
 
 			console.log(`✅ Namespace '${name}' created successfully`);
+			if (namespaceConfig.scenarios) {
+				console.log(`   Scenarios: ${namespaceConfig.scenarios.join(", ")}`);
+			}
 		} catch (error) {
 			console.error("❌ Error:", error instanceof Error ? error.message : error);
 			process.exit(1);
@@ -85,6 +114,103 @@ program
 			await configManager.deleteNamespace(name, configPath);
 
 			console.log(`✅ Namespace '${name}' deleted`);
+		} catch (error) {
+			console.error("❌ Error:", error instanceof Error ? error.message : error);
+			process.exit(1);
+		}
+	});
+
+// List scenarios command
+program
+	.command("scenarios [namespace]")
+	.description("List available scenarios or scenarios for a specific namespace")
+	.option("-c, --config <path>", "Config file path", "deps.config.json")
+	.option("--json", "Output as JSON")
+	.action(async (namespace, options) => {
+		try {
+			if (namespace) {
+				// Show scenarios for specific namespace
+				const configPath = path.resolve(options.config);
+				const namespaceConfig = await configManager.loadNamespacedConfig(
+					configPath,
+					namespace,
+				);
+
+				const scenarios =
+					namespaceConfig.scenarios || ["basic-structure", "file-dependency"];
+
+				if (options.json) {
+					console.log(
+						JSON.stringify(
+							{
+								namespace,
+								scenarios,
+								scenarioConfig: namespaceConfig.scenarioConfig || {},
+							},
+							null,
+							2,
+						),
+					);
+				} else {
+					console.log(`📋 Scenarios for namespace '${namespace}'`);
+					console.log("━".repeat(40));
+
+					for (const [index, scenarioId] of scenarios.entries()) {
+						const spec = getScenario(scenarioId);
+						const configuredMarker = namespaceConfig.scenarios
+							? ""
+							: " (default)";
+						console.log(`  ${index + 1}. ${scenarioId}${configuredMarker}`);
+						if (spec) {
+							console.log(`     ${spec.description}`);
+						}
+					}
+
+					if (namespaceConfig.scenarioConfig) {
+						console.log("");
+						console.log("⚙️  Scenario Configuration:");
+						console.log(
+							JSON.stringify(namespaceConfig.scenarioConfig, null, 2),
+						);
+					}
+				}
+			} else {
+				// List all available scenarios
+				const allScenarios = listScenarios();
+
+				if (options.json) {
+					console.log(
+						JSON.stringify(
+							allScenarios.map((spec) => ({
+								id: spec.id,
+								name: spec.name,
+								description: spec.description,
+								version: spec.version,
+								extends: spec.extends,
+								requires: spec.requires,
+							})),
+							null,
+							2,
+						),
+					);
+				} else {
+					console.log("📋 Available Scenarios");
+					console.log("━".repeat(40));
+					console.log(`Found ${allScenarios.length} scenario(s):\n`);
+
+					for (const [index, spec] of allScenarios.entries()) {
+						console.log(`  ${index + 1}. ${spec.id} (v${spec.version})`);
+						console.log(`     ${spec.description}`);
+						if (spec.extends && spec.extends.length > 0) {
+							console.log(`     Extends: ${spec.extends.join(", ")}`);
+						}
+						if (spec.requires && spec.requires.length > 0) {
+							console.log(`     Requires: ${spec.requires.join(", ")}`);
+						}
+						console.log("");
+					}
+				}
+			}
 		} catch (error) {
 			console.error("❌ Error:", error instanceof Error ? error.message : error);
 			process.exit(1);
@@ -126,11 +252,50 @@ program
 	.option("-c, --config <path>", "Config file path", "deps.config.json")
 	.option("--cwd <path>", "Working directory", process.cwd())
 	.option("-d, --db <path>", "Database path", ".dependency-linker/graph.db")
+	.option(
+		"--scenarios <scenarios>",
+		"Comma-separated scenario IDs to override namespace config",
+	)
+	.option(
+		"--scenario-config <json>",
+		"JSON string with scenario-specific configuration",
+	)
 	.option("--json", "Output as JSON")
 	.action(async (namespace, options) => {
 		try {
 			const configPath = path.resolve(options.config);
 			const baseDir = path.resolve(options.cwd);
+
+			// Handle scenario overrides
+			if (options.scenarios || options.scenarioConfig) {
+				const currentConfig = await configManager.loadNamespacedConfig(
+					configPath,
+					namespace,
+				);
+
+				// Override scenarios if provided
+				if (options.scenarios) {
+					const scenarioIds = options.scenarios.split(",").map((s: string) => s.trim());
+					currentConfig.scenarios = scenarioIds;
+				}
+
+				// Override scenario config if provided
+				if (options.scenarioConfig) {
+					try {
+						currentConfig.scenarioConfig = JSON.parse(options.scenarioConfig);
+					} catch (error) {
+						console.error("❌ Invalid JSON in --scenario-config");
+						process.exit(1);
+					}
+				}
+
+				// Save temporary config
+				await configManager.setNamespaceConfig(
+					namespace,
+					currentConfig,
+					configPath,
+				);
+			}
 
 			console.log(`🔍 Analyzing namespace: ${namespace}`);
 			console.log(`📂 Base directory: ${baseDir}`);
@@ -185,6 +350,15 @@ program
 				console.log(`Analyzed files: ${result.analyzedFiles}`);
 				console.log(`Failed files: ${result.failedFiles.length}`);
 				console.log("");
+
+				if (result.scenariosExecuted && result.scenariosExecuted.length > 0) {
+					console.log("Scenarios Executed:");
+					for (const scenarioId of result.scenariosExecuted) {
+						console.log(`  - ${scenarioId}`);
+					}
+					console.log("");
+				}
+
 				console.log("Graph Statistics:");
 				console.log(`  Nodes: ${result.graphStats.nodes}`);
 				console.log(`  Edges: ${result.graphStats.edges}`);

@@ -8,6 +8,7 @@ import type {
 	NamespaceWithFiles,
 } from "./types";
 import { filePatternMatcher } from "./FilePatternMatcher";
+import { hasScenario } from "../scenarios";
 
 /**
  * Configuration file management for namespace-based dependency analysis
@@ -64,9 +65,30 @@ export class ConfigManager {
 		namespaceConfig: NamespaceConfig,
 		configPath: string,
 	): Promise<void> {
+		// Validate scenarios if provided
+		if (namespaceConfig.scenarios) {
+			this.validateScenarios(namespaceConfig.scenarios);
+		}
+
 		const config = await this.loadConfig(configPath);
 		config.namespaces[namespace] = namespaceConfig;
 		await this.saveConfig(configPath, config);
+	}
+
+	/**
+	 * Validate scenario IDs exist in the global registry
+	 *
+	 * @throws Error if any scenario ID is not found
+	 */
+	private validateScenarios(scenarioIds: string[]): void {
+		const invalidScenarios = scenarioIds.filter((id) => !hasScenario(id));
+
+		if (invalidScenarios.length > 0) {
+			throw new Error(
+				`Invalid scenario IDs: ${invalidScenarios.join(", ")}. ` +
+					"Scenarios must be registered in the global registry.",
+			);
+		}
 	}
 
 	/**

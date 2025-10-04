@@ -3,12 +3,42 @@ import { createDependencyGraphBuilder } from "../graph/DependencyGraphBuilder";
 import type { DependencyGraph, GraphBuildResult } from "../graph/types";
 import { configManager } from "./ConfigManager";
 import type { NamespaceDependencyResult } from "./types";
+import { globalScenarioRegistry, getExecutionOrder } from "../scenarios";
 
 /**
  * Namespace-based dependency analyzer
  * Combines namespace file discovery with dependency analysis
  */
 export class NamespaceDependencyAnalyzer {
+	/**
+	 * Get scenario execution order for a namespace
+	 *
+	 * @param namespace - Namespace name
+	 * @param configPath - Path to namespace configuration
+	 * @returns Array of scenario IDs in execution order
+	 */
+	private async getScenarioExecutionOrder(
+		namespace: string,
+		configPath: string,
+	): Promise<string[]> {
+		// Load namespace configuration
+		const namespaceConfig = await configManager.loadNamespacedConfig(
+			configPath,
+			namespace,
+		);
+
+		// Get scenarios from config or use defaults (backward compatibility)
+		const scenarios = namespaceConfig.scenarios || [
+			"basic-structure",
+			"file-dependency",
+		];
+
+		// Calculate execution order with dependency resolution
+		const executionOrder = getExecutionOrder(scenarios);
+
+		return executionOrder;
+	}
+
 	/**
 	 * Analyze all files in a namespace and build dependency graph
 	 */
@@ -22,6 +52,16 @@ export class NamespaceDependencyAnalyzer {
 	): Promise<NamespaceDependencyResult> {
 		const cwd = options.cwd || process.cwd();
 		const projectRoot = options.projectRoot || cwd;
+
+		// Get scenario execution order for this namespace
+		const scenarioExecutionOrder = await this.getScenarioExecutionOrder(
+			namespace,
+			configPath,
+		);
+
+		// TODO: In future phases, execute each scenario analyzer
+		// For now, log the scenarios that would be executed
+		// console.log(`[${namespace}] Scenarios to execute:`, scenarioExecutionOrder);
 
 		// Get files from namespace configuration
 		const namespaceData = await configManager.getNamespaceWithFiles(
@@ -42,6 +82,7 @@ export class NamespaceDependencyAnalyzer {
 					edges: 0,
 					circularDependencies: 0,
 				},
+				scenariosExecuted: scenarioExecutionOrder,
 			};
 		}
 
@@ -51,6 +92,7 @@ export class NamespaceDependencyAnalyzer {
 		);
 
 		// Build dependency graph using the new API
+		// TODO: Replace with scenario-based analysis in future phases
 		const builder = createDependencyGraphBuilder({
 			projectRoot,
 			entryPoints: absoluteFiles,
@@ -78,6 +120,7 @@ export class NamespaceDependencyAnalyzer {
 				circularDependencies:
 					buildResult.analysis.circularDependencies.totalCycles,
 			},
+			scenariosExecuted: scenarioExecutionOrder,
 		};
 	}
 
@@ -97,6 +140,15 @@ export class NamespaceDependencyAnalyzer {
 	}> {
 		const cwd = options.cwd || process.cwd();
 		const projectRoot = options.projectRoot || cwd;
+
+		// Get scenario execution order for this namespace
+		const scenarioExecutionOrder = await this.getScenarioExecutionOrder(
+			namespace,
+			configPath,
+		);
+
+		// TODO: In future phases, execute each scenario analyzer
+		// For now, continue with existing DependencyGraphBuilder
 
 		// Get files from namespace configuration
 		const namespaceData = await configManager.getNamespaceWithFiles(
@@ -118,6 +170,7 @@ export class NamespaceDependencyAnalyzer {
 						edges: 0,
 						circularDependencies: 0,
 					},
+					scenariosExecuted: scenarioExecutionOrder,
 				},
 				graph: {
 					projectRoot,
@@ -142,6 +195,7 @@ export class NamespaceDependencyAnalyzer {
 		);
 
 		// Build dependency graph
+		// TODO: Replace with scenario-based analysis in future phases
 		const builder = createDependencyGraphBuilder({
 			projectRoot,
 			entryPoints: absoluteFiles,
@@ -170,6 +224,7 @@ export class NamespaceDependencyAnalyzer {
 					circularDependencies:
 						buildResult.analysis.circularDependencies.totalCycles,
 				},
+				scenariosExecuted: scenarioExecutionOrder,
 			},
 			graph: buildResult.graph,
 		};
@@ -247,8 +302,9 @@ export class NamespaceDependencyAnalyzer {
 		const config = await configManager.loadConfig(configPath);
 		const namespaceNames = Object.keys(config.namespaces || {});
 
-		// Collect all files with their namespace
+		// Collect all files with their namespace and scenario execution order
 		const filesByNamespace: Record<string, string[]> = {};
+		const scenariosByNamespace: Record<string, string[]> = {};
 		const allFiles: string[] = [];
 
 		for (const namespace of namespaceNames) {
@@ -264,6 +320,13 @@ export class NamespaceDependencyAnalyzer {
 
 			filesByNamespace[namespace] = absoluteFiles;
 			allFiles.push(...absoluteFiles);
+
+			// Get scenario execution order for this namespace
+			const scenarioExecutionOrder = await this.getScenarioExecutionOrder(
+				namespace,
+				configPath,
+			);
+			scenariosByNamespace[namespace] = scenarioExecutionOrder;
 		}
 
 		// Build unified dependency graph with all files
@@ -319,6 +382,7 @@ export class NamespaceDependencyAnalyzer {
 					circularDependencies:
 						buildResult.analysis.circularDependencies.totalCycles,
 				},
+				scenariosExecuted: scenariosByNamespace[namespace],
 			};
 		}
 

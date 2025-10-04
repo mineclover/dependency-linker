@@ -14,6 +14,10 @@ export interface NamespaceConfig {
 	description?: string;
 	/** Semantic tags to apply to files in this namespace */
 	semanticTags?: string[];
+	/** Scenario IDs to run for this namespace */
+	scenarios?: string[];
+	/** Scenario-specific configuration */
+	scenarioConfig?: Record<string, Record<string, unknown>>;
 }
 
 /**
@@ -77,4 +81,6 @@ export interface NamespaceDependencyResult {
 		edges: number;
 		circularDependencies: number;
 	};
+	/** Scenarios executed for this namespace (in execution order) */
+	scenariosExecuted?: string[];
 }

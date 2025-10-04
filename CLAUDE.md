@@ -207,6 +207,68 @@ Namespace Module (file organization)
   - 19 tests: Global registry and public API
 - **Production Status**: ✅ Complete scenario system production-ready with horizontal scalability
 
+### Phase 8: Namespace-Scenario Integration (2025-10-04)
+- **Integration Goal**: Namespace가 Scenario를 선택하여 수평적 확장 실현
+- **Phase 1: Type Extensions** ✅
+  - NamespaceConfig에 `scenarios`, `scenarioConfig` 필드 추가
+  - ConfigManager 시나리오 검증 로직 (`validateScenarios()`)
+  - 단위 테스트 12개 작성 및 통과
+  - 파일: `src/namespace/types.ts`, `src/namespace/ConfigManager.ts`, `tests/namespace-config.test.ts`
+- **Phase 2: Analyzer Refactoring** ✅
+  - ScenarioRegistry 의존성 주입 및 실행 순서 계산 (`getScenarioExecutionOrder()`)
+  - NamespaceDependencyResult에 `scenariosExecuted` 필드 추가
+  - 기본 시나리오 자동 적용: `["basic-structure", "file-dependency"]` (하위 호환성)
+  - 통합 테스트 10개 작성 및 통과
+  - 파일: `src/namespace/NamespaceDependencyAnalyzer.ts`, `tests/namespace-scenario-integration.test.ts`
+- **Phase 3: CLI Integration** ✅
+  - 새 명령어: `scenarios` (모든 시나리오 조회), `scenarios <namespace>` (네임스페이스별 조회)
+  - `analyze` 명령어: `--scenarios`, `--scenario-config` 플래그 추가
+  - `create-namespace` 명령어: 시나리오 옵션 추가
+  - CLI 빌드 및 수동 테스트 완료
+  - 파일: `src/cli/namespace-analyzer.ts`
+- **Phase 4: Configuration Examples** ✅
+  - 3개 실전 설정 예제 작성: Monorepo (6 namespaces), Layered Architecture (6 namespaces), Multi-framework (8 namespaces)
+  - 종합 가이드 README 작성: 사용 방법, 테스트 절차, 시나리오 설정 옵션
+  - 모든 예제 CLI 테스트 통과: list-namespaces, scenarios, analyze, analyze-all
+  - 파일: `examples/namespace-configs/` (3개 JSON + 1개 README.md)
+  - 예제 특징:
+    - Monorepo: 각 패키지별 최적화된 시나리오 조합
+    - Layered Architecture: 계층별 의존성 규칙 검증 (Domain purity)
+    - Multi-framework: React/Vue/Angular/Node.js/Python/Go 통합 분석
+- **Phase 5: Comprehensive Testing** ✅
+  - 15개 포괄적 통합 테스트 작성 및 통과 (E2E 스타일)
+  - 파일: `tests/namespace-scenario-comprehensive.test.ts`
+  - 테스트 카테고리:
+    - 하위 호환성 검증 (3 tests): 레거시 설정 정상 작동, 기본 시나리오 자동 적용
+    - ScenarioConfig 병합 테스트 (3 tests): 단일/다중 시나리오 설정 저장 및 로드
+    - 크로스 네임스페이스 분석 (2 tests): 다른 시나리오 조합으로 여러 네임스페이스 분석
+    - 에러 처리 (4 tests): 잘못된 시나리오 ID, 빈 배열, 파일 없음
+    - 시나리오 실행 순서 검증 (2 tests): 복잡한 의존성 체인 정확한 순서 계산
+    - 실전 통합 시나리오 (1 test): Monorepo 스타일 설정 검증
+  - 테스트 결과: 37개 전체 통과 (12 Phase 1 + 10 Phase 2 + 15 Phase 5)
+  - 주요 검증 사항:
+    - Backward Compatibility: scenarios 필드 없는 레거시 설정 정상 작동
+    - ScenarioConfig Merging: Optional 필드 정상 작동, 설정 값 정확성
+    - Cross-Namespace: 다른 시나리오 조합이 분석에 영향 없음 확인
+    - Error Handling: 잘못된 시나리오 ID 거부, 빈 scenarios 배열 처리
+    - Execution Order: 의존성 기반 topological sort 정확성 검증
+- **핵심 가치**:
+  - 비용 최적화: 문서 분석 시 `markdown-linking`만 실행, UI 분석 시 `symbol-dependency` 등
+  - 맥락 기반 분석: 같은 `.ts` 파일도 네임스페이스에 따라 다른 시나리오 실행
+  - 수평적 확장: 새 분석 = 코드 변경 없이 설정만으로 시나리오 조합
+- **사용 예시**:
+  ```bash
+  # 시나리오와 함께 네임스페이스 생성
+  node dist/cli/namespace-analyzer.js create-namespace docs \
+    -p "docs/**/*.md" --scenarios markdown-linking
+
+  # 시나리오 오버라이드로 분석
+  node dist/cli/namespace-analyzer.js analyze frontend \
+    --scenarios basic-structure,symbol-dependency
+  ```
+- **Test Coverage**: 37 passing tests (12 Phase 1 + 10 Phase 2 + 15 Phase 5) + 3 configuration examples validated
+- **Production Status**: ✅ Phase 1-5 완료 (62.5% progress), Phase 6-8 대기 중
+
 ## System Capabilities
 - **Multi-Language Support**: TypeScript, TSX, JavaScript, JSX, Java, Python, Go, Markdown
 - **Graph Database**: SQLite-based code relationship storage with circular dependency detection
@@ -254,6 +316,7 @@ Namespace Module (file organization)
 - **Semantic Tags Guide**: [docs/semantic-tags.md](docs/semantic-tags.md) - Path-based semantic tagging via namespace configuration
 - **Development Guide**: [DEVELOPMENT.md](DEVELOPMENT.md) - Development environment setup and structure
 - **Contributing Guide**: [CONTRIBUTING.md](CONTRIBUTING.md) - Contribution workflow and code style
+- **Task Management**: [features/NEXT_TASKS.md](features/NEXT_TASKS.md) - Current priority tasks and implementation plan (Convention: 당장 처리할 작업)
 
 ## Documentation Guidelines
 
@@ -264,15 +327,21 @@ Namespace Module (file organization)
 ├── CLAUDE.md              # AI 개발 컨텍스트 (본 문서)
 ├── CONTRIBUTING.md        # 기여 가이드 및 워크플로우
 ├── DEVELOPMENT.md         # 개발 환경 구조 및 설정
-└── docs/
-    ├── README.md          # 문서 인덱스
-    ├── pipeline-overview.md        # 아키텍처: 4단계 파이프라인
-    ├── implementation-status.md    # 구현 상태 추적
-    ├── type-system.md              # 타입 시스템 설계
-    ├── semantic-tags.md            # Semantic Tags 가이드
-    ├── API.md                      # API 레퍼런스
-    ├── GLOSSARY.md                 # 용어집
-    └── [feature-name].md           # 기능별 상세 문서
+├── docs/                  # 기술 문서
+│   ├── README.md          # 문서 인덱스
+│   ├── pipeline-overview.md        # 아키텍처: 4단계 파이프라인
+│   ├── implementation-status.md    # 구현 상태 추적
+│   ├── type-system.md              # 타입 시스템 설계
+│   ├── semantic-tags.md            # Semantic Tags 가이드
+│   ├── API.md                      # API 레퍼런스
+│   ├── GLOSSARY.md                 # 용어집
+│   └── [feature-name].md           # 기능별 상세 문서
+└── features/              # 기능 개발 및 태스크 관리
+    ├── index.md           # 전체 기능 상태 대시보드
+    ├── NEXT_TASKS.md      # 🎯 당장 처리할 작업 (컨벤션)
+    └── [feature-name]/
+        ├── README.md      # 기능 개요 및 가이드
+        └── todos.md       # 상세 구현 태스크 체크리스트
 ```
 
 ### 문서 작성 규칙
@@ -414,6 +483,94 @@ Namespace Module (file organization)
 - `docs/archive/` 디렉토리 사용
 - 아카이브 사유 README에 기록
 - 대체 문서 링크 제공
+
+## Task Management Convention
+
+### 태스크 관리 구조
+
+프로젝트는 **Features 기반 태스크 관리**를 사용합니다:
+
+```
+features/
+├── index.md                    # 전체 기능 상태 대시보드
+├── NEXT_TASKS.md              # 🎯 당장 처리할 작업 (최우선)
+└── [feature-name]/
+    ├── README.md              # 기능 개요 및 가이드
+    └── todos.md               # 상세 구현 태스크 체크리스트
+```
+
+### 컨벤션
+
+#### 1. `features/NEXT_TASKS.md` (최우선 작업)
+**목적**: 당장 처리할 작업의 요약 및 빠른 이해
+
+**특징**:
+- 한글로 작성하여 빠른 이해
+- 핵심 개념 설명 중심
+- 예제 코드 포함 (Before/After)
+- 실전 사용 예제
+- "왜" 필요한지, "어떤 가치"가 있는지 강조
+- Mermaid 다이어그램 활용
+
+**언제 업데이트**:
+- 새로운 Phase 시작 시
+- 현재 작업 완료 후 다음 작업 정의 시
+- 프로젝트 방향성 변경 시
+
+#### 2. `features/[feature-name]/todos.md` (상세 체크리스트)
+**목적**: 실제 구현할 때 참조하는 상세 작업 목록
+
+**특징**:
+- Task ID 기반 (Phase 1.1, 1.2, 2.1, ...)
+- 세부 작업 체크리스트
+- Acceptance Criteria
+- Known Challenges
+- 구체적인 파일 경로와 메서드명
+
+**언제 업데이트**:
+- Phase 시작 시 해당 Phase 태스크 진행 상태 업데이트
+- 작업 완료 시 체크박스 체크
+- 새로운 서브 태스크 발견 시 추가
+
+#### 3. `features/index.md` (전체 대시보드)
+**목적**: 모든 기능의 상태를 한눈에 파악
+
+**특징**:
+- 기능별 상태 표시 (✅ 완료, 🚧 진행중, 📋 계획)
+- 기능 간 의존성 명시
+- Workflow 예제 제공
+
+**언제 업데이트**:
+- Phase 전체 완료 시 상태 변경
+- 새 기능 추가 시
+- Production Ready 상태 변경 시
+
+### 워크플로우
+
+```bash
+# 1. 다음 작업 확인
+cat features/NEXT_TASKS.md
+
+# 2. 상세 태스크 확인
+cat features/[feature-name]/todos.md
+
+# 3. 작업 진행
+# ... 구현 ...
+
+# 4. 완료 시 업데이트
+# - todos.md 체크박스 체크
+# - NEXT_TASKS.md 업데이트 (다음 작업)
+# - index.md 상태 업데이트 (Phase 완료 시)
+# - CLAUDE.md Phase 섹션 추가 (Phase 완료 시)
+```
+
+### 예제
+
+**Phase 완료 후**:
+1. `features/[current-feature]/todos.md` - 모든 체크박스 완료 표시
+2. `features/index.md` - 상태를 "✅ Completed"로 변경
+3. `features/NEXT_TASKS.md` - 다음 작업으로 교체
+4. `CLAUDE.md` - "Recent Architecture Improvements"에 Phase N 섹션 추가
 
 ## Testing Best Practices
 

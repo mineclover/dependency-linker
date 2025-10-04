@@ -1,0 +1,81 @@
+{
+  "namespaces": {
+    "presentation": {
+      "filePatterns": ["src/presentation/**/*.tsx", "src/presentation/**/*.ts"],
+      "excludePatterns": ["**/*.test.tsx", "**/*.test.ts"],
+      "description": "Presentation layer - UI components and views",
+      "semanticTags": ["presentation", "ui", "react"],
+      "scenarios": ["basic-structure", "file-dependency", "symbol-dependency"],
+      "scenarioConfig": {
+        "symbol-dependency": {
+          "trackCalls": true,
+          "trackInstantiations": true,
+          "trackTypeReferences": true
+        }
+      }
+    },
+    "application": {
+      "filePatterns": ["src/application/**/*.ts"],
+      "excludePatterns": ["**/*.test.ts"],
+      "description": "Application layer - use cases and orchestration",
+      "semanticTags": ["application", "use-cases", "orchestration"],
+      "scenarios": ["basic-structure", "file-dependency", "symbol-dependency"],
+      "scenarioConfig": {
+        "symbol-dependency": {
+          "trackCalls": true,
+          "trackInstantiations": true,
+          "trackTypeReferences": true,
+          "trackImplements": true
+        }
+      }
+    },
+    "domain": {
+      "filePatterns": ["src/domain/**/*.ts"],
+      "excludePatterns": ["**/*.test.ts"],
+      "description": "Domain layer - business logic and entities",
+      "semanticTags": ["domain", "business-logic", "core"],
+      "scenarios": ["basic-structure", "symbol-dependency"],
+      "scenarioConfig": {
+        "symbol-dependency": {
+          "trackTypeReferences": true,
+          "trackExtends": true,
+          "trackImplements": true
+        }
+      }
+    },
+    "infrastructure": {
+      "filePatterns": ["src/infrastructure/**/*.ts"],
+      "excludePatterns": ["**/*.test.ts"],
+      "description": "Infrastructure layer - external services and persistence",
+      "semanticTags": ["infrastructure", "persistence", "external"],
+      "scenarios": ["basic-structure", "file-dependency", "symbol-dependency"],
+      "scenarioConfig": {
+        "symbol-dependency": {
+          "trackCalls": true,
+          "trackInstantiations": true,
+          "trackImplements": true
+        }
+      }
+    },
+    "shared-kernel": {
+      "filePatterns": ["src/shared/**/*.ts"],
+      "excludePatterns": ["**/*.test.ts"],
+      "description": "Shared kernel - common utilities and types",
+      "semanticTags": ["shared", "utilities", "types"],
+      "scenarios": ["basic-structure", "symbol-dependency"],
+      "scenarioConfig": {
+        "symbol-dependency": {
+          "trackTypeReferences": true,
+          "trackExtends": true
+        }
+      }
+    },
+    "tests": {
+      "filePatterns": ["src/**/*.test.ts", "tests/**/*.ts"],
+      "excludePatterns": ["**/node_modules/**"],
+      "description": "Test suites for all layers",
+      "semanticTags": ["test", "quality-assurance"],
+      "scenarios": ["basic-structure", "file-dependency"]
+    }
+  }
+}

@@ -362,9 +362,9 @@ node dist/cli/namespace-analyzer.js analyze integration-tests
 - Cross-namespace tracking (27 cross-deps)
 - Context document generation (141 documents)
 - GraphDB storage with safe re-initialization
+- **Scenario System** - 재사용 가능한 분석 명세 아키텍처 (v1.0.0, 2025-10-04)
 
 ### In Development 🚧
-- **Scenario System** - 재사용 가능한 분석 명세 아키텍처
 - **Namespace-Scenario Integration** - 수평적 확장 가능한 분석 시스템
 - Symbol-level context documents
 - Advanced inference algorithms
