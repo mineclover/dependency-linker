@@ -1,6 +1,6 @@
 {
 	"name": "@context-action/dependency-linker",
-	"version": "3.0.0",
+	"version": "2.1.0",
 	"description": "Query-Based AST Analysis Library - TypeScript-first AST analysis with extensible query system. QueryResultMap-centric architecture with language-specific query grouping and custom key mapping.",
 	"main": "dist/index.js",
 	"types": "dist/index.d.ts",
