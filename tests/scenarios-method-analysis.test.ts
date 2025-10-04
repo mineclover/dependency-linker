@@ -451,6 +451,120 @@ function processData(data: string): number {
 			expect(result.nodes).toHaveLength(0);
 			expect(result.edges).toHaveLength(0);
 		});
+
+		it("should detect method calls with this", async () => {
+			const code = `
+class Calculator {
+  add(a: number, b: number): number {
+    return a + b;
+  }
+
+  addAndLog(a: number, b: number): number {
+    const result = this.add(a, b);
+    console.log(result);
+    return result;
+  }
+}
+`;
+
+			const parseResult = await parser.parse(code);
+			const context: AnalysisContext = {
+				filePath: "test/Calculator.ts",
+				sourceCode: code,
+				language: "typescript",
+				parseResult,
+				sharedData: new Map(),
+				previousResults: new Map(),
+				typeCollection: analyzer.getTypeCollection(),
+			};
+
+			const result = await analyzer.execute(context);
+
+			// Should have calls-method edge from addAndLog to add
+			const callsEdges = result.edges.filter((e) => e.type === "calls-method");
+			expect(callsEdges.length).toBeGreaterThan(0);
+
+			// Find the edge from addAndLog to add
+			const addAndLogToAdd = callsEdges.find((e) =>
+				e.from.includes("addAndLog") && e.to.includes("add")
+			);
+			expect(addAndLogToAdd).toBeDefined();
+			expect(addAndLogToAdd?.properties?.callType).toBe("this");
+		});
+
+		it("should detect method calls with direct call", async () => {
+			const code = `
+class Helper {
+  validate(): boolean {
+    return check();
+  }
+
+  check(): boolean {
+    return true;
+  }
+}
+`;
+
+			const parseResult = await parser.parse(code);
+			const context: AnalysisContext = {
+				filePath: "test/Helper.ts",
+				sourceCode: code,
+				language: "typescript",
+				parseResult,
+				sharedData: new Map(),
+				previousResults: new Map(),
+				typeCollection: analyzer.getTypeCollection(),
+			};
+
+			const result = await analyzer.execute(context);
+
+			// Should have calls-method edge from validate to check
+			const callsEdges = result.edges.filter((e) => e.type === "calls-method");
+			expect(callsEdges.length).toBeGreaterThan(0);
+
+			const validateToCheck = callsEdges.find((e) =>
+				e.from.includes("validate") && e.to.includes("check")
+			);
+			expect(validateToCheck).toBeDefined();
+			expect(validateToCheck?.properties?.callType).toBe("direct");
+		});
+
+		it("should detect super method calls", async () => {
+			const code = `
+class Base {
+  initialize(): void {
+    console.log("base");
+  }
+}
+
+class Derived extends Base {
+  initialize(): void {
+    super.initialize();
+    console.log("derived");
+  }
+}
+`;
+
+			const parseResult = await parser.parse(code);
+			const context: AnalysisContext = {
+				filePath: "test/Inheritance.ts",
+				sourceCode: code,
+				language: "typescript",
+				parseResult,
+				sharedData: new Map(),
+				previousResults: new Map(),
+				typeCollection: analyzer.getTypeCollection(),
+			};
+
+			const result = await analyzer.execute(context);
+
+			// Should have calls-method edge with super call type
+			const callsEdges = result.edges.filter((e) => e.type === "calls-method");
+			const superCalls = callsEdges.filter(
+				(e) => e.properties?.callType === "super"
+			);
+			expect(superCalls.length).toBeGreaterThan(0);
+		});
 	});
 
 	describe("Integration with Symbol Dependency", () => {

@@ -41,6 +41,17 @@ interface ParameterInfo {
 }
 
 /**
+ * Method call information extracted from AST
+ */
+interface MethodCallInfo {
+	callerIdentifier: string;
+	calleeMethodName: string;
+	calleeClassName?: string;
+	lineNumber: number;
+	callType: "direct" | "this" | "super" | "member";
+}
+
+/**
  * Method Analyzer Implementation
  */
 export class MethodAnalyzer extends BaseScenarioAnalyzer {
@@ -66,6 +77,9 @@ export class MethodAnalyzer extends BaseScenarioAnalyzer {
 
 		// Extract method definitions
 		const methods = this.extractMethods(tree, context);
+
+		// Track all method calls across all methods
+		const methodCalls: MethodCallInfo[] = [];
 
 		// Create nodes and edges
 		for (const method of methods) {
@@ -139,6 +153,36 @@ export class MethodAnalyzer extends BaseScenarioAnalyzer {
 					tag,
 				});
 			}
+
+			// Extract method calls from this method
+			if (method.bodyNode) {
+				const calls = this.extractMethodCalls(
+					method.bodyNode,
+					methodIdentifier,
+					method.className,
+					context,
+				);
+				methodCalls.push(...calls);
+			}
+		}
+
+		// Create calls-method edges
+		for (const call of methodCalls) {
+			const calleeIdentifier = this.buildMethodIdentifier(
+				context.filePath,
+				call.calleeClassName,
+				call.calleeMethodName,
+			);
+
+			result.edges.push({
+				type: "calls-method",
+				from: call.callerIdentifier,
+				to: calleeIdentifier,
+				properties: {
+					lineNumber: call.lineNumber,
+					callType: call.callType,
+				},
+			});
 		}
 
 		return result;
@@ -442,6 +486,117 @@ export class MethodAnalyzer extends BaseScenarioAnalyzer {
 	 */
 	private buildClassIdentifier(filePath: string, className: string): string {
 		return `${filePath}:${className}`;
+	}
+
+	/**
+	 * Extract method calls from method body
+	 */
+	private extractMethodCalls(
+		bodyNode: Parser.SyntaxNode,
+		callerIdentifier: string,
+		callerClassName: string | undefined,
+		context: AnalysisContext,
+	): MethodCallInfo[] {
+		const calls: MethodCallInfo[] = [];
+
+		const traverse = (node: Parser.SyntaxNode) => {
+			// Look for call expressions
+			if (node.type === "call_expression") {
+				const callInfo = this.parseCallExpression(
+					node,
+					callerIdentifier,
+					callerClassName,
+				);
+				if (callInfo) {
+					calls.push(callInfo);
+				}
+			}
+
+			// Recursively traverse children
+			for (let i = 0; i < node.childCount; i++) {
+				const child = node.child(i);
+				if (child) {
+					traverse(child);
+				}
+			}
+		};
+
+		traverse(bodyNode);
+		return calls;
+	}
+
+	/**
+	 * Parse call expression to extract call information
+	 */
+	private parseCallExpression(
+		node: Parser.SyntaxNode,
+		callerIdentifier: string,
+		callerClassName: string | undefined,
+	): MethodCallInfo | null {
+		try {
+			const functionNode = node.childForFieldName("function");
+			if (!functionNode) return null;
+
+			const lineNumber = node.startPosition.row + 1;
+
+			// Check different call patterns
+			if (functionNode.type === "member_expression") {
+				// this.method(), super.method(), obj.method()
+				const objectNode = functionNode.childForFieldName("object");
+				const propertyNode = functionNode.childForFieldName("property");
+
+				if (!objectNode || !propertyNode) return null;
+
+				const objectText = objectNode.text;
+				const methodName = propertyNode.text;
+
+				if (objectText === "this") {
+					// this.method() - same class method call
+					return {
+						callerIdentifier,
+						calleeMethodName: methodName,
+						calleeClassName: callerClassName,
+						lineNumber,
+						callType: "this",
+					};
+				} else if (objectText === "super") {
+					// super.method() - parent class method call
+					// TODO: Resolve parent class name
+					return {
+						callerIdentifier,
+						calleeMethodName: methodName,
+						calleeClassName: undefined, // Parent class not known yet
+						lineNumber,
+						callType: "super",
+					};
+				} else {
+					// obj.method() - external object method call
+					return {
+						callerIdentifier,
+						calleeMethodName: methodName,
+						calleeClassName: undefined, // External class not known
+						lineNumber,
+						callType: "member",
+					};
+				}
+			} else if (functionNode.type === "identifier") {
+				// Direct call: method()
+				const methodName = functionNode.text;
+
+				return {
+					callerIdentifier,
+					calleeMethodName: methodName,
+					calleeClassName: callerClassName, // Assume same class
+					lineNumber,
+					callType: "direct",
+				};
+			}
+
+			return null;
+		} catch (error) {
+			console.warn("Failed to parse call expression:", error);
+			return null;
+		}
 	}
 
 	/**
