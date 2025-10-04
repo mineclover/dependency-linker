@@ -97,11 +97,14 @@ export class FileDependencyAnalyzer {
 	private static readonly OWNED_EDGE_TYPES = [
 		"imports_library",
 		"imports_file",
+		"uses",
+		"aliasOf",
 	];
 
 	constructor(
 		private database: GraphDatabase,
 		private projectRoot: string,
+		private projectName: string = "unknown-project",
 	) {
 		this.nodeIdentifier = new NodeIdentifier(projectRoot);
 		// 초기화 시 필요한 edge types 등록
@@ -363,6 +366,14 @@ export class FileDependencyAnalyzer {
 		const nodeId = await this.database.upsertNode(node);
 		const createdNode = { ...node, id: nodeId };
 
+		// Import된 심볼에 대한 Unknown 노드 생성
+		await this.createUnknownSymbolNodes(
+			sourceFile,
+			targetFilePath,
+			importSource.imports,
+			language,
+		);
+
 		// 미싱 링크 체크 및 진단 정보 생성
 		let missingLink: MissingLink | undefined;
 		if (!found) {
@@ -398,6 +409,161 @@ export class FileDependencyAnalyzer {
 		}
 
 		return { node: createdNode, missingLink };
+	}
+
+	/**
+	 * Import된 심볼에 대한 Unknown 노드 및 uses 관계 생성
+	 */
+		private async createUnknownSymbolNodes(
+		sourceFile: string,
+		targetFilePath: string,
+		importItems: ImportItem[],
+		language: SupportedLanguage,
+	): Promise<void> {
+		const relativeTargetPath = this.getRelativePath(targetFilePath);
+		const relativeSourcePath = this.getRelativePath(sourceFile);
+
+		for (const item of importItems) {
+			// Namespace import는 파일 전체를 참조하므로 스킵
+			if (item.isNamespace) {
+				continue;
+			}
+
+			const originalSymbolName = item.name;
+			let usedSymbolId: number;
+			let usedSymbolName: string;
+
+			if (item.alias) {
+				// alias가 있는 경우: 원본 노드(타겟 파일) + alias 노드(소스 파일) 생성
+				// 1. 원본 심볼 Unknown 노드 생성 (타겟 파일에 위치)
+				const originalNodeContext = {
+					sourceFile: relativeTargetPath,
+					language,
+					projectRoot: this.projectRoot,
+					projectName: this.projectName,
+				};
+
+				const originalIdentifier = this.nodeIdentifier.createIdentifier(
+					"unknown",
+					originalSymbolName,
+					originalNodeContext,
+				);
+
+				const originalNode: GraphNode = {
+					identifier: originalIdentifier,
+					type: "unknown",
+					name: originalSymbolName,
+					sourceFile: relativeTargetPath,
+					language,
+					metadata: {
+						isImported: false, // 타겟 파일에 정의된 심볼
+						isDefault: item.isDefault,
+					},
+				};
+
+				const originalNodeId = await this.database.upsertNode(originalNode);
+
+				// 2. alias 심볼 Unknown 노드 생성 (소스 파일에 위치)
+				const aliasNodeContext = {
+					sourceFile: relativeSourcePath,
+					language,
+					projectRoot: this.projectRoot,
+					projectName: this.projectName,
+				};
+
+				const aliasIdentifier = this.nodeIdentifier.createIdentifier(
+					"unknown",
+					item.alias,
+					aliasNodeContext,
+				);
+
+				const aliasNode: GraphNode = {
+					identifier: aliasIdentifier,
+					type: "unknown",
+					name: item.alias,
+					sourceFile: relativeSourcePath,
+					language,
+					metadata: {
+						isImported: true,
+						isAlias: true,
+						originalName: originalSymbolName,
+						importedFrom: relativeTargetPath,
+					},
+				};
+
+				usedSymbolId = await this.database.upsertNode(aliasNode);
+				usedSymbolName = item.alias;
+
+				// 3. aliasOf 관계 생성: alias → original
+				const aliasOfRelationship: GraphRelationship = {
+					fromNodeId: usedSymbolId,
+					toNodeId: originalNodeId,
+					type: "aliasOf",
+					label: `${item.alias} is alias of ${originalSymbolName}`,
+					metadata: {
+						isInferred: false, // 파싱으로 직접 얻음
+					},
+					weight: 1,
+					sourceFile: relativeSourcePath,
+				};
+
+				await this.database.upsertRelationship(aliasOfRelationship);
+			} else {
+				// alias가 없는 경우: 타겟 파일에 단일 노드 생성
+				const importedNodeContext = {
+					sourceFile: relativeTargetPath,
+					language,
+					projectRoot: this.projectRoot,
+					projectName: this.projectName,
+				};
+
+				const importedIdentifier = this.nodeIdentifier.createIdentifier(
+					"unknown",
+					originalSymbolName,
+					importedNodeContext,
+				);
+
+				const importedNode: GraphNode = {
+					identifier: importedIdentifier,
+					type: "unknown",
+					name: originalSymbolName,
+					sourceFile: relativeTargetPath,
+					language,
+					metadata: {
+						isImported: true,
+						isDefault: item.isDefault,
+						importedFrom: sourceFile, // 소스 파일 경로 (absolute)
+					},
+				};
+
+				usedSymbolId = await this.database.upsertNode(importedNode);
+				usedSymbolName = originalSymbolName;
+			}
+
+			// 4. sourceFile → 사용되는 심볼로 uses 관계 생성
+			const sourceFileNode = await this.database.findNodes({
+				sourceFiles: [sourceFile],
+				nodeTypes: ["file"],
+			});
+
+			if (sourceFileNode.length > 0 && sourceFileNode[0].id) {
+				const usesRelationship: GraphRelationship = {
+					fromNodeId: sourceFileNode[0].id,
+					toNodeId: usedSymbolId,
+					type: "uses",
+					label: `uses ${usedSymbolName}`,
+					metadata: {
+						isDefault: item.isDefault,
+						isInferred: false, // 파싱으로 직접 얻음
+					...(item.alias ? { importedAs: item.alias } : {}), // alias가 있으면 추가
+					},
+					weight: 1,
+					sourceFile: relativeSourcePath,
+				};
+
+				await this.database.upsertRelationship(usesRelationship);
+			}
+		}
 	}
 
 	/**
