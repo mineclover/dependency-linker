@@ -14,7 +14,7 @@ import type { QueryExecutionContext, SupportedLanguage } from "./types";
 /**
  * 언어별 Tree-sitter 쿼리 가져오기
  */
-function getLanguageTreeSitterQueries(
+export function getLanguageTreeSitterQueries(
 	language: SupportedLanguage,
 ): Record<string, string> {
 	switch (language) {

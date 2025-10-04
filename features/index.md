@@ -43,7 +43,71 @@ Dependency Linker는 멀티 언어 AST 분석 프레임워크로, TypeScript/Jav
 
 ---
 
+## 🔄 시스템 확장 철학
+
+dependency-linker는 **명세 기반 수평 확장(Specification-Based Horizontal Scaling)**을 따릅니다:
+
+### 두 가지 확장 레이어
+
+#### 1. **Scenario System** (분석 레이어)
+**목적**: 분석 방법을 명세(Spec)로 정의하여 수평적 확장
+```typescript
+// 분석 방법 = Spec 작성 (코드 변경 없음)
+new ScenarioSpec({
+  id: "symbol-dependency",
+  nodeTypes: ["class", "function", "method"],
+  edgeTypes: ["calls", "instantiates"]
+})
+```
+
+**확장 방식**:
+- 새 분석 = 새 ScenarioSpec 등록
+- Namespace가 scenarios 선택 → 다양한 분석 조합 실현
+
+#### 2. **features/** (구성 레이어)
+**목적**: 시스템 구성 요소(심볼 파싱, 추론 엔진 등)를 모듈로 정의하여 수평적 업데이트
+
+```markdown
+features/rdf-addressing/
+├── README.md        # 심볼 식별 체계 모듈 명세
+│   ├─ 구성 요소: RDF 주소 형식, NodeIdentifier
+│   ├─ 통합 포인트: STORAGE 단계 (2.1)
+│   └─ 시스템 영향: NodeContext, Analyzer들
+└── todos.md         # Phase별 통합 태스크
+```
+
+**확장 방식**:
+- 새 구성 = features/[module-name]/ 명세 작성
+- PIPELINE_INTEGRATION.md에 통합 계획 수립
+- 명세대로 시스템 구성 업데이트 (코드 변경 최소화)
+
+### 핵심 원칙
+
+> **"코드 변경이 아닌, 명세 추가로 시스템을 확장한다"**
+
+- **Scenario System**: 분석 방법 추가 = ScenarioSpec 추가
+- **features/**: 구성 요소 업데이트 = 모듈 명세 + 통합 계획 추가
+- **공통점**: 기존 시스템 안정성 유지, 점진적 확장
+
+### 시스템 구성 업데이트 프로세스
+
+```
+1. 구성 변경 필요성 식별
+   ↓ (예: "RDF 주소로 심볼 식별 필요")
+2. features/ 모듈 명세 작성
+   ↓ (README.md + todos.md)
+3. PIPELINE_INTEGRATION.md 업데이트
+   ↓ (4단계 파이프라인 통합 계획)
+4. 수평적 시스템 업데이트
+   ↓ (명세대로 구현)
+5. features/index.md 상태 업데이트
+```
+
+---
+
 ## 🗂️ Feature Categories
+
+> 아래 목록은 **시스템 구성 모듈**들입니다. 각 모듈은 심볼 파싱, 저장, 분석, 추론 등 시스템 구성 요소를 정의합니다.
 
 ### 1. [Dependency Analysis](./dependency-analysis/)
 **핵심**: 프로젝트 전체 또는 특정 네임스페이스의 의존성 분석
@@ -118,8 +182,8 @@ Dependency Linker는 멀티 언어 AST 분석 프레임워크로, TypeScript/Jav
 
 ---
 
-### 5. [Dependency Query](./query/)
-**핵심**: GraphDB에 저장된 의존성 정보 조회
+### 5. [Query System](./query-system/)
+**핵심**: GraphDB에 저장된 의존성 정보 조회 (Query only)
 
 **Commands**:
 - `query` - 네임스페이스별 의존성 쿼리
@@ -134,24 +198,69 @@ Dependency Linker는 멀티 언어 AST 분석 프레임워크로, TypeScript/Jav
 - 영향 분석
 - 리팩토링 계획
 
+> 💡 간접 의존성 추론은 [Inference System](./inference-system/)을 참고하세요.
+
 ---
 
-### 6. [Inference System](./inference/)
-**핵심**: 의존성 정보를 활용한 추론 및 컨텍스트 생성
+### 6. [RDF Addressing](./rdf-addressing/)
+**핵심**: RDF 기반 노드 식별 시스템으로 심볼의 정의 위치를 명확히 표현
 
-**Components**:
-- InferenceEngine - 간접 의존성 추론
-- Edge Type Registry - 엣지 타입 관리
-- Context Integration - 의존성 + 컨텍스트 결합
+**Status**: 🚧 In Development (v3.1.0 타겟)
+
+**Key Features**:
+- **명확한 식별**: `dependency-linker/src/parser.ts#Class:TypeScriptParser`
+- **역파싱**: RDF 주소 → 파일 위치 자동 변환
+- **고유성 보장**: 같은 파일 내 심볼 이름 중복 방지
+- **검색 엔진**: CLI 명령어로 심볼 검색 가능
 
 **Use Cases**:
-- 최근접 노드 추출
-- 전이적 의존성 추적
-- LLM 컨텍스트 자동 구성
+- 심볼 정의 위치 빠른 탐색
+- 에디터 통합 (Go to Definition)
+- 문서 간 심볼 참조 표준화
 
 ---
 
-### 7. [Scenario System](./scenario-system/)
+### 7. [Unknown Symbol System](./unknown-symbol-system/)
+**핵심**: Import alias 추적 및 점진적 분석을 위한 Dual-Node Pattern
+
+**Status**: ✅ Production Ready (Enhancement Phase)
+
+**Key Features**:
+- **Dual-Node Pattern**: Original 노드와 Alias 노드 분리
+- **Alias 추적**: `import { User as UserType }` → aliasOf edge 생성
+- **점진적 분석**: 파일별 분석 후 나중에 연결 가능
+- **LLM 컨텍스트 자동 구성**: Unknown 노드 → 의존 파일 자동 추출
+
+**Use Cases**:
+- Import alias 관계 명시적 추적
+- 대규모 프로젝트 점진적 분석
+- LLM에게 필요한 파일만 제공
+
+---
+
+### 8. [Inference System](./inference-system/)
+**핵심**: 3가지 추론 타입으로 간접 의존성 자동 추론
+
+**Status**: 🚧 In Development (v3.2.0 타겟)
+
+**Inference Types**:
+- **Hierarchical (계층적)**: 타입 계층 활용 (`imports` → `imports_file` + `imports_package`)
+- **Transitive (전이적)**: A→B→C 체인 추적 (간접 의존성)
+- **Inheritable (상속 가능)**: 부모-자식 관계 전파
+
+**Key Features**:
+- SQL Recursive CTE 기반 고성능 추론
+- LRU 캐시로 성능 최적화 (3배 향상)
+- Incremental inference (변경된 노드만 재추론)
+
+**Use Cases**:
+- LLM 컨텍스트 자동 구성 (전이적 의존성 포함)
+- 영향 분석 (이 파일 변경 시 영향받는 파일 찾기)
+- Unknown 노드 → 실제 타입 자동 연결
+
+---
+
+### 9. [Scenario System](./scenario-system/)
 **핵심**: 재사용 가능한 분석 명세로서의 시나리오 시스템
 
 **Components**:
@@ -175,7 +284,7 @@ Dependency Linker는 멀티 언어 AST 분석 프레임워크로, TypeScript/Jav
 
 ---
 
-### 8. [Namespace-Scenario Integration](./namespace-scenario-integration/)
+### 10. [Namespace-Scenario Integration](./namespace-scenario-integration/)
 **핵심**: Namespace가 Scenario를 선택하여 진정한 수평적 확장 실현
 
 **Key Concept**:
@@ -363,13 +472,16 @@ node dist/cli/namespace-analyzer.js analyze integration-tests
 - Context document generation (141 documents)
 - GraphDB storage with safe re-initialization
 - **Scenario System** - 재사용 가능한 분석 명세 아키텍처 (v1.0.0, 2025-10-04)
+- **Unknown Symbol System** - Dual-Node Pattern with alias tracking (v3.1.0)
+- **Type Management Convention** - 노드 타입 & 엣지 타입 관리 체계 (v3.1.0)
 
 ### In Development 🚧
+- **RDF Addressing** - 심볼 정의 위치 명확화 시스템 (v3.1.0 타겟)
+- **Inference System** - 3가지 추론 타입 (계층적/전이적/상속 가능) (v3.2.0 타겟)
 - **Namespace-Scenario Integration** - 수평적 확장 가능한 분석 시스템
 - Symbol-level context documents
-- Advanced inference algorithms
 - Visualization tools
-- Performance optimizations
+- Performance optimizations (캐시, 증분 추론)
 
 ### Planned 📋
 - Real-time dependency monitoring
@@ -386,15 +498,17 @@ node dist/cli/namespace-analyzer.js analyze integration-tests
 - [Namespace Management](./namespace-management/) - 네임스페이스 관리
 - [Cross-Namespace Dependencies](./cross-namespace/) - 크로스 네임스페이스
 - [Context Documents](./context-documents/) - 컨텍스트 문서 시스템
-- [Query System](./query/) - 의존성 쿼리
-- [Inference System](./inference/) - 추론 시스템
+- [Query System](./query-system/) - GraphDB 의존성 조회 (Query only)
+- **[RDF Addressing](./rdf-addressing/)** - 🆕 RDF 기반 노드 식별 시스템
+- **[Unknown Symbol System](./unknown-symbol-system/)** - 🆕 Dual-Node Pattern과 Alias 추적
+- **[Inference System](./inference-system/)** - 🆕 3가지 추론 타입 (계층적/전이적/상속 가능)
+- **[Type Management](./type-management/)** - 🆕 노드 타입 & 엣지 타입 관리 컨벤션
 - [Scenario System](./scenario-system/) - 시나리오 기반 분석 아키텍처
 - [Namespace-Scenario Integration](./namespace-scenario-integration/) - 수평적 확장 시스템
 
 ### Technical Documentation
-- [RDF Addressing](../docs/rdf-addressing.md) - RDF 기반 노드 식별 시스템
+- [Pipeline Integration](./PIPELINE_INTEGRATION.md) - 🆕 파이프라인 통합 계획 (RDF/Unknown/Inference)
 - [Single File Analysis](../docs/single-file-analysis-api.md) - 단일 파일 분석 API
-- [Unknown Node Inference](../docs/unknown-node-inference.md) - Unknown 노드와 Alias 추론 시스템
 - [Type System](../docs/type-system.md) - Node와 Edge 타입 시스템
 
 ---
@@ -431,5 +545,5 @@ node dist/cli/namespace-analyzer.js list-context
 
 ---
 
-**Last Updated**: 2025-10-02
-**Version**: 3.0.0
+**Last Updated**: 2025-10-05
+**Version**: 3.1.0-dev (RDF Addressing, Unknown Symbol System, Inference System 추가)

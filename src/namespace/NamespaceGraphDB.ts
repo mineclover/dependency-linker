@@ -21,6 +21,13 @@ export class NamespaceGraphDB {
 	}
 
 	/**
+	 * Get underlying GraphDatabase instance
+	 */
+	getDatabase(): GraphDatabase {
+		return this.db;
+	}
+
+	/**
 	 * Store namespace dependency analysis in GraphDB
 	 */
 	async storeNamespaceDependencies(

@@ -28,6 +28,8 @@ export type {
 export { createGraphStorage, GraphStorage } from "./GraphStorage";
 // Inference module - centralized inference capabilities
 export * from "./inference";
+// Search module - RDF-based symbol search
+export * from "./search";
 
 import type { GraphNode } from "./GraphDatabase";
 import {

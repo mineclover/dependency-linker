@@ -8,7 +8,10 @@ import { namespaceDependencyAnalyzer } from "../namespace/NamespaceDependencyAna
 import { NamespaceGraphDB } from "../namespace/NamespaceGraphDB";
 import type { NamespaceConfig } from "../namespace/types";
 import { createContextDocumentGenerator } from "../context/ContextDocumentGenerator";
-import { listScenarios, getScenario } from "../scenarios";
+import { listScenarios, getScenario, globalScenarioRegistry } from "../scenarios";
+import { RdfSearchEngine } from "../database/search/RdfSearchEngine";
+import { NodeIdentifier } from "../database/core/NodeIdentifier";
+import { UnknownNodeResolver } from "../database/inference/UnknownNodeResolver";
 
 // Initialize the analysis system
 initializeAnalysisSystem();
@@ -888,6 +891,197 @@ program
 				"❌ Error:",
 				error instanceof Error ? error.message : error,
 			);
+			process.exit(1);
+		}
+	});
+
+// Find symbol by RDF address
+program
+	.command("find-symbol <rdf-address>")
+	.description("Find symbol location by RDF address")
+	.option("--cwd <path>", "Working directory (project root)", process.cwd())
+	.option("--no-validate", "Disable type validation")
+	.option("--scenarios <ids>", "Comma-separated scenario IDs to validate against")
+	.option("--json", "Output as JSON")
+	.option("--perf", "Enable performance logging")
+	.action(async (rdfAddress: string, options) => {
+		try {
+			const projectRoot = path.resolve(options.cwd);
+
+			// Create node identifier and search engine
+			const nodeIdentifier = new NodeIdentifier(projectRoot);
+			const searchEngine = new RdfSearchEngine(
+				nodeIdentifier,
+				globalScenarioRegistry,
+			);
+
+			// Parse scenarios option
+			const scenarioIds = options.scenarios
+				? options.scenarios.split(",").map((s: string) => s.trim())
+				: undefined;
+
+			// Search for symbol
+			const result = await searchEngine.findSymbolLocation(rdfAddress, {
+				projectRoot,
+				validateTypes: options.validate,
+				scenarioIds,
+				logPerformance: options.perf,
+			});
+
+			// Output results
+			if (options.json) {
+				if (result) {
+					console.log(JSON.stringify(result, null, 2));
+				} else {
+					console.log(
+						JSON.stringify(
+							{
+								found: false,
+								rdfAddress,
+								error: "Symbol not found",
+							},
+							null,
+							2,
+						),
+					);
+					process.exit(1);
+				}
+			} else {
+				if (result) {
+					console.log("🔍 Symbol Found");
+					console.log("━".repeat(40));
+					console.log(`RDF Address: ${rdfAddress}`);
+					console.log(`File: ${result.relativePath}`);
+					console.log(
+						`Location: Line ${result.location.line}, Column ${result.location.column}`,
+					);
+					console.log(`Type: ${result.nodeType}`);
+					console.log(`Name: ${result.symbolName}`);
+					console.log("");
+					console.log("📄 Full Path:");
+					console.log(
+						`${result.absolutePath}:${result.location.line}:${result.location.column}`,
+					);
+				} else {
+					console.log("❌ Symbol Not Found");
+					console.log("━".repeat(40));
+					console.log(`RDF Address: ${rdfAddress}`);
+					console.log("");
+					console.log("Possible reasons:");
+					console.log("  • File does not exist in project");
+					console.log("  • Symbol name does not match");
+					console.log("  • Invalid node type for the language");
+					console.log("  • File has not been analyzed yet");
+					process.exit(1);
+				}
+			}
+		} catch (error) {
+			if (options.json) {
+				console.log(
+					JSON.stringify(
+						{
+							found: false,
+							rdfAddress,
+							error: error instanceof Error ? error.message : String(error),
+						},
+						null,
+						2,
+					),
+				);
+			} else {
+				console.error(
+					"❌ Error:",
+					error instanceof Error ? error.message : error,
+				);
+			}
+			process.exit(1);
+		}
+	});
+
+// Resolve Unknown nodes command
+program
+	.command("resolve-unknown")
+	.description("Resolve Unknown nodes to actual type nodes")
+	.option("-c, --config <path>", "Config file path", "deps.config.json")
+	.option("--db <path>", "Database path", "deps.db")
+	.option("--json", "Output as JSON")
+	.action(async (options) => {
+		try {
+			const dbPath = path.resolve(options.db);
+
+			// Create database and resolver
+			const db = new NamespaceGraphDB(dbPath);
+			await db.initialize();
+
+			const resolver = new UnknownNodeResolver(db.getDatabase());
+
+			// Resolve all Unknown nodes
+			console.log("🔍 Resolving Unknown Nodes...");
+			console.log("");
+
+			const result = await resolver.resolveAll();
+
+			// Output results
+			if (options.json) {
+				console.log(JSON.stringify(result, null, 2));
+			} else {
+				console.log("✅ Resolution Complete");
+				console.log("━".repeat(60));
+				console.log("");
+
+				// Statistics
+				const stats = result.statistics;
+				console.log("📊 Statistics:");
+				console.log(`  Total Unknown nodes:   ${stats.total}`);
+				console.log(`  Resolved:              ${stats.resolvedCount} (${(stats.successRate * 100).toFixed(1)}%)`);
+				console.log(`  Unresolved:            ${stats.unresolvedCount}`);
+				console.log(`  Alias chains resolved: ${stats.aliasChains}`);
+				if (stats.aliasChains > 0) {
+					console.log(`  Avg chain length:      ${stats.avgChainLength.toFixed(1)}`);
+				}
+				console.log("");
+
+				// Resolved nodes (show first 10)
+				if (result.resolved.length > 0) {
+					console.log("✅ Resolved Nodes:");
+					const displayCount = Math.min(10, result.resolved.length);
+					for (let i = 0; i < displayCount; i++) {
+						const { unknown, actual } = result.resolved[i];
+						const actualName = actual.name || actual.metadata?.name || "<unnamed>";
+						console.log(`  ${i + 1}. ${unknown.name} → ${actual.type}:${actualName}`);
+					}
+					if (result.resolved.length > 10) {
+						console.log(`  ... and ${result.resolved.length - 10} more`);
+					}
+					console.log("");
+				}
+
+				// Unresolved nodes (show first 10)
+				if (result.unresolved.length > 0) {
+					console.log("⚠️  Unresolved Nodes:");
+					const displayCount = Math.min(10, result.unresolved.length);
+					for (let i = 0; i < displayCount; i++) {
+						const { node, reason } = result.unresolved[i];
+						console.log(`  ${i + 1}. ${node.name} (${reason})`);
+					}
+					if (result.unresolved.length > 10) {
+						console.log(`  ... and ${result.unresolved.length - 10} more`);
+					}
+				}
+			}
+
+			await db.close();
+		} catch (error) {
+			if (options.json) {
+				console.log(
+					JSON.stringify({
+						success: false,
+						error: error instanceof Error ? error.message : String(error),
+					}, null, 2)
+				);
+			} else {
+				console.error("❌ Error:", error instanceof Error ? error.message : error);
+			}
 			process.exit(1);
 		}
 	});

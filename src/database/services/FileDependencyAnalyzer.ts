@@ -126,7 +126,6 @@ export class FileDependencyAnalyzer {
 					description: edgeTypeDef.description,
 					schema: JSON.stringify(edgeTypeDef.schema),
 					isDirected: edgeTypeDef.isDirected,
-					parentType: edgeTypeDef.parentType,
 					isTransitive: edgeTypeDef.isTransitive,
 					isInheritable: edgeTypeDef.isInheritable,
 					priority: edgeTypeDef.priority,

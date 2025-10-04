@@ -13,6 +13,15 @@ export type { EdgeTypeDefinition } from "./EdgeTypeRegistry";
 export { EdgeTypeRegistry } from "./EdgeTypeRegistry";
 // Core inference engine
 export { InferenceEngine } from "./InferenceEngine";
+// Unknown node resolver
+export { UnknownNodeResolver } from "./UnknownNodeResolver";
+export type {
+	ResolutionResult,
+	ResolvedNode,
+	UnresolvedNode,
+	UnresolvedReason,
+	ResolutionStatistics,
+} from "./UnknownNodeResolver";
 
 // Type definitions
 export type {

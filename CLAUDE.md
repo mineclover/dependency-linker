@@ -536,17 +536,45 @@ Namespace Module (file organization)
 
 ## Task Management Convention
 
-### 태스크 관리 구조
+### 시스템 확장 철학
 
-프로젝트는 **Features 기반 태스크 관리**를 사용합니다:
+dependency-linker는 **명세 기반 수평 확장(Specification-Based Horizontal Scaling)**을 따릅니다:
+
+#### features/ 본질
+**features/**는 "기능 추가"가 아닌 **"시스템 구성 모듈 정의"**입니다:
+- ❌ 잘못된 이해: 새 기능을 추가하는 디렉토리
+- ✅ 올바른 이해: 심볼 파싱, 추론 엔진 등 **시스템 구성 요소를 업데이트하기 위한 수평 확장 모듈** 정의
+
+#### 두 가지 확장 레이어
+1. **Scenario System** (분석 레이어): 분석 방법을 명세(Spec)로 정의 → 수평적 확장
+2. **features/** (구성 레이어): 시스템 구성 요소를 모듈로 정의 → 수평적 업데이트
+
+**공통 원칙**: "코드 변경이 아닌, 명세 추가로 시스템을 확장한다"
+
+### 시스템 구성 업데이트 프로세스
+
+```
+1. 구성 변경 필요성 식별
+   ↓ (예: "RDF 주소로 심볼 식별", "간접 의존성 추론")
+2. features/ 모듈 명세 작성
+   ↓ (README.md + todos.md)
+3. PIPELINE_INTEGRATION.md 업데이트
+   ↓ (4단계 파이프라인 통합 계획)
+4. 수평적 시스템 업데이트
+   ↓ (명세대로 구현, 코드 변경 최소화)
+5. features/index.md 상태 업데이트
+```
+
+### 태스크 관리 구조
 
 ```
 features/
-├── index.md                    # 전체 기능 상태 대시보드
+├── index.md                    # 시스템 구성 모듈 상태 대시보드
 ├── NEXT_TASKS.md              # 🎯 당장 처리할 작업 (최우선)
-└── [feature-name]/
-    ├── README.md              # 기능 개요 및 가이드
-    └── todos.md               # 상세 구현 태스크 체크리스트
+├── PIPELINE_INTEGRATION.md    # 파이프라인 통합 계획
+└── [module-name]/             # 시스템 구성 모듈 (예: rdf-addressing, inference-system)
+    ├── README.md              # 모듈 명세 (구성 요소, 통합 포인트, 시스템 영향)
+    └── todos.md               # Phase별 통합 태스크 체크리스트
 ```
 
 ### 컨벤션
@@ -595,32 +623,99 @@ features/
 - 새 기능 추가 시
 - Production Ready 상태 변경 시
 
-### 워크플로우
+### 실전 예제: RDF Addressing 모듈 개발
 
-```bash
-# 1. 다음 작업 확인
-cat features/NEXT_TASKS.md
-
-# 2. 상세 태스크 확인
-cat features/[feature-name]/todos.md
-
-# 3. 작업 진행
-# ... 구현 ...
-
-# 4. 완료 시 업데이트
-# - todos.md 체크박스 체크
-# - NEXT_TASKS.md 업데이트 (다음 작업)
-# - index.md 상태 업데이트 (Phase 완료 시)
-# - CLAUDE.md Phase 섹션 추가 (Phase 완료 시)
+#### Step 1: 구성 변경 필요성 식별
+```
+필요성: 심볼 정의 위치를 RDF 주소로 명확히 표현
+현재 문제: Legacy identifier 형식 (class#src/parser.ts::TypeScriptParser@45:2)
+목표: RDF 형식 (dependency-linker/src/parser.ts#Class:TypeScriptParser)
+영향 범위: STORAGE 단계 (NodeIdentifier, NodeContext)
 ```
 
-### 예제
+#### Step 2: features/ 모듈 명세 작성
+```bash
+# features/rdf-addressing/README.md 작성
+- 모듈 개요: RDF 기반 노드 식별 시스템
+- 구성 요소: RDF 주소 형식, NodeIdentifier 변경
+- 통합 포인트: STORAGE 단계 (2.1 Node Storage)
+- 시스템 영향: NodeContext, NamespaceDependencyAnalyzer, FileDependencyAnalyzer
 
-**Phase 완료 후**:
-1. `features/[current-feature]/todos.md` - 모든 체크박스 완료 표시
-2. `features/index.md` - 상태를 "✅ Completed"로 변경
-3. `features/NEXT_TASKS.md` - 다음 작업으로 교체
-4. `CLAUDE.md` - "Recent Architecture Improvements"에 Phase N 섹션 추가
+# features/rdf-addressing/todos.md 작성
+- Phase 1: NodeContext에 projectName 추가 (3-4일)
+- Phase 2: 모든 Analyzer 업데이트 (2-3일)
+- Phase 3: Legacy 데이터 마이그레이션 (2-3일)
+```
+
+#### Step 3: PIPELINE_INTEGRATION.md 업데이트
+```markdown
+# features/PIPELINE_INTEGRATION.md에 추가
+
+## RDF Addressing 통합
+
+**통합 위치**: STORAGE 단계 (2.1)
+
+**Before**:
+const identifier = `class#src/parser.ts::TypeScriptParser@45:2`;
+
+**After**:
+const identifier = `dependency-linker/src/parser.ts#Class:TypeScriptParser`;
+
+**영향받는 파일**:
+- NodeIdentifier.ts (createIdentifier 메서드)
+- NamespaceDependencyAnalyzer.ts (projectName 전달)
+- FileDependencyAnalyzer.ts (projectName 사용)
+```
+
+#### Step 4: 수평적 시스템 업데이트
+```bash
+# Phase 1: NodeContext 업데이트
+1. src/core/types.ts에 projectName?: string 추가
+2. 하위 호환성 유지 (optional 필드)
+
+# Phase 2: 파이프라인 통합
+1. NamespaceDependencyAnalyzer → projectName 전달
+2. FileDependencyAnalyzer → NodeIdentifier에 projectName 전달
+3. NodeIdentifier.createIdentifier() → RDF 형식 생성
+
+# Phase 3: 마이그레이션
+1. scripts/migrate-to-rdf.ts 작성
+2. 기존 DB identifier 변환
+
+# 각 Phase 완료 시
+- features/rdf-addressing/todos.md 체크박스 체크
+- 테스트 작성 및 검증
+```
+
+#### Step 5: features/index.md 상태 업데이트
+```markdown
+### 6. [RDF Addressing](./rdf-addressing/)
+**Status**: ✅ Production Ready (v3.1.0)
+**모듈 타입**: 심볼 식별 체계
+**파이프라인**: STORAGE 단계
+```
+
+### 일반 워크플로우
+
+```bash
+# 1. 구성 변경 필요성 확인
+cat features/NEXT_TASKS.md
+
+# 2. 모듈 명세 확인
+cat features/[module-name]/README.md
+cat features/[module-name]/todos.md
+
+# 3. 파이프라인 통합 계획 확인
+cat features/PIPELINE_INTEGRATION.md
+
+# 4. 구현 진행
+# ... Phase별 구현 ...
+
+# 5. 완료 시 업데이트
+# - todos.md 체크박스 체크
+# - features/index.md 상태 업데이트
+# - CLAUDE.md Phase 섹션 추가 (Phase 완료 시)
+```
 
 ## Testing Best Practices
 

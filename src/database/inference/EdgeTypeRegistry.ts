@@ -8,7 +8,6 @@ export interface EdgeTypeDefinition {
 	description: string;
 	schema: Record<string, any>;
 	isDirected: boolean;
-	parentType?: string;
 	isTransitive: boolean;
 	isInheritable: boolean;
 	priority: number;
@@ -36,7 +35,6 @@ export class EdgeTypeRegistry {
 			description: "Contains relationship (A contains B)",
 			schema: {},
 			isDirected: true,
-			parentType: undefined,
 			isTransitive: true,
 			isInheritable: true,
 			priority: 0,
@@ -46,7 +44,6 @@ export class EdgeTypeRegistry {
 			description: "Declaration relationship (A declares B)",
 			schema: {},
 			isDirected: true,
-			parentType: "contains",
 			isTransitive: false,
 			isInheritable: true,
 			priority: 0,
@@ -56,7 +53,6 @@ export class EdgeTypeRegistry {
 			description: "Ownership relationship (A belongs to B)",
 			schema: {},
 			isDirected: true,
-			parentType: undefined,
 			isTransitive: true,
 			isInheritable: false,
 			priority: 0,
@@ -68,7 +64,6 @@ export class EdgeTypeRegistry {
 			description: "General dependency relationship",
 			schema: { dependencyType: "string" },
 			isDirected: true,
-			parentType: undefined,
 			isTransitive: true,
 			isInheritable: false,
 			priority: 0,
@@ -83,7 +78,6 @@ export class EdgeTypeRegistry {
 				isNamespace: "boolean",
 			},
 			isDirected: true,
-			parentType: "depends_on",
 			isTransitive: false,
 			isInheritable: false,
 			priority: 5,
@@ -96,7 +90,6 @@ export class EdgeTypeRegistry {
 				isDefault: "boolean",
 			},
 			isDirected: true,
-			parentType: undefined,
 			isTransitive: false,
 			isInheritable: false,
 			priority: 0,
@@ -109,7 +102,6 @@ export class EdgeTypeRegistry {
 				isAsync: "boolean",
 			},
 			isDirected: true,
-			parentType: "depends_on",
 			isTransitive: false,
 			isInheritable: false,
 			priority: 5,
@@ -119,7 +111,6 @@ export class EdgeTypeRegistry {
 			description: "Code references another element",
 			schema: { referenceType: "string" },
 			isDirected: true,
-			parentType: "depends_on",
 			isTransitive: false,
 			isInheritable: false,
 			priority: 5,
@@ -129,7 +120,6 @@ export class EdgeTypeRegistry {
 			description: "Class extends another class",
 			schema: {},
 			isDirected: true,
-			parentType: "depends_on",
 			isTransitive: false,
 			isInheritable: true,
 			priority: 5,
@@ -139,7 +129,6 @@ export class EdgeTypeRegistry {
 			description: "Class implements interface",
 			schema: {},
 			isDirected: true,
-			parentType: "depends_on",
 			isTransitive: false,
 			isInheritable: true,
 			priority: 5,
@@ -149,7 +138,6 @@ export class EdgeTypeRegistry {
 			description: "Uses another component",
 			schema: { usageType: "string" },
 			isDirected: true,
-			parentType: "depends_on",
 			isTransitive: false,
 			isInheritable: false,
 			priority: 5,
@@ -159,7 +147,6 @@ export class EdgeTypeRegistry {
 			description: "Creates instance of class",
 			schema: {},
 			isDirected: true,
-			parentType: "depends_on",
 			isTransitive: false,
 			isInheritable: false,
 			priority: 5,
@@ -171,7 +158,6 @@ export class EdgeTypeRegistry {
 			description: "Variable/parameter has type",
 			schema: {},
 			isDirected: true,
-			parentType: undefined,
 			isTransitive: false,
 			isInheritable: false,
 			priority: 0,
@@ -181,7 +167,6 @@ export class EdgeTypeRegistry {
 			description: "Function returns type",
 			schema: {},
 			isDirected: true,
-			parentType: undefined,
 			isTransitive: false,
 			isInheritable: false,
 			priority: 0,
@@ -191,7 +176,6 @@ export class EdgeTypeRegistry {
 			description: "Function throws exception type",
 			schema: {},
 			isDirected: true,
-			parentType: undefined,
 			isTransitive: false,
 			isInheritable: false,
 			priority: 0,
@@ -203,7 +187,6 @@ export class EdgeTypeRegistry {
 			description: "Assignment to variable/property",
 			schema: { operator: "string" },
 			isDirected: true,
-			parentType: undefined,
 			isTransitive: false,
 			isInheritable: false,
 			priority: 0,
@@ -213,7 +196,6 @@ export class EdgeTypeRegistry {
 			description: "Accesses property/variable",
 			schema: { accessType: "string" },
 			isDirected: true,
-			parentType: "depends_on",
 			isTransitive: false,
 			isInheritable: false,
 			priority: 5,
@@ -225,7 +207,6 @@ export class EdgeTypeRegistry {
 			description: "Method overrides parent method",
 			schema: {},
 			isDirected: true,
-			parentType: undefined,
 			isTransitive: false,
 			isInheritable: false,
 			priority: 0,
@@ -235,7 +216,6 @@ export class EdgeTypeRegistry {
 			description: "Variable shadows outer scope variable",
 			schema: {},
 			isDirected: true,
-			parentType: undefined,
 			isTransitive: false,
 			isInheritable: false,
 			priority: 0,
@@ -245,7 +225,6 @@ export class EdgeTypeRegistry {
 			description: "Decorated/annotated with",
 			schema: { annotation: "string" },
 			isDirected: true,
-			parentType: undefined,
 			isTransitive: false,
 			isInheritable: false,
 			priority: 0,
@@ -266,7 +245,6 @@ export class EdgeTypeRegistry {
 				isDirectDependency: "boolean",
 			},
 			isDirected: true,
-			parentType: "imports",
 			isTransitive: false,
 			isInheritable: false,
 			priority: 6,
@@ -280,7 +258,6 @@ export class EdgeTypeRegistry {
 				isDirectDependency: "boolean",
 			},
 			isDirected: true,
-			parentType: "imports",
 			isTransitive: false,
 			isInheritable: false,
 			priority: 6,
@@ -292,10 +269,22 @@ export class EdgeTypeRegistry {
 				isInferred: "boolean",
 			},
 			isDirected: true,
-			parentType: "references",
 			isTransitive: false,
 			isInheritable: false,
 			priority: 5,
+		},
+		{
+			type: "resolvedTo",
+			description: "Unknown node resolved to actual type node",
+			schema: {
+				isInferred: "boolean",
+				confidence: "number",
+				resolvedAt: "string",
+			},
+			isDirected: true,
+			isTransitive: false,
+			isInheritable: false,
+			priority: 10,
 		},
 	];
 
@@ -351,71 +340,24 @@ export class EdgeTypeRegistry {
 	}
 
 	/**
-	 * 특정 parent를 가진 모든 child types 조회
-	 */
-	static getChildTypes(parentType: string): EdgeTypeDefinition[] {
-		if (EdgeTypeRegistry.definitions.size === 0) {
-			EdgeTypeRegistry.initialize();
-		}
-		return Array.from(EdgeTypeRegistry.definitions.values()).filter(
-			(def) => def.parentType === parentType,
-		);
-	}
-
-	/**
-	 * 특정 parent를 가진 모든 child type 이름들 조회 (문자열 배열)
-	 */
-	static getChildren(parentType: string): string[] {
-		return EdgeTypeRegistry.getChildTypes(parentType).map((def) => def.type);
-	}
-
-	/**
-	 * Edge type의 전체 계층 경로 조회
-	 * 예: imports_library → imports → depends_on
-	 */
-	static getHierarchyPath(type: string): string[] {
-		if (EdgeTypeRegistry.definitions.size === 0) {
-			EdgeTypeRegistry.initialize();
-		}
-
-		const path: string[] = [type];
-		let current = EdgeTypeRegistry.definitions.get(type);
-
-		while (current?.parentType) {
-			path.push(current.parentType);
-			current = EdgeTypeRegistry.definitions.get(current.parentType);
-		}
-
-		return path;
-	}
-
-	/**
-	 * 계층 구조 검증
-	 * 순환 참조, 존재하지 않는 parent 등 체크
+	 * Type 정의 검증
+	 * 중복 type 이름 등 기본 무결성 체크
 	 */
 	static validateHierarchy(): { valid: boolean; errors: string[] } {
 		const errors: string[] = [];
 
-		for (const def of EdgeTypeRegistry.definitions.values()) {
-			if (def.parentType) {
-				// Parent가 존재하는지 확인
-				if (!EdgeTypeRegistry.definitions.has(def.parentType)) {
-					errors.push(
-						`${def.type}: parent type '${def.parentType}' does not exist`,
-					);
-				}
+		// 중복 type 이름 확인
+		const typeNames = new Set<string>();
+		const allTypes = [
+			...EdgeTypeRegistry.CORE_TYPES,
+			...EdgeTypeRegistry.EXTENDED_TYPES,
+		];
 
-				// 순환 참조 확인
-				const path = EdgeTypeRegistry.getHierarchyPath(def.type);
-				const seen = new Set<string>();
-				for (const node of path) {
-					if (seen.has(node)) {
-						errors.push(`${def.type}: circular hierarchy detected`);
-						break;
-					}
-					seen.add(node);
-				}
+		for (const def of allTypes) {
+			if (typeNames.has(def.type)) {
+				errors.push(`Duplicate type name: ${def.type}`);
 			}
+			typeNames.add(def.type);
 		}
 
 		return {
@@ -433,42 +375,25 @@ export class EdgeTypeRegistry {
 	}
 
 	/**
-	 * 계층 구조 시각화
+	 * All edge types 목록 출력
 	 */
 	static printHierarchy(): string {
 		const lines: string[] = [];
-		const visited = new Set<string>();
 
-		const printNode = (type: string, indent: number = 0) => {
-			if (visited.has(type)) return;
-			visited.add(type);
+		if (EdgeTypeRegistry.definitions.size === 0) {
+			EdgeTypeRegistry.initialize();
+		}
 
-			const def = EdgeTypeRegistry.definitions.get(type);
-			if (!def) return;
+		const allTypes = Array.from(EdgeTypeRegistry.definitions.values());
 
-			const prefix = "  ".repeat(indent);
+		for (const def of allTypes) {
 			const properties = [];
 			if (def.isTransitive) properties.push("transitive");
 			if (def.isInheritable) properties.push("inheritable");
 			const propStr =
 				properties.length > 0 ? ` (${properties.join(", ")})` : "";
 
-			lines.push(`${prefix}• ${type}${propStr}`);
-
-			// Children
-			const children = EdgeTypeRegistry.getChildTypes(type);
-			for (const child of children) {
-				printNode(child.type, indent + 1);
-			}
-		};
-
-		// Root nodes (parentType이 없는 것들)
-		const roots = Array.from(EdgeTypeRegistry.definitions.values()).filter(
-			(def) => !def.parentType,
-		);
-
-		for (const root of roots) {
-			printNode(root.type);
+			lines.push(`• ${def.type}${propStr}`);
 		}
 
 		return lines.join("\n");
