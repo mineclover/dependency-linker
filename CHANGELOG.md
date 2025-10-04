@@ -5,6 +5,73 @@ All notable changes to this project will be documented in this file.
 The format is based on [Keep a Changelog](https://keepachangelog.com/en/1.0.0/),
 and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0.html).
 
+## [3.1.0] - 2025-10-04
+
+### 🚀 Namespace-Scenario Integration - Horizontal Scalability
+
+**Major Feature**: Namespaces can now select analysis scenarios for true horizontal scalability.
+
+### Added
+- **🎯 Scenario System**: Reusable analysis specifications with type inheritance and execution lifecycle
+  - Built-in scenarios: `basic-structure`, `file-dependency`, `symbol-dependency`, `markdown-linking`
+  - Scenario dependencies: `extends` (type inheritance), `requires` (execution order)
+  - Topological sort (Kahn's Algorithm) for automatic execution order calculation
+  - BaseScenarioAnalyzer with beforeAnalyze/analyze/afterAnalyze hooks
+  - Global registry with auto-initialization and type consistency validation
+
+- **📋 Namespace-Scenario Integration**: Configure analysis scenarios per namespace
+  - `scenarios` field in NamespaceConfig for scenario selection
+  - `scenarioConfig` field for scenario-specific configuration
+  - Default scenarios: `["basic-structure", "file-dependency"]` for backward compatibility
+  - Automatic scenario execution order calculation based on dependencies
+
+- **🔧 CLI Enhancements**: Complete scenario management commands
+  - `scenarios` - List all available scenarios
+  - `scenarios <namespace>` - Show namespace scenario configuration
+  - `analyze --scenarios <list>` - Override scenarios for analysis
+  - `analyze --scenario-config <json>` - Provide scenario-specific configuration
+  - `create-namespace --scenarios <list>` - Create namespace with scenarios
+
+- **📚 Configuration Examples**: 3 real-world configuration examples
+  - Monorepo example (6 namespaces): web, mobile, backend, shared, docs, tests
+  - Layered Architecture example (6 namespaces): presentation, application, domain, infrastructure, shared-kernel, tests
+  - Multi-framework example (8 namespaces): React, Vue, Angular, Node.js, Python, Go, shared-types, documentation
+
+- **📖 Comprehensive Documentation**: Complete user-facing documentation
+  - `docs/namespace-scenario-guide.md` (805 lines): Complete integration guide
+  - `docs/pipeline-overview.md`: Added "Scenario-Based Analysis" section
+  - `docs/README.md`: Updated documentation index
+  - Migration guide with backward compatibility explanation
+  - Real-world examples, CLI usage, best practices, troubleshooting
+
+### Changed
+- **NamespaceConfig Interface**: Extended with `scenarios` and `scenarioConfig` fields
+- **NamespaceDependencyAnalyzer**: Integrated ScenarioRegistry for scenario execution
+  - Added `getScenarioExecutionOrder()` method
+  - Added `scenariosExecuted` field to NamespaceDependencyResult
+  - Automatic default scenario application for backward compatibility
+
+- **ConfigManager**: Added scenario validation logic
+  - `validateScenarios()` method for scenario ID validation
+  - Integration with ScenarioRegistry for scenario lookup
+
+### Technical
+- **Test Coverage**: 37 integration tests for namespace-scenario integration
+  - 12 tests: Phase 1 (Type Extensions)
+  - 10 tests: Phase 2 (Analyzer Refactoring)
+  - 15 tests: Phase 5 (Comprehensive Testing)
+  - All tests passing with backward compatibility verification
+
+- **Core Value**:
+  - **Cost Optimization**: Run only necessary scenarios (e.g., `markdown-linking` for docs)
+  - **Context-Based Analysis**: Same file analyzed differently per namespace
+  - **Horizontal Scalability**: Add new analysis via configuration, not code changes
+
+### Migration
+- **Backward Compatible**: Existing configurations work without modification
+- **Optional Feature**: `scenarios` field is optional, defaults to `["basic-structure", "file-dependency"]`
+- **Gradual Migration**: Can mix old and new configurations in same project
+
 ## [3.0.0] - 2025-09-29
 
 ### 🚀 Major Release - Complete QueryResultMap-Centric Redesign

@@ -252,6 +252,28 @@ Namespace Module (file organization)
     - Cross-Namespace: 다른 시나리오 조합이 분석에 영향 없음 확인
     - Error Handling: 잘못된 시나리오 ID 거부, 빈 scenarios 배열 처리
     - Execution Order: 의존성 기반 topological sort 정확성 검증
+- **Phase 6: Performance & Optimization** (제외)
+  - 선택적 작업으로 구현 복잡도가 매우 높아 제외
+  - 실제 성능 병목 발견 시 추후 진행
+- **Phase 7: Documentation** ✅
+  - 완전한 사용자 가이드 및 문서화
+  - 파일: `docs/namespace-scenario-guide.md` (805 lines)
+    - Core concepts: Namespace, Scenario, Dependencies, Execution Order
+    - Configuration guide with NamespaceConfig structure
+    - Scenario selection strategy by project type (Monorepo, Layered, Multi-Framework)
+    - Complete CLI usage with all commands and examples
+    - 3 real-world configuration examples with detailed explanations
+    - Migration guide with backward compatibility
+    - Best practices and troubleshooting section
+  - 파일: `docs/pipeline-overview.md` (74 lines 추가)
+    - Added "3.4 Scenario-Based Analysis" section
+    - Integration with 4-stage pipeline explanation
+  - 파일: `docs/README.md` (인덱스 업데이트)
+    - Added to Pipeline & Data Flow section
+    - Added to "For New Users" quick start path
+  - 파일: `CHANGELOG.md` (v3.1.0 엔트리)
+    - Complete documentation of Phase 1-7 features
+    - Migration notes and backward compatibility
 - **핵심 가치**:
   - 비용 최적화: 문서 분석 시 `markdown-linking`만 실행, UI 분석 시 `symbol-dependency` 등
   - 맥락 기반 분석: 같은 `.ts` 파일도 네임스페이스에 따라 다른 시나리오 실행
@@ -267,7 +289,8 @@ Namespace Module (file organization)
     --scenarios basic-structure,symbol-dependency
   ```
 - **Test Coverage**: 37 passing tests (12 Phase 1 + 10 Phase 2 + 15 Phase 5) + 3 configuration examples validated
-- **Production Status**: ✅ Phase 1-5 완료 (62.5% progress), Phase 6-8 대기 중
+- **Documentation**: 805-line comprehensive user guide + pipeline integration + CHANGELOG v3.1.0
+- **Production Status**: ✅ Phase 1-5, 7 완료 (87.5% progress, Phase 6 제외), Phase 8 진행 중
 
 ## System Capabilities
 - **Multi-Language Support**: TypeScript, TSX, JavaScript, JSX, Java, Python, Go, Markdown

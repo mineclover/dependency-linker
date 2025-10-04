@@ -16,6 +16,7 @@ import { ConfigManager } from "../src/namespace/ConfigManager";
 import { NamespaceDependencyAnalyzer } from "../src/namespace/NamespaceDependencyAnalyzer";
 import type { NamespaceConfig } from "../src/namespace/types";
 import { reinitializeBuiltinScenarios } from "../src/scenarios/index";
+import { globalParserManager } from "../src/parsers/ParserManager";
 
 describe("Comprehensive Namespace-Scenario Integration - Phase 5", () => {
 	let configManager: ConfigManager;
@@ -40,6 +41,8 @@ describe("Comprehensive Namespace-Scenario Integration - Phase 5", () => {
 	});
 
 	afterEach(async () => {
+		// Clear parser cache for test isolation
+		globalParserManager.clearCache();
 		await rm(tempDir, { recursive: true, force: true });
 	});
 
