@@ -565,22 +565,172 @@ class Derived extends Base {
 			);
 			expect(superCalls.length).toBeGreaterThan(0);
 		});
-	});
 
-	describe("Integration with Symbol Dependency", () => {
-		it("should have access to symbol-dependency types", () => {
-			registry.register(basicStructureSpec);
-			registry.register(symbolDependencySpec);
-			registry.register(methodAnalysisSpec);
+		describe("Field Analysis", () => {
+			it("should extract class fields", async () => {
+				const code = `
+class Counter {
+  private count: number = 0;
 
-			const analyzer = new MethodAnalyzer(methodAnalysisSpec, registry);
+  increment(): void {
+    this.count++;
+  }
+}
+`;
 
-			// Should have access to inherited types
-			expect(analyzer.hasNodeType("method")).toBe(true);
-			expect(analyzer.hasNodeType("class")).toBe(true); // From symbol-dependency
-			expect(analyzer.hasNodeType("function")).toBe(true); // From symbol-dependency
-			expect(analyzer.hasEdgeType("contains-method")).toBe(true);
-			expect(analyzer.hasEdgeType("defines")).toBe(true); // From symbol-dependency
+				const parseResult = await parser.parse(code);
+				const context: AnalysisContext = {
+					filePath: "test/Counter.ts",
+					sourceCode: code,
+					language: "typescript",
+					parseResult,
+					sharedData: new Map(),
+					previousResults: new Map(),
+					typeCollection: analyzer.getTypeCollection(),
+				};
+
+				const result = await analyzer.execute(context);
+
+				// Should have at least 1 field node
+				const fields = result.nodes.filter((n) => n.type === "field");
+				expect(fields.length).toBeGreaterThan(0);
+
+				// Check count field properties
+				const countField = fields.find((f) => f.properties?.fieldName === "count");
+				expect(countField).toBeDefined();
+				expect(countField?.properties?.visibility).toBe("private");
+				expect(countField?.properties?.hasInitializer).toBe(true);
+			});
+
+			it("should create File → Field and Class → Field edges", async () => {
+				const code = `
+class Product {
+  private id: string = "";
+}
+`;
+
+				const parseResult = await parser.parse(code);
+				const context: AnalysisContext = {
+					filePath: "test/Product.ts",
+					sourceCode: code,
+					language: "typescript",
+					parseResult,
+					sharedData: new Map(),
+					previousResults: new Map(),
+					typeCollection: analyzer.getTypeCollection(),
+				};
+
+				const result = await analyzer.execute(context);
+
+				// Should have field nodes
+				const fields = result.nodes.filter((n) => n.type === "field");
+				expect(fields.length).toBeGreaterThan(0);
+
+				// Should have defines edges from file to fields
+				const fileToFieldEdges = result.edges.filter(
+					(e) => e.type === "defines" && e.from === "test/Product.ts" && e.to.includes("id")
+				);
+				expect(fileToFieldEdges.length).toBeGreaterThan(0);
+
+				// Should have defines edges from class to fields
+				const classToFieldEdges = result.edges.filter(
+					(e) => e.type === "defines" && e.from.includes("Product") && e.to.includes("id")
+				);
+				expect(classToFieldEdges.length).toBeGreaterThan(0);
+			});
+
+			it("should detect field accesses in methods", async () => {
+				const code = `
+class Counter {
+  private count: number = 0;
+
+  increment(): void {
+    this.count++;
+  }
+
+  getCount(): number {
+    return this.count;
+  }
+}
+`;
+
+				const parseResult = await parser.parse(code);
+				const context: AnalysisContext = {
+					filePath: "test/Counter.ts",
+					sourceCode: code,
+					language: "typescript",
+					parseResult,
+					sharedData: new Map(),
+					previousResults: new Map(),
+					typeCollection: analyzer.getTypeCollection(),
+				};
+
+				const result = await analyzer.execute(context);
+
+				// Should have accesses-field edges
+				const accessEdges = result.edges.filter((e) => e.type === "accesses-field");
+				expect(accessEdges.length).toBeGreaterThan(0);
+
+				// Check increment method writes to count field
+				const incrementWriteEdge = accessEdges.find(
+					(e) => e.from.includes("increment") && e.to.includes("count")
+				);
+				expect(incrementWriteEdge).toBeDefined();
+				expect(incrementWriteEdge?.properties?.accessType).toBe("this");
+				expect(incrementWriteEdge?.properties?.isWrite).toBe(true);
+
+				// Check getCount method reads from count field
+				const getCountReadEdge = accessEdges.find(
+					(e) => e.from.includes("getCount") && e.to.includes("count")
+				);
+				expect(getCountReadEdge).toBeDefined();
+				expect(getCountReadEdge?.properties?.accessType).toBe("this");
+				expect(getCountReadEdge?.properties?.isWrite).toBe(false);
+			});
+
+			it("should detect static field accesses", async () => {
+				const code = `
+class Config {
+  static API_URL: string = "https://api.example.com";
+
+  static getApiUrl(): string {
+    return Config.API_URL;
+  }
+}
+`;
+
+				const parseResult = await parser.parse(code);
+				const context: AnalysisContext = {
+					filePath: "test/Config.ts",
+					sourceCode: code,
+					language: "typescript",
+					parseResult,
+					sharedData: new Map(),
+					previousResults: new Map(),
+					typeCollection: analyzer.getTypeCollection(),
+				};
+
+				const result = await analyzer.execute(context);
+
+				// Should have accesses-field edge with static access type
+				const accessEdges = result.edges.filter((e) => e.type === "accesses-field");
+				const staticAccess = accessEdges.find(
+					(e) => e.properties?.accessType === "static"
+				);
+				expect(staticAccess).toBeDefined();
+			});
+		});
+
+		describe("Integration with Symbol Dependency", () => {
+			it("should have access to symbol-dependency types", () => {
+				// analyzer is already created in beforeEach with all scenarios registered
+				// Should have access to inherited types
+				expect(analyzer.hasNodeType("method")).toBe(true);
+				expect(analyzer.hasNodeType("class")).toBe(true); // From symbol-dependency
+				expect(analyzer.hasNodeType("function")).toBe(true); // From symbol-dependency
+				expect(analyzer.hasEdgeType("contains-method")).toBe(true);
+				expect(analyzer.hasEdgeType("defines")).toBe(true); // From symbol-dependency
+			});
 		});
 	});
 });

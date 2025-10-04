@@ -6,7 +6,10 @@
  */
 
 import type Parser from "tree-sitter";
-import { BaseScenarioAnalyzer, type AnalysisContext } from "../BaseScenarioAnalyzer";
+import {
+	BaseScenarioAnalyzer,
+	type AnalysisContext,
+} from "../BaseScenarioAnalyzer";
 import type { AnalysisResult } from "../types";
 
 /**
@@ -52,6 +55,34 @@ interface MethodCallInfo {
 }
 
 /**
+ * Field information extracted from AST
+ */
+interface FieldInfo {
+	name: string;
+	className?: string;
+	type?: string;
+	isStatic: boolean;
+	isReadonly: boolean;
+	isPrivate: boolean;
+	visibility: "public" | "private" | "protected";
+	hasInitializer: boolean;
+	startLine: number;
+	endLine: number;
+}
+
+/**
+ * Field access information extracted from AST
+ */
+interface FieldAccessInfo {
+	methodIdentifier: string;
+	fieldName: string;
+	fieldClassName?: string;
+	lineNumber: number;
+	accessType: "this" | "super" | "static" | "member";
+	isWrite: boolean; // true for assignments, false for reads
+}
+
+/**
  * Method Analyzer Implementation
  */
 export class MethodAnalyzer extends BaseScenarioAnalyzer {
@@ -78,8 +109,12 @@ export class MethodAnalyzer extends BaseScenarioAnalyzer {
 		// Extract method definitions
 		const methods = this.extractMethods(tree, context);
 
-		// Track all method calls across all methods
+		// Extract field definitions
+		const fields = this.extractFields(tree, context);
+
+		// Track all method calls and field accesses across all methods
 		const methodCalls: MethodCallInfo[] = [];
+		const fieldAccesses: FieldAccessInfo[] = [];
 
 		// Create nodes and edges
 		for (const method of methods) {
@@ -163,6 +198,15 @@ export class MethodAnalyzer extends BaseScenarioAnalyzer {
 					context,
 				);
 				methodCalls.push(...calls);
+
+				// Extract field accesses from this method
+				const accesses = this.extractFieldAccesses(
+					method.bodyNode,
+					methodIdentifier,
+					method.className,
+					context,
+				);
+				fieldAccesses.push(...accesses);
 			}
 		}
 
@@ -185,13 +229,90 @@ export class MethodAnalyzer extends BaseScenarioAnalyzer {
 			});
 		}
 
+		// Create accesses-field edges
+		for (const access of fieldAccesses) {
+			const fieldIdentifier = this.buildFieldIdentifier(
+				context.filePath,
+				access.fieldClassName,
+				access.fieldName,
+			);
+
+			result.edges.push({
+				type: "accesses-field",
+				from: access.methodIdentifier,
+				to: fieldIdentifier,
+				properties: {
+					lineNumber: access.lineNumber,
+					accessType: access.accessType,
+					isWrite: access.isWrite,
+				},
+			});
+		}
+
+		// Create field nodes and edges
+		for (const field of fields) {
+			const fieldIdentifier = this.buildFieldIdentifier(
+				context.filePath,
+				field.className,
+				field.name,
+			);
+
+			result.nodes.push({
+				type: "field",
+				identifier: fieldIdentifier,
+				properties: {
+					name: field.name,
+					className: field.className,
+					fieldName: field.name,
+					sourceFile: context.filePath,
+					language: context.language,
+					type: field.type,
+					isStatic: field.isStatic,
+					isReadonly: field.isReadonly,
+					isPrivate: field.isPrivate,
+					visibility: field.visibility,
+					hasInitializer: field.hasInitializer,
+					startLine: field.startLine,
+					endLine: field.endLine,
+				},
+			});
+
+			// File → Field edge (defines)
+			result.edges.push({
+				type: "defines",
+				from: context.filePath,
+				to: fieldIdentifier,
+				properties: {},
+			});
+
+			// Class → Field edge (if part of a class)
+			if (field.className) {
+				const classIdentifier = this.buildClassIdentifier(
+					context.filePath,
+					field.className,
+				);
+
+				result.edges.push({
+					type: "defines",
+					from: classIdentifier,
+					to: fieldIdentifier,
+					properties: {
+						visibility: field.visibility,
+					},
+				});
+			}
+		}
+
 		return result;
 	}
 
 	/**
 	 * Extract methods from AST
 	 */
-	private extractMethods(tree: Parser.Tree, context: AnalysisContext): MethodInfo[] {
+	private extractMethods(
+		tree: Parser.Tree,
+		context: AnalysisContext,
+	): MethodInfo[] {
 		const methods: MethodInfo[] = [];
 
 		// Query for method definitions
@@ -231,6 +352,127 @@ export class MethodAnalyzer extends BaseScenarioAnalyzer {
 	}
 
 	/**
+	 * Extract fields from AST
+	 */
+	private extractFields(
+		tree: Parser.Tree,
+		context: AnalysisContext,
+	): FieldInfo[] {
+		const fields: FieldInfo[] = [];
+
+		try {
+			// Manual tree traversal to find field definitions
+			const traverse = (node: Parser.SyntaxNode) => {
+				if (
+					node.type === "field_definition" ||
+					node.type === "public_field_definition" ||
+					node.type === "property_declaration" ||
+					node.type === "class_property"
+				) {
+					const fieldInfo = this.parseFieldDefinition(node, context);
+					if (fieldInfo) {
+						fields.push(fieldInfo);
+					}
+				}
+
+				// Recursively traverse children
+				for (let i = 0; i < node.childCount; i++) {
+					const child = node.child(i);
+					if (child) {
+						traverse(child);
+					}
+				}
+			};
+
+			traverse(tree.rootNode);
+		} catch (error) {
+			console.warn("Failed to extract fields:", error);
+		}
+
+		return fields;
+	}
+
+	/**
+	 * Parse field definition node
+	 */
+	private parseFieldDefinition(
+		node: Parser.SyntaxNode,
+		context: AnalysisContext,
+	): FieldInfo | null {
+		try {
+			// Extract field name
+			const nameNode = node.childForFieldName("property");
+			if (!nameNode) return null;
+			const fieldName = nameNode.text;
+
+			// Extract type
+			const typeNode = node.childForFieldName("type");
+			const fieldType = this.cleanTypeAnnotation(typeNode?.text);
+
+			// Check modifiers
+			let isStatic = false;
+			let isReadonly = false;
+			let isPrivate = false;
+			let visibility: "public" | "private" | "protected" = "public";
+
+			// Look for modifiers in children
+			for (let i = 0; i < node.childCount; i++) {
+				const child = node.child(i);
+				if (!child) continue;
+
+				if (child.type === "accessibility_modifier") {
+					const modText = child.text;
+					visibility = modText as "public" | "private" | "protected";
+					isPrivate = modText === "private";
+				} else if (child.text === "static") {
+					isStatic = true;
+				} else if (child.text === "readonly") {
+					isReadonly = true;
+				}
+			}
+
+			// Check for initializer
+			const valueNode = node.childForFieldName("value");
+			const hasInitializer = !!valueNode;
+
+			// Extract class name from parent context
+			let className: string | undefined;
+			let parent = node.parent;
+			while (parent) {
+				if (
+					parent.type === "class_declaration" ||
+					parent.type === "class_body"
+				) {
+					const classDecl =
+						parent.type === "class_body" ? parent.parent : parent;
+					const classNameNode = classDecl?.childForFieldName("name");
+					if (classNameNode) {
+						className = classNameNode.text;
+						break;
+					}
+				}
+				parent = parent.parent;
+			}
+
+			return {
+				name: fieldName,
+				className,
+				type: fieldType,
+				isStatic,
+				isReadonly,
+				isPrivate,
+				visibility,
+				hasInitializer,
+				startLine: node.startPosition.row + 1,
+				endLine: node.endPosition.row + 1,
+			};
+		} catch (error) {
+			console.warn("Failed to parse field definition:", error);
+			return null;
+		}
+	}
+
+	/**
 	 * Parse method definition node
 	 */
 	private parseMethodDefinition(
@@ -245,7 +487,9 @@ export class MethodAnalyzer extends BaseScenarioAnalyzer {
 
 			// Extract parameters
 			const paramsNode = node.childForFieldName("parameters");
-			const parameters = paramsNode ? this.parseParameters(paramsNode, context) : [];
+			const parameters = paramsNode
+				? this.parseParameters(paramsNode, context)
+				: [];
 
 			// Extract body
 			const bodyNode = node.childForFieldName("body");
@@ -327,7 +571,11 @@ export class MethodAnalyzer extends BaseScenarioAnalyzer {
 		try {
 			for (let i = 0; i < paramsNode.childCount; i++) {
 				const child = paramsNode.child(i);
-				if (!child || child.type !== "required_parameter" && child.type !== "optional_parameter") {
+				if (
+					!child ||
+					(child.type !== "required_parameter" &&
+						child.type !== "optional_parameter")
+				) {
 					continue;
 				}
 
@@ -361,7 +609,9 @@ export class MethodAnalyzer extends BaseScenarioAnalyzer {
 	/**
 	 * Clean type annotation (remove leading colon and whitespace)
 	 */
-	private cleanTypeAnnotation(typeText: string | undefined): string | undefined {
+	private cleanTypeAnnotation(
+		typeText: string | undefined,
+	): string | undefined {
 		if (!typeText) return undefined;
 		// Remove leading ": " from type annotations
 		return typeText.replace(/^\s*:\s*/, "").trim();
@@ -489,6 +739,21 @@ export class MethodAnalyzer extends BaseScenarioAnalyzer {
 	}
 
 	/**
+	 * Build field identifier
+	 * Format: filePath:ClassName.fieldName or filePath:fieldName
+	 */
+	private buildFieldIdentifier(
+		filePath: string,
+		className: string | undefined,
+		fieldName: string,
+	): string {
+		if (className) {
+			return `${filePath}:${className}.${fieldName}`;
+		}
+		return `${filePath}:${fieldName}`;
+	}
+
+	/**
 	 * Extract method calls from method body
 	 */
 	private extractMethodCalls(
@@ -600,6 +865,146 @@ export class MethodAnalyzer extends BaseScenarioAnalyzer {
 	}
 
 	/**
+	 * Extract field accesses from method body
+	 */
+	private extractFieldAccesses(
+		bodyNode: Parser.SyntaxNode,
+		methodIdentifier: string,
+		methodClassName: string | undefined,
+		context: AnalysisContext,
+	): FieldAccessInfo[] {
+		const accesses: FieldAccessInfo[] = [];
+
+		const traverse = (node: Parser.SyntaxNode) => {
+			// Look for member expressions (this.field, super.field, obj.field)
+			if (node.type === "member_expression") {
+				const accessInfo = this.parseFieldAccess(
+					node,
+					methodIdentifier,
+					methodClassName,
+				);
+				if (accessInfo) {
+					accesses.push(accessInfo);
+				}
+			}
+
+			// Look for assignment expressions to detect writes
+			if (node.type === "assignment_expression") {
+				const leftNode = node.childForFieldName("left");
+				if (leftNode?.type === "member_expression") {
+					const accessInfo = this.parseFieldAccess(
+						leftNode,
+						methodIdentifier,
+						methodClassName,
+						true, // isWrite
+					);
+					if (accessInfo) {
+						accesses.push(accessInfo);
+					}
+				}
+			}
+
+			// Look for update expressions (++, --) to detect writes
+			if (node.type === "update_expression") {
+				const argumentNode = node.childForFieldName("argument");
+				if (argumentNode?.type === "member_expression") {
+					const accessInfo = this.parseFieldAccess(
+						argumentNode,
+						methodIdentifier,
+						methodClassName,
+						true, // isWrite
+					);
+					if (accessInfo) {
+						accesses.push(accessInfo);
+					}
+				}
+			}
+
+			// Recursively traverse children
+			for (let i = 0; i < node.childCount; i++) {
+				const child = node.child(i);
+				if (child) {
+					traverse(child);
+				}
+			}
+		};
+
+		traverse(bodyNode);
+		return accesses;
+	}
+
+	/**
+	 * Parse member expression to extract field access information
+	 */
+	private parseFieldAccess(
+		node: Parser.SyntaxNode,
+		methodIdentifier: string,
+		methodClassName: string | undefined,
+		isWrite = false,
+	): FieldAccessInfo | null {
+		try {
+			const objectNode = node.childForFieldName("object");
+			const propertyNode = node.childForFieldName("property");
+
+			if (!objectNode || !propertyNode) return null;
+
+			const objectText = objectNode.text;
+			const fieldName = propertyNode.text;
+			const lineNumber = node.startPosition.row + 1;
+
+			// Filter out method calls (they have call_expression parent)
+			if (node.parent?.type === "call_expression") {
+				return null;
+			}
+
+			if (objectText === "this") {
+				// this.field - same class field access
+				return {
+					methodIdentifier,
+					fieldName,
+					fieldClassName: methodClassName,
+					lineNumber,
+					accessType: "this",
+					isWrite,
+				};
+			} else if (objectText === "super") {
+				// super.field - parent class field access
+				return {
+					methodIdentifier,
+					fieldName,
+					fieldClassName: undefined, // Parent class not known yet
+					lineNumber,
+					accessType: "super",
+					isWrite,
+				};
+			} else if (objectText[0]?.toUpperCase() === objectText[0]) {
+				// ClassName.field - static field access
+				return {
+					methodIdentifier,
+					fieldName,
+					fieldClassName: objectText, // Assume class name
+					lineNumber,
+					accessType: "static",
+					isWrite,
+				};
+			} else {
+				// obj.field - member field access
+				return {
+					methodIdentifier,
+					fieldName,
+					fieldClassName: undefined, // External class not known
+					lineNumber,
+					accessType: "member",
+					isWrite,
+				};
+			}
+		} catch (error) {
+			console.warn("Failed to parse field access:", error);
+			return null;
+		}
+	}
+
+	/**
 	 * Generate semantic tags for method
 	 */
 	private generateSemanticTags(method: MethodInfo): string[] {
@@ -629,8 +1034,12 @@ export class MethodAnalyzer extends BaseScenarioAnalyzer {
 		}
 
 		// High complexity
-		const config = this.getConfig<{ complexityThreshold: { medium: number } }>();
-		if (method.cyclomaticComplexity > (config.complexityThreshold?.medium || 10)) {
+		const config = this.getConfig<{
+			complexityThreshold: { medium: number };
+		}>();
+		if (
+			method.cyclomaticComplexity > (config.complexityThreshold?.medium || 10)
+		) {
 			tags.push("high-complexity");
 		}
 
