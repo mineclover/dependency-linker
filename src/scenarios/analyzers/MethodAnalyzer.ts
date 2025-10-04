@@ -400,8 +400,11 @@ export class MethodAnalyzer extends BaseScenarioAnalyzer {
 		context: AnalysisContext,
 	): FieldInfo | null {
 		try {
-			// Extract field name
-			const nameNode = node.childForFieldName("property");
+			// Extract field name - try both "property" and "name" field names
+			let nameNode = node.childForFieldName("property");
+			if (!nameNode) {
+				nameNode = node.childForFieldName("name");
+			}
 			if (!nameNode) return null;
 			const fieldName = nameNode.text;
 
