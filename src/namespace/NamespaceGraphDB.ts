@@ -267,9 +267,7 @@ export class NamespaceGraphDB {
 	> {
 		// Get all nodes to create a node map
 		const allNodes = await this.db.findNodes({});
-		const nodeMap = new Map(
-			allNodes.map((node) => [node.id, node]),
-		);
+		const nodeMap = new Map(allNodes.map((node) => [node.id, node]));
 
 		// Get all relationships and filter for cross-namespace
 		const crossDeps: Array<{
@@ -301,10 +299,12 @@ export class NamespaceGraphDB {
 
 				// Fallback to node metadata if edge metadata doesn't have namespace info
 				if (!sourceNamespace) {
-					sourceNamespace = (sourceNode.metadata as any)?.namespace || "unknown";
+					sourceNamespace =
+						(sourceNode.metadata as any)?.namespace || "unknown";
 				}
 				if (!targetNamespace) {
-					targetNamespace = (targetNode.metadata as any)?.namespace || "unknown";
+					targetNamespace =
+						(targetNode.metadata as any)?.namespace || "unknown";
 				}
 
 				// Only include if namespaces are different

@@ -10,10 +10,7 @@ import type {
 	TypeCollection,
 	ScenarioValidationResult,
 } from "./types";
-import {
-	validateScenarioSpec,
-	detectCircularDependencies,
-} from "./validation";
+import { validateScenarioSpec, detectCircularDependencies } from "./validation";
 /**
  * Scenario Registry
  *
@@ -209,7 +206,9 @@ export class ScenarioRegistry {
 
 		// Check if all scenarios were processed (no cycles)
 		if (result.length !== allScenarios.size) {
-			throw new Error("Circular dependency detected in scenario execution order");
+			throw new Error(
+				"Circular dependency detected in scenario execution order",
+			);
 		}
 
 		return result;

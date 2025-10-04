@@ -4,11 +4,11 @@
 
 import {
 	analyzeTypeScriptFile,
-	initializeAnalysisSystem
+	initializeAnalysisSystem,
 } from "./src/api/analysis";
 import {
 	createCustomKeyMapper,
-	predefinedCustomMappings
+	predefinedCustomMappings,
 } from "./src/mappers/CustomKeyMapper";
 
 // 시스템 초기화
@@ -38,10 +38,17 @@ async function demonstrateCustomMapping() {
 	// 1. Basic analysis
 	console.log("1. Basic TypeScript file analysis:");
 	try {
-		const analysis = await analyzeTypeScriptFile(exampleCode, "UserComponent.tsx");
+		const analysis = await analyzeTypeScriptFile(
+			exampleCode,
+			"UserComponent.tsx",
+		);
 		console.log(`   - Parsed nodes: ${analysis.parseMetadata.nodeCount}`);
-		console.log(`   - Executed queries: ${Object.keys(analysis.queryResults).length}`);
-		console.log(`   - Execution time: ${analysis.performanceMetrics.totalExecutionTime.toFixed(2)}ms`);
+		console.log(
+			`   - Executed queries: ${Object.keys(analysis.queryResults).length}`,
+		);
+		console.log(
+			`   - Execution time: ${analysis.performanceMetrics.totalExecutionTime.toFixed(2)}ms`,
+		);
 	} catch (error) {
 		console.log(`   ⚠️ Parser connection needed: ${error}`);
 	}
@@ -50,10 +57,10 @@ async function demonstrateCustomMapping() {
 	console.log("\n2. Custom mapping creation and validation:");
 
 	const customMapping = {
-		"imports": "ts-import-sources",
-		"namedImports": "ts-named-imports",
-		"typeImports": "ts-type-imports",
-		"exports": "ts-export-declarations"
+		imports: "ts-import-sources",
+		namedImports: "ts-named-imports",
+		typeImports: "ts-type-imports",
+		exports: "ts-export-declarations",
 	};
 
 	const mapper = createCustomKeyMapper(customMapping);
@@ -61,33 +68,43 @@ async function demonstrateCustomMapping() {
 
 	console.log(`   - User keys: ${mapper.getUserKeys().join(", ")}`);
 	console.log(`   - Mapped queries: ${mapper.getQueryKeys().join(", ")}`);
-	console.log(`   - Mapping validity: ${validation.isValid ? "✅ Valid" : "❌ Invalid"}`);
+	console.log(
+		`   - Mapping validity: ${validation.isValid ? "✅ Valid" : "❌ Invalid"}`,
+	);
 
 	// 3. Predefined mapping usage
 	console.log("\n3. Predefined mapping usage:");
 
-	const tsAnalysisMapper = createCustomKeyMapper(predefinedCustomMappings.typeScriptAnalysis);
+	const tsAnalysisMapper = createCustomKeyMapper(
+		predefinedCustomMappings.typeScriptAnalysis,
+	);
 	const tsValidation = tsAnalysisMapper.validate();
 
 	console.log("   TypeScript analysis mapping:");
 	console.log(`   - User keys: ${tsAnalysisMapper.getUserKeys().join(", ")}`);
-	console.log(`   - Validity: ${tsValidation.isValid ? "✅ Valid" : "❌ Invalid"}`);
+	console.log(
+		`   - Validity: ${tsValidation.isValid ? "✅ Valid" : "❌ Invalid"}`,
+	);
 
-	const reactMapper = createCustomKeyMapper(predefinedCustomMappings.reactAnalysis);
+	const reactMapper = createCustomKeyMapper(
+		predefinedCustomMappings.reactAnalysis,
+	);
 	const reactValidation = reactMapper.validate();
 
 	console.log("   React analysis mapping:");
 	console.log(`   - User keys: ${reactMapper.getUserKeys().join(", ")}`);
-	console.log(`   - Validity: ${reactValidation.isValid ? "✅ Valid" : "❌ Invalid"}`);
+	console.log(
+		`   - Validity: ${reactValidation.isValid ? "✅ Valid" : "❌ Invalid"}`,
+	);
 
 	// 4. Conditional execution plan
 	console.log("\n4. Conditional execution plan:");
 
 	const conditions = {
-		"imports": true,
-		"namedImports": true,
-		"typeImports": false,  // Skip execution
-		"exports": true
+		imports: true,
+		namedImports: true,
+		typeImports: false, // Skip execution
+		exports: true,
 	};
 
 	console.log("   Execution plan:");
@@ -99,20 +116,30 @@ async function demonstrateCustomMapping() {
 	console.log("\n5. Custom mapping analysis simulation:");
 
 	try {
-		const customAnalysis = await analyzeTypeScriptFile(exampleCode, "UserComponent.tsx", {
-			customMapping: customMapping,
-			customConditions: conditions
-		});
+		const customAnalysis = await analyzeTypeScriptFile(
+			exampleCode,
+			"UserComponent.tsx",
+			{
+				customMapping: customMapping,
+				customConditions: conditions,
+			},
+		);
 
 		if (customAnalysis.customResults) {
 			console.log("   Custom results:");
-			Object.entries(customAnalysis.customResults).forEach(([userKey, results]) => {
-				console.log(`   - ${userKey}: ${results.length} results`);
-			});
+			Object.entries(customAnalysis.customResults).forEach(
+				([userKey, results]) => {
+					console.log(`   - ${userKey}: ${results.length} results`);
+				},
+			);
 		}
 	} catch (error) {
-		console.log("   ⚠️ Tree-sitter parser connection required for actual execution");
-		console.log("   💡 However, all CustomKeyMapper features (mapping, validation, conditional execution) work perfectly!");
+		console.log(
+			"   ⚠️ Tree-sitter parser connection required for actual execution",
+		);
+		console.log(
+			"   💡 However, all CustomKeyMapper features (mapping, validation, conditional execution) work perfectly!",
+		);
 	}
 
 	console.log("\n✅ CustomKeyMapper system complete!");
@@ -124,7 +151,9 @@ async function demonstrateCustomMapping() {
 	console.log("   ✅ Type safety guaranteed");
 	console.log("   ✅ Extensible architecture");
 
-	console.log("\n🎯 Conclusion: CustomKeyMapper query composition and execution system is fully implemented!");
+	console.log(
+		"\n🎯 Conclusion: CustomKeyMapper query composition and execution system is fully implemented!",
+	);
 }
 
 // Execute

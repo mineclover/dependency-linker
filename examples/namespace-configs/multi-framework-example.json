@@ -1,100 +1,104 @@
 {
-  "namespaces": {
-    "react-app": {
-      "filePatterns": ["apps/react/**/*.tsx", "apps/react/**/*.ts"],
-      "excludePatterns": ["**/*.test.tsx", "**/*.test.ts", "**/node_modules/**"],
-      "description": "React application",
-      "semanticTags": ["frontend", "react", "spa"],
-      "scenarios": ["basic-structure", "file-dependency", "symbol-dependency"],
-      "scenarioConfig": {
-        "symbol-dependency": {
-          "trackCalls": true,
-          "trackInstantiations": true,
-          "trackTypeReferences": true
-        }
-      }
-    },
-    "vue-app": {
-      "filePatterns": ["apps/vue/**/*.vue", "apps/vue/**/*.ts"],
-      "excludePatterns": ["**/*.test.ts", "**/node_modules/**"],
-      "description": "Vue.js application",
-      "semanticTags": ["frontend", "vue", "spa"],
-      "scenarios": ["basic-structure", "file-dependency"],
-      "scenarioConfig": {
-        "file-dependency": {
-          "trackDynamicImports": true
-        }
-      }
-    },
-    "angular-app": {
-      "filePatterns": ["apps/angular/**/*.ts"],
-      "excludePatterns": ["**/*.spec.ts", "**/node_modules/**"],
-      "description": "Angular application",
-      "semanticTags": ["frontend", "angular", "spa"],
-      "scenarios": ["basic-structure", "file-dependency", "symbol-dependency"],
-      "scenarioConfig": {
-        "symbol-dependency": {
-          "trackCalls": true,
-          "trackInstantiations": true,
-          "trackTypeReferences": true,
-          "trackImplements": true
-        }
-      }
-    },
-    "node-api": {
-      "filePatterns": ["apps/api/**/*.ts"],
-      "excludePatterns": ["**/*.test.ts", "**/node_modules/**"],
-      "description": "Node.js REST API (Express)",
-      "semanticTags": ["backend", "api", "express"],
-      "scenarios": ["basic-structure", "file-dependency", "symbol-dependency"],
-      "scenarioConfig": {
-        "symbol-dependency": {
-          "trackCalls": true,
-          "trackInstantiations": true
-        }
-      }
-    },
-    "python-services": {
-      "filePatterns": ["services/python/**/*.py"],
-      "excludePatterns": ["**/*_test.py", "**/__pycache__/**"],
-      "description": "Python microservices (FastAPI/Django)",
-      "semanticTags": ["backend", "python", "microservices"],
-      "scenarios": ["basic-structure", "file-dependency"]
-    },
-    "go-services": {
-      "filePatterns": ["services/go/**/*.go"],
-      "excludePatterns": ["**/*_test.go"],
-      "description": "Go microservices",
-      "semanticTags": ["backend", "go", "microservices"],
-      "scenarios": ["basic-structure", "file-dependency"]
-    },
-    "shared-types": {
-      "filePatterns": ["packages/types/**/*.ts"],
-      "excludePatterns": ["**/*.test.ts"],
-      "description": "Shared TypeScript types and interfaces",
-      "semanticTags": ["shared", "types", "contracts"],
-      "scenarios": ["basic-structure", "symbol-dependency"],
-      "scenarioConfig": {
-        "symbol-dependency": {
-          "trackTypeReferences": true,
-          "trackExtends": true,
-          "trackImplements": true
-        }
-      }
-    },
-    "documentation": {
-      "filePatterns": ["docs/**/*.md", "README.md"],
-      "excludePatterns": ["**/node_modules/**"],
-      "description": "Project documentation across all frameworks",
-      "semanticTags": ["documentation", "knowledge", "guides"],
-      "scenarios": ["markdown-linking"],
-      "scenarioConfig": {
-        "markdown-linking": {
-          "extractHashtags": true,
-          "extractHeadingSymbols": true,
-          "trackWikiLinks": true
-        }
-      }
-    }
-  }
+	"namespaces": {
+		"react-app": {
+			"filePatterns": ["apps/react/**/*.tsx", "apps/react/**/*.ts"],
+			"excludePatterns": [
+				"**/*.test.tsx",
+				"**/*.test.ts",
+				"**/node_modules/**"
+			],
+			"description": "React application",
+			"semanticTags": ["frontend", "react", "spa"],
+			"scenarios": ["basic-structure", "file-dependency", "symbol-dependency"],
+			"scenarioConfig": {
+				"symbol-dependency": {
+					"trackCalls": true,
+					"trackInstantiations": true,
+					"trackTypeReferences": true
+				}
+			}
+		},
+		"vue-app": {
+			"filePatterns": ["apps/vue/**/*.vue", "apps/vue/**/*.ts"],
+			"excludePatterns": ["**/*.test.ts", "**/node_modules/**"],
+			"description": "Vue.js application",
+			"semanticTags": ["frontend", "vue", "spa"],
+			"scenarios": ["basic-structure", "file-dependency"],
+			"scenarioConfig": {
+				"file-dependency": {
+					"trackDynamicImports": true
+				}
+			}
+		},
+		"angular-app": {
+			"filePatterns": ["apps/angular/**/*.ts"],
+			"excludePatterns": ["**/*.spec.ts", "**/node_modules/**"],
+			"description": "Angular application",
+			"semanticTags": ["frontend", "angular", "spa"],
+			"scenarios": ["basic-structure", "file-dependency", "symbol-dependency"],
+			"scenarioConfig": {
+				"symbol-dependency": {
+					"trackCalls": true,
+					"trackInstantiations": true,
+					"trackTypeReferences": true,
+					"trackImplements": true
+				}
+			}
+		},
+		"node-api": {
+			"filePatterns": ["apps/api/**/*.ts"],
+			"excludePatterns": ["**/*.test.ts", "**/node_modules/**"],
+			"description": "Node.js REST API (Express)",
+			"semanticTags": ["backend", "api", "express"],
+			"scenarios": ["basic-structure", "file-dependency", "symbol-dependency"],
+			"scenarioConfig": {
+				"symbol-dependency": {
+					"trackCalls": true,
+					"trackInstantiations": true
+				}
+			}
+		},
+		"python-services": {
+			"filePatterns": ["services/python/**/*.py"],
+			"excludePatterns": ["**/*_test.py", "**/__pycache__/**"],
+			"description": "Python microservices (FastAPI/Django)",
+			"semanticTags": ["backend", "python", "microservices"],
+			"scenarios": ["basic-structure", "file-dependency"]
+		},
+		"go-services": {
+			"filePatterns": ["services/go/**/*.go"],
+			"excludePatterns": ["**/*_test.go"],
+			"description": "Go microservices",
+			"semanticTags": ["backend", "go", "microservices"],
+			"scenarios": ["basic-structure", "file-dependency"]
+		},
+		"shared-types": {
+			"filePatterns": ["packages/types/**/*.ts"],
+			"excludePatterns": ["**/*.test.ts"],
+			"description": "Shared TypeScript types and interfaces",
+			"semanticTags": ["shared", "types", "contracts"],
+			"scenarios": ["basic-structure", "symbol-dependency"],
+			"scenarioConfig": {
+				"symbol-dependency": {
+					"trackTypeReferences": true,
+					"trackExtends": true,
+					"trackImplements": true
+				}
+			}
+		},
+		"documentation": {
+			"filePatterns": ["docs/**/*.md", "README.md"],
+			"excludePatterns": ["**/node_modules/**"],
+			"description": "Project documentation across all frameworks",
+			"semanticTags": ["documentation", "knowledge", "guides"],
+			"scenarios": ["markdown-linking"],
+			"scenarioConfig": {
+				"markdown-linking": {
+					"extractHashtags": true,
+					"extractHeadingSymbols": true,
+					"trackWikiLinks": true
+				}
+			}
+		}
+	}
 }

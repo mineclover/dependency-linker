@@ -43,7 +43,10 @@ program
 				console.log(`  ${index + 1}. ${namespace}${defaultMarker}`);
 			}
 		} catch (error) {
-			console.error("❌ Error:", error instanceof Error ? error.message : error);
+			console.error(
+				"❌ Error:",
+				error instanceof Error ? error.message : error,
+			);
 			process.exit(1);
 		}
 	});
@@ -98,7 +101,10 @@ program
 				console.log(`   Scenarios: ${namespaceConfig.scenarios.join(", ")}`);
 			}
 		} catch (error) {
-			console.error("❌ Error:", error instanceof Error ? error.message : error);
+			console.error(
+				"❌ Error:",
+				error instanceof Error ? error.message : error,
+			);
 			process.exit(1);
 		}
 	});
@@ -115,7 +121,10 @@ program
 
 			console.log(`✅ Namespace '${name}' deleted`);
 		} catch (error) {
-			console.error("❌ Error:", error instanceof Error ? error.message : error);
+			console.error(
+				"❌ Error:",
+				error instanceof Error ? error.message : error,
+			);
 			process.exit(1);
 		}
 	});
@@ -136,8 +145,10 @@ program
 					namespace,
 				);
 
-				const scenarios =
-					namespaceConfig.scenarios || ["basic-structure", "file-dependency"];
+				const scenarios = namespaceConfig.scenarios || [
+					"basic-structure",
+					"file-dependency",
+				];
 
 				if (options.json) {
 					console.log(
@@ -212,7 +223,10 @@ program
 				}
 			}
 		} catch (error) {
-			console.error("❌ Error:", error instanceof Error ? error.message : error);
+			console.error(
+				"❌ Error:",
+				error instanceof Error ? error.message : error,
+			);
 			process.exit(1);
 		}
 	});
@@ -240,7 +254,10 @@ program
 				console.log(`  ${file}`);
 			}
 		} catch (error) {
-			console.error("❌ Error:", error instanceof Error ? error.message : error);
+			console.error(
+				"❌ Error:",
+				error instanceof Error ? error.message : error,
+			);
 			process.exit(1);
 		}
 	});
@@ -275,7 +292,9 @@ program
 
 				// Override scenarios if provided
 				if (options.scenarios) {
-					const scenarioIds = options.scenarios.split(",").map((s: string) => s.trim());
+					const scenarioIds = options.scenarios
+						.split(",")
+						.map((s: string) => s.trim());
 					currentConfig.scenarios = scenarioIds;
 				}
 
@@ -381,7 +400,10 @@ program
 				}
 			}
 		} catch (error) {
-			console.error("❌ Error:", error instanceof Error ? error.message : error);
+			console.error(
+				"❌ Error:",
+				error instanceof Error ? error.message : error,
+			);
 			process.exit(1);
 		}
 	});
@@ -389,7 +411,9 @@ program
 // Analyze all namespaces command
 program
 	.command("analyze-all")
-	.description("Analyze all configured namespaces with cross-namespace dependencies")
+	.description(
+		"Analyze all configured namespaces with cross-namespace dependencies",
+	)
 	.option("-c, --config <path>", "Config file path", "deps.config.json")
 	.option("--cwd <path>", "Working directory", process.cwd())
 	.option("-d, --db <path>", "Database path", ".dependency-linker/graph.db")
@@ -407,16 +431,18 @@ program
 				return;
 			}
 
-			console.log(`🔍 Analyzing ${namespaces.length} namespace(s) with cross-namespace dependency tracking`);
+			console.log(
+				`🔍 Analyzing ${namespaces.length} namespace(s) with cross-namespace dependency tracking`,
+			);
 			console.log(`📂 Base directory: ${baseDir}`);
 			console.log("");
 
 			// Use analyzeAll to detect cross-namespace dependencies
 			const { results, graph, crossNamespaceDependencies } =
-				await namespaceDependencyAnalyzer.analyzeAll(
-					configPath,
-					{ cwd: baseDir, projectRoot: baseDir }
-				);
+				await namespaceDependencyAnalyzer.analyzeAll(configPath, {
+					cwd: baseDir,
+					projectRoot: baseDir,
+				});
 
 			// Build filesByNamespace map and collect configs for database storage
 			const filesByNamespace: Record<string, string[]> = {};
@@ -425,13 +451,13 @@ program
 				const namespaceData = await configManager.getNamespaceWithFiles(
 					namespace,
 					configPath,
-					baseDir
+					baseDir,
 				);
-				filesByNamespace[namespace] = namespaceData.files.map(file =>
-					path.resolve(baseDir, file)
+				filesByNamespace[namespace] = namespaceData.files.map((file) =>
+					path.resolve(baseDir, file),
 				);
 				namespaceConfigs[namespace] = {
-					semanticTags: namespaceData.metadata.semanticTags
+					semanticTags: namespaceData.metadata.semanticTags,
 				};
 			}
 
@@ -440,25 +466,35 @@ program
 			const db = new NamespaceGraphDB(dbPath);
 			await db.initialize();
 			await db.storeUnifiedGraph(graph, filesByNamespace, baseDir, {
-				namespaceConfigs
+				namespaceConfigs,
 			});
 			await db.close();
 
 			if (options.json) {
-				console.log(JSON.stringify({
-					namespaces: results,
-					crossNamespaceDependencies
-				}, null, 2));
+				console.log(
+					JSON.stringify(
+						{
+							namespaces: results,
+							crossNamespaceDependencies,
+						},
+						null,
+						2,
+					),
+				);
 			} else {
 				// Show per-namespace results
 				for (const [namespace, result] of Object.entries(results)) {
-					console.log(`📦 ${namespace}: ${result.analyzedFiles}/${result.totalFiles} files, ${result.graphStats.edges} edges`);
+					console.log(
+						`📦 ${namespace}: ${result.analyzedFiles}/${result.totalFiles} files, ${result.graphStats.edges} edges`,
+					);
 				}
 
 				console.log("");
 				console.log("✅ All namespaces analyzed!");
 				console.log(`📊 Database: ${dbPath}`);
-				console.log(`🔗 Cross-namespace dependencies: ${crossNamespaceDependencies.length}`);
+				console.log(
+					`🔗 Cross-namespace dependencies: ${crossNamespaceDependencies.length}`,
+				);
 
 				// Show cross-namespace summary if requested
 				if (options.showCross && crossNamespaceDependencies.length > 0) {
@@ -484,7 +520,10 @@ program
 				}
 			}
 		} catch (error) {
-			console.error("❌ Error:", error instanceof Error ? error.message : error);
+			console.error(
+				"❌ Error:",
+				error instanceof Error ? error.message : error,
+			);
 			process.exit(1);
 		}
 	});
@@ -509,10 +548,7 @@ program
 			await db.initialize();
 
 			const showAll =
-				!options.stats &&
-				!options.files &&
-				!options.deps &&
-				!options.circular;
+				!options.stats && !options.files && !options.deps && !options.circular;
 
 			const result: Record<string, unknown> = { namespace };
 
@@ -579,7 +615,10 @@ program
 				}
 			}
 		} catch (error) {
-			console.error("❌ Error:", error instanceof Error ? error.message : error);
+			console.error(
+				"❌ Error:",
+				error instanceof Error ? error.message : error,
+			);
 			process.exit(1);
 		}
 	});
@@ -612,7 +651,9 @@ program
 
 				if (crossDeps.length === 0) {
 					console.log("No cross-namespace dependencies found.");
-					console.log("This means all dependencies are within their respective namespaces.");
+					console.log(
+						"This means all dependencies are within their respective namespaces.",
+					);
 					return;
 				}
 
@@ -644,11 +685,16 @@ program
 						}
 					}
 				} else {
-					console.log("💡 Use --detailed flag to see individual file dependencies");
+					console.log(
+						"💡 Use --detailed flag to see individual file dependencies",
+					);
 				}
 			}
 		} catch (error) {
-			console.error("❌ Error:", error instanceof Error ? error.message : error);
+			console.error(
+				"❌ Error:",
+				error instanceof Error ? error.message : error,
+			);
 			process.exit(1);
 		}
 	});
@@ -714,7 +760,10 @@ program
 			console.log("  - Key concepts and patterns");
 			console.log("  - Implementation notes and decisions");
 		} catch (error) {
-			console.error("❌ Error:", error instanceof Error ? error.message : error);
+			console.error(
+				"❌ Error:",
+				error instanceof Error ? error.message : error,
+			);
 			process.exit(1);
 		}
 	});
@@ -722,7 +771,9 @@ program
 // Generate context documents for all files in database
 program
 	.command("generate-context-all")
-	.description("Generate context documents for all files in the dependency graph")
+	.description(
+		"Generate context documents for all files in the dependency graph",
+	)
 	.option("--cwd <path>", "Working directory", process.cwd())
 	.option("-d, --db <path>", "Database path", ".dependency-linker/graph.db")
 	.option("--force", "Overwrite existing documents")
@@ -785,7 +836,10 @@ program
 			console.log("");
 			console.log("💡 Use --force to overwrite existing documents");
 		} catch (error) {
-			console.error("❌ Error:", error instanceof Error ? error.message : error);
+			console.error(
+				"❌ Error:",
+				error instanceof Error ? error.message : error,
+			);
 			process.exit(1);
 		}
 	});
@@ -830,7 +884,10 @@ program
 			console.log("");
 			console.log(`📊 Total: ${files.length + symbols.length} documents`);
 		} catch (error) {
-			console.error("❌ Error:", error instanceof Error ? error.message : error);
+			console.error(
+				"❌ Error:",
+				error instanceof Error ? error.message : error,
+			);
 			process.exit(1);
 		}
 	});

@@ -30,9 +30,10 @@ export function isValidScenarioId(id: string): boolean {
 /**
  * Validate NodeTypeSpec
  */
-export function validateNodeTypeSpec(
-	spec: NodeTypeSpec,
-): { valid: boolean; errors: string[] } {
+export function validateNodeTypeSpec(spec: NodeTypeSpec): {
+	valid: boolean;
+	errors: string[];
+} {
 	const errors: string[] = [];
 
 	if (!spec.name || typeof spec.name !== "string") {
@@ -40,9 +41,7 @@ export function validateNodeTypeSpec(
 	}
 
 	if (!spec.description || typeof spec.description !== "string") {
-		errors.push(
-			"NodeTypeSpec: description is required and must be a string",
-		);
+		errors.push("NodeTypeSpec: description is required and must be a string");
 	}
 
 	if (spec.defaultProperties !== undefined) {
@@ -64,9 +63,10 @@ export function validateNodeTypeSpec(
 /**
  * Validate EdgeTypeSpec
  */
-export function validateEdgeTypeSpec(
-	spec: EdgeTypeSpec,
-): { valid: boolean; errors: string[] } {
+export function validateEdgeTypeSpec(spec: EdgeTypeSpec): {
+	valid: boolean;
+	errors: string[];
+} {
 	const errors: string[] = [];
 
 	if (!spec.name || typeof spec.name !== "string") {
@@ -74,16 +74,17 @@ export function validateEdgeTypeSpec(
 	}
 
 	if (!spec.description || typeof spec.description !== "string") {
-		errors.push(
-			"EdgeTypeSpec: description is required and must be a string",
-		);
+		errors.push("EdgeTypeSpec: description is required and must be a string");
 	}
 
 	if (spec.parent !== undefined && typeof spec.parent !== "string") {
 		errors.push("EdgeTypeSpec: parent must be a string");
 	}
 
-	if (spec.isTransitive !== undefined && typeof spec.isTransitive !== "boolean") {
+	if (
+		spec.isTransitive !== undefined &&
+		typeof spec.isTransitive !== "boolean"
+	) {
 		errors.push("EdgeTypeSpec: isTransitive must be a boolean");
 	}
 
@@ -230,7 +231,10 @@ export function validateScenarioSpec(
 	if (!spec.analyzer || typeof spec.analyzer !== "object") {
 		errors.push("ScenarioSpec: analyzer is required and must be an object");
 	} else {
-		if (!spec.analyzer.className || typeof spec.analyzer.className !== "string") {
+		if (
+			!spec.analyzer.className ||
+			typeof spec.analyzer.className !== "string"
+		) {
 			errors.push(
 				"ScenarioSpec: analyzer.className is required and must be a string",
 			);

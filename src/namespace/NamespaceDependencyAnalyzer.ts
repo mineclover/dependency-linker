@@ -95,6 +95,7 @@ export class NamespaceDependencyAnalyzer {
 		// TODO: Replace with scenario-based analysis in future phases
 		const builder = createDependencyGraphBuilder({
 			projectRoot,
+			projectName: namespaceData.metadata.projectName || "unknown-project",
 			entryPoints: absoluteFiles,
 		});
 
@@ -198,6 +199,7 @@ export class NamespaceDependencyAnalyzer {
 		// TODO: Replace with scenario-based analysis in future phases
 		const builder = createDependencyGraphBuilder({
 			projectRoot,
+			projectName: namespaceData.metadata.projectName || "unknown-project",
 			entryPoints: absoluteFiles,
 		});
 
@@ -259,8 +261,7 @@ export class NamespaceDependencyAnalyzer {
 					errors: [
 						{
 							file: "",
-							error:
-								error instanceof Error ? error.message : String(error),
+							error: error instanceof Error ? error.message : String(error),
 						},
 					],
 					graphStats: {

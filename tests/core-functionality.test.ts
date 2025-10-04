@@ -9,9 +9,24 @@ import { createMockQueryFunction } from "./test-helpers";
 describe("Core System Functionality", () => {
 	beforeAll(() => {
 		// Register some basic test queries
-		globalQueryEngine.getRegistry().register("ts-import-sources" as any, createMockQueryFunction("ts-import-sources"));
-		globalQueryEngine.getRegistry().register("ts-named-imports" as any, createMockQueryFunction("ts-named-imports"));
-		globalQueryEngine.getRegistry().register("ts-export-declarations" as any, createMockQueryFunction("ts-export-declarations"));
+		globalQueryEngine
+			.getRegistry()
+			.register(
+				"ts-import-sources" as any,
+				createMockQueryFunction("ts-import-sources"),
+			);
+		globalQueryEngine
+			.getRegistry()
+			.register(
+				"ts-named-imports" as any,
+				createMockQueryFunction("ts-named-imports"),
+			);
+		globalQueryEngine
+			.getRegistry()
+			.register(
+				"ts-export-declarations" as any,
+				createMockQueryFunction("ts-export-declarations"),
+			);
 	});
 
 	describe("CustomKeyMapper Basic Operations", () => {
@@ -99,12 +114,15 @@ describe("Core System Functionality", () => {
 
 		test("should handle mapper creation with various mappings", () => {
 			const singleMapping = { single: "ts-import-sources" };
-			const multipleMapping = { multiple: "ts-import-sources", other: "ts-named-imports" };
+			const multipleMapping = {
+				multiple: "ts-import-sources",
+				other: "ts-named-imports",
+			};
 			const complexMapping = { complex: "ts-export-declarations" };
 
 			const mappings = [singleMapping, multipleMapping, complexMapping];
 
-			mappings.forEach(mapping => {
+			mappings.forEach((mapping) => {
 				const mapper = createCustomKeyMapper(mapping);
 				expect(mapper).toBeDefined();
 				expect(mapper.getUserKeys().length).toBeGreaterThan(0);

@@ -162,6 +162,8 @@ export interface GraphAnalysisResult {
 export interface GraphBuildOptions {
 	/** 프로젝트 루트 경로 */
 	projectRoot: string;
+	/** 프로젝트 이름 (RDF 주소용) */
+	projectName?: string;
 	/** 진입점 파일들 */
 	entryPoints: string[];
 	/** 분석할 파일 패턴 (glob) */

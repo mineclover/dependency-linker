@@ -53,11 +53,10 @@ describe("Namespace-Scenario Integration - Phase 2", () => {
 
 			await configManager.setNamespaceConfig("source", config, configPath);
 
-			const result = await analyzer.analyzeNamespace(
-				"source",
-				configPath,
-				{ cwd: tempDir, projectRoot: tempDir },
-			);
+			const result = await analyzer.analyzeNamespace("source", configPath, {
+				cwd: tempDir,
+				projectRoot: tempDir,
+			});
 
 			// Should include scenariosExecuted in correct dependency order
 			expect(result.scenariosExecuted).toBeDefined();
@@ -81,11 +80,10 @@ describe("Namespace-Scenario Integration - Phase 2", () => {
 
 			await configManager.setNamespaceConfig("source", config, configPath);
 
-			const result = await analyzer.analyzeNamespace(
-				"source",
-				configPath,
-				{ cwd: tempDir, projectRoot: tempDir },
-			);
+			const result = await analyzer.analyzeNamespace("source", configPath, {
+				cwd: tempDir,
+				projectRoot: tempDir,
+			});
 
 			// Should use default scenarios
 			expect(result.scenariosExecuted).toEqual([
@@ -107,11 +105,10 @@ describe("Namespace-Scenario Integration - Phase 2", () => {
 
 			await configManager.setNamespaceConfig("docs", config, configPath);
 
-			const result = await analyzer.analyzeNamespace(
-				"docs",
-				configPath,
-				{ cwd: tempDir, projectRoot: tempDir },
-			);
+			const result = await analyzer.analyzeNamespace("docs", configPath, {
+				cwd: tempDir,
+				projectRoot: tempDir,
+			});
 
 			// markdown-linking extends basic-structure
 			expect(result.scenariosExecuted).toEqual([
@@ -121,10 +118,7 @@ describe("Namespace-Scenario Integration - Phase 2", () => {
 		});
 
 		it("should resolve dependency chains correctly", async () => {
-			await writeFile(
-				join(tempDir, "src", "code.ts"),
-				"export class Test {}",
-			);
+			await writeFile(join(tempDir, "src", "code.ts"), "export class Test {}");
 
 			const config: NamespaceConfig = {
 				filePatterns: ["src/**/*.ts"],
@@ -135,11 +129,10 @@ describe("Namespace-Scenario Integration - Phase 2", () => {
 
 			await configManager.setNamespaceConfig("source", config, configPath);
 
-			const result = await analyzer.analyzeNamespace(
-				"source",
-				configPath,
-				{ cwd: tempDir, projectRoot: tempDir },
-			);
+			const result = await analyzer.analyzeNamespace("source", configPath, {
+				cwd: tempDir,
+				projectRoot: tempDir,
+			});
 
 			// symbol-dependency extends basic-structure (not file-dependency)
 			expect(result.scenariosExecuted).toEqual([
@@ -181,7 +174,11 @@ describe("Namespace-Scenario Integration - Phase 2", () => {
 				scenarios: ["markdown-linking"],
 			};
 
-			await configManager.setNamespaceConfig("source", sourceConfig, configPath);
+			await configManager.setNamespaceConfig(
+				"source",
+				sourceConfig,
+				configPath,
+			);
 			await configManager.setNamespaceConfig("test", testConfig, configPath);
 			await configManager.setNamespaceConfig("docs", docsConfig, configPath);
 
@@ -216,10 +213,7 @@ describe("Namespace-Scenario Integration - Phase 2", () => {
 				join(tempDir, "src", "app.ts"),
 				"export const app = 'test';",
 			);
-			await writeFile(
-				join(tempDir, "docs", "guide.md"),
-				"# Guide",
-			);
+			await writeFile(join(tempDir, "docs", "guide.md"), "# Guide");
 
 			const sourceConfig: NamespaceConfig = {
 				filePatterns: ["src/**/*.ts"],
@@ -231,7 +225,11 @@ describe("Namespace-Scenario Integration - Phase 2", () => {
 				scenarios: ["markdown-linking"],
 			};
 
-			await configManager.setNamespaceConfig("source", sourceConfig, configPath);
+			await configManager.setNamespaceConfig(
+				"source",
+				sourceConfig,
+				configPath,
+			);
 			await configManager.setNamespaceConfig("docs", docsConfig, configPath);
 
 			const { results } = await analyzer.analyzeAll(configPath, {
@@ -290,11 +288,10 @@ describe("Namespace-Scenario Integration - Phase 2", () => {
 
 			await configManager.setNamespaceConfig("empty", config, configPath);
 
-			const result = await analyzer.analyzeNamespace(
-				"empty",
-				configPath,
-				{ cwd: tempDir, projectRoot: tempDir },
-			);
+			const result = await analyzer.analyzeNamespace("empty", configPath, {
+				cwd: tempDir,
+				projectRoot: tempDir,
+			});
 
 			expect(result.totalFiles).toBe(0);
 			expect(result.scenariosExecuted).toEqual([
@@ -319,11 +316,10 @@ describe("Namespace-Scenario Integration - Phase 2", () => {
 
 			await configManager.setNamespaceConfig("legacy", config, configPath);
 
-			const result = await analyzer.analyzeNamespace(
-				"legacy",
-				configPath,
-				{ cwd: tempDir, projectRoot: tempDir },
-			);
+			const result = await analyzer.analyzeNamespace("legacy", configPath, {
+				cwd: tempDir,
+				projectRoot: tempDir,
+			});
 
 			// Should use default scenarios
 			expect(result.scenariosExecuted).toEqual([
@@ -348,11 +344,10 @@ describe("Namespace-Scenario Integration - Phase 2", () => {
 
 			await configManager.setNamespaceConfig("old", config, configPath);
 
-			const result = await analyzer.analyzeNamespace(
-				"old",
-				configPath,
-				{ cwd: tempDir, projectRoot: tempDir },
-			);
+			const result = await analyzer.analyzeNamespace("old", configPath, {
+				cwd: tempDir,
+				projectRoot: tempDir,
+			});
 
 			// All old fields should work
 			expect(result.namespace).toBe("old");

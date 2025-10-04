@@ -42,20 +42,26 @@ export default UserComponent;
 `;
 
 	try {
-		const analysis = await analyzeTypeScriptFile(sampleCode, "UserComponent.tsx");
+		const analysis = await analyzeTypeScriptFile(
+			sampleCode,
+			"UserComponent.tsx",
+		);
 
 		console.log("✅ 분석 완료:");
 		console.log(`  - 언어: ${analysis.language}`);
-		console.log(`  - 파싱 시간: ${analysis.parseMetadata.parseTime.toFixed(2)}ms`);
+		console.log(
+			`  - 파싱 시간: ${analysis.parseMetadata.parseTime.toFixed(2)}ms`,
+		);
 		console.log(`  - AST 노드 수: ${analysis.parseMetadata.nodeCount}개`);
-		console.log(`  - 쿼리 실행 시간: ${analysis.performanceMetrics.queryExecutionTime.toFixed(2)}ms`);
+		console.log(
+			`  - 쿼리 실행 시간: ${analysis.performanceMetrics.queryExecutionTime.toFixed(2)}ms`,
+		);
 
 		// 쿼리 결과 개수 출력
 		console.log("  - 쿼리 결과:");
 		Object.entries(analysis.queryResults).forEach(([key, results]) => {
 			console.log(`    ${key}: ${results.length}개`);
 		});
-
 	} catch (error) {
 		console.error("❌ 분석 실패:", error);
 	}
@@ -64,18 +70,22 @@ export default UserComponent;
 	console.log("\n📊 2. 커스텀 매핑으로 사용자 친화적 결과");
 
 	const reactMapping = {
-		"리액트_임포트": "ts-import-sources",
-		"훅_사용": "ts-named-imports",
-		"컴포넌트_익스포트": "ts-export-declarations"
+		리액트_임포트: "ts-import-sources",
+		훅_사용: "ts-named-imports",
+		컴포넌트_익스포트: "ts-export-declarations",
 	};
 
 	try {
 		const mapper = createCustomKeyMapper(reactMapping);
 		console.log("✅ 매핑 생성 완료");
 
-		const analysis = await analyzeTypeScriptFile(sampleCode, "UserComponent.tsx", {
-			mapping: reactMapping
-		});
+		const analysis = await analyzeTypeScriptFile(
+			sampleCode,
+			"UserComponent.tsx",
+			{
+				mapping: reactMapping,
+			},
+		);
 
 		if (analysis.customResults) {
 			console.log("  - 커스텀 결과:");
@@ -90,7 +100,6 @@ export default UserComponent;
 				}
 			});
 		}
-
 	} catch (error) {
 		console.error("❌ 커스텀 매핑 실패:", error);
 	}
@@ -99,7 +108,11 @@ export default UserComponent;
 	console.log("\n📊 3. 의존성 분류 분석");
 
 	try {
-		const deps = await analyzeDependencies(sampleCode, "tsx", "UserComponent.tsx");
+		const deps = await analyzeDependencies(
+			sampleCode,
+			"tsx",
+			"UserComponent.tsx",
+		);
 
 		console.log("✅ 의존성 분류 완료:");
 		console.log(`  - 내부 의존성: ${deps.internal.length}개`);
@@ -116,7 +129,6 @@ export default UserComponent;
 		deps.builtin.forEach((dep, index) => {
 			console.log(`    ${index + 1}. ${dep}`);
 		});
-
 	} catch (error) {
 		console.error("❌ 의존성 분류 실패:", error);
 	}
@@ -128,7 +140,10 @@ export default UserComponent;
 	const targetFile = resolve(projectRoot, "src/api/analysis.ts");
 
 	try {
-		const fileExists = await fs.access(targetFile).then(() => true).catch(() => false);
+		const fileExists = await fs
+			.access(targetFile)
+			.then(() => true)
+			.catch(() => false);
 
 		if (fileExists) {
 			const sourceCode = await fs.readFile(targetFile, "utf-8");
@@ -137,10 +152,16 @@ export default UserComponent;
 			console.log(`✅ ${targetFile.replace(projectRoot, ".")} 분석 완료:`);
 			console.log(`  - 파일 크기: ${sourceCode.length} characters`);
 			console.log(`  - AST 노드: ${analysis.parseMetadata.nodeCount}개`);
-			console.log(`  - 분석 시간: ${analysis.performanceMetrics.totalExecutionTime.toFixed(2)}ms`);
+			console.log(
+				`  - 분석 시간: ${analysis.performanceMetrics.totalExecutionTime.toFixed(2)}ms`,
+			);
 
 			// 실제 의존성 분석
-			const deps = await analyzeDependencies(sourceCode, "typescript", targetFile);
+			const deps = await analyzeDependencies(
+				sourceCode,
+				"typescript",
+				targetFile,
+			);
 			console.log(`  - 내부 의존성: ${deps.internal.length}개`);
 			console.log(`  - 외부 의존성: ${deps.external.length}개`);
 			console.log(`  - 내장 모듈: ${deps.builtin.length}개`);
@@ -151,11 +172,9 @@ export default UserComponent;
 					console.log(`    ${index + 1}. ${dep}`);
 				});
 			}
-
 		} else {
 			console.log("❌ 파일을 찾을 수 없습니다:", targetFile);
 		}
-
 	} catch (error) {
 		console.error("❌ 실제 파일 분석 실패:", error);
 	}
@@ -164,18 +183,21 @@ export default UserComponent;
 	console.log("\n📊 5. 경로 해결 시뮬레이션");
 
 	const importPaths = [
-		"./types/User",           // 상대 경로
-		"../utils/api",           // 상대 경로 (상위)
-		"react",                  // 외부 패키지
-		"@mui/material",          // 스코프드 패키지
-		"node:fs",               // Node.js 내장 모듈
+		"./types/User", // 상대 경로
+		"../utils/api", // 상대 경로 (상위)
+		"react", // 외부 패키지
+		"@mui/material", // 스코프드 패키지
+		"node:fs", // Node.js 내장 모듈
 	];
 
 	importPaths.forEach((importPath) => {
 		let category = "unknown";
 		if (importPath.startsWith("./") || importPath.startsWith("../")) {
 			category = "internal (relative)";
-		} else if (importPath.startsWith("node:") || ["fs", "path", "os"].includes(importPath)) {
+		} else if (
+			importPath.startsWith("node:") ||
+			["fs", "path", "os"].includes(importPath)
+		) {
 			category = "builtin";
 		} else if (!importPath.startsWith("/")) {
 			category = "external";

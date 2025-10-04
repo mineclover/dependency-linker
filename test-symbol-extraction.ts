@@ -119,7 +119,9 @@ async function testSymbolExtraction() {
 
 			for (const symbol of symbols) {
 				console.log(`  📍 ${symbol.namePath}`);
-				console.log(`     Location: ${symbol.location.startLine}:${symbol.location.startColumn}`);
+				console.log(
+					`     Location: ${symbol.location.startLine}:${symbol.location.startColumn}`,
+				);
 
 				if (symbol.signature) {
 					console.log(`     Signature: ${symbol.signature}`);
@@ -130,7 +132,9 @@ async function testSymbolExtraction() {
 				}
 
 				if (symbol.typeParameters && symbol.typeParameters.length > 0) {
-					console.log(`     Type Params: <${symbol.typeParameters.join(", ")}>`);
+					console.log(
+						`     Type Params: <${symbol.typeParameters.join(", ")}>`,
+					);
 				}
 
 				if (symbol.parameters && symbol.parameters.length > 0) {

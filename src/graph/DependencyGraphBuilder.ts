@@ -28,6 +28,7 @@ export class DependencyGraphBuilder {
 
 	constructor(options: GraphBuildOptions) {
 		this.options = {
+			projectName: options.projectName || "unknown-project",
 			includePatterns: ["**/*.{ts,tsx,js,jsx,java,py,go}"],
 			excludePatterns: [
 				"**/node_modules/**",
@@ -165,7 +166,11 @@ export class DependencyGraphBuilder {
 			const sourceCode = await readFile(filePath, "utf-8");
 
 			// 의존성 분석 실행
-			const analysis = await analyzeDependencies(sourceCode, language, filePath);
+			const analysis = await analyzeDependencies(
+				sourceCode,
+				language,
+				filePath,
+			);
 
 			// 경로 해결
 			const allImports = [

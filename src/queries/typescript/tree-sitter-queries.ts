@@ -301,7 +301,8 @@ export const JAVASCRIPT_TREE_SITTER_QUERIES = {
 		TYPESCRIPT_TREE_SITTER_QUERIES["ts-export-assignments"],
 
 	// Symbol definition queries (타입 관련 쿼리 제외)
-	"js-class-definitions": TYPESCRIPT_TREE_SITTER_QUERIES["ts-class-definitions"],
+	"js-class-definitions":
+		TYPESCRIPT_TREE_SITTER_QUERIES["ts-class-definitions"],
 	"js-function-definitions":
 		TYPESCRIPT_TREE_SITTER_QUERIES["ts-function-definitions"],
 	"js-method-definitions":

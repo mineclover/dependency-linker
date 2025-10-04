@@ -46,10 +46,7 @@ describe("Namespace Configuration - Phase 1", () => {
 				configPath,
 				"test",
 			);
-			expect(loaded.scenarios).toEqual([
-				"basic-structure",
-				"file-dependency",
-			]);
+			expect(loaded.scenarios).toEqual(["basic-structure", "file-dependency"]);
 		});
 
 		it("should accept scenarioConfig field in NamespaceConfig", async () => {
@@ -263,11 +260,7 @@ describe("Namespace Configuration - Phase 1", () => {
 				semanticTags: ["source", "production"],
 			};
 
-			await configManager.setNamespaceConfig(
-				"test",
-				initialConfig,
-				configPath,
-			);
+			await configManager.setNamespaceConfig("test", initialConfig, configPath);
 
 			// Update with scenarios
 			const updatedConfig: NamespaceConfig = {
@@ -275,11 +268,7 @@ describe("Namespace Configuration - Phase 1", () => {
 				scenarios: ["basic-structure", "file-dependency"],
 			};
 
-			await configManager.setNamespaceConfig(
-				"test",
-				updatedConfig,
-				configPath,
-			);
+			await configManager.setNamespaceConfig("test", updatedConfig, configPath);
 
 			const loaded = await configManager.loadNamespacedConfig(
 				configPath,

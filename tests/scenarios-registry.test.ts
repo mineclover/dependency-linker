@@ -70,7 +70,9 @@ describe("ScenarioRegistry", () => {
 				analyzer: { className: "TestAnalyzer" },
 			};
 
-			expect(() => registry.register(spec)).toThrow(/extends undefined scenario/);
+			expect(() => registry.register(spec)).toThrow(
+				/extends undefined scenario/,
+			);
 		});
 
 		it("should reject scenario with undefined requires dependency", () => {
@@ -227,16 +229,9 @@ describe("ScenarioRegistry", () => {
 			};
 
 			// Circular detection happens during registration
-			expect(() => tempRegistry.register(circularC)).toThrow(/Circular dependency/);
-		});
-
-		// EdgeTypeRegistry integration tests will be added later
-		it.skip("should register edge types with EdgeTypeRegistry", () => {
-			// TODO: Implement after EdgeTypeRegistry integration
-		});
-
-		it.skip("should reject conflicting edge type properties", () => {
-			// TODO: Implement after EdgeTypeRegistry integration
+			expect(() => tempRegistry.register(circularC)).toThrow(
+				/Circular dependency/,
+			);
 		});
 	});
 
@@ -444,9 +439,7 @@ describe("ScenarioRegistry", () => {
 		});
 
 		it("should throw for non-existent scenario", () => {
-			expect(() => registry.collectTypes("non-existent")).toThrow(
-				/not found/,
-			);
+			expect(() => registry.collectTypes("non-existent")).toThrow(/not found/);
 		});
 	});
 

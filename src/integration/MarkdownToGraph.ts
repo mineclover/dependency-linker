@@ -225,7 +225,9 @@ export async function markdownResultToGraph(
 				type: targetExists ? "file" : "missing-file",
 				name: path.basename(targetPath),
 				sourceFile: targetPath,
-				language: targetExists ? ("markdown" as SupportedLanguage) : ("unknown" as SupportedLanguage),
+				language: targetExists
+					? ("markdown" as SupportedLanguage)
+					: ("unknown" as SupportedLanguage),
 				metadata: {
 					exists: targetExists,
 					...(dep.type === "image" ? { resourceType: "image" } : {}),

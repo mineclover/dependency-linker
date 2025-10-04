@@ -1,81 +1,89 @@
 {
-  "namespaces": {
-    "web": {
-      "filePatterns": ["packages/web/**/*.tsx", "packages/web/**/*.ts"],
-      "excludePatterns": ["**/*.test.tsx", "**/*.test.ts", "**/node_modules/**"],
-      "description": "Web application frontend code (React)",
-      "semanticTags": ["frontend", "react", "production"],
-      "scenarios": ["basic-structure", "file-dependency", "symbol-dependency"],
-      "scenarioConfig": {
-        "symbol-dependency": {
-          "trackCalls": true,
-          "trackInstantiations": true,
-          "trackTypeReferences": true
-        }
-      }
-    },
-    "mobile": {
-      "filePatterns": ["packages/mobile/**/*.tsx", "packages/mobile/**/*.ts"],
-      "excludePatterns": ["**/*.test.tsx", "**/*.test.ts", "**/node_modules/**"],
-      "description": "Mobile application code (React Native)",
-      "semanticTags": ["mobile", "react-native", "production"],
-      "scenarios": ["basic-structure", "file-dependency", "symbol-dependency"],
-      "scenarioConfig": {
-        "symbol-dependency": {
-          "trackCalls": true,
-          "trackInstantiations": true
-        }
-      }
-    },
-    "backend": {
-      "filePatterns": ["packages/backend/**/*.ts"],
-      "excludePatterns": ["**/*.test.ts", "**/node_modules/**"],
-      "description": "Backend API and business logic",
-      "semanticTags": ["backend", "api", "production"],
-      "scenarios": ["basic-structure", "file-dependency", "symbol-dependency"],
-      "scenarioConfig": {
-        "symbol-dependency": {
-          "trackCalls": true,
-          "trackInstantiations": true,
-          "trackTypeReferences": true,
-          "trackExtends": true,
-          "trackImplements": true
-        }
-      }
-    },
-    "shared": {
-      "filePatterns": ["packages/shared/**/*.ts"],
-      "excludePatterns": ["**/*.test.ts", "**/node_modules/**"],
-      "description": "Shared utilities and types",
-      "semanticTags": ["shared", "library", "utilities"],
-      "scenarios": ["basic-structure", "symbol-dependency"],
-      "scenarioConfig": {
-        "symbol-dependency": {
-          "trackTypeReferences": true,
-          "trackExtends": true,
-          "trackImplements": true
-        }
-      }
-    },
-    "docs": {
-      "filePatterns": ["docs/**/*.md"],
-      "excludePatterns": ["**/node_modules/**"],
-      "description": "Project documentation",
-      "semanticTags": ["documentation", "knowledge"],
-      "scenarios": ["markdown-linking"],
-      "scenarioConfig": {
-        "markdown-linking": {
-          "extractHashtags": true,
-          "extractHeadingSymbols": true
-        }
-      }
-    },
-    "tests": {
-      "filePatterns": ["packages/*/tests/**/*.ts", "packages/*/**/*.test.ts"],
-      "excludePatterns": ["**/node_modules/**"],
-      "description": "Test suites across all packages",
-      "semanticTags": ["test", "quality-assurance"],
-      "scenarios": ["basic-structure", "file-dependency"]
-    }
-  }
+	"namespaces": {
+		"web": {
+			"filePatterns": ["packages/web/**/*.tsx", "packages/web/**/*.ts"],
+			"excludePatterns": [
+				"**/*.test.tsx",
+				"**/*.test.ts",
+				"**/node_modules/**"
+			],
+			"description": "Web application frontend code (React)",
+			"semanticTags": ["frontend", "react", "production"],
+			"scenarios": ["basic-structure", "file-dependency", "symbol-dependency"],
+			"scenarioConfig": {
+				"symbol-dependency": {
+					"trackCalls": true,
+					"trackInstantiations": true,
+					"trackTypeReferences": true
+				}
+			}
+		},
+		"mobile": {
+			"filePatterns": ["packages/mobile/**/*.tsx", "packages/mobile/**/*.ts"],
+			"excludePatterns": [
+				"**/*.test.tsx",
+				"**/*.test.ts",
+				"**/node_modules/**"
+			],
+			"description": "Mobile application code (React Native)",
+			"semanticTags": ["mobile", "react-native", "production"],
+			"scenarios": ["basic-structure", "file-dependency", "symbol-dependency"],
+			"scenarioConfig": {
+				"symbol-dependency": {
+					"trackCalls": true,
+					"trackInstantiations": true
+				}
+			}
+		},
+		"backend": {
+			"filePatterns": ["packages/backend/**/*.ts"],
+			"excludePatterns": ["**/*.test.ts", "**/node_modules/**"],
+			"description": "Backend API and business logic",
+			"semanticTags": ["backend", "api", "production"],
+			"scenarios": ["basic-structure", "file-dependency", "symbol-dependency"],
+			"scenarioConfig": {
+				"symbol-dependency": {
+					"trackCalls": true,
+					"trackInstantiations": true,
+					"trackTypeReferences": true,
+					"trackExtends": true,
+					"trackImplements": true
+				}
+			}
+		},
+		"shared": {
+			"filePatterns": ["packages/shared/**/*.ts"],
+			"excludePatterns": ["**/*.test.ts", "**/node_modules/**"],
+			"description": "Shared utilities and types",
+			"semanticTags": ["shared", "library", "utilities"],
+			"scenarios": ["basic-structure", "symbol-dependency"],
+			"scenarioConfig": {
+				"symbol-dependency": {
+					"trackTypeReferences": true,
+					"trackExtends": true,
+					"trackImplements": true
+				}
+			}
+		},
+		"docs": {
+			"filePatterns": ["docs/**/*.md"],
+			"excludePatterns": ["**/node_modules/**"],
+			"description": "Project documentation",
+			"semanticTags": ["documentation", "knowledge"],
+			"scenarios": ["markdown-linking"],
+			"scenarioConfig": {
+				"markdown-linking": {
+					"extractHashtags": true,
+					"extractHeadingSymbols": true
+				}
+			}
+		},
+		"tests": {
+			"filePatterns": ["packages/*/tests/**/*.ts", "packages/*/**/*.test.ts"],
+			"excludePatterns": ["**/node_modules/**"],
+			"description": "Test suites across all packages",
+			"semanticTags": ["test", "quality-assurance"],
+			"scenarios": ["basic-structure", "file-dependency"]
+		}
+	}
 }

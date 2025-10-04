@@ -186,7 +186,10 @@ export interface TypeMetadata<T = NodeTypeCategory | EdgeTypeCategory> {
 /**
  * Node type registry with metadata
  */
-export const NODE_TYPE_REGISTRY: Record<NodeType, TypeMetadata<NodeTypeCategory>> = {
+export const NODE_TYPE_REGISTRY: Record<
+	NodeType,
+	TypeMetadata<NodeTypeCategory>
+> = {
 	// File & Resource
 	[NodeType.File]: {
 		category: NodeTypeCategory.FileResource,
@@ -344,9 +347,7 @@ export function getNodeTypeCategory(
 }
 
 /** Get all node types in a category */
-export function getNodeTypesByCategory(
-	category: NodeTypeCategory,
-): NodeType[] {
+export function getNodeTypesByCategory(category: NodeTypeCategory): NodeType[] {
 	return Object.entries(NODE_TYPE_REGISTRY)
 		.filter(([_, metadata]) => metadata.category === category)
 		.map(([type]) => type as NodeType);

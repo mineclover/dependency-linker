@@ -1,47 +1,29 @@
 {
-  "default": "source",
-  "namespaces": {
-    "source": {
-      "filePatterns": [
-        "src/**/*.ts"
-      ],
-      "excludePatterns": [
-        "**/*.d.ts",
-        "**/*.test.ts"
-      ],
-      "description": "Source code files",
-      "semanticTags": ["source", "production"]
-    },
-    "tests": {
-      "filePatterns": [
-        "tests/**/*.ts",
-        "**/*.test.ts"
-      ],
-      "excludePatterns": [],
-      "description": "Test files",
-      "semanticTags": ["test", "quality-assurance"]
-    },
-    "configs": {
-      "filePatterns": [
-        "*.json",
-        "*.config.*",
-        "tsconfig.json"
-      ],
-      "excludePatterns": [
-        "package-lock.json",
-        "node_modules/**"
-      ],
-      "description": "Configuration files",
-      "semanticTags": ["config", "infrastructure"]
-    },
-    "docs": {
-      "filePatterns": [
-        "*.md",
-        "docs/**/*.md"
-      ],
-      "excludePatterns": [],
-      "description": "Documentation files",
-      "semanticTags": ["documentation", "knowledge"]
-    }
-  }
+	"default": "source",
+	"namespaces": {
+		"source": {
+			"filePatterns": ["src/**/*.ts"],
+			"excludePatterns": ["**/*.d.ts", "**/*.test.ts"],
+			"description": "Source code files",
+			"semanticTags": ["source", "production"]
+		},
+		"tests": {
+			"filePatterns": ["tests/**/*.ts", "**/*.test.ts"],
+			"excludePatterns": [],
+			"description": "Test files",
+			"semanticTags": ["test", "quality-assurance"]
+		},
+		"configs": {
+			"filePatterns": ["*.json", "*.config.*", "tsconfig.json"],
+			"excludePatterns": ["package-lock.json", "node_modules/**"],
+			"description": "Configuration files",
+			"semanticTags": ["config", "infrastructure"]
+		},
+		"docs": {
+			"filePatterns": ["*.md", "docs/**/*.md"],
+			"excludePatterns": [],
+			"description": "Documentation files",
+			"semanticTags": ["documentation", "knowledge"]
+		}
+	}
 }

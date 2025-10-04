@@ -175,7 +175,9 @@ export class SymbolExtractor {
 				);
 				break;
 			case "python":
-				symbols.push(...(await this.extractPythonSymbols(filePath, parseResult)));
+				symbols.push(
+					...(await this.extractPythonSymbols(filePath, parseResult)),
+				);
 				break;
 			case "java":
 				symbols.push(...(await this.extractJavaSymbols(filePath, parseResult)));
@@ -530,19 +532,11 @@ export class SymbolExtractor {
 
 		// Delegate to language-specific dependency extraction
 		if (language === "typescript" || language === "tsx") {
-			return this.extractTypeScriptDependencies(
-				symbols,
-				parseResult,
-				language,
-			);
+			return this.extractTypeScriptDependencies(symbols, parseResult, language);
 		}
 
 		if (language === "javascript" || language === "jsx") {
-			return this.extractJavaScriptDependencies(
-				symbols,
-				parseResult,
-				language,
-			);
+			return this.extractJavaScriptDependencies(symbols, parseResult, language);
 		}
 
 		// Other languages not yet implemented

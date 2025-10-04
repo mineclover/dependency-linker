@@ -32,7 +32,9 @@ async function analyzeFileDependencies(targetFile: string) {
 
 	if (targetNodes.length === 0) {
 		console.log("❌ Target file not found in database");
-		console.log("💡 Run 'npm run build && node dist/cli/namespace-analyzer.js analyze-all' first");
+		console.log(
+			"💡 Run 'npm run build && node dist/cli/namespace-analyzer.js analyze-all' first",
+		);
 		await db.close();
 		return;
 	}
@@ -42,7 +44,9 @@ async function analyzeFileDependencies(targetFile: string) {
 	console.log(`   ID: ${targetNode.id}`);
 	console.log(`   Type: ${targetNode.type}`);
 	console.log(`   Name: ${targetNode.name}`);
-	console.log(`   Namespace: ${(targetNode.metadata as any)?.namespace || "unknown"}`);
+	console.log(
+		`   Namespace: ${(targetNode.metadata as any)?.namespace || "unknown"}`,
+	);
 	console.log("");
 
 	// 2. Get dependencies (outgoing edges)
@@ -103,7 +107,7 @@ async function analyzeFileDependencies(targetFile: string) {
 	const sortedFiles = Array.from(uniqueFiles).sort();
 	for (let i = 0; i < sortedFiles.length; i++) {
 		const file = sortedFiles[i];
-		const nodeCount = nodeDetails.filter(n => n.file === file).length;
+		const nodeCount = nodeDetails.filter((n) => n.file === file).length;
 		console.log(`${i + 1}. ${file} (${nodeCount} nodes)`);
 	}
 
@@ -117,16 +121,23 @@ async function analyzeFileDependencies(targetFile: string) {
 
 	for (const node of nodeDetails) {
 		nodesByType.set(node.type, (nodesByType.get(node.type) || 0) + 1);
-		nodesByNamespace.set(node.namespace, (nodesByNamespace.get(node.namespace) || 0) + 1);
+		nodesByNamespace.set(
+			node.namespace,
+			(nodesByNamespace.get(node.namespace) || 0) + 1,
+		);
 	}
 
 	console.log("\nNodes by Type:");
-	for (const [type, count] of Array.from(nodesByType.entries()).sort((a, b) => b[1] - a[1])) {
+	for (const [type, count] of Array.from(nodesByType.entries()).sort(
+		(a, b) => b[1] - a[1],
+	)) {
 		console.log(`  ${type}: ${count}`);
 	}
 
 	console.log("\nNodes by Namespace:");
-	for (const [namespace, count] of Array.from(nodesByNamespace.entries()).sort((a, b) => b[1] - a[1])) {
+	for (const [namespace, count] of Array.from(nodesByNamespace.entries()).sort(
+		(a, b) => b[1] - a[1],
+	)) {
 		console.log(`  ${namespace}: ${count}`);
 	}
 
@@ -163,7 +174,7 @@ async function analyzeFileDependencies(targetFile: string) {
 // Run analysis
 const targetFile = path.resolve(
 	process.cwd(),
-	process.argv[2] || "src/namespace/NamespaceGraphDB.ts"
+	process.argv[2] || "src/namespace/NamespaceGraphDB.ts",
 );
 
 analyzeFileDependencies(targetFile).catch((error) => {

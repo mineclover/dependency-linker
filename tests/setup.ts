@@ -3,8 +3,8 @@
  * Initialize analysis system once for all tests to avoid race conditions
  */
 
-import { initializeAnalysisSystem } from '../src/api/analysis';
-import { globalParserManager } from '../src/parsers/ParserManager';
+import { initializeAnalysisSystem } from "../src/api/analysis";
+import { globalParserManager } from "../src/parsers/ParserManager";
 
 // Extend timeout for AST analysis operations
 jest.setTimeout(10000);

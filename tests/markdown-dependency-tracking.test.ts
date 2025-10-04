@@ -26,10 +26,7 @@ describe("Markdown Dependency Tracking", () => {
 
 	beforeAll(async () => {
 		// Create temporary database
-		testDbPath = path.join(
-			os.tmpdir(),
-			`test-md-deps-${Date.now()}.db`,
-		);
+		testDbPath = path.join(os.tmpdir(), `test-md-deps-${Date.now()}.db`);
 		db = createGraphDatabase(testDbPath);
 		await db.initialize();
 		await registerMarkdownEdgeTypes(db);
@@ -134,16 +131,12 @@ Related: [[OtherDocument]] and [[SomeFile|Custom Text]]
 
 			expect(result.dependencies).toHaveLength(2);
 
-			const link1 = result.dependencies.find(
-				(d) => d.to === "OtherDocument",
-			);
+			const link1 = result.dependencies.find((d) => d.to === "OtherDocument");
 			expect(link1).toBeDefined();
 			expect(link1?.type).toBe("wikilink");
 			expect(link1?.text).toBe("OtherDocument");
 
-			const link2 = result.dependencies.find(
-				(d) => d.to === "SomeFile",
-			);
+			const link2 = result.dependencies.find((d) => d.to === "SomeFile");
 			expect(link2).toBeDefined();
 			expect(link2?.text).toBe("Custom Text");
 		});
@@ -157,10 +150,7 @@ Call @validateEmail() to verify email addresses.
 The @Logger interface provides logging capabilities.
 `;
 
-			const result = extractMarkdownDependencies(
-				"docs/code.md",
-				content,
-			);
+			const result = extractMarkdownDependencies("docs/code.md", content);
 
 			const symbolRefs = result.dependencies.filter(
 				(d) => d.type === "symbol-reference",
@@ -184,9 +174,7 @@ Related to #backend-api and #frontend components.
 
 			const result = extractMarkdownDependencies("notes.md", content);
 
-			const hashtags = result.dependencies.filter(
-				(d) => d.type === "hashtag",
-			);
+			const hashtags = result.dependencies.filter((d) => d.type === "hashtag");
 			expect(hashtags.length).toBeGreaterThanOrEqual(4);
 
 			const tagNames = hashtags.map((h) => h.to);
@@ -206,9 +194,7 @@ Related to #backend-api and #frontend components.
 
 			const result = extractMarkdownDependencies("memo.md", content);
 
-			const hashtags = result.dependencies.filter(
-				(d) => d.type === "hashtag",
-			);
+			const hashtags = result.dependencies.filter((d) => d.type === "hashtag");
 			expect(hashtags.length).toBeGreaterThanOrEqual(5);
 
 			const tagNames = hashtags.map((h) => h.to);
@@ -228,9 +214,7 @@ Content with #actualtag here.
 
 			const result = extractMarkdownDependencies("test.md", content);
 
-			const hashtags = result.dependencies.filter(
-				(d) => d.type === "hashtag",
-			);
+			const hashtags = result.dependencies.filter((d) => d.type === "hashtag");
 			expect(hashtags).toHaveLength(1);
 			expect(hashtags[0].to).toBe("#actualtag");
 		});
@@ -246,9 +230,7 @@ Related: [[Security]] #security-best-practices
 
 			const result = extractMarkdownDependencies("doc.md", content);
 
-			const hashtags = result.dependencies.filter(
-				(d) => d.type === "hashtag",
-			);
+			const hashtags = result.dependencies.filter((d) => d.type === "hashtag");
 			expect(hashtags.length).toBeGreaterThanOrEqual(3);
 
 			// Should also have other dependency types
@@ -309,9 +291,7 @@ Main content here.
 
 			const result = extractMarkdownDependencies("main.md", content);
 
-			const includes = result.dependencies.filter(
-				(d) => d.type === "include",
-			);
+			const includes = result.dependencies.filter((d) => d.type === "include");
 			expect(includes).toHaveLength(2);
 			expect(includes[0].to).toBe("header");
 			expect(includes[1].to).toBe("footer");
@@ -442,18 +422,12 @@ Content with details.
 			const archNode = headingNodes.find((n) =>
 				n.name?.includes("Architecture"),
 			);
-			expect(archNode?.semanticTags).toEqual([
-				"architecture",
-				"system-design",
-			]);
+			expect(archNode?.semanticTags).toEqual(["architecture", "system-design"]);
 
 			const authNode = headingNodes.find((n) =>
 				n.name?.includes("Authentication"),
 			);
-			expect(authNode?.semanticTags).toEqual([
-				"security",
-				"implementation",
-			]);
+			expect(authNode?.semanticTags).toEqual(["security", "implementation"]);
 		});
 	});
 
@@ -500,10 +474,7 @@ Reference to @TestClass in code.
 				sessionId: "query-test",
 			});
 
-			const deps = await queryMarkdownDependencies(
-				db,
-				"query-test.md",
-			);
+			const deps = await queryMarkdownDependencies(db, "query-test.md");
 
 			expect(deps.length).toBeGreaterThanOrEqual(2);
 			expect(deps.some((d) => d.type === "md-link")).toBe(true);
@@ -555,8 +526,10 @@ Content.
 				queryHeadingsBySemanticType,
 			} = require("../src/integration/MarkdownToGraph");
 
-			const archHeadings =
-				await queryHeadingsBySemanticType(db, "architecture");
+			const archHeadings = await queryHeadingsBySemanticType(
+				db,
+				"architecture",
+			);
 			expect(archHeadings.length).toBe(3);
 			expect(
 				archHeadings.every((h: { allTypes: string[] }) =>
@@ -567,11 +540,13 @@ Content.
 			const apiHeadings = await queryHeadingsBySemanticType(db, "api");
 			expect(apiHeadings.length).toBe(2);
 
-			const securityHeadings =
-				await queryHeadingsBySemanticType(db, "security");
+			const securityHeadings = await queryHeadingsBySemanticType(
+				db,
+				"security",
+			);
 			expect(securityHeadings.length).toBeGreaterThanOrEqual(1);
-			const authHeading = securityHeadings.find(
-				(h: { heading: string }) => h.heading.includes("Authentication"),
+			const authHeading = securityHeadings.find((h: { heading: string }) =>
+				h.heading.includes("Authentication"),
 			);
 			expect(authHeading).toBeDefined();
 		});
@@ -594,7 +569,9 @@ Content.
 				sessionId: "file-query-test",
 			});
 
-			const { queryFileHeadings } = require("../src/integration/MarkdownToGraph");
+			const {
+				queryFileHeadings,
+			} = require("../src/integration/MarkdownToGraph");
 			const headings = await queryFileHeadings(db, "doc.md");
 
 			expect(headings.length).toBe(4);
@@ -634,7 +611,9 @@ More content.
 				sessionId: "stats-test",
 			});
 
-			const { getAllSemanticTypes } = require("../src/integration/MarkdownToGraph");
+			const {
+				getAllSemanticTypes,
+			} = require("../src/integration/MarkdownToGraph");
 			const types = await getAllSemanticTypes(db);
 
 			expect(types.get("architecture")).toBeGreaterThanOrEqual(2);
@@ -714,16 +693,18 @@ System architecture overview.
 			const apiHeadings = await queryHeadingsBySemanticType(db, "api");
 			expect(apiHeadings.length).toBeGreaterThanOrEqual(3);
 
-			const securityHeadings =
-				await queryHeadingsBySemanticType(db, "security");
+			const securityHeadings = await queryHeadingsBySemanticType(
+				db,
+				"security",
+			);
 			expect(securityHeadings.length).toBeGreaterThanOrEqual(1);
 
 			// Step 4: Query by file
 			const fileHeadings = await queryFileHeadings(db, "project.md");
 			expect(fileHeadings.length).toBe(5);
 
-			const archHeading = fileHeadings.find(
-				(h: { heading: string }) => h.heading.includes("Architecture"),
+			const archHeading = fileHeadings.find((h: { heading: string }) =>
+				h.heading.includes("Architecture"),
 			);
 			expect(archHeading?.semanticTypes).toEqual([
 				"architecture",
@@ -781,32 +762,18 @@ Steps here.
 
 			// Should have all dependency types (13 total: 2 links, 1 image, 2 wiki, 2 symbols, 1 code, 1 include, 1 anchor, 3 hashtags)
 			expect(result.dependencies.length).toBeGreaterThanOrEqual(13);
-			expect(result.dependencies.some((d) => d.type === "link")).toBe(
-				true,
-			);
-			expect(result.dependencies.some((d) => d.type === "image")).toBe(
-				true,
-			);
-			expect(result.dependencies.some((d) => d.type === "wikilink")).toBe(
-				true,
-			);
+			expect(result.dependencies.some((d) => d.type === "link")).toBe(true);
+			expect(result.dependencies.some((d) => d.type === "image")).toBe(true);
+			expect(result.dependencies.some((d) => d.type === "wikilink")).toBe(true);
 			expect(
 				result.dependencies.some((d) => d.type === "symbol-reference"),
 			).toBe(true);
 			expect(
-				result.dependencies.some(
-					(d) => d.type === "code-block-reference",
-				),
+				result.dependencies.some((d) => d.type === "code-block-reference"),
 			).toBe(true);
-			expect(result.dependencies.some((d) => d.type === "include")).toBe(
-				true,
-			);
-			expect(result.dependencies.some((d) => d.type === "anchor")).toBe(
-				true,
-			);
-			expect(result.dependencies.some((d) => d.type === "hashtag")).toBe(
-				true,
-			);
+			expect(result.dependencies.some((d) => d.type === "include")).toBe(true);
+			expect(result.dependencies.some((d) => d.type === "anchor")).toBe(true);
+			expect(result.dependencies.some((d) => d.type === "hashtag")).toBe(true);
 
 			// Front matter
 			expect(result.frontMatter?.title).toBe("Comprehensive Test");

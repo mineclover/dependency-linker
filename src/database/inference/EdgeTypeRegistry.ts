@@ -285,6 +285,18 @@ export class EdgeTypeRegistry {
 			isInheritable: false,
 			priority: 6,
 		},
+		{
+			type: "aliasOf",
+			description: "Symbol is an alias of another symbol (import alias)",
+			schema: {
+				isInferred: "boolean",
+			},
+			isDirected: true,
+			parentType: "references",
+			isTransitive: false,
+			isInheritable: false,
+			priority: 5,
+		},
 	];
 
 	/**

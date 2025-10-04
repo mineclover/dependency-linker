@@ -195,7 +195,9 @@ export function generateFileContextMarkdown(
 	}
 
 	lines.push("## Implementation Notes");
-	lines.push("[User-editable section for implementation details and decisions]");
+	lines.push(
+		"[User-editable section for implementation details and decisions]",
+	);
 	lines.push("");
 
 	lines.push("## Related Documentation");
@@ -232,7 +234,9 @@ export function generateSymbolContextMarkdown(
 	lines.push("");
 
 	lines.push("## Purpose");
-	lines.push("[User-editable section describing what this symbol does and why it exists]");
+	lines.push(
+		"[User-editable section describing what this symbol does and why it exists]",
+	);
 	lines.push("");
 
 	lines.push("## Responsibilities");
@@ -240,7 +244,9 @@ export function generateSymbolContextMarkdown(
 	lines.push("");
 
 	lines.push("## Key Concepts");
-	lines.push("[User-editable section for important concepts, algorithms, or patterns]");
+	lines.push(
+		"[User-editable section for important concepts, algorithms, or patterns]",
+	);
 	lines.push("");
 
 	lines.push("## Dependencies");
@@ -277,7 +283,10 @@ export class ContextDocumentGenerator {
 	 * Ensure context directories exist
 	 */
 	async ensureDirectories(): Promise<void> {
-		const contextDir = path.join(this.projectRoot, ".dependency-linker/context");
+		const contextDir = path.join(
+			this.projectRoot,
+			".dependency-linker/context",
+		);
 		const filesDir = path.join(contextDir, "files");
 		const symbolsDir = path.join(contextDir, "symbols");
 
@@ -393,7 +402,10 @@ export class ContextDocumentGenerator {
 	/**
 	 * Check if context document exists
 	 */
-	async documentExists(filePath: string, symbolPath?: string): Promise<boolean> {
+	async documentExists(
+		filePath: string,
+		symbolPath?: string,
+	): Promise<boolean> {
 		const docPath = this.getDocumentPath(filePath, symbolPath);
 		try {
 			await fs.access(docPath);

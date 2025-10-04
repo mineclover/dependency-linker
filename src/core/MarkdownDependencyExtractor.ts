@@ -93,7 +93,9 @@ function extractHeadings(content: string): Array<{
 			MARKDOWN_PATTERNS.SEMANTIC_TAG.lastIndex = 0;
 			let tagMatch: RegExpExecArray | null;
 
-			while ((tagMatch = MARKDOWN_PATTERNS.SEMANTIC_TAG.exec(fullText)) !== null) {
+			while (
+				(tagMatch = MARKDOWN_PATTERNS.SEMANTIC_TAG.exec(fullText)) !== null
+			) {
 				tags.push(tagMatch[1]);
 			}
 
@@ -119,10 +121,7 @@ function extractHeadings(content: string): Array<{
 /**
  * Extract standard markdown links
  */
-function extractLinks(
-	filePath: string,
-	lines: string[],
-): MarkdownDependency[] {
+function extractLinks(filePath: string, lines: string[]): MarkdownDependency[] {
 	return extractPattern(
 		filePath,
 		lines,

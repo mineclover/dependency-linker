@@ -6,6 +6,8 @@
  * Namespace configuration with file patterns
  */
 export interface NamespaceConfig {
+	/** Project name for RDF addressing (e.g., "dependency-linker") - optional, defaults to package.json name */
+	projectName?: string;
 	/** File patterns to include (glob patterns) */
 	filePatterns: string[];
 	/** File patterns to exclude (glob patterns) */

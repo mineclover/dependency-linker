@@ -27,6 +27,12 @@ export interface AnalysisContext {
 	/** Detected language */
 	language: string;
 
+	/** Project root directory */
+	projectRoot?: string;
+
+	/** Project name for RDF addressing */
+	projectName?: string;
+
 	/** Parse result (AST and metadata) */
 	parseResult?: ParseResult;
 

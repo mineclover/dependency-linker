@@ -239,9 +239,9 @@ describe("Scenario Type Validation", () => {
 
 			const result = validateScenarioSpec(invalidSpec);
 			expect(result.valid).toBe(false);
-			expect(
-				result.errors.some((e) => e.includes("semantic versioning")),
-			).toBe(true);
+			expect(result.errors.some((e) => e.includes("semantic versioning"))).toBe(
+				true,
+			);
 		});
 
 		it("should detect duplicate node type names", () => {
@@ -306,9 +306,9 @@ describe("Scenario Type Validation", () => {
 			const result = validateScenarioSpec(specWithWarning);
 			expect(result.valid).toBe(true);
 			expect(result.warnings.length).toBeGreaterThan(0);
-			expect(
-				result.warnings.some((w) => w.includes("undefined parent")),
-			).toBe(true);
+			expect(result.warnings.some((w) => w.includes("undefined parent"))).toBe(
+				true,
+			);
 		});
 
 		it("should reject ScenarioSpec without analyzer", () => {

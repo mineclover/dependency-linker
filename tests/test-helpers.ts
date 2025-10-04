@@ -7,7 +7,10 @@ import type { QueryFunction } from "../src/core/types";
 /**
  * Create a mock QueryFunction for testing
  */
-export function createMockQueryFunction(name: string, processor?: () => any[]): QueryFunction<any> {
+export function createMockQueryFunction(
+	name: string,
+	processor?: () => any[],
+): QueryFunction<any> {
 	return {
 		name,
 		description: `Mock ${name} query`,
@@ -15,7 +18,7 @@ export function createMockQueryFunction(name: string, processor?: () => any[]): 
 		languages: ["typescript"] as const,
 		priority: 1,
 		resultType: name, // Use the name as the resultType to match the validation
-		processor: jest.fn(processor || (() => []))
+		processor: jest.fn(processor || (() => [])),
 	};
 }
 

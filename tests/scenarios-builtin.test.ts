@@ -167,9 +167,7 @@ describe("Built-in Scenarios", () => {
 
 			const spec = registry.get("file-dependency")!;
 
-			const importsFile = spec.edgeTypes.find(
-				(e) => e.name === "imports_file",
-			);
+			const importsFile = spec.edgeTypes.find((e) => e.name === "imports_file");
 			const importsLibrary = spec.edgeTypes.find(
 				(e) => e.name === "imports_library",
 			);

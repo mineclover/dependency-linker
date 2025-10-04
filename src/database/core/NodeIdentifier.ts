@@ -1,6 +1,9 @@
 /**
  * Node Identifier System
- * 노드의 고유성을 보장하고 재현 가능한 식별 시스템
+ * RDF 기반 노드 식별 시스템
+ *
+ * RDF 주소 형식: <projectName>/<filePath>#<NodeType>:<SymbolName>
+ * 예시: dependency-linker/src/parser.ts#Method:TypeScriptParser.parse
  */
 
 import { createHash } from "node:crypto";
@@ -10,6 +13,7 @@ export interface NodeContext {
 	sourceFile: string;
 	language: SupportedLanguage;
 	projectRoot: string;
+	projectName?: string;
 }
 
 export interface NodeLocation {
@@ -41,7 +45,9 @@ export type NodeType =
 	| "enum"
 	| "library"
 	| "module"
-	| "package";
+	| "package"
+	| "heading"
+	| "unknown";
 
 export interface UniqueNodeIdentity {
 	identifier: string;
@@ -53,12 +59,29 @@ export interface UniqueNodeIdentity {
 }
 
 /**
+ * RDF 주소 파싱 결과
+ */
+export interface RdfAddress {
+	/** 프로젝트 이름 */
+	projectName: string;
+	/** 파일 경로 */
+	filePath: string;
+	/** 노드 타입 (메타 태그의 modifier 부분) */
+	nodeType: string;
+	/** 심볼 이름 (메타 태그의 value 부분) */
+	symbolName: string;
+	/** 원본 RDF 주소 */
+	raw: string;
+}
+
+/**
  * 노드 식별자 생성 및 관리 시스템
  *
- * 고유성 보장 원칙:
- * 1. 같은 엔티티는 항상 같은 identifier 생성
- * 2. 다른 엔티티는 절대 같은 identifier 생성 불가
- * 3. 프로젝트 재분석 시에도 동일한 identifier 유지
+ * RDF 기반 고유성 보장 원칙:
+ * 1. 같은 파일의 같은 심볼은 항상 같은 RDF 주소 생성
+ * 2. 다른 심볼은 절대 같은 RDF 주소 생성 불가
+ * 3. 프로젝트 재분석 시에도 동일한 RDF 주소 유지
+ * 4. 같은 파일 내 동일 심볼명 금지 (문서 품질 강제)
  */
 export class NodeIdentifier {
 	private projectRoot: string;
@@ -68,7 +91,8 @@ export class NodeIdentifier {
 	}
 
 	/**
-	 * 고유 노드 식별자 생성
+	 * RDF 형식 노드 식별자 생성
+	 * 형식: <projectName>/<filePath>#<NodeType>:<SymbolName>
 	 */
 	createIdentifier(
 		type: NodeType,
@@ -78,138 +102,78 @@ export class NodeIdentifier {
 		metadata?: NodeMetadata,
 	): string {
 		const normalizedContext = this.normalizeContext(context);
+		const { sourceFile } = normalizedContext;
+		const projectName = normalizedContext.projectName || "unknown-project";
 
-		switch (type) {
-			case "file":
-				return this.createFileIdentifier(normalizedContext.sourceFile);
-
-			case "directory":
-				return this.createDirectoryIdentifier(name, normalizedContext);
-
-			case "library":
-			case "package":
-				return this.createExternalIdentifier(type, name);
-
-			case "import":
-				return this.createImportIdentifier(name, normalizedContext, metadata);
-
-			case "export":
-				return this.createExportIdentifier(name, normalizedContext, metadata);
-
-			case "class":
-			case "interface":
-			case "namespace":
-			case "type":
-			case "enum":
-				return this.createTypeIdentifier(
-					type,
-					name,
-					normalizedContext,
-					location,
-				);
-
-			case "method":
-			case "function":
-				return this.createFunctionIdentifier(
-					type,
-					name,
-					normalizedContext,
-					location,
-					metadata,
-				);
-
-			case "variable":
-			case "constant":
-			case "property":
-			case "parameter":
-				return this.createVariableIdentifier(
-					type,
-					name,
-					normalizedContext,
-					location,
-					metadata,
-				);
-
-			default:
-				return this.createGenericIdentifier(
-					type,
-					name,
-					normalizedContext,
-					location,
-				);
+		// 파일 노드는 메타 태그 없이 처리
+		if (type === "file") {
+			return `${projectName}/${sourceFile}`;
 		}
+
+		// 디렉토리 노드
+		if (type === "directory") {
+			const dirPath = sourceFile.endsWith("/")
+				? sourceFile.slice(0, -1)
+				: sourceFile;
+			return `${projectName}/${dirPath}`;
+		}
+
+		// 외부 라이브러리/패키지는 프로젝트 이름 없이
+		if (type === "library" || type === "package") {
+			return `${type}#${name}`;
+		}
+
+		// 일반 심볼: RDF 주소 + 메타 태그
+		const capitalizedType = this.capitalizeNodeType(type);
+		return `${projectName}/${sourceFile}#${capitalizedType}:${name}`;
 	}
 
 	/**
-	 * 식별자로부터 노드 정보 파싱
+	 * RDF 주소로부터 노드 정보 파싱
 	 */
 	parseIdentifier(identifier: string): Partial<UniqueNodeIdentity> | null {
 		try {
-			// 기본 유효성 검사
-			if (
-				!identifier ||
-				identifier.trim() === "" ||
-				!identifier.includes("#")
-			) {
+			// 외부 라이브러리/패키지 체크
+			if (identifier.startsWith("library#") || identifier.startsWith("package#")) {
+				const [type, name] = identifier.split("#");
+				return {
+					type: type as NodeType,
+					name: name,
+				};
+			}
+
+			// RDF 주소 파싱
+			const rdfAddress = this.parseRdfAddress(identifier);
+			if (!rdfAddress) {
 				return null;
 			}
 
-			const parts = identifier.split("#");
+			const { projectName, filePath, nodeType, symbolName } = rdfAddress;
 
-			if (parts.length < 2) {
-				return null;
-			}
-
-			const [prefix, ...suffixParts] = parts;
-			const suffix = suffixParts.join("#");
-
-			// 빈 prefix나 suffix 검사
-			if (!prefix || !suffix) {
-				return null;
-			}
-
-			// 파일 식별자
-			if (prefix === "file") {
+			// 파일/디렉토리 노드 (메타 태그 없음)
+			if (!nodeType && !symbolName) {
 				return {
 					type: "file",
-					name: this.getFileName(suffix),
+					name: this.getFileName(filePath),
 					context: {
-						sourceFile: suffix,
-						language: this.detectLanguage(suffix),
+						sourceFile: filePath,
+						language: this.detectLanguage(filePath),
 						projectRoot: this.projectRoot,
+						projectName: projectName,
 					},
 				};
 			}
 
-			// 외부 라이브러리/패키지
-			if (prefix === "lib" || prefix === "pkg") {
-				return {
-					type: prefix === "lib" ? "library" : "package",
-					name: suffix,
-				};
-			}
-
-			// 프로젝트 내 엔티티
-			const [filePath, entityPath] = suffix.split("::");
-			if (!filePath || !entityPath) {
-				return null;
-			}
-
-			// 위치 정보 제거하여 순수한 이름 추출
-			const entityWithoutLocation = entityPath.split("@")[0];
-			const entityParts = entityWithoutLocation.split(".");
-			const name = entityParts[entityParts.length - 1];
-
-			// 함수/메서드의 경우 매개변수 정보 제거
-			const cleanName = name.includes("(") ? name.split("(")[0] : name;
-
+			// 일반 심볼 노드
+			const type = this.normalizeNodeType(nodeType);
 			return {
-				type: prefix as NodeType,
-				name: cleanName,
+				type: type,
+				name: symbolName,
 				context: {
 					sourceFile: filePath,
 					language: this.detectLanguage(filePath),
 					projectRoot: this.projectRoot,
+					projectName: projectName,
 				},
 			};
 		} catch (error) {
@@ -218,72 +182,130 @@ export class NodeIdentifier {
 	}
 
 	/**
-	 * 식별자 유효성 검증
+	 * RDF 주소 파싱
+	 * 형식: <projectName>/<filePath>#<NodeType>:<SymbolName>
+	 */
+	parseRdfAddress(address: string): RdfAddress | null {
+		try {
+			// 기본 유효성 검사
+			if (!address || address.trim() === "") {
+				return null;
+			}
+
+			// # 기준으로 분리
+			const hashIndex = address.indexOf("#");
+
+			// 파일/디렉토리 노드 (메타 태그 없음)
+			if (hashIndex === -1) {
+				const firstSlashIndex = address.indexOf("/");
+				if (firstSlashIndex === -1) {
+					return null;
+				}
+
+				const projectName = address.substring(0, firstSlashIndex);
+				const filePath = address.substring(firstSlashIndex + 1);
+
+				return {
+					projectName: projectName,
+					filePath: filePath,
+					nodeType: "",
+					symbolName: "",
+					raw: address,
+				};
+			}
+
+			// 메타 태그가 있는 노드
+			const [projectAndFile, metaTag] = [
+				address.substring(0, hashIndex),
+				address.substring(hashIndex + 1),
+			];
+
+			// projectName/filePath 분리 (첫 번째 / 기준)
+			const firstSlashIndex = projectAndFile.indexOf("/");
+			if (firstSlashIndex === -1) {
+				return null;
+			}
+
+			const projectName = projectAndFile.substring(0, firstSlashIndex);
+			const filePath = projectAndFile.substring(firstSlashIndex + 1);
+
+			// 메타 태그 파싱: NodeType:SymbolName
+			const colonIndex = metaTag.indexOf(":");
+			if (colonIndex === -1) {
+				return null;
+			}
+
+			const nodeType = metaTag.substring(0, colonIndex);
+			const symbolName = metaTag.substring(colonIndex + 1);
+
+			return {
+				projectName: projectName,
+				filePath: filePath,
+				nodeType: nodeType,
+				symbolName: symbolName,
+				raw: address,
+			};
+		} catch (error) {
+			return null;
+		}
+	}
+
+	/**
+	 * RDF 주소 유효성 검증
 	 */
 	validateIdentifier(identifier: string): boolean {
 		try {
-			const parts = identifier.split("#");
-			if (parts.length < 2) {
-				return false;
-			}
-
-			const [prefix] = parts;
-
-			// 유효한 노드 타입인지 확인
-			const validTypes = [
-				"file",
-				"class",
-				"interface",
-				"function",
-				"method",
-				"variable",
-				"constant",
-				"property",
-				"import",
-				"export",
-				"library",
-				"package",
-				"lib",
-				"pkg",
-			];
-
-			if (!validTypes.includes(prefix)) {
-				return false;
-			}
-
 			// 빈 식별자 거부
-			if (identifier.trim() === "" || identifier.endsWith("#")) {
+			if (!identifier || identifier.trim() === "") {
 				return false;
 			}
 
-			const parsed = this.parseIdentifier(identifier);
-			return parsed !== null;
+			// 외부 라이브러리/패키지 검증
+			if (identifier.startsWith("library#") || identifier.startsWith("package#")) {
+				return identifier.split("#").length === 2 && identifier.split("#")[1] !== "";
+			}
+
+			// RDF 주소 파싱 가능 여부로 검증
+			const parsed = this.parseRdfAddress(identifier);
+			if (!parsed) {
+				return false;
+			}
+
+			// projectName과 filePath는 필수
+			if (!parsed.projectName || !parsed.filePath) {
+				return false;
+			}
+
+			// 메타 태그가 있다면 둘 다 있어야 함
+			if ((parsed.nodeType && !parsed.symbolName) || (!parsed.nodeType && parsed.symbolName)) {
+				return false;
+			}
+
+			return true;
 		} catch (error) {
 			return false;
 		}
 	}
 
 	/**
-	 * 두 식별자의 관련성 확인
+	 * 두 식별자의 관련성 확인 (같은 파일 내 엔티티)
 	 */
 	areRelated(id1: string, id2: string): boolean {
-		const parsed1 = this.parseIdentifier(id1);
-		const parsed2 = this.parseIdentifier(id2);
+		const addr1 = this.parseRdfAddress(id1);
+		const addr2 = this.parseRdfAddress(id2);
 
-		if (!parsed1 || !parsed2) {
+		if (!addr1 || !addr2) {
 			return false;
 		}
 
-		// 같은 파일 내 엔티티
-		if (parsed1.context?.sourceFile === parsed2.context?.sourceFile) {
-			return true;
-		}
-
-		// 외부 의존성 관계는 별도 로직으로 판단
-		return false;
+		// 같은 프로젝트, 같은 파일
+		return (
+			addr1.projectName === addr2.projectName &&
+			addr1.filePath === addr2.filePath
+		);
 	}
 
-	// Private 메서드들
+	// Private 헬퍼 메서드들
 
 	private normalizeProjectRoot(projectRoot: string): string {
 		return projectRoot.replace(/\\/g, "/").replace(/\/$/, "");
@@ -308,111 +330,21 @@ export class NodeIdentifier {
 		return normalized;
 	}
 
-	private createFileIdentifier(filePath: string): string {
-		return `file#${filePath}`;
+	/**
+	 * NodeType을 대문자로 시작하도록 변환 (메타 태그용)
+	 * class → Class, method → Method
+	 */
+	private capitalizeNodeType(type: NodeType): string {
+		return type.charAt(0).toUpperCase() + type.slice(1);
 	}
 
-	private createDirectoryIdentifier(
-		name: string,
-		context: NodeContext,
-	): string {
-		const dirPath = context.sourceFile.endsWith("/")
-			? context.sourceFile.slice(0, -1)
-			: context.sourceFile;
-		return `dir#${dirPath}`;
-	}
-
-	private createExternalIdentifier(
-		type: "library" | "package",
-		name: string,
-	): string {
-		const prefix = type === "library" ? "lib" : "pkg";
-		return `${prefix}#${name}`;
-	}
-
-	private createImportIdentifier(
-		name: string,
-		context: NodeContext,
-		metadata?: NodeMetadata,
-	): string {
-		const importPath = metadata?.importPath || name;
-		const hash = this.createHash(
-			`${context.sourceFile}::import::${importPath}`,
-		);
-		return `import#${context.sourceFile}::${importPath}@${hash.slice(0, 8)}`;
-	}
-
-	private createExportIdentifier(
-		name: string,
-		context: NodeContext,
-		metadata?: NodeMetadata,
-	): string {
-		const isDefault = metadata?.isDefault || false;
-		const exportType = isDefault ? "default" : "named";
-		return `export#${context.sourceFile}::${exportType}.${name}`;
-	}
-
-	private createTypeIdentifier(
-		type: NodeType,
-		name: string,
-		context: NodeContext,
-		location?: NodeLocation,
-	): string {
-		const locationSuffix = location
-			? `@${location.startLine || 0}:${location.startColumn || 0}`
-			: "";
-		return `${type}#${context.sourceFile}::${name}${locationSuffix}`;
-	}
-
-	private createFunctionIdentifier(
-		type: NodeType,
-		name: string,
-		context: NodeContext,
-		location?: NodeLocation,
-		metadata?: NodeMetadata,
-	): string {
-		// 함수 시그니처 기반 고유성 보장
-		const params = metadata?.parameters || [];
-		const paramSignature = params.map((p: any) => p.type || "any").join(",");
-		const signature = `${name}(${paramSignature})`;
-
-		const locationSuffix = location
-			? `@${location.startLine || 0}:${location.startColumn || 0}`
-			: "";
-
-		return `${type}#${context.sourceFile}::${signature}${locationSuffix}`;
-	}
-
-	private createVariableIdentifier(
-		type: NodeType,
-		name: string,
-		context: NodeContext,
-		location?: NodeLocation,
-		metadata?: NodeMetadata,
-	): string {
-		const scope = metadata?.scope || "unknown";
-		const locationSuffix = location
-			? `@${location.startLine || 0}:${location.startColumn || 0}`
-			: "";
-
-		return `${type}#${context.sourceFile}::${scope}.${name}${locationSuffix}`;
-	}
-
-	private createGenericIdentifier(
-		type: NodeType,
-		name: string,
-		context: NodeContext,
-		location?: NodeLocation,
-	): string {
-		const locationSuffix = location
-			? `@${location.startLine || 0}:${location.startColumn || 0}`
-			: "";
-
-		return `${type}#${context.sourceFile}::${name}${locationSuffix}`;
-	}
-
-	private createHash(input: string): string {
-		return createHash("md5").update(input).digest("hex");
+	/**
+	 * 대문자로 시작하는 NodeType을 소문자 NodeType으로 변환
+	 * Class → class, Method → method
+	 */
+	private normalizeNodeType(capitalizedType: string): NodeType {
+		const lowerType = capitalizedType.toLowerCase();
+		return lowerType as NodeType;
 	}
 
 	private getFileName(filePath: string): string {
@@ -427,6 +359,7 @@ export class NodeIdentifier {
 		if (filePath.endsWith(".java")) return "java";
 		if (filePath.endsWith(".py")) return "python";
 		if (filePath.endsWith(".go")) return "go";
+		if (filePath.endsWith(".md")) return "markdown";
 		return "typescript";
 	}
 }

@@ -22,7 +22,8 @@ export const methodAnalysisSpec: ScenarioSpec = {
 	nodeTypes: [
 		{
 			name: "method",
-			description: "Method definition (class method, object method, or top-level function)",
+			description:
+				"Method definition (class method, object method, or top-level function)",
 			defaultProperties: {
 				isStatic: false,
 				isAsync: false,
@@ -213,7 +214,8 @@ export const methodAnalysisSpec: ScenarioSpec = {
 			edgeTypes: ["overrides-method"],
 			config: {
 				maxDepth: 10,
-				description: "Track method override chains through inheritance hierarchy",
+				description:
+					"Track method override chains through inheritance hierarchy",
 			},
 		},
 		{
