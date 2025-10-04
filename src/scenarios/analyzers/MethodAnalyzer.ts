@@ -293,7 +293,7 @@ export class MethodAnalyzer extends BaseScenarioAnalyzer {
 				if (patternNode) {
 					parameters.push({
 						name: patternNode.text,
-						type: typeNode?.text,
+						type: this.cleanTypeAnnotation(typeNode?.text),
 						isOptional: child.type === "optional_parameter",
 						hasDefault: false, // TODO: Detect default values
 					});
@@ -311,7 +311,16 @@ export class MethodAnalyzer extends BaseScenarioAnalyzer {
 	 */
 	private extractReturnType(node: Parser.SyntaxNode): string | undefined {
 		const typeNode = node.childForFieldName("type");
-		return typeNode?.text;
+		return this.cleanTypeAnnotation(typeNode?.text);
+	}
+
+	/**
+	 * Clean type annotation (remove leading colon and whitespace)
+	 */
+	private cleanTypeAnnotation(typeText: string | undefined): string | undefined {
+		if (!typeText) return undefined;
+		// Remove leading ": " from type annotations
+		return typeText.replace(/^\s*:\s*/, "").trim();
 	}
 
 	/**

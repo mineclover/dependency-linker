@@ -9,6 +9,7 @@ import {
 	fileDependencySpec,
 	symbolDependencySpec,
 	markdownLinkingSpec,
+	methodAnalysisSpec,
 	BUILTIN_SCENARIOS,
 } from "../src/scenarios/builtin";
 
@@ -42,6 +43,13 @@ describe("Built-in Scenarios", () => {
 			expect(() => registry.register(markdownLinkingSpec)).not.toThrow();
 			expect(registry.has("markdown-linking")).toBe(true);
 		});
+
+		it("should have valid method-analysis spec", () => {
+			registry.register(basicStructureSpec); // Register parent first
+			registry.register(symbolDependencySpec); // Register parent first
+			expect(() => registry.register(methodAnalysisSpec)).not.toThrow();
+			expect(registry.has("method-analysis")).toBe(true);
+		});
 	});
 
 	describe("Scenario Dependencies", () => {
@@ -58,7 +66,10 @@ describe("Built-in Scenarios", () => {
 			// markdown-linking extends basic-structure
 			registry.register(markdownLinkingSpec);
 
-			expect(registry.list()).toHaveLength(4);
+			// method-analysis extends symbol-dependency
+			registry.register(methodAnalysisSpec);
+
+			expect(registry.list()).toHaveLength(5);
 		});
 
 		it("should resolve execution order for file-dependency", () => {
@@ -202,6 +213,7 @@ describe("Built-in Scenarios", () => {
 				"file-dependency",
 				"symbol-dependency",
 				"markdown-linking",
+				"method-analysis",
 			]);
 		});
 
@@ -210,6 +222,7 @@ describe("Built-in Scenarios", () => {
 			expect(fileDependencySpec.id).toBe(BUILTIN_SCENARIOS[1]);
 			expect(symbolDependencySpec.id).toBe(BUILTIN_SCENARIOS[2]);
 			expect(markdownLinkingSpec.id).toBe(BUILTIN_SCENARIOS[3]);
+			expect(methodAnalysisSpec.id).toBe(BUILTIN_SCENARIOS[4]);
 		});
 	});
 });
