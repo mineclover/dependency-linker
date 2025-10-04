@@ -1,133 +1,68 @@
 # Documentation Index
 
-**Central documentation hub for the Dependency Linker project.**
+**Technical documentation hub for the Dependency Linker project.**
+
+**Note**: Feature documentation has been moved to the `features/` directory. User scenarios are documented in `USER-SCENARIOS.md` at the project root. This directory contains technical/code management documentation only.
 
 ## 목차
 - [📚 Documentation Categories](#-documentation-categories)
-  - [🚀 Getting Started](#-getting-started)
-  - [🔄 Pipeline & Data Flow](#-pipeline--data-flow)
-  - [🏗️ Architecture & System Design](#️-architecture--system-design)
-  - [🧠 Graph Database & Inference System](#-graph-database--inference-system)
-  - [🔍 Analysis & Features](#-analysis--features)
-  - [⚡ Performance & Optimization](#-performance--optimization)
 - [🎯 Quick Start Paths](#-quick-start-paths)
-- [📖 Document Descriptions](#-document-descriptions)
+- [📖 Key Documents](#-key-documents)
 - [🔗 Related Resources](#-related-resources)
 - [📝 Documentation Standards](#-documentation-standards)
-- [🎓 Learning Paths](#-learning-paths)
-- [📊 Document Status Legend](#-document-status-legend)
-- [🔍 Search Tips](#-search-tips)
-- [📅 Document Maintenance](#-document-maintenance)
 
 ---
 
 ## 📚 Documentation Categories
 
 ### 🚀 Getting Started
-Quick start guides and initial setup.
 
 | Document | Description | Status |
 |----------|-------------|--------|
 | [Setup-Guide.md](Setup-Guide.md) | Installation and initial setup | ✅ |
 | [API.md](API.md) | Complete API reference and usage | ✅ |
+| [GLOSSARY.md](GLOSSARY.md) | Technical terminology and definitions | ✅ |
 
----
-
-### 🔄 Pipeline & Data Flow
-
-**Complete data processing pipeline from extraction to inference.**
-
-| Document | Description | Status | Priority |
-|----------|-------------|--------|----------|
-| [pipeline-overview.md](pipeline-overview.md) | **Complete pipeline: Extraction → Storage → Analysis → Inference** | ✅ NEW | 🔴 **START HERE** |
-| [implementation-status.md](implementation-status.md) | **Implementation status & completion details** | ✅ NEW | 🔴 **IMPORTANT** |
-| [type-system.md](type-system.md) | Type definitions (Node/Edge 대상 식별) | ✅ NEW | 🔴 Primary |
-| [semantic-tags.md](semantic-tags.md) | Semantic tags (복합적 의미 표현, 선택적) | ✅ NEW | 🔴 Primary |
-| [namespace-scenario-guide.md](namespace-scenario-guide.md) | 🆕 **Namespace-Scenario Integration 가이드** | ✅ NEW | 🔴 Primary |
-
-**Pipeline Stages** (✅ COMPLETE):
-1. **Extraction**: AST parsing → Symbol extraction → **Edge extraction** ✅
-2. **Storage**: GraphDB nodes + edges + **Edge Type 관리** ✅
-3. **Analysis**: **Node Type/Edge Type 기반 분석**, Pattern analysis ✅
-4. **Inference**: Hierarchical, Transitive, Inheritable relationships ✅
-
-**Completion Status**:
-- ✅ **Edge 추출 + Edge Type 관리**: 의존성 분석 완성
-- ✅ **Node Type 기반 분석**: 대상 식별 및 검색
-- ✅ **Edge Type 기반 분석**: 관계 유형 검색
-- ✅ **추론 엔진**: 3가지 추론 모두 작동
-- 💡 **Semantic Tags**: 선택적 기능 (마크다운 헤딩 지원, 일반 코드는 필요시 구현)
-
-**Quick Start**:
-1. Read [pipeline-overview.md](pipeline-overview.md) for complete data flow
-2. Check [implementation-status.md](implementation-status.md) for completion status & optional features
-
----
-
-### 🏗️ Architecture & System Design
-
-Core system architecture and module organization.
+### 🔄 Pipeline & Architecture
 
 | Document | Description | Status |
 |----------|-------------|--------|
-| [module-organization.md](module-organization.md) | Module structure and organization guide | ✅ |
+| [pipeline-overview.md](pipeline-overview.md) | **Complete pipeline: Extraction → Storage → Analysis → Inference** | ✅ |
+| [type-system.md](type-system.md) | Node and Edge type definitions | ✅ |
+| [semantic-tags.md](semantic-tags.md) | Semantic tags system and usage | ✅ |
+| [module-organization.md](module-organization.md) | Module structure and organization | ✅ |
 | [PARSER_SYSTEM.md](PARSER_SYSTEM.md) | Parser system architecture | ✅ |
+
+### 🔍 Core Systems
+
+| Document | Description | Status |
+|----------|-------------|--------|
+| [rdf-addressing.md](rdf-addressing.md) | RDF-based node identification system | ✅ |
+| [unknown-node-inference.md](unknown-node-inference.md) | Unknown node and alias inference system | ✅ |
+| [single-file-analysis-api.md](single-file-analysis-api.md) | Single file analysis API | ✅ |
+| [identifier-strategy.md](identifier-strategy.md) | Node identifier generation strategy | ✅ |
+| [edge-type-management.md](edge-type-management.md) | Edge type system and hierarchy | ✅ |
+
+### 🧠 Graph Database & Analysis
+
+| Document | Description | Status |
+|----------|-------------|--------|
+| [graph-maintenance-conventions.md](graph-maintenance-conventions.md) | Graph maintenance conventions | ✅ |
+| [analyzer-ownership-pattern.md](analyzer-ownership-pattern.md) | Analyzer ownership pattern | ✅ |
+| [NODE-LISTING-API.md](NODE-LISTING-API.md) | Node listing and query API | ✅ |
+| [query-workflow-guide.md](query-workflow-guide.md) | Query system workflow guide | ✅ |
+| [CustomKeyMapper-Guide.md](CustomKeyMapper-Guide.md) | Custom key mapping guide | ✅ |
+
+### 🏗️ Development & Integration
+
+| Document | Description | Status |
+|----------|-------------|--------|
+| [namespace-scenario-guide.md](namespace-scenario-guide.md) | Namespace-Scenario Integration guide | ✅ |
+| [CONVENTIONS.md](CONVENTIONS.md) | Code and architecture conventions | ✅ |
+| [testing-strategy.md](testing-strategy.md) | Testing strategy and best practices | ✅ |
 | [PACKAGE_EXPORTS.md](PACKAGE_EXPORTS.md) | Package export structure | ✅ |
 
-**Key Concepts**:
-- Module boundaries and responsibilities
-- Dependency graph and import conventions
-- Core, Database, Inference, Integration modules
-- Best practices for module design
-
----
-
-### 🧠 Graph Database & Inference System
-
-Complete graph database and inference capabilities.
-
-| Document | Description | Status | Priority |
-|----------|-------------|--------|----------|
-| [inference-system.md](inference-system.md) | **Inference API and usage guide** | ✅ | 🔴 Primary |
-| [graph-maintenance-conventions.md](graph-maintenance-conventions.md) | **Maintenance conventions** | ✅ | 🔴 Primary |
-| [inference-system-status-report.md](inference-system-status-report.md) | Implementation status and roadmap | ✅ | 🟡 Reference |
-| [analyzer-ownership-pattern.md](analyzer-ownership-pattern.md) | Analyzer ownership pattern | ✅ | 🟢 Supporting |
-| [edge-type-management.md](edge-type-management.md) | Edge type system details | ✅ | 🟢 Supporting |
-| [identifier-strategy.md](identifier-strategy.md) | Node identifier strategy | ✅ | 🟢 Supporting |
-
-**Quick Navigation**:
-- **New to Inference?** → Start with [inference-system.md](inference-system.md)
-- **Maintaining System?** → Read [graph-maintenance-conventions.md](graph-maintenance-conventions.md)
-- **Implementation Status?** → Check [inference-system-status-report.md](inference-system-status-report.md)
-- **Creating Analyzer?** → Review [analyzer-ownership-pattern.md](analyzer-ownership-pattern.md)
-
-**Inference Capabilities**:
-1. **Hierarchical Inference**: Parent type queries include all child types
-2. **Transitive Inference**: A→B→C chains with SQL Recursive CTE
-3. **Inheritable Inference**: Relationship propagation through containment
-
-**Key Components**:
-- `EdgeTypeRegistry`: Edge type hierarchy management
-- `InferenceEngine`: Three inference types with cache strategies
-- `GraphDatabase`: Core database with inference query methods
-
----
-
-### 🔍 Analysis & Features
-
-Dependency analysis and graph features.
-
-| Document | Description | Status | Priority |
-|----------|-------------|--------|----------|
-| [single-file-analysis-api.md](single-file-analysis-api.md) | **Single file analysis API** | ✅ NEW | 🔴 Primary |
-| [DEPENDENCY_GRAPH_ANALYSIS.md](DEPENDENCY_GRAPH_ANALYSIS.md) | Graph analysis capabilities | ✅ | 🟡 Reference |
-| [CustomKeyMapper-Guide.md](CustomKeyMapper-Guide.md) | Custom key mapping guide | ✅ | 🟢 Supporting |
-
----
-
-### ⚡ Performance & Optimization
-
-Performance tuning and optimization guides.
+### ⚡ Performance
 
 | Document | Description | Status |
 |----------|-------------|--------|
@@ -138,192 +73,162 @@ Performance tuning and optimization guides.
 ## 🎯 Quick Start Paths
 
 ### For New Users
-1. **[pipeline-overview.md](pipeline-overview.md)** - 📌 **START HERE** - Complete data flow understanding
+1. **[pipeline-overview.md](pipeline-overview.md)** - 📌 **START HERE** - Complete system overview
 2. [Setup-Guide.md](Setup-Guide.md) - Install and configure
 3. [API.md](API.md) - Learn basic API usage
-4. [namespace-scenario-guide.md](namespace-scenario-guide.md) - 🆕 Namespace-Scenario Integration
-5. [inference-system.md](inference-system.md) - Understand inference capabilities
+4. **[USER-SCENARIOS.md](../USER-SCENARIOS.md)** - 7 comprehensive user scenarios
+5. **[features/](../features/)** - Feature documentation and specifications
 
-### For Understanding the System
-1. **[pipeline-overview.md](pipeline-overview.md)** - Complete pipeline: Extraction → Storage → Analysis → Inference
-2. [type-system.md](type-system.md) - Type definitions (실제 데이터 형태)
-3. [semantic-tags.md](semantic-tags.md) - Semantic tags & extraction rules
-4. [inference-system.md](inference-system.md) - Inference API and capabilities
+### For Understanding Core Systems
+1. [pipeline-overview.md](pipeline-overview.md) - Complete architecture
+2. [type-system.md](type-system.md) - Type definitions and classification
+3. [rdf-addressing.md](rdf-addressing.md) - Node identification system
+4. [unknown-node-inference.md](unknown-node-inference.md) - Unknown node handling
+5. [semantic-tags.md](semantic-tags.md) - Semantic tagging system
 
 ### For Developers
-1. [module-organization.md](module-organization.md) - Understand codebase structure
-2. **[pipeline-overview.md](pipeline-overview.md)** - Data flow and processing stages
-3. [inference-system.md](inference-system.md) - Learn inference API
-4. [graph-maintenance-conventions.md](graph-maintenance-conventions.md) - Follow conventions
-4. [analyzer-ownership-pattern.md](analyzer-ownership-pattern.md) - Create analyzers
+1. [module-organization.md](module-organization.md) - Codebase structure
+2. [CONVENTIONS.md](CONVENTIONS.md) - Development conventions
+3. [graph-maintenance-conventions.md](graph-maintenance-conventions.md) - Graph maintenance
+4. [analyzer-ownership-pattern.md](analyzer-ownership-pattern.md) - Creating analyzers
+5. [testing-strategy.md](testing-strategy.md) - Testing approach
 
-### For Maintainers
-1. [graph-maintenance-conventions.md](graph-maintenance-conventions.md) - Maintenance rules
-2. [inference-system-status-report.md](inference-system-status-report.md) - Current status
-3. [module-organization.md](module-organization.md) - Module structure
-4. [edge-type-management.md](edge-type-management.md) - Edge type system
-
----
-
-## 📖 Document Descriptions
-
-### Primary Documents (🔴 Must Read)
-
-#### [inference-system.md](inference-system.md)
-**Complete inference system API and usage guide.**
-
-Contents:
-- Three inference types (Hierarchical, Transitive, Inheritable)
-- InferenceEngine API documentation
-- SQL Recursive CTE implementation details
-- EdgeTypeRegistry usage
-- Cache strategies (eager/lazy/manual)
-- Performance optimization tips
-- Real-world usage examples
-- Troubleshooting guide
-
-Audience: All developers using inference system
-
-#### [graph-maintenance-conventions.md](graph-maintenance-conventions.md)
-**Comprehensive maintenance conventions for graph database and inference system.**
-
-Contents:
-- Edge type management (Registry as single source of truth)
-- Analyzer ownership pattern (OWNED_EDGE_TYPES, source_file tracking)
-- Schema synchronization guidelines
-- Inference system maintenance (cache strategies, performance)
-- Type safety requirements
-- Testing requirements
-- Performance monitoring
-- Rescan-based approach (no migrations needed)
-- Checklists for common tasks
-
-Audience: Developers and maintainers
+### For Advanced Integration
+1. [namespace-scenario-guide.md](namespace-scenario-guide.md) - Namespace-Scenario integration
+2. [single-file-analysis-api.md](single-file-analysis-api.md) - Single file analysis
+3. [CustomKeyMapper-Guide.md](CustomKeyMapper-Guide.md) - Custom key mapping
+4. [query-workflow-guide.md](query-workflow-guide.md) - Query workflows
 
 ---
 
-### Architecture Documents (🟡 Important)
+## 📖 Key Documents
 
-#### [module-organization.md](module-organization.md)
-**Complete module structure and organization guide.**
+### [pipeline-overview.md](pipeline-overview.md)
+**Complete data processing pipeline from extraction to inference.**
 
-Contents:
-- Overall project structure
-- Core, Database, Inference, Integration modules
-- Module dependencies and hierarchy
-- Import conventions (internal, cross-module, dynamic)
-- Adding new modules (checklist and template)
-- Best practices for module design
-- Circular dependency prevention
+**Pipeline Stages**:
+1. **Extraction**: AST parsing → Symbol extraction → Edge extraction
+2. **Storage**: GraphDB nodes + edges + Edge Type management
+3. **Analysis**: Node Type/Edge Type based analysis, Pattern analysis
+4. **Inference**: Hierarchical, Transitive, Inheritable relationships
 
-Audience: Developers and contributors
-
-#### [PARSER_SYSTEM.md](PARSER_SYSTEM.md)
-**Parser system architecture and multi-language support.**
-
-Audience: Contributors working on parser system
-
-#### [PACKAGE_EXPORTS.md](PACKAGE_EXPORTS.md)
-**Package export structure and usage.**
-
-Audience: Package users and contributors
+Audience: All users and developers
 
 ---
 
-### Supporting Documents (🟢 Reference)
-
-#### [inference-system-status-report.md](inference-system-status-report.md)
-**Implementation status, pending tasks, and recommendations.**
+### [type-system.md](type-system.md)
+**Node and Edge type definitions and classification hierarchy.**
 
 Contents:
-- Complete implementation status
-- Architecture decisions
-- Performance characteristics
-- What's working
-- Pending tasks (testing, monitoring, cache)
-- Technical debt assessment
-- Recommendations for production use
+- Node type definitions (file, class, function, etc.)
+- Edge type definitions with parent hierarchy
+- Type validation and consistency rules
+- Classification and semantic meaning
 
-Audience: Project managers and developers
+Audience: Developers and advanced users
 
-#### [analyzer-ownership-pattern.md](analyzer-ownership-pattern.md)
-**Analyzer ownership pattern for multi-analyzer edge management.**
+---
 
-Contents:
-- OWNED_EDGE_TYPES pattern
-- source_file tracking
-- Cleanup isolation between analyzers
-- Best practices for analyzer implementation
-
-Audience: Developers creating analyzers
-
-#### [edge-type-management.md](edge-type-management.md)
-**Edge type system and hierarchy management.**
+### [rdf-addressing.md](rdf-addressing.md)
+**RDF-based node identification system for unique symbol addressing.**
 
 Contents:
-- Edge type definitions
-- Hierarchy structure
-- Validation rules
-- Dynamic registration
-
-Audience: Advanced developers
-
-#### [identifier-strategy.md](identifier-strategy.md)
-**Node identifier generation strategy.**
-
-Contents:
-- Identifier format
-- Uniqueness guarantees
-- Generation utilities
+- RDF address format: `<projectName>/<filePath>#<NodeType>:<SymbolName>`
+- Identifier generation and validation
+- Symbol definition location tracking
+- Search engine functionality
 
 Audience: Developers working with nodes
 
 ---
 
-### Analysis Documents (🟢 Features)
+### [unknown-node-inference.md](unknown-node-inference.md)
+**Unknown node and alias inference system for imported symbols.**
 
-#### [DEPENDENCY_GRAPH_ANALYSIS.md](DEPENDENCY_GRAPH_ANALYSIS.md)
-**Graph analysis capabilities and usage.**
+Contents:
+- Unknown node concept and dual-node pattern
+- Alias handling (original node + alias node)
+- Edge types: `uses`, `aliasOf`
+- Inference and resolution strategies
 
-Audience: Users analyzing dependencies
-
-#### [CustomKeyMapper-Guide.md](CustomKeyMapper-Guide.md)
-**Custom key mapping for specialized analysis.**
-
-Audience: Advanced users
+Audience: Developers working with dependencies
 
 ---
 
-### Performance Documents (⚡ Optimization)
-
-#### [PERFORMANCE.md](PERFORMANCE.md)
-**Performance optimization and benchmarking.**
+### [graph-maintenance-conventions.md](graph-maintenance-conventions.md)
+**Comprehensive maintenance conventions for graph database.**
 
 Contents:
-- Performance targets
-- Optimization techniques
-- Benchmarking tools
-- Profiling guidance
+- Edge type management (Registry as single source of truth)
+- Analyzer ownership pattern (OWNED_EDGE_TYPES)
+- Schema synchronization guidelines
+- Type safety requirements
+- Testing requirements
+- Rescan-based approach
 
-Audience: Performance-focused developers
+Audience: Developers and maintainers
+
+---
+
+### [namespace-scenario-guide.md](namespace-scenario-guide.md)
+**Complete guide to Namespace-Scenario Integration for horizontal scalability.**
+
+Contents:
+- Namespace configuration and management
+- Scenario selection and composition
+- Execution order and dependencies
+- Real-world configuration examples
+- Best practices and troubleshooting
+
+Audience: Users and developers
 
 ---
 
 ## 🔗 Related Resources
 
+### Feature Documentation
+- **[features/](../features/)** - Complete feature specifications and guides
+- **[features/index.md](../features/index.md)** - Feature overview dashboard
+
+### User Documentation
+- **[USER-SCENARIOS.md](../USER-SCENARIOS.md)** - 7 comprehensive user scenarios
+- **[README.md](../README.md)** - Project overview and quick start
+
 ### Code Documentation
 - **Inference Module**: `/src/database/inference/README.md`
-- **Main README**: `/README.md`
 - **Examples**: `/examples/`
 
 ### Example Code
 - **Inference Demo**: `/examples/inference-system-demo.ts`
 - **Edge Type Validation**: `/examples/edge-type-validation-demo.ts`
-- **Inference Test**: `/examples/test-inference-with-source-file.ts`
+- **Graph Analysis**: `/examples/graph-analysis.ts`
+
+### Archived Documentation
+- **[archive/](archive/)** - Historical documentation and status reports
+- **[archive/README.md](archive/README.md)** - Archive index and policy
 
 ---
 
 ## 📝 Documentation Standards
+
+### Document Organization
+
+**This directory (docs/)**: Technical and code management documentation
+- Architecture and system design
+- API references and technical guides
+- Development conventions and patterns
+- Performance and testing strategies
+
+**Features directory**: Feature specifications and user guides
+- Feature-specific documentation
+- Implementation status and roadmaps
+- Use cases and examples
+
+**Project root**: High-level documentation
+- README.md - Project overview
+- USER-SCENARIOS.md - User scenarios
+- CONTRIBUTING.md - Contribution guide
+- DEVELOPMENT.md - Development guide
 
 ### Document Structure
 Each document should follow this structure:
@@ -332,56 +237,19 @@ Each document should follow this structure:
 3. **Content Sections**: Logical organization with clear headers
 4. **Examples**: Code examples with explanations
 5. **Related Documentation**: Links to related docs
-6. **Metadata**: Last updated date, version, maintainer
+6. **Metadata**: Last updated date, version
 
 ### Naming Conventions
-- **Guides**: `{topic}-guide.md` or `{Topic}-Guide.md`
+- **Guides**: `{topic}-guide.md` (lowercase with hyphens)
 - **System Docs**: `{SYSTEM_NAME}.md` (uppercase)
-- **Feature Docs**: `{feature-name}.md` (lowercase with hyphens)
-- **Status Reports**: `{topic}-status-report.md`
+- **Technical Docs**: `{feature-name}.md` (lowercase with hyphens)
 
 ### Update Process
 1. Update document content
 2. Update "Last Updated" date
 3. Update this index if adding/removing documents
-4. Commit with descriptive message
-
----
-
-## 🎓 Learning Paths
-
-### Path 1: Basic Usage
-```
-Setup-Guide.md → API.md → DEPENDENCY_GRAPH_ANALYSIS.md
-```
-**Time**: 1-2 hours
-**Outcome**: Can use basic features
-
-### Path 2: Inference System
-```
-inference-system.md → graph-maintenance-conventions.md →
-analyzer-ownership-pattern.md → examples/inference-system-demo.ts
-```
-**Time**: 3-4 hours
-**Outcome**: Can use and maintain inference system
-
-### Path 3: Contributing
-```
-module-organization.md → graph-maintenance-conventions.md →
-inference-system.md → analyzer-ownership-pattern.md →
-PARSER_SYSTEM.md
-```
-**Time**: 4-6 hours
-**Outcome**: Can contribute to codebase
-
-### Path 4: Architecture Understanding
-```
-module-organization.md → PARSER_SYSTEM.md →
-inference-system.md → PACKAGE_EXPORTS.md →
-DEPENDENCY_GRAPH_ANALYSIS.md
-```
-**Time**: 4-5 hours
-**Outcome**: Full architecture understanding
+4. Update features/index.md if feature-related
+5. Commit with descriptive message
 
 ---
 
@@ -392,7 +260,7 @@ DEPENDENCY_GRAPH_ANALYSIS.md
 | ✅ | Complete and up-to-date |
 | 🔄 | In progress |
 | 📝 | Needs update |
-| ❌ | Deprecated |
+| ❌ | Deprecated (archived) |
 | 🆕 | New document |
 
 ---
@@ -400,18 +268,20 @@ DEPENDENCY_GRAPH_ANALYSIS.md
 ## 🔍 Search Tips
 
 **Finding Information**:
-- **Inference**: Check inference-system.md first
-- **Maintenance**: Go to graph-maintenance-conventions.md
-- **Module Structure**: See module-organization.md
-- **Performance**: Review PERFORMANCE.md
-- **Setup**: Start with Setup-Guide.md
+- **User Scenarios**: Check USER-SCENARIOS.md at project root
+- **Features**: Browse features/ directory
+- **Architecture**: See pipeline-overview.md
+- **Node System**: Check rdf-addressing.md and unknown-node-inference.md
+- **Development**: Review CONVENTIONS.md and testing-strategy.md
+- **Historical Info**: Look in archive/ directory
 
 **Common Questions**:
-- "How do I query transitive dependencies?" → inference-system.md
-- "How do I add a new edge type?" → graph-maintenance-conventions.md
-- "What's the module structure?" → module-organization.md
-- "How do I create an analyzer?" → analyzer-ownership-pattern.md
-- "What's the current status?" → inference-system-status-report.md
+- "How do I use this feature?" → features/ directory or USER-SCENARIOS.md
+- "How does the system work?" → pipeline-overview.md
+- "How do I identify nodes?" → rdf-addressing.md
+- "How are imports handled?" → unknown-node-inference.md
+- "How do I contribute?" → CONVENTIONS.md and testing-strategy.md
+- "What's archived?" → archive/README.md
 
 ---
 
@@ -422,19 +292,22 @@ DEPENDENCY_GRAPH_ANALYSIS.md
 - Update after major features
 - Keep examples current
 - Validate links and references
+- Archive obsolete documentation
 
 **Version History**:
 - 1.0 (2025-09-30): Created comprehensive documentation index
-- 1.0 (2025-09-30): Added inference system documentation
-- 1.0 (2025-09-30): Added maintenance conventions
-- 1.0 (2025-09-30): Added module organization guide
+- 2.0 (2025-10-05): Reorganized documentation structure
+  - Moved feature docs to features/ directory
+  - Created USER-SCENARIOS.md for user workflows
+  - Archived historical and duplicate documentation
+  - Focused docs/ on technical documentation only
 
 ---
 
-**Last Updated**: 2025-09-30
-**Version**: 1.0
+**Last Updated**: 2025-10-05
+**Version**: 2.0
 **Maintainer**: Development Team
 
 ---
 
-For quick questions, search this index or check the specific category documentation.
+For feature documentation, see the `features/` directory. For user scenarios, see `USER-SCENARIOS.md` at the project root.
