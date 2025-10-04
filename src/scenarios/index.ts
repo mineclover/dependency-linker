@@ -14,6 +14,7 @@ import {
 	fileDependencySpec,
 	symbolDependencySpec,
 	markdownLinkingSpec,
+	methodAnalysisSpec,
 	type BuiltinScenarioId,
 	BUILTIN_SCENARIOS,
 } from "./builtin";
@@ -56,6 +57,7 @@ export {
 	fileDependencySpec,
 	symbolDependencySpec,
 	markdownLinkingSpec,
+	methodAnalysisSpec,
 	BUILTIN_SCENARIOS,
 } from "./builtin";
 
@@ -79,6 +81,7 @@ function initializeBuiltinScenarios(): void {
 		globalScenarioRegistry.register(fileDependencySpec);
 		globalScenarioRegistry.register(symbolDependencySpec);
 		globalScenarioRegistry.register(markdownLinkingSpec);
+		globalScenarioRegistry.register(methodAnalysisSpec);
 	} catch (error) {
 		console.error("Failed to initialize built-in scenarios:", error);
 		throw error;
