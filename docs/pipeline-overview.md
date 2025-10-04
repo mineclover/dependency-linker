@@ -312,6 +312,77 @@ const crossDomainDeps = await db.findEdges({
 
 **관련 문서**: [DEPENDENCY_GRAPH_ANALYSIS.md](DEPENDENCY_GRAPH_ANALYSIS.md)
 
+### 3.4 Scenario-Based Analysis (시나리오 기반 분석)
+
+**목적**: 네임스페이스별 최적화된 시나리오 조합으로 수평적 확장 실현
+
+**개념**:
+```
+새 분석 = Namespace 추가 + Scenario 조합 선택
+```
+
+**시나리오 시스템**:
+```typescript
+// Built-in Scenarios
+- basic-structure: 파일/디렉토리 노드 (모든 언어 지원)
+- file-dependency: Import/require 추적 (TypeScript/JavaScript)
+- symbol-dependency: 심볼 수준 의존성 (calls, instantiation, type refs)
+- markdown-linking: 마크다운 링크 분석 (8가지 의존성 타입)
+```
+
+**Namespace 설정**:
+```json
+{
+  "namespaces": {
+    "frontend": {
+      "filePatterns": ["src/frontend/**/*.tsx"],
+      "scenarios": ["basic-structure", "file-dependency", "symbol-dependency"],
+      "scenarioConfig": {
+        "symbol-dependency": {
+          "trackCalls": true,
+          "trackInstantiations": true
+        }
+      }
+    },
+    "docs": {
+      "filePatterns": ["docs/**/*.md"],
+      "scenarios": ["markdown-linking"],
+      "scenarioConfig": {
+        "markdown-linking": {
+          "extractHashtags": true
+        }
+      }
+    }
+  }
+}
+```
+
+**시나리오 실행 순서**:
+- Topological Sort (Kahn's Algorithm)로 의존성 기반 실행 순서 자동 계산
+- `extends`: 타입 상속 (자식이 부모의 모든 타입 상속)
+- `requires`: 실행 순서 (선행 시나리오 필요)
+
+**분석 실행**:
+```typescript
+// 네임스페이스별 분석
+const analyzer = new NamespaceDependencyAnalyzer();
+const result = await analyzer.analyzeNamespace("frontend", configPath);
+
+// 실행된 시나리오 확인
+console.log(result.scenariosExecuted);
+// ["basic-structure", "file-dependency", "symbol-dependency"]
+
+// 전체 프로젝트 분석
+const allResults = await analyzer.analyzeAll(configPath);
+```
+
+**핵심 가치**:
+1. **비용 최적화**: 문서 분석 시 `markdown-linking`만, UI 분석 시 `symbol-dependency` 실행
+2. **맥락 기반 분석**: 같은 `.ts` 파일도 네임스페이스에 따라 다르게 분석
+3. **수평적 확장**: 코드 변경 없이 설정만으로 새 분석 추가
+
+**관련 문서**: [namespace-scenario-guide.md](namespace-scenario-guide.md)
+
 ## 4. INFERENCE (추론)
 
 **목적**: 직접 관계에서 간접 관계 추론
@@ -636,6 +707,7 @@ const fileContents = await db.queryInheritableRelationships(
 - [type-system.md](type-system.md) - Type 정의 및 분류
 - [semantic-tags.md](semantic-tags.md) - Semantic Tags 추출 룰
 - [inference-system.md](inference-system.md) - 추론 시스템 API
+- [namespace-scenario-guide.md](namespace-scenario-guide.md) - 🆕 Namespace-Scenario Integration 가이드
 
 ### 구현 문서
 - [PARSER_SYSTEM.md](PARSER_SYSTEM.md) - Parser 아키텍처
@@ -648,4 +720,4 @@ const fileContents = await db.queryInheritableRelationships(
 
 ---
 
-*Last Updated: 2025-10-03*
+*Last Updated: 2025-10-04*

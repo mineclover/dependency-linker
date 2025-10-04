@@ -43,6 +43,7 @@ Quick start guides and initial setup.
 | [implementation-status.md](implementation-status.md) | **Implementation status & completion details** | ✅ NEW | 🔴 **IMPORTANT** |
 | [type-system.md](type-system.md) | Type definitions (Node/Edge 대상 식별) | ✅ NEW | 🔴 Primary |
 | [semantic-tags.md](semantic-tags.md) | Semantic tags (복합적 의미 표현, 선택적) | ✅ NEW | 🔴 Primary |
+| [namespace-scenario-guide.md](namespace-scenario-guide.md) | 🆕 **Namespace-Scenario Integration 가이드** | ✅ NEW | 🔴 Primary |
 
 **Pipeline Stages** (✅ COMPLETE):
 1. **Extraction**: AST parsing → Symbol extraction → **Edge extraction** ✅
@@ -140,7 +141,8 @@ Performance tuning and optimization guides.
 1. **[pipeline-overview.md](pipeline-overview.md)** - 📌 **START HERE** - Complete data flow understanding
 2. [Setup-Guide.md](Setup-Guide.md) - Install and configure
 3. [API.md](API.md) - Learn basic API usage
-4. [inference-system.md](inference-system.md) - Understand inference capabilities
+4. [namespace-scenario-guide.md](namespace-scenario-guide.md) - 🆕 Namespace-Scenario Integration
+5. [inference-system.md](inference-system.md) - Understand inference capabilities
 
 ### For Understanding the System
 1. **[pipeline-overview.md](pipeline-overview.md)** - Complete pipeline: Extraction → Storage → Analysis → Inference
