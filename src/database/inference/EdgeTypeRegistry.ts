@@ -11,6 +11,7 @@ export interface EdgeTypeDefinition {
 	isTransitive: boolean;
 	isInheritable: boolean;
 	priority: number;
+	parentType?: string;
 }
 
 /**
@@ -372,6 +373,46 @@ export class EdgeTypeRegistry {
 	 */
 	static getTypesForDynamicRegistration(): EdgeTypeDefinition[] {
 		return EdgeTypeRegistry.EXTENDED_TYPES;
+	}
+
+	/**
+	 * 특정 타입의 자식 타입들을 조회
+	 */
+	static getChildren(type: string): string[] {
+		if (EdgeTypeRegistry.definitions.size === 0) {
+			EdgeTypeRegistry.initialize();
+		}
+
+		const children: string[] = [];
+		for (const [typeName, definition] of EdgeTypeRegistry.definitions) {
+			if (definition.parentType === type) {
+				children.push(typeName);
+			}
+		}
+		return children;
+	}
+
+	/**
+	 * 특정 타입의 계층 구조 경로를 조회 (부모부터 시작)
+	 */
+	static getHierarchyPath(type: string): string[] {
+		if (EdgeTypeRegistry.definitions.size === 0) {
+			EdgeTypeRegistry.initialize();
+		}
+
+		const path: string[] = [];
+		let currentType = type;
+
+		while (currentType) {
+			const definition = EdgeTypeRegistry.definitions.get(currentType);
+			if (!definition || !definition.parentType) {
+				break;
+			}
+			path.unshift(definition.parentType);
+			currentType = definition.parentType;
+		}
+
+		return path;
 	}
 
 	/**
