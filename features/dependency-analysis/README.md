@@ -481,14 +481,113 @@ const builder = createDependencyGraphBuilder({
 
 ---
 
+## 🔑 Node Identification System
+
+### RDF Addressing
+
+Dependency Linker는 RDF 기반 주소 체계를 사용하여 모든 노드를 고유하게 식별합니다.
+
+**RDF 주소 형식**:
+```
+<projectName>/<filePath>#<NodeType>:<SymbolName>
+```
+
+**예시**:
+```
+dependency-linker/src/parser.ts                              # 파일 노드
+dependency-linker/src/parser.ts#Class:TypeScriptParser       # 클래스 노드
+dependency-linker/src/parser.ts#Method:TypeScriptParser.parse # 메서드 노드
+```
+
+**특징**:
+- **명확한 정의 위치**: 주소만으로 심볼의 정의 파일 파악
+- **검색 엔진 기능**: RDF 주소로 파일 위치 이동 가능
+- **고유성 보장**: 파일 내 동일 심볼명 금지로 품질 강제
+- **참조 표준화**: 다른 곳에서 심볼 참조 시 통일된 주소 사용
+
+자세한 내용: [RDF Addressing Documentation](../../docs/rdf-addressing.md)
+
+---
+
+## 📄 Single File Analysis
+
+### 개요
+
+전체 프로젝트 분석 없이 개별 파일의 의존성을 분석할 수 있는 API를 제공합니다.
+
+**API**:
+```typescript
+import { analyzeSingleFile } from '@context-action/dependency-linker/integration';
+
+const result = await analyzeSingleFile('/absolute/path/to/file.ts', {
+  projectName: 'My Project',
+  enableInference: true,
+  replaceExisting: true,
+});
+```
+
+**Use Cases**:
+- IDE 통합 (파일 저장 시 자동 분석)
+- 증분 분석 (변경된 파일만 재분석)
+- 빠른 프로토타이핑
+- CI/CD 파이프라인에서 변경 파일만 분석
+
+**Output**:
+- 파일 노드 (File)
+- 심볼 노드 (Class, Function, Method 등)
+- 의존성 엣지 (imports, uses, extends 등)
+- Unknown 노드 (미분석 import 심볼)
+
+자세한 내용: [Single File Analysis API](../../docs/single-file-analysis-api.md)
+
+---
+
+## 🔗 Unknown Node & Alias Inference
+
+### 개요
+
+Import된 심볼이 아직 분석되지 않았거나 외부 라이브러리인 경우 Unknown 노드로 생성됩니다. Alias 추론을 통해 import alias 관계를 명시적으로 추적합니다.
+
+**Dual-Node Pattern**:
+```typescript
+// 소스 코드
+import { User as UserType } from './types';
+
+// 생성되는 노드
+1. dependency-linker/src/types.ts#Unknown:User (original)
+2. dependency-linker/src/App.tsx#Unknown:UserType (alias)
+
+// aliasOf edge로 연결
+UserType ---aliasOf---> User
+```
+
+**특징**:
+- **Original 노드**: 타겟 파일에 정의된 심볼
+- **Alias 노드**: 소스 파일에서 사용하는 별칭
+- **aliasOf Edge**: 두 노드를 연결하는 관계
+- **그래프 기반 추론**: LLM 컨텍스트 자동 구성
+
+**Use Cases**:
+- Import alias 추적
+- 심볼 별칭 관계 이해
+- 외부 라이브러리 의존성 식별
+- 미분석 심볼 임시 표현
+
+자세한 내용: [Unknown Node Inference](../../docs/unknown-node-inference.md)
+
+---
+
 ## 📚 Related Documentation
 
 - [Namespace Management](../namespace-management/) - 네임스페이스 설정
 - [Cross-Namespace](../cross-namespace/) - 크로스 네임스페이스 의존성
 - [Query System](../query/) - 의존성 쿼리
 - [Context Documents](../context-documents/) - 컨텍스트 문서 연동
+- [RDF Addressing](../../docs/rdf-addressing.md) - RDF 기반 노드 식별
+- [Single File Analysis](../../docs/single-file-analysis-api.md) - 단일 파일 분석 API
+- [Unknown Node Inference](../../docs/unknown-node-inference.md) - Unknown 노드와 Alias 추론
 
 ---
 
-**Last Updated**: 2025-10-02
+**Last Updated**: 2025-10-04
 **Version**: 3.0.0

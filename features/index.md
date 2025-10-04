@@ -381,6 +381,7 @@ node dist/cli/namespace-analyzer.js analyze integration-tests
 
 ## 📚 Documentation
 
+### Feature Documentation
 - [Dependency Analysis](./dependency-analysis/) - 의존성 분석 상세 가이드
 - [Namespace Management](./namespace-management/) - 네임스페이스 관리
 - [Cross-Namespace Dependencies](./cross-namespace/) - 크로스 네임스페이스
@@ -389,6 +390,12 @@ node dist/cli/namespace-analyzer.js analyze integration-tests
 - [Inference System](./inference/) - 추론 시스템
 - [Scenario System](./scenario-system/) - 시나리오 기반 분석 아키텍처
 - [Namespace-Scenario Integration](./namespace-scenario-integration/) - 수평적 확장 시스템
+
+### Technical Documentation
+- [RDF Addressing](../docs/rdf-addressing.md) - RDF 기반 노드 식별 시스템
+- [Single File Analysis](../docs/single-file-analysis-api.md) - 단일 파일 분석 API
+- [Unknown Node Inference](../docs/unknown-node-inference.md) - Unknown 노드와 Alias 추론 시스템
+- [Type System](../docs/type-system.md) - Node와 Edge 타입 시스템
 
 ---
 
