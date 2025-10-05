@@ -3,6 +3,26 @@
  */
 
 /**
+ * RDF 설정 옵션
+ */
+export interface RDFConfig {
+	/** RDF 주소 생성 활성화 */
+	enabled: boolean;
+	/** RDF 주소 저장 옵션 */
+	storeToDatabase?: boolean;
+	/** 데이터베이스 경로 */
+	databasePath?: string;
+	/** RDF 주소 네임스페이스 접두사 */
+	namespacePrefix?: string;
+	/** RDF 주소 생성 시 메타데이터 포함 */
+	includeMetadata?: boolean;
+	/** RDF 관계 추적 활성화 */
+	trackRelationships?: boolean;
+	/** 관계 타입 필터 */
+	relationshipTypes?: string[];
+}
+
+/**
  * Namespace configuration with file patterns
  */
 export interface NamespaceConfig {
@@ -20,6 +40,8 @@ export interface NamespaceConfig {
 	scenarios?: string[];
 	/** Scenario-specific configuration */
 	scenarioConfig?: Record<string, Record<string, unknown>>;
+	/** RDF 설정 */
+	rdf?: RDFConfig;
 }
 
 /**

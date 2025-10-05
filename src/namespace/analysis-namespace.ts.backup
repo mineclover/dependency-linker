@@ -15,6 +15,8 @@ import {
 	type ComplianceRule,
 	DEFAULT_COMPLIANCE_RULES,
 } from "../api/type-safe-analysis.js";
+import { RDFNamespaceAnalyzer } from "./rdf-namespace-analyzer.js";
+import type { RDFConfig } from "./types.js";
 
 // ===== NAMESPACE CONFIGURATION =====
 
@@ -52,13 +54,7 @@ export interface NamespaceConfig {
 		rules: string[]; // Rule IDs
 		customRules?: ComplianceRule[];
 	};
-	rdf?: {
-		enabled: boolean;
-		storeToDatabase?: boolean;
-		databasePath?: string;
-		includeMetadata?: boolean;
-		trackRelationships?: boolean;
-	};
+	rdf?: RDFConfig;
 	output: {
 		format: "json" | "csv" | "table";
 		destination: string;
@@ -128,6 +124,7 @@ export interface ProjectNamespaces {
 export class AnalysisNamespaceManager {
 	private configPath: string;
 	private projectConfig: ProjectNamespaces | null = null;
+	private rdfAnalyzer: RDFNamespaceAnalyzer | null = null;
 
 	constructor(configPath: string = "./dependency-linker.config.json") {
 		this.configPath = configPath;
@@ -240,6 +237,11 @@ export class AnalysisNamespaceManager {
 
 		// 출력
 		await this.outputNamespaceReport(report, namespace);
+
+		// RDF 분석 실행
+		if (namespace.rdf?.enabled) {
+			await this.runRDFAnalysis(name, namespace, files);
+		}
 
 		return report;
 	}
@@ -705,6 +707,175 @@ export function createNamespaceConfig(
 		...options,
 	};
 }
+
+	/**
+	 * RDF 분석 실행
+	 */
+	async runRDFAnalysis(
+		namespaceName: string,
+		namespaceConfig: NamespaceConfig,
+		files: string[]
+	): Promise<void> {
+		console.log(`🔗 Running RDF analysis for namespace: ${namespaceName}`);
+
+		try {
+			// RDF 분석기 초기화
+			if (!this.rdfAnalyzer) {
+				this.rdfAnalyzer = new RDFNamespaceAnalyzer({
+					databasePath: namespaceConfig.rdf?.databasePath || "./dependency-linker.db",
+					storeToDatabase: namespaceConfig.rdf?.storeToDatabase ?? true,
+					includeMetadata: namespaceConfig.rdf?.includeMetadata ?? true,
+					trackRelationships: namespaceConfig.rdf?.trackRelationships ?? true,
+					parallel: true,
+					maxConcurrency: 4,
+				});
+			}
+
+			// RDF 분석 실행
+			const result = await this.rdfAnalyzer.analyzeNamespace(
+				namespaceName,
+				namespaceConfig,
+				files
+			);
+
+			// 결과 출력
+			console.log(`📊 RDF Analysis Results:`);
+			console.log(`   Total Files: ${result.statistics.totalFiles}`);
+			console.log(`   Total Symbols: ${result.statistics.totalSymbols}`);
+			console.log(`   Total RDF Addresses: ${result.statistics.totalRDFAddresses}`);
+			console.log(`   Node Types: ${Object.keys(result.statistics.nodeTypeCount).length}`);
+			console.log(`   Namespaces: ${Object.keys(result.statistics.namespaceCount).length}`);
+
+			if (result.errors.length > 0) {
+				console.log(`❌ Errors: ${result.errors.length}`);
+				result.errors.forEach(error => console.log(`   - ${error}`));
+			}
+
+			if (result.warnings.length > 0) {
+				console.log(`⚠️  Warnings: ${result.warnings.length}`);
+				result.warnings.forEach(warning => console.log(`   - ${warning}`));
+			}
+
+			console.log(`✅ RDF analysis completed for namespace: ${namespaceName}`);
+		} catch (error) {
+			console.error(`❌ RDF analysis failed for namespace ${namespaceName}:`, error);
+		}
+	}
+
+	/**
+	 * RDF 네임스페이스 검색
+	 */
+	async searchRDFInNamespace(
+		namespaceName: string,
+		query: string,
+		options: {
+			nodeType?: string;
+			filePath?: string;
+			limit?: number;
+		} = {}
+	): Promise<any[]> {
+		if (!this.rdfAnalyzer) {
+			throw new Error("RDF analyzer not initialized");
+		}
+
+		return await this.rdfAnalyzer.searchRDFInNamespace(namespaceName, query, options);
+	}
+
+	/**
+	 * RDF 네임스페이스 통계
+	 */
+	async getRDFNamespaceStatistics(namespaceName: string): Promise<any> {
+		if (!this.rdfAnalyzer) {
+			throw new Error("RDF analyzer not initialized");
+		}
+
+		return await this.rdfAnalyzer.getRDFNamespaceStatistics(namespaceName);
+	}
+}
+
+	/**
+	 * RDF 분석 실행
+	 */
+	async runRDFAnalysis(
+		namespaceName: string,
+		namespaceConfig: NamespaceConfig,
+		files: string[]
+	): Promise<void> {
+		console.log(`🔗 Running RDF analysis for namespace: ${namespaceName}`);
+
+		try {
+			// RDF 분석기 초기화
+			if (!this.rdfAnalyzer) {
+				this.rdfAnalyzer = new RDFNamespaceAnalyzer({
+					databasePath: namespaceConfig.rdf?.databasePath || "./dependency-linker.db",
+					storeToDatabase: namespaceConfig.rdf?.storeToDatabase ?? true,
+					includeMetadata: namespaceConfig.rdf?.includeMetadata ?? true,
+					trackRelationships: namespaceConfig.rdf?.trackRelationships ?? true,
+					parallel: true,
+					maxConcurrency: 4,
+				});
+			}
+
+			// RDF 분석 실행
+			const result = await this.rdfAnalyzer.analyzeNamespace(
+				namespaceName,
+				namespaceConfig,
+				files
+			);
+
+			// 결과 출력
+			console.log(`📊 RDF Analysis Results:`);
+			console.log(`   Total Files: ${result.statistics.totalFiles}`);
+			console.log(`   Total Symbols: ${result.statistics.totalSymbols}`);
+			console.log(`   Total RDF Addresses: ${result.statistics.totalRDFAddresses}`);
+			console.log(`   Node Types: ${Object.keys(result.statistics.nodeTypeCount).length}`);
+			console.log(`   Namespaces: ${Object.keys(result.statistics.namespaceCount).length}`);
+
+			if (result.errors.length > 0) {
+				console.log(`❌ Errors: ${result.errors.length}`);
+				result.errors.forEach(error => console.log(`   - ${error}`));
+			}
+
+			if (result.warnings.length > 0) {
+				console.log(`⚠️  Warnings: ${result.warnings.length}`);
+				result.warnings.forEach(warning => console.log(`   - ${warning}`));
+			}
+
+			console.log(`✅ RDF analysis completed for namespace: ${namespaceName}`);
+		} catch (error) {
+			console.error(`❌ RDF analysis failed for namespace ${namespaceName}:`, error);
+		}
+	}
+
+	/**
+	 * RDF 네임스페이스 검색
+	 */
+	async searchRDFInNamespace(
+		namespaceName: string,
+		query: string,
+		options: {
+			nodeType?: string;
+			filePath?: string;
+			limit?: number;
+		} = {}
+	): Promise<any[]> {
+		if (!this.rdfAnalyzer) {
+			throw new Error("RDF analyzer not initialized");
+		}
+
+		return await this.rdfAnalyzer.searchRDFInNamespace(namespaceName, query, options);
+	}
+
+	/**
+	 * RDF 네임스페이스 통계
+	 */
+	async getRDFNamespaceStatistics(namespaceName: string): Promise<any> {
+		if (!this.rdfAnalyzer) {
+			throw new Error("RDF analyzer not initialized");
+		}
+
+		return await this.rdfAnalyzer.getRDFNamespaceStatistics(namespaceName);
+	}
 
 /**
  * 네임스페이스 실행 함수
