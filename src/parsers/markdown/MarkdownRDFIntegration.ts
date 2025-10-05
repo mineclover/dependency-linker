@@ -1,0 +1,254 @@
+/**
+ * Markdown RDF Integration
+ * 마크다운 심볼을 RDF 형식으로 변환
+ */
+
+import {
+	MarkdownParser,
+	type MarkdownSymbol,
+	type MarkdownParseResult,
+} from "./MarkdownParser";
+import { createRDFAddress } from "../../core/RDFAddress";
+import type { NodeType } from "../../core/RDFAddress";
+import type { RDFSymbolExtractionResult } from "../../core/types";
+
+// ===== MARKDOWN RDF TYPES =====
+
+/**
+ * 마크다운 RDF 분석 결과
+ */
+export interface MarkdownRDFResult {
+	/** 파일 경로 */
+	filePath: string;
+	/** 프로젝트 이름 */
+	projectName: string;
+	/** RDF 심볼들 */
+	symbols: RDFSymbolExtractionResult[];
+	/** 링크 관계 */
+	relationships: MarkdownRelationship[];
+	/** 에러 */
+	errors: string[];
+	/** 경고 */
+	warnings: string[];
+}
+
+/**
+ * 마크다운 관계
+ */
+export interface MarkdownRelationship {
+	/** 소스 RDF 주소 */
+	source: string;
+	/** 타겟 RDF 주소 */
+	target: string;
+	/** 관계 타입 */
+	type: "links_to" | "references" | "includes" | "defines";
+	/** 관계 메타데이터 */
+	metadata: {
+		linkText?: string;
+		anchorId?: string;
+		filePath?: string;
+		url?: string;
+	};
+}
+
+// ===== MARKDOWN RDF INTEGRATION =====
+
+/**
+ * 마크다운 RDF 통합 클래스
+ */
+export class MarkdownRDFIntegration {
+	private parser: MarkdownParser;
+
+	constructor() {
+		this.parser = new MarkdownParser();
+	}
+
+	/**
+	 * 마크다운 파일을 RDF 형식으로 분석
+	 */
+	async analyzeMarkdownWithRDF(
+		sourceCode: string,
+		filePath: string,
+		projectName: string,
+	): Promise<MarkdownRDFResult> {
+		// 마크다운 파싱
+		const parseResult = await this.parser.parseMarkdown(sourceCode);
+
+		// RDF 심볼 변환
+		const rdfSymbols: RDFSymbolExtractionResult[] = [];
+		const relationships: MarkdownRelationship[] = [];
+
+		// 심볼을 RDF 형식으로 변환
+		for (const symbol of parseResult.symbols) {
+			const rdfSymbol = this.convertToRDFSymbol(symbol, projectName, filePath);
+			if (rdfSymbol) {
+				rdfSymbols.push(rdfSymbol);
+			}
+		}
+
+		// 링크 관계는 별도로 처리하지 않음 (parseResult에 links가 없음)
+
+		return {
+			filePath,
+			projectName,
+			symbols: rdfSymbols,
+			relationships,
+			errors: [],
+			warnings: [],
+		};
+	}
+
+	/**
+	 * 마크다운 심볼을 RDF 심볼로 변환
+	 */
+	private convertToRDFSymbol(
+		symbol: MarkdownSymbol,
+		projectName: string,
+		filePath: string,
+	): RDFSymbolExtractionResult | null {
+		try {
+			// NodeType 매핑
+			const nodeType = this.mapMarkdownTypeToNodeType(symbol.type);
+
+			// RDF 주소 생성
+			const rdfAddress = createRDFAddress({
+				projectName,
+				filePath,
+				nodeType: nodeType as any,
+				symbolName: symbol.name,
+			});
+
+			// 네임스페이스 추출
+			const { namespace, localName } = this.extractNamespace(symbol.name);
+
+			return {
+				rdfAddress,
+				nodeType,
+				symbolName: symbol.name,
+				namespace: namespace || undefined,
+				localName: localName || symbol.name,
+				metadata: {
+					accessModifier: "public",
+					isStatic: false,
+					isAsync: false,
+					isAbstract: false,
+					lineNumber: symbol.location.line,
+					columnNumber: symbol.location.column,
+					...symbol.metadata,
+					level: symbol.level,
+					anchorId: symbol.anchorId,
+					url: symbol.url,
+				} as any,
+			};
+		} catch (error) {
+			return null;
+		}
+	}
+
+	/**
+	 * 링크 관계 생성
+	 */
+	private createLinkRelationship(
+		link: any,
+		projectName: string,
+		filePath: string,
+	): MarkdownRelationship | null {
+		try {
+			// 소스 RDF 주소 (현재 파일)
+			const sourceRdfAddress = createRDFAddress({
+				projectName,
+				filePath,
+				nodeType: "Class" as any,
+				symbolName: "document",
+			});
+
+			// 타겟 RDF 주소 생성
+			let targetRdfAddress: string;
+			let relationshipType: "links_to" | "references" | "includes" | "defines";
+
+			if (link.type === "internal" && link.targetPath) {
+				// 내부 파일 링크
+				targetRdfAddress = createRDFAddress({
+					projectName,
+					filePath: link.targetPath,
+					nodeType: "Class" as any,
+					symbolName: "document",
+				});
+				relationshipType = "links_to";
+			} else if (link.type === "anchor" && link.anchorId) {
+				// 앵커 링크 (같은 파일 내)
+				targetRdfAddress = createRDFAddress({
+					projectName,
+					filePath,
+					nodeType: "Class" as any,
+					symbolName: link.anchorId,
+				});
+				relationshipType = "references";
+			} else {
+				// 외부 링크는 관계 생성하지 않음
+				return null;
+			}
+
+			return {
+				source: sourceRdfAddress,
+				target: targetRdfAddress,
+				type: relationshipType,
+				metadata: {
+					linkText: link.text,
+					anchorId: link.anchorId,
+					filePath: link.targetPath,
+					url: link.url,
+				},
+			};
+		} catch (error) {
+			return null;
+		}
+	}
+
+	/**
+	 * 마크다운 타입을 NodeType으로 매핑
+	 */
+	private mapMarkdownTypeToNodeType(markdownType: string): NodeType {
+		switch (markdownType) {
+			case "heading":
+				return "Class";
+			case "link":
+				return "Method";
+			case "image":
+				return "Property";
+			case "code_block":
+				return "Function";
+			case "inline_code":
+				return "Variable";
+			case "list_item":
+				return "Interface";
+			case "table":
+				return "Type";
+			case "blockquote":
+				return "Enum";
+			case "reference":
+				return "Enum";
+			default:
+				return "Class";
+		}
+	}
+
+	/**
+	 * 네임스페이스 추출
+	 */
+	private extractNamespace(symbolName: string): {
+		namespace?: string;
+		localName: string;
+	} {
+		// 마크다운에서는 일반적으로 네임스페이스가 없음
+		// 하지만 heading의 경우 계층 구조를 네임스페이스로 사용할 수 있음
+		const parts = symbolName.split("/");
+		if (parts.length > 1) {
+			return {
+				namespace: parts.slice(0, -1).join("/"),
+				localName: parts[parts.length - 1],
+			};
+		}
+		return { localName: symbolName };
+	}
+}

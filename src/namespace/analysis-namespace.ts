@@ -15,6 +15,7 @@ import {
 	type ComplianceRule,
 	DEFAULT_COMPLIANCE_RULES,
 } from "../api/type-safe-analysis.js";
+import { analyzeMarkdownFileWithRDF } from "../api/markdown-analysis.js";
 
 // ===== NAMESPACE CONFIGURATION =====
 
@@ -367,18 +368,42 @@ export class AnalysisNamespaceManager {
 				}
 
 				const sourceCode = fs.readFileSync(file, "utf-8");
-				const { symbols, errors } = await analyzeFileTypeSafe(
-					sourceCode,
-					"typescript",
-					file,
-					config.analysisOptions,
-				);
+				
+				// 마크다운 파일 감지
+				if (this.isMarkdownFile(file)) {
+					// 마크다운 파일은 RDF 분석 사용
+					const rdfResult = await analyzeMarkdownFileWithRDF(
+						sourceCode,
+						file,
+						"unknown-project",
+					);
+					
+					// RDF 심볼을 일반 심볼 형식으로 변환
+					const convertedSymbols = rdfResult.symbols.map(symbol => ({
+						name: symbol.symbolName,
+						type: symbol.nodeType,
+						filePath: file,
+						lineNumber: symbol.metadata.lineNumber,
+						columnNumber: symbol.metadata.columnNumber,
+						metadata: symbol.metadata,
+					}));
+					
+					allSymbols.push(...convertedSymbols);
+				} else {
+					// 일반 파일은 기존 분석 사용
+					const { symbols, errors } = await analyzeFileTypeSafe(
+						sourceCode,
+						"typescript",
+						file,
+						config.analysisOptions,
+					);
 
-				if (errors.length > 0) {
-					console.warn(`⚠️  Analysis errors for ${file}:`, errors);
+					if (errors.length > 0) {
+						console.warn(`⚠️  Analysis errors for ${file}:`, errors);
+					}
+
+					allSymbols.push(...symbols);
 				}
-
-				allSymbols.push(...symbols);
 			} catch (error) {
 				console.warn(`⚠️  Failed to analyze ${file}:`, error);
 			}
@@ -393,6 +418,14 @@ export class AnalysisNamespaceManager {
 
 		// 리포트 생성
 		return generateAnalysisReport(config, allSymbols, allCompliance);
+	}
+
+	/**
+	 * 마크다운 파일인지 확인
+	 */
+	private isMarkdownFile(filePath: string): boolean {
+		const ext = path.extname(filePath).toLowerCase();
+		return ['.md', '.markdown', '.mdx'].includes(ext);
 	}
 
 	/**

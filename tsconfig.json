@@ -27,7 +27,8 @@
 		"noImplicitOverride": true,
 		"exactOptionalPropertyTypes": false,
 		"incremental": true,
-		"tsBuildInfoFile": "./dist/.tsbuildinfo"
+		"tsBuildInfoFile": "./dist/.tsbuildinfo",
+		"downlevelIteration": true
 	},
 	"include": ["src/**/*"],
 	"exclude": ["node_modules", "dist", "tests"],

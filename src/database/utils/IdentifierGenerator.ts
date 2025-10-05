@@ -103,9 +103,15 @@ export function generateImportIdentifier(
 /**
  * Library 노드 identifier 생성 (외부 라이브러리)
  */
-export function generateLibraryIdentifier(libraryName: string): string {
+export function generateLibraryIdentifier(
+	libraryName: string,
+	version?: string,
+): string {
 	// 라이브러리는 파일 경로 없이 library:: 접두사 사용
-	return `library::${libraryName}`;
+	// 버전 정보가 있으면 포함
+	return version
+		? `library::${libraryName}@${version}`
+		: `library::${libraryName}`;
 }
 
 /**
@@ -154,6 +160,7 @@ export interface ParsedIdentifier {
 	name: string;
 	parentScope?: string;
 	isLibrary: boolean;
+	version?: string;
 }
 
 /**
@@ -162,11 +169,17 @@ export interface ParsedIdentifier {
 export function parseIdentifier(identifier: string): ParsedIdentifier {
 	// library 타입 체크
 	if (identifier.startsWith("library::")) {
-		const name = identifier.substring("library::".length);
+		const nameWithVersion = identifier.substring("library::".length);
+		// 버전 정보 분리 (name@version 형식)
+		const [name, version] = nameWithVersion.includes("@")
+			? nameWithVersion.split("@")
+			: [nameWithVersion, undefined];
+
 		return {
 			nodeType: "library",
 			name,
 			isLibrary: true,
+			version,
 		};
 	}
 

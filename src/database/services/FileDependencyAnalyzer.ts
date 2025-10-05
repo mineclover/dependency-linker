@@ -17,6 +17,10 @@ import {
 	generateLibraryIdentifier,
 	normalizePath,
 } from "../utils/IdentifierGenerator";
+import {
+	PackageJsonResolver,
+	type PackageInfo,
+} from "../utils/PackageJsonResolver";
 
 export interface ImportSource {
 	/** import 구문의 타입 */
@@ -89,6 +93,7 @@ export interface MissingLink {
  */
 export class FileDependencyAnalyzer {
 	private nodeIdentifier: NodeIdentifier;
+	private packageJsonResolver: PackageJsonResolver;
 
 	/**
 	 * 이 Analyzer가 소유하고 관리하는 edge types
@@ -107,6 +112,7 @@ export class FileDependencyAnalyzer {
 		private projectName: string = "unknown-project",
 	) {
 		this.nodeIdentifier = new NodeIdentifier(projectRoot);
+		this.packageJsonResolver = new PackageJsonResolver(projectRoot);
 		// 초기화 시 필요한 edge types 등록
 		this.ensureEdgeTypes();
 	}
@@ -303,8 +309,15 @@ export class FileDependencyAnalyzer {
 		importSource: ImportSource,
 		libraryName: string,
 	): Promise<{ node?: GraphNode; missingLink?: MissingLink }> {
-		// 새로운 identifier 생성 전략: library:: 접두사 사용
-		const identifier = generateLibraryIdentifier(libraryName);
+		// package.json에서 실제 설치된 버전 정보 조회
+		const packageInfo =
+			await this.packageJsonResolver.getPackageInfo(libraryName);
+
+		// 버전 정보가 있으면 포함하여 identifier 생성
+		const identifier = generateLibraryIdentifier(
+			libraryName,
+			packageInfo?.version,
+		);
 
 		const node: GraphNode = {
 			identifier,
@@ -314,7 +327,15 @@ export class FileDependencyAnalyzer {
 			language: "typescript", // 기본값
 			metadata: {
 				libraryName,
+				version: packageInfo?.version,
 				isBuiltin: importSource.type === "builtin",
+				isInstalled: packageInfo
+					? await this.packageJsonResolver.isPackageInstalled(libraryName)
+					: false,
+				packagePath: packageInfo?.path,
+				isDevDependency: packageInfo?.isDevDependency || false,
+				isPeerDependency: packageInfo?.isPeerDependency || false,
+				isOptionalDependency: packageInfo?.isOptionalDependency || false,
 				importedItems: importSource.imports.map((item) => ({
 					name: item.name,
 					alias: item.alias,
@@ -413,7 +434,7 @@ export class FileDependencyAnalyzer {
 	/**
 	 * Import된 심볼에 대한 Unknown 노드 및 uses 관계 생성
 	 */
-		private async createUnknownSymbolNodes(
+	private async createUnknownSymbolNodes(
 		sourceFile: string,
 		targetFilePath: string,
 		importItems: ImportItem[],
@@ -554,7 +575,7 @@ export class FileDependencyAnalyzer {
 					metadata: {
 						isDefault: item.isDefault,
 						isInferred: false, // 파싱으로 직접 얻음
-					...(item.alias ? { importedAs: item.alias } : {}), // alias가 있으면 추가
+						...(item.alias ? { importedAs: item.alias } : {}), // alias가 있으면 추가
 					},
 					weight: 1,
 					sourceFile: relativeSourcePath,

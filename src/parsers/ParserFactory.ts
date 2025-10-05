@@ -9,6 +9,7 @@ import { GoParser } from "./go";
 import { JavaParser } from "./java";
 import { PythonParser } from "./python";
 import { TypeScriptParser } from "./typescript";
+import { MarkdownParser } from "./markdown";
 
 /**
  * 통합 파서 팩토리
@@ -47,6 +48,8 @@ export class ParserFactory implements IParserFactory {
 				return new PythonParser();
 			case "go":
 				return new GoParser();
+			case "markdown":
+				return new MarkdownParser();
 			default:
 				throw new Error(`Parser for language "${language}" not found`);
 		}
@@ -70,7 +73,16 @@ export class ParserFactory implements IParserFactory {
 	 * 지원되는 언어 목록
 	 */
 	getSupportedLanguages(): SupportedLanguage[] {
-		return ["typescript", "tsx", "javascript", "jsx", "java", "python", "go"];
+		return [
+			"typescript",
+			"tsx",
+			"javascript",
+			"jsx",
+			"java",
+			"python",
+			"go",
+			"markdown",
+		];
 	}
 
 	/**
@@ -102,6 +114,7 @@ export class ParserFactory implements IParserFactory {
 			"python",
 			"go",
 			"javascript",
+			"markdown",
 		];
 		return languages.map((language) => {
 			const parser = this.createParser(language);
