@@ -2,7 +2,11 @@
 
 **Technical documentation hub for the Dependency Linker project.**
 
-**Note**: Feature documentation has been moved to the `features/` directory. User scenarios are documented in `USER-SCENARIOS.md` at the project root. This directory contains technical/code management documentation only.
+**Note**: 
+- Feature documentation has been moved to the `features/` directory
+- User scenarios are documented in `USER-SCENARIOS.md` at the project root
+- Work history and status reports have been moved to the `history/` directory
+- This directory contains only current technical documentation and user guides
 
 ## 목차
 - [📚 Documentation Categories](#-documentation-categories)

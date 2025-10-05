@@ -9,17 +9,17 @@ import {
 	analyzeImports,
 	analyzeDependencies,
 	initializeAnalysisSystem,
-} from "./src/api/analysis";
+} from "../../src/api/analysis";
 import {
 	createCustomKeyMapper,
 	predefinedCustomMappings,
-} from "./src/mappers/CustomKeyMapper";
+} from "../../src/mappers/CustomKeyMapper";
 import {
 	registerTypeScriptQueries,
 	registerJavaQueries,
 	registerPythonQueries,
 	globalQueryEngine,
-} from "./src/index";
+} from "../../src/index";
 
 // 테스트용 TypeScript 소스 코드
 const testTypeScriptCode = `

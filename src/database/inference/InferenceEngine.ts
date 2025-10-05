@@ -7,6 +7,8 @@
 
 import type { GraphDatabase } from "../GraphDatabase";
 import { EdgeTypeRegistry } from "./EdgeTypeRegistry";
+import { ErrorHandler, ERROR_CODES } from "./ErrorHandler";
+import { PERFORMANCE_CONSTANTS, ConfigValidators } from "./Constants";
 import {
 	type HierarchicalQueryOptions,
 	InferenceCacheEntry,
@@ -26,11 +28,24 @@ export class InferenceEngine {
 
 	constructor(database: GraphDatabase, config?: InferenceEngineConfig) {
 		this.database = database;
+
+		// 설정 검증
+		if (config) {
+			ConfigValidators.validatePerformanceConfig({
+				maxPathLength: config.defaultMaxPathLength,
+				maxHierarchyDepth: config.defaultMaxHierarchyDepth,
+			});
+		}
+
 		this.config = {
 			enableCache: config?.enableCache ?? true,
 			cacheSyncStrategy: config?.cacheSyncStrategy ?? "lazy",
-			defaultMaxPathLength: config?.defaultMaxPathLength ?? 10,
-			defaultMaxHierarchyDepth: config?.defaultMaxHierarchyDepth ?? Infinity,
+			defaultMaxPathLength:
+				config?.defaultMaxPathLength ??
+				PERFORMANCE_CONSTANTS.DEFAULT_MAX_PATH_LENGTH,
+			defaultMaxHierarchyDepth:
+				config?.defaultMaxHierarchyDepth ??
+				PERFORMANCE_CONSTANTS.DEFAULT_MAX_HIERARCHY_DEPTH,
 			enableCycleDetection: config?.enableCycleDetection ?? true,
 		};
 	}
@@ -131,7 +146,11 @@ export class InferenceEngine {
 		// Edge type이 transitive인지 확인
 		const edgeTypeDef = EdgeTypeRegistry.get(edgeType);
 		if (!edgeTypeDef?.isTransitive) {
-			throw new Error(`Edge type '${edgeType}' is not transitive`);
+			ErrorHandler.handle(
+				new Error(`Edge type '${edgeType}' is not transitive`),
+				"queryTransitive",
+				ERROR_CODES.EDGE_TYPE_NOT_TRANSITIVE,
+			);
 		}
 
 		const inferences: InferredRelationship[] = [];
@@ -183,34 +202,44 @@ export class InferenceEngine {
       ORDER BY depth, from_node, to_node
     `;
 
-		return new Promise((resolve, reject) => {
-			this.database["db"]!.all(
-				sql,
-				[fromNodeId, ...relationshipTypes, maxPathLength, ...relationshipTypes],
-				(err: Error | null, rows: any[]) => {
-					if (err) {
-						reject(new Error(`Transitive query failed: ${err.message}`));
-					} else {
-						const inferences = rows.map((row) => ({
-							fromNodeId: row.from_node,
-							toNodeId: row.to_node,
-							type: row.type,
-							path: {
-								edgeIds: row.path
-									.split(",")
-									.map((id: string) => parseInt(id, 10)),
-								depth: row.depth,
-								inferenceType: "transitive" as const,
-								description: `Transitive path (depth ${row.depth})`,
-							},
-							inferredAt: new Date(),
-							sourceFile: row.source_file,
-						}));
-						resolve(inferences);
-					}
-				},
-			);
-		});
+		return ErrorHandler.safeExecute(
+			() =>
+				new Promise<InferredRelationship[]>((resolve, reject) => {
+					this.database["db"]!.all(
+						sql,
+						[
+							fromNodeId,
+							...relationshipTypes,
+							maxPathLength,
+							...relationshipTypes,
+						],
+						(err: Error | null, rows: any[]) => {
+							if (err) {
+								reject(new Error(`Transitive query failed: ${err.message}`));
+							} else {
+								const inferences = rows.map((row) => ({
+									fromNodeId: row.from_node,
+									toNodeId: row.to_node,
+									type: row.type,
+									path: {
+										edgeIds: row.path
+											.split(",")
+											.map((id: string) => parseInt(id, 10)),
+										depth: row.depth,
+										inferenceType: "transitive" as const,
+										description: `Transitive path (depth ${row.depth})`,
+									},
+									inferredAt: new Date(),
+									sourceFile: row.source_file,
+								}));
+								resolve(inferences);
+							}
+						},
+					);
+				}),
+			"queryTransitive",
+			ERROR_CODES.INFERENCE_QUERY_FAILED,
+		);
 	}
 
 	/**

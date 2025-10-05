@@ -6,7 +6,7 @@
  */
 
 import path from "node:path";
-import { NamespaceGraphDB } from "./src/namespace/NamespaceGraphDB";
+import { NamespaceGraphDB } from "../../src/namespace/NamespaceGraphDB";
 
 async function analyzeFileDependencies(targetFile: string) {
 	const projectRoot = process.cwd();

@@ -3,18 +3,18 @@
  * 실제 프로젝트에서 자주 사용되는 분석 패턴들을 테스트
  */
 
-import { TypeScriptParser } from "./src/parsers/TypeScriptParser";
+import { TypeScriptParser } from "../../src/parsers/TypeScriptParser";
 import {
 	EnhancedDependencyExtractorV2,
 	QueryConfigurationBuilder,
-} from "./src/extractors/EnhancedDependencyExtractorV2";
+} from "../../src/extractors/EnhancedDependencyExtractorV2";
 import {
 	ALL_COMMON_QUERIES,
 	IMPORT_QUERIES,
 	USAGE_QUERIES,
 	JSX_QUERIES,
 	TYPESCRIPT_QUERIES,
-} from "./src/extractors/CommonQueries";
+} from "../../src/extractors/CommonQueries";
 
 // 복잡한 실제 프로젝트 패턴을 시뮬레이션한 테스트 코드
 const realWorldCode = `

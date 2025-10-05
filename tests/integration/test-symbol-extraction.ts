@@ -4,8 +4,8 @@
  */
 
 import path from "node:path";
-import { initializeAnalysisSystem } from "./src/api/analysis";
-import { createSymbolExtractor } from "./src/core/SymbolExtractor";
+import { initializeAnalysisSystem } from "../../src/api/analysis";
+import { createSymbolExtractor } from "../../src/core/SymbolExtractor";
 
 // Initialize the analysis system (parsers, queries, etc.)
 initializeAnalysisSystem();

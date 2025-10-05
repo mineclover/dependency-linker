@@ -3,7 +3,7 @@
  * TypeScript type import 구문들이 올바르게 분석되는지 확인
  */
 
-import { TypeScriptParser } from "./src/parsers/TypeScriptParser";
+import { TypeScriptParser } from "../../src/parsers/TypeScriptParser";
 import {
 	TypedQueryExecutor,
 	TYPED_TYPE_IMPORTS_QUERY,
