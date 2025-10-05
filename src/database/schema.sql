@@ -6,6 +6,68 @@ PRAGMA foreign_keys = ON;
 
 -- ===== CORE GRAPH TABLES =====
 
+-- RDF Addresses: Stores RDF-based node identifiers
+CREATE TABLE IF NOT EXISTS rdf_addresses (
+  id INTEGER PRIMARY KEY AUTOINCREMENT,
+  -- RDF address: <projectName>/<filePath>#<NodeType>:<SymbolName>
+  rdf_address TEXT UNIQUE NOT NULL,
+  -- Project name for RDF addressing
+  project_name TEXT NOT NULL,
+  -- File path (normalized)
+  file_path TEXT NOT NULL,
+  -- Node type (Class, Method, Function, Property, etc.)
+  node_type TEXT NOT NULL,
+  -- Symbol name (with namespace support)
+  symbol_name TEXT NOT NULL,
+  -- Namespace (extracted from symbol_name)
+  namespace TEXT,
+  -- Local name (extracted from symbol_name)
+  local_name TEXT,
+  -- Source location information
+  line_number INTEGER,
+  column_number INTEGER,
+  -- Access modifier (public, private, protected)
+  access_modifier TEXT,
+  -- Method/function properties
+  is_static BOOLEAN DEFAULT FALSE,
+  is_async BOOLEAN DEFAULT FALSE,
+  is_abstract BOOLEAN DEFAULT FALSE,
+  -- Timestamps
+  created_at DATETIME DEFAULT CURRENT_TIMESTAMP,
+  updated_at DATETIME DEFAULT CURRENT_TIMESTAMP
+);
+
+-- Indexes for RDF addresses
+CREATE INDEX IF NOT EXISTS idx_rdf_addresses_rdf_address ON rdf_addresses(rdf_address);
+CREATE INDEX IF NOT EXISTS idx_rdf_addresses_project ON rdf_addresses(project_name);
+CREATE INDEX IF NOT EXISTS idx_rdf_addresses_file ON rdf_addresses(file_path);
+CREATE INDEX IF NOT EXISTS idx_rdf_addresses_node_type ON rdf_addresses(node_type);
+CREATE INDEX IF NOT EXISTS idx_rdf_addresses_symbol ON rdf_addresses(symbol_name);
+CREATE INDEX IF NOT EXISTS idx_rdf_addresses_namespace ON rdf_addresses(namespace);
+
+-- RDF Relationships: Stores relationships between RDF addresses
+CREATE TABLE IF NOT EXISTS rdf_relationships (
+  id INTEGER PRIMARY KEY AUTOINCREMENT,
+  -- Source RDF address
+  source_rdf_address TEXT NOT NULL,
+  -- Target RDF address
+  target_rdf_address TEXT NOT NULL,
+  -- Relationship type (contains, calls, imports, extends, implements, etc.)
+  relationship_type TEXT NOT NULL,
+  -- Relationship metadata (JSON)
+  metadata TEXT DEFAULT '{}',
+  -- Timestamps
+  created_at DATETIME DEFAULT CURRENT_TIMESTAMP,
+  -- Foreign key constraints
+  FOREIGN KEY (source_rdf_address) REFERENCES rdf_addresses(rdf_address),
+  FOREIGN KEY (target_rdf_address) REFERENCES rdf_addresses(rdf_address)
+);
+
+-- Indexes for RDF relationships
+CREATE INDEX IF NOT EXISTS idx_rdf_relationships_source ON rdf_relationships(source_rdf_address);
+CREATE INDEX IF NOT EXISTS idx_rdf_relationships_target ON rdf_relationships(target_rdf_address);
+CREATE INDEX IF NOT EXISTS idx_rdf_relationships_type ON rdf_relationships(relationship_type);
+
 -- Nodes: Represents any entity in the codebase (files, classes, methods, variables, etc.)
 CREATE TABLE IF NOT EXISTS nodes (
   id INTEGER PRIMARY KEY AUTOINCREMENT,

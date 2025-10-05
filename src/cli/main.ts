@@ -10,6 +10,26 @@ import {
 	AnalysisNamespaceManager,
 	runNamespaceAnalysis,
 } from "../namespace/analysis-namespace.js";
+import {
+	createRDFAddress,
+	parseRDFAddress,
+	validateRDFAddress,
+} from "../core/RDFAddress.js";
+import {
+	searchRDFAddresses,
+	filterRDFAddresses,
+	groupRDFAddressesBy,
+	generateRDFAddressStatistics,
+} from "../core/RDFAddressParser.js";
+import {
+	createRDFNodeIdentifier,
+	validateRDFNodeIdentifier,
+} from "../core/RDFNodeIdentifier.js";
+import {
+	validateRDFUniqueness,
+	suggestConflictResolution,
+} from "../core/RDFUniquenessValidator.js";
+import { RDFDatabaseAPI } from "../api/rdf-database-integration.js";
 
 const program = new Command();
 
@@ -574,6 +594,453 @@ function generateCSV(report: any): string {
 	return [headers.join(","), ...rows.map((row: any) => row.join(","))].join(
 		"\n",
 	);
+}
+
+// ===== RDF COMMANDS =====
+
+program
+	.command("rdf")
+	.description("RDF address management and analysis")
+	.option("--create", "Create RDF address")
+	.option("--search", "Search RDF addresses")
+	.option("--validate", "Validate RDF addresses")
+	.option("--stats", "Show RDF address statistics")
+	.option("--project <name>", "Project name for RDF address")
+	.option("--file <path>", "File path for RDF address")
+	.option("--type <type>", "Node type for RDF address")
+	.option("--symbol <name>", "Symbol name for RDF address")
+	.option("--query <query>", "Search query")
+	.option("--namespace <name>", "Namespace to analyze")
+	.option("--format <format>", "Output format (json, csv, table)", "table")
+	.option("--uniqueness", "Check uniqueness validation")
+	.option("--conflicts", "Show conflict resolution suggestions")
+	.option("--db", "Use database integration")
+	.option("--db-path <path>", "Database file path", "./dependency-linker.db")
+	.option("--store", "Store RDF addresses to database")
+	.option("--load", "Load RDF addresses from database")
+	.option("--relationships", "Show RDF relationships")
+	.option("--store-relationship", "Store RDF relationship")
+	.option("--source <address>", "Source RDF address for relationship")
+	.option("--target <address>", "Target RDF address for relationship")
+	.option("--rel-type <type>", "Relationship type")
+	.action(async (options) => {
+		try {
+			if (options.create) {
+				await handleRDFCreate(options);
+			} else if (options.search) {
+				await handleRDFSearch(options);
+			} else if (options.validate) {
+				await handleRDFValidate(options);
+			} else if (options.stats) {
+				await handleRDFStats(options);
+			} else if (options.store) {
+				await handleRDFStore(options);
+			} else if (options.load) {
+				await handleRDFLoad(options);
+			} else if (options.relationships) {
+				await handleRDFRelationships(options);
+			} else if (options.storeRelationship) {
+				await handleRDFStoreRelationship(options);
+			} else {
+				console.log(
+					"❌ Please specify an RDF command: --create, --search, --validate, --stats, --store, --load, --relationships, or --store-relationship",
+				);
+				process.exit(1);
+			}
+		} catch (error) {
+			console.error("❌ RDF command failed:", error);
+			process.exit(1);
+		}
+	});
+
+// ===== RDF COMMAND HANDLERS =====
+
+async function handleRDFCreate(options: any) {
+	const { project, file, type, symbol } = options;
+
+	if (!project || !file || !type || !symbol) {
+		console.log("❌ Missing required options for RDF create:");
+		console.log("   --project <name> - Project name");
+		console.log("   --file <path> - File path");
+		console.log("   --type <type> - Node type (Class, Method, Function, etc.)");
+		console.log("   --symbol <name> - Symbol name");
+		process.exit(1);
+	}
+
+	try {
+		const rdfAddress = createRDFAddress({
+			projectName: project,
+			filePath: file,
+			nodeType: type as any,
+			symbolName: symbol,
+			validate: true,
+		});
+
+		console.log("✅ RDF Address Created:");
+		console.log(`   ${rdfAddress}`);
+
+		// Validate the created address
+		const validation = validateRDFAddress(rdfAddress);
+		if (validation.isValid) {
+			console.log("✅ Address is valid");
+		} else {
+			console.log("❌ Address validation failed:");
+			validation.errors?.forEach((error) => console.log(`   - ${error}`));
+		}
+	} catch (error: any) {
+		console.error("❌ Failed to create RDF address:", error);
+		process.exit(1);
+	}
+}
+
+async function handleRDFSearch(options: any) {
+	const { query, namespace, format } = options;
+
+	if (!query) {
+		console.log("❌ Missing required option: --query <query>");
+		process.exit(1);
+	}
+
+	try {
+		// TODO: Load existing RDF addresses from database or files
+		// For now, we'll create some sample addresses for demonstration
+		const sampleAddresses = [
+			"dependency-linker/src/parser.ts#Class:TypeScriptParser",
+			"dependency-linker/src/parser.ts#Method:TypeScriptParser.parse",
+			"dependency-linker/src/graph.ts#Class:DependencyGraph",
+			"dependency-linker/src/graph.ts#Method:DependencyGraph.addNode",
+			"dependency-linker/src/cli.ts#Function:main",
+		];
+
+		const results = searchRDFAddresses(query, sampleAddresses, {
+			caseSensitive: false,
+			exactMatch: false,
+			includeProject: true,
+		});
+
+		console.log(`🔍 Search Results for "${query}":`);
+		console.log("=".repeat(50));
+
+		if (results.length === 0) {
+			console.log("No results found");
+			return;
+		}
+
+		if (format === "json") {
+			console.log(JSON.stringify(results, null, 2));
+		} else if (format === "csv") {
+			const csv = results
+				.map(
+					(r) =>
+						`${r.rdfAddress},${r.filePath},${r.projectName},${r.symbolName},${r.nodeType},${r.confidence}`,
+				)
+				.join("\n");
+			console.log(
+				"rdfAddress,filePath,projectName,symbolName,nodeType,confidence",
+			);
+			console.log(csv);
+		} else {
+			results.forEach((result, index) => {
+				console.log(`${index + 1}. ${result.symbolName} (${result.nodeType})`);
+				console.log(`   Address: ${result.rdfAddress}`);
+				console.log(`   File: ${result.filePath}`);
+				console.log(`   Confidence: ${(result.confidence * 100).toFixed(1)}%`);
+				console.log();
+			});
+		}
+	} catch (error: any) {
+		console.error("❌ Search failed:", error);
+		process.exit(1);
+	}
+}
+
+async function handleRDFValidate(options: any) {
+	const { namespace, uniqueness, conflicts } = options;
+
+	try {
+		// TODO: Load RDF addresses from namespace or database
+		// For now, we'll validate a sample address
+		const sampleAddress =
+			"dependency-linker/src/parser.ts#Method:TypeScriptParser.parse";
+
+		console.log("🔍 RDF Address Validation:");
+		console.log("=".repeat(50));
+
+		// Basic validation
+		const validation = validateRDFAddress(sampleAddress);
+		console.log(`Address: ${sampleAddress}`);
+		console.log(`Valid: ${validation.isValid ? "✅ Yes" : "❌ No"}`);
+
+		if (validation.errors) {
+			console.log("Errors:");
+			validation.errors.forEach((error) => console.log(`  - ${error}`));
+		}
+
+		// Parse and display details
+		const parsed = parseRDFAddress(sampleAddress);
+		if (parsed.isValid) {
+			console.log("\n📋 Parsed Details:");
+			console.log(`  Project: ${parsed.projectName}`);
+			console.log(`  File: ${parsed.filePath}`);
+			console.log(`  Type: ${parsed.nodeType}`);
+			console.log(`  Symbol: ${parsed.symbolName}`);
+		}
+
+		if (uniqueness) {
+			console.log("\n🔍 Uniqueness Validation:");
+			// TODO: Implement uniqueness validation with actual data
+			console.log("  (Uniqueness validation requires database integration)");
+		}
+
+		if (conflicts) {
+			console.log("\n💡 Conflict Resolution Suggestions:");
+			// TODO: Implement conflict resolution suggestions
+			console.log("  (Conflict resolution requires database integration)");
+		}
+	} catch (error: any) {
+		console.error("❌ Validation failed:", error);
+		process.exit(1);
+	}
+}
+
+async function handleRDFStats(options: any) {
+	const { namespace, format } = options;
+
+	try {
+		// TODO: Load RDF addresses from namespace or database
+		// For now, we'll create sample statistics
+		const sampleAddresses = [
+			"dependency-linker/src/parser.ts#Class:TypeScriptParser",
+			"dependency-linker/src/parser.ts#Method:TypeScriptParser.parse",
+			"dependency-linker/src/parser.ts#Method:TypeScriptParser.validate",
+			"dependency-linker/src/graph.ts#Class:DependencyGraph",
+			"dependency-linker/src/graph.ts#Method:DependencyGraph.addNode",
+			"dependency-linker/src/graph.ts#Method:DependencyGraph.addEdge",
+			"dependency-linker/src/cli.ts#Function:main",
+			"dependency-linker/src/cli.ts#Function:handleError",
+		];
+
+		const stats = generateRDFAddressStatistics(sampleAddresses);
+
+		console.log("📊 RDF Address Statistics:");
+		console.log("=".repeat(50));
+
+		if (format === "json") {
+			console.log(JSON.stringify(stats, null, 2));
+		} else {
+			console.log(`Total Addresses: ${stats.totalAddresses}`);
+			console.log(`Projects: ${stats.projectCount}`);
+			console.log(`Files: ${stats.fileCount}`);
+			console.log(`Invalid Addresses: ${stats.invalidAddresses}`);
+
+			console.log("\n📈 By Node Type:");
+			Object.entries(stats.nodeTypeCount).forEach(([type, count]) => {
+				console.log(`  ${type}: ${count}`);
+			});
+
+			console.log("\n📁 By Namespace:");
+			Object.entries(stats.namespaceCount).forEach(([ns, count]) => {
+				console.log(`  ${ns}: ${count}`);
+			});
+		}
+	} catch (error: any) {
+		console.error("❌ Statistics failed:", error);
+		process.exit(1);
+	}
+}
+
+async function handleRDFStore(options: any) {
+	const { project, file, type, symbol, dbPath } = options;
+
+	if (!project || !file || !type || !symbol) {
+		console.log("❌ Missing required options for RDF store:");
+		console.log("   --project <name> - Project name");
+		console.log("   --file <path> - File path");
+		console.log("   --type <type> - Node type (Class, Method, Function, etc.)");
+		console.log("   --symbol <name> - Symbol name");
+		process.exit(1);
+	}
+
+	try {
+		const api = new RDFDatabaseAPI(dbPath);
+		await api.initialize();
+
+		// RDF 주소 생성
+		const rdfAddress = createRDFAddress({
+			projectName: project,
+			filePath: file,
+			nodeType: type as any,
+			symbolName: symbol,
+			validate: true,
+		});
+
+		// 데이터베이스에 저장
+		await api.storeRDFAddress({
+			rdfAddress,
+			projectName: project,
+			filePath: file,
+			nodeType: type as any,
+			symbolName: symbol,
+		});
+
+		console.log("✅ RDF Address Stored to Database:");
+		console.log(`   ${rdfAddress}`);
+		console.log(`   Database: ${dbPath}`);
+
+		await api.close();
+	} catch (error: any) {
+		console.error("❌ Failed to store RDF address:", error);
+		process.exit(1);
+	}
+}
+
+async function handleRDFLoad(options: any) {
+	const { query, project, file, type, namespace, dbPath, format } = options;
+
+	try {
+		const api = new RDFDatabaseAPI(dbPath);
+		await api.initialize();
+
+		// 검색 옵션 구성
+		const searchOptions: any = {};
+		if (project) searchOptions.projectName = project;
+		if (file) searchOptions.filePath = file;
+		if (type) searchOptions.nodeType = type;
+		if (namespace) searchOptions.namespace = namespace;
+
+		// RDF 주소 검색
+		const results = await api.searchRDFAddresses(query || "", searchOptions);
+
+		console.log(`🔍 RDF Addresses from Database:`);
+		console.log("=".repeat(50));
+
+		if (results.length === 0) {
+			console.log("No RDF addresses found in database");
+			return;
+		}
+
+		if (format === "json") {
+			console.log(JSON.stringify(results, null, 2));
+		} else if (format === "csv") {
+			const csv = results
+				.map(
+					(r) =>
+						`${r.rdfAddress},${r.projectName},${r.filePath},${r.nodeType},${r.symbolName},${r.namespace || ""},${r.lineNumber || ""},${r.columnNumber || ""}`,
+				)
+				.join("\n");
+			console.log(
+				"rdfAddress,projectName,filePath,nodeType,symbolName,namespace,lineNumber,columnNumber",
+			);
+			console.log(csv);
+		} else {
+			results.forEach((result, index) => {
+				console.log(`${index + 1}. ${result.symbolName} (${result.nodeType})`);
+				console.log(`   Address: ${result.rdfAddress}`);
+				console.log(`   Project: ${result.projectName}`);
+				console.log(`   File: ${result.filePath}`);
+				if (result.namespace) console.log(`   Namespace: ${result.namespace}`);
+				if (result.lineNumber)
+					console.log(`   Line: ${result.lineNumber}:${result.columnNumber}`);
+				console.log();
+			});
+		}
+
+		await api.close();
+	} catch (error: any) {
+		console.error("❌ Failed to load RDF addresses:", error);
+		process.exit(1);
+	}
+}
+
+async function handleRDFRelationships(options: any) {
+	const { query, dbPath, format } = options;
+
+	if (!query) {
+		console.log("❌ Missing required option: --query <rdf-address>");
+		process.exit(1);
+	}
+
+	try {
+		const api = new RDFDatabaseAPI(dbPath);
+		await api.initialize();
+
+		// RDF 관계 검색
+		const relationships = await api.getRDFRelationships(query);
+
+		console.log(`🔗 RDF Relationships for "${query}":`);
+		console.log("=".repeat(50));
+
+		if (relationships.length === 0) {
+			console.log("No relationships found");
+			return;
+		}
+
+		if (format === "json") {
+			console.log(JSON.stringify(relationships, null, 2));
+		} else if (format === "csv") {
+			const csv = relationships
+				.map(
+					(r) =>
+						`${r.sourceRdfAddress},${r.targetRdfAddress},${r.relationshipType},${JSON.stringify(r.metadata)}`,
+				)
+				.join("\n");
+			console.log(
+				"sourceRdfAddress,targetRdfAddress,relationshipType,metadata",
+			);
+			console.log(csv);
+		} else {
+			relationships.forEach((rel, index) => {
+				console.log(`${index + 1}. ${rel.relationshipType}`);
+				console.log(`   From: ${rel.sourceRdfAddress}`);
+				console.log(`   To: ${rel.targetRdfAddress}`);
+				if (Object.keys(rel.metadata).length > 0) {
+					console.log(`   Metadata: ${JSON.stringify(rel.metadata)}`);
+				}
+				console.log();
+			});
+		}
+
+		await api.close();
+	} catch (error: any) {
+		console.error("❌ Failed to load RDF relationships:", error);
+		process.exit(1);
+	}
+}
+
+async function handleRDFStoreRelationship(options: any) {
+	const { source, target, relType, dbPath } = options;
+
+	if (!source || !target || !relType) {
+		console.log("❌ Missing required options for RDF relationship store:");
+		console.log("   --source <address> - Source RDF address");
+		console.log("   --target <address> - Target RDF address");
+		console.log("   --rel-type <type> - Relationship type");
+		process.exit(1);
+	}
+
+	try {
+		const api = new RDFDatabaseAPI(dbPath);
+		await api.initialize();
+
+		// RDF 관계 저장
+		await api.storeRDFRelationship({
+			sourceRdfAddress: source,
+			targetRdfAddress: target,
+			relationshipType: relType,
+			metadata: {},
+		});
+
+		console.log("✅ RDF Relationship Stored to Database:");
+		console.log(`   From: ${source}`);
+		console.log(`   To: ${target}`);
+		console.log(`   Type: ${relType}`);
+		console.log(`   Database: ${dbPath}`);
+
+		await api.close();
+	} catch (error: any) {
+		console.error("❌ Failed to store RDF relationship:", error);
+		process.exit(1);
+	}
 }
 
 // ===== CLI EXECUTION =====
