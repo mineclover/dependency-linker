@@ -205,18 +205,82 @@ features/rdf-addressing/
 ### 6. [RDF Addressing](./rdf-addressing/)
 **핵심**: RDF 기반 노드 식별 시스템으로 심볼의 정의 위치를 명확히 표현
 
-**Status**: 🚧 In Development (v3.1.0 타겟)
+**Status**: ✅ **Production Ready** (v3.1.0 완료)
 
 **Key Features**:
 - **명확한 식별**: `dependency-linker/src/parser.ts#Class:TypeScriptParser`
 - **역파싱**: RDF 주소 → 파일 위치 자동 변환
 - **고유성 보장**: 같은 파일 내 심볼 이름 중복 방지
 - **검색 엔진**: CLI 명령어로 심볼 검색 가능
+- **메타 태그**: 시멘틱 태그 방식으로 확장 가능한 주소 체계
+- **언어별 매핑**: TypeScript, JavaScript, Java, Python, Go 지원
+- **고급 검색**: 부분 일치, 필터링, 그룹화, 통계 생성
+
+**Architecture Components**:
+- **RDFAddress.ts**: 핵심 RDF 주소 생성/파싱
+- **RDFNodeIdentifier.ts**: RDF 기반 노드 식별자 관리
+- **RDFAddressParser.ts**: 고급 검색 및 필터링
+- **RDFUniquenessValidator.ts**: 고유성 검증 및 충돌 해결
+- **rdf-analysis.ts**: RDF 기반 분석 API
 
 **Use Cases**:
 - 심볼 정의 위치 빠른 탐색
 - 에디터 통합 (Go to Definition)
 - 문서 간 심볼 참조 표준화
+- 파서 검색 엔진으로 활용
+- 네임스페이스 기반 심볼 관리
+
+---
+
+### 6.1. [RDF-CLI Integration](./rdf-cli-integration/)
+**핵심**: RDF 주소 시스템을 CLI 명령어로 직접 관리
+
+**Status**: 🚧 In Development (v3.1.1 타겟)
+
+**Key Features**:
+- **RDF 주소 생성**: `npm run cli -- rdf create`
+- **RDF 주소 검색**: `npm run cli -- rdf search`
+- **RDF 주소 검증**: `npm run cli -- rdf validate`
+- **RDF 주소 통계**: `npm run cli -- rdf stats`
+
+**Use Cases**:
+- 심볼 탐색 및 위치 찾기
+- RDF 주소 기반 의존성 분석
+- 중복 심볼 검증 및 해결
+
+---
+
+### 6.2. [RDF-Database Integration](./rdf-database-integration/)
+**핵심**: RDF 주소를 GraphDatabase에 영구 저장하고 고급 쿼리 제공
+
+**Status**: 🚧 In Development (v3.1.2 타겟)
+
+**Key Features**:
+- **RDF 주소 저장**: 데이터베이스에 RDF 주소 영구 저장
+- **RDF 기반 쿼리**: RDF 주소로 노드 검색 및 관계 추적
+- **성능 최적화**: 인덱싱 및 캐싱으로 빠른 검색
+
+**Use Cases**:
+- 심볼 의존성 추적
+- 프로젝트 구조 분석
+- 네임스페이스 간 의존성 분석
+
+---
+
+### 6.3. [RDF-Namespace Integration](./rdf-namespace-integration/)
+**핵심**: RDF 주소 시스템과 네임스페이스 시스템 완전 통합
+
+**Status**: 🚧 In Development (v3.1.3 타겟)
+
+**Key Features**:
+- **네임스페이스별 RDF 분석**: 네임스페이스별 RDF 주소 생성 및 관리
+- **크로스 네임스페이스 RDF 의존성**: 네임스페이스 간 RDF 주소 의존성 추적
+- **RDF 기반 파일 그룹화**: RDF 주소로 파일 그룹화 및 분석
+
+**Use Cases**:
+- 네임스페이스별 심볼 관리
+- RDF 주소 기반 의존성 분석
+- 프로젝트 구조 최적화
 
 ---
 
@@ -474,9 +538,12 @@ node dist/cli/namespace-analyzer.js analyze integration-tests
 - **Scenario System** - 재사용 가능한 분석 명세 아키텍처 (v1.0.0, 2025-10-04)
 - **Unknown Symbol System** - Dual-Node Pattern with alias tracking (v3.1.0)
 - **Type Management Convention** - 노드 타입 & 엣지 타입 관리 체계 (v3.1.0)
+- **RDF Addressing** - 🆕 RDF 기반 노드 식별 시스템 (v3.1.0 완료)
 
 ### In Development 🚧
-- **RDF Addressing** - 심볼 정의 위치 명확화 시스템 (v3.1.0 타겟)
+- **RDF-CLI Integration** - CLI 명령어로 RDF 주소 관리 (v3.1.1 타겟)
+- **RDF-Database Integration** - GraphDatabase에 RDF 주소 저장 (v3.1.2 타겟)
+- **RDF-Namespace Integration** - 네임스페이스와 RDF 주소 완전 통합 (v3.1.3 타겟)
 - **Inference System** - 3가지 추론 타입 (계층적/전이적/상속 가능) (v3.2.0 타겟)
 - **Namespace-Scenario Integration** - 수평적 확장 가능한 분석 시스템
 - Symbol-level context documents
