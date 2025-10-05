@@ -519,7 +519,7 @@ InferenceEngine
 
 - **InferenceEngine**: [src/database/inference/InferenceEngine.ts](../../src/database/inference/InferenceEngine.ts)
 - **EdgeTypeRegistry**: [src/database/inference/EdgeTypeRegistry.ts](../../src/database/inference/EdgeTypeRegistry.ts)
-- **Query & Inference**: [features/query-and-inference/README.md](../query-and-inference/README.md)
+- **Query System**: [features/query-system/README.md](../query-system/README.md)
 - **Type System**: [docs/type-system.md](../../docs/type-system.md)
 
 ---

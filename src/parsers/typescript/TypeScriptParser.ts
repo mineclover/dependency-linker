@@ -1,6 +1,7 @@
 /**
  * TypeScript Parser
  * TypeScript/TSX 파일 파싱을 위한 tree-sitter 래퍼
+ * Thread-Safe Parser Pool 사용
  */
 
 import { promises as fs } from "node:fs";
@@ -9,41 +10,132 @@ import TypeScript from "tree-sitter-typescript";
 import type { QueryExecutionContext } from "../../core/types";
 import { BaseParser, type ParseResult, type ParserOptions } from "../base";
 
-export class TypeScriptParser extends BaseParser {
-	protected language = "typescript" as const;
-	protected fileExtensions = ["ts", "tsx", "js", "jsx"];
+/**
+ * Parser Pool for Thread Safety
+ * 각 파서 인스턴스가 독립적인 Language 객체를 사용하도록 보장
+ */
+class ParserPool {
+	private static instance: ParserPool;
+	private tsParsers: Parser[] = [];
+	private tsxParsers: Parser[] = [];
+	private maxPoolSize = 10;
+	private currentTsIndex = 0;
+	private currentTsxIndex = 0;
 
-	// Cache parser instances for reuse
-	private tsParser: Parser | null = null;
-	private tsxParser: Parser | null = null;
+	private constructor() {}
 
-	private createParser(isTsx: boolean): Parser {
-		const parser = new Parser();
-		parser.setLanguage(isTsx ? TypeScript.tsx : TypeScript.typescript);
+	static getInstance(): ParserPool {
+		if (!ParserPool.instance) {
+			ParserPool.instance = new ParserPool();
+		}
+		return ParserPool.instance;
+	}
+
+	/**
+	 * TypeScript Parser 인스턴스 가져오기 (Thread-Safe)
+	 */
+	getTypeScriptParser(): Parser {
+		if (this.tsParsers.length === 0) {
+			this.initializeParsers();
+		}
+
+		const parser = this.tsParsers[this.currentTsIndex];
+		this.currentTsIndex = (this.currentTsIndex + 1) % this.tsParsers.length;
 		return parser;
 	}
 
 	/**
+	 * TSX Parser 인스턴스 가져오기 (Thread-Safe)
+	 */
+	getTsxParser(): Parser {
+		if (this.tsxParsers.length === 0) {
+			this.initializeParsers();
+		}
+
+		const parser = this.tsxParsers[this.currentTsxIndex];
+		this.currentTsxIndex = (this.currentTsxIndex + 1) % this.tsxParsers.length;
+		return parser;
+	}
+
+	/**
+	 * Parser Pool 초기화
+	 * 각 Parser가 독립적인 Language 객체를 사용하도록 보장
+	 */
+	private initializeParsers(): void {
+		// TypeScript Parsers 초기화
+		for (let i = 0; i < this.maxPoolSize; i++) {
+			const parser = new Parser();
+			// 각 Parser에 독립적인 Language 객체 할당
+			parser.setLanguage(TypeScript.typescript);
+			this.tsParsers.push(parser);
+		}
+
+		// TSX Parsers 초기화
+		for (let i = 0; i < this.maxPoolSize; i++) {
+			const parser = new Parser();
+			// 각 Parser에 독립적인 Language 객체 할당
+			parser.setLanguage(TypeScript.tsx);
+			this.tsxParsers.push(parser);
+		}
+	}
+
+	/**
+	 * Pool 크기 조정
+	 */
+	setPoolSize(size: number): void {
+		this.maxPoolSize = Math.max(1, Math.min(20, size));
+	}
+
+	/**
+	 * Pool 상태 확인
+	 */
+	getPoolStatus(): { tsParsers: number; tsxParsers: number; maxSize: number } {
+		return {
+			tsParsers: this.tsParsers.length,
+			tsxParsers: this.tsxParsers.length,
+			maxSize: this.maxPoolSize,
+		};
+	}
+
+	/**
+	 * Pool 초기화 (테스트 격리용)
+	 */
+	clearPool(): void {
+		this.tsParsers = [];
+		this.tsxParsers = [];
+		this.currentTsIndex = 0;
+		this.currentTsxIndex = 0;
+	}
+}
+
+export class TypeScriptParser extends BaseParser {
+	protected language = "typescript" as const;
+	protected fileExtensions = ["ts", "tsx", "js", "jsx"];
+
+	private parserPool: ParserPool;
+
+	constructor() {
+		super();
+		this.parserPool = ParserPool.getInstance();
+	}
+
+	/**
 	 * Get tree-sitter Parser instance for query execution
-	 * Returns TypeScript parser by default (works for both TS and TSX)
+	 * Thread-safe parser pool에서 가져옴
 	 */
 	getParser(): Parser {
-		if (!this.tsParser) {
-			this.tsParser = this.createParser(false);
-		}
-		return this.tsParser;
+		return this.parserPool.getTypeScriptParser();
 	}
 
 	/**
 	 * 파서 캐시 클리어 (테스트 격리용)
 	 */
 	clearCache(): void {
-		this.tsParser = null;
-		this.tsxParser = null;
+		this.parserPool.clearPool();
 	}
 
 	/**
-	 * 소스 코드 파싱
+	 * 소스 코드 파싱 (Thread-Safe)
 	 */
 	override async parse(
 		sourceCode: string,
@@ -58,19 +150,10 @@ export class TypeScriptParser extends BaseParser {
 				(sourceCode.includes("<") &&
 					(sourceCode.includes("/>") || sourceCode.includes("</")));
 
-			// Use cached parsers
-			let parser: Parser;
-			if (isTsx) {
-				if (!this.tsxParser) {
-					this.tsxParser = this.createParser(true);
-				}
-				parser = this.tsxParser;
-			} else {
-				if (!this.tsParser) {
-					this.tsParser = this.createParser(false);
-				}
-				parser = this.tsParser;
-			}
+			// Thread-safe parser pool에서 parser 가져오기
+			const parser = isTsx
+				? this.parserPool.getTsxParser()
+				: this.parserPool.getTypeScriptParser();
 
 			const tree = parser.parse(sourceCode);
 
@@ -129,6 +212,20 @@ export class TypeScriptParser extends BaseParser {
 				`Failed to read file ${filePath}: ${error instanceof Error ? error.message : "Unknown error"}`,
 			);
 		}
+	}
+
+	/**
+	 * Parser Pool 상태 확인
+	 */
+	getPoolStatus(): { tsParsers: number; tsxParsers: number; maxSize: number } {
+		return this.parserPool.getPoolStatus();
+	}
+
+	/**
+	 * Parser Pool 크기 조정
+	 */
+	setPoolSize(size: number): void {
+		this.parserPool.setPoolSize(size);
 	}
 }
 

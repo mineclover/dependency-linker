@@ -63,16 +63,22 @@ export class InferenceEngine {
 
 		const relatedTypes = new Set<string>([edgeType]);
 
-		// 자식 타입들 수집
+		// 유사한 타입들 수집 (이름 기반)
 		if (includeChildren) {
-			const children = this.getChildTypes(edgeType, maxDepth);
-			children.forEach((type) => relatedTypes.add(type));
+			const allTypes = EdgeTypeRegistry.getAll();
+			allTypes.forEach((type) => {
+				if (type.type.includes(edgeType) || edgeType.includes(type.type)) {
+					relatedTypes.add(type.type);
+				}
+			});
 		}
 
-		// 부모 타입들 수집
+		// 특정 속성을 가진 타입들 수집
 		if (includeParents) {
-			const parents = EdgeTypeRegistry.getHierarchyPath(edgeType);
-			parents.forEach((type) => relatedTypes.add(type));
+			const transitiveTypes = EdgeTypeRegistry.getTransitiveTypes();
+			transitiveTypes.forEach((type) => {
+				relatedTypes.add(type.type);
+			});
 		}
 
 		// 모든 관련 타입의 관계 조회
@@ -394,10 +400,9 @@ export class InferenceEngine {
 				}
 
 				// 상속 가능한 관계 캐싱
-				if (typeDef.isInheritable && typeDef.parentType) {
+				if (typeDef.isInheritable) {
 					const inheritableCount = await this.cacheInheritableInferences(
 						typeDef.type,
-						typeDef.parentType,
 					);
 					totalCached += inheritableCount;
 				}
@@ -490,10 +495,7 @@ export class InferenceEngine {
 	/**
 	 * 상속 가능한 관계 캐싱
 	 */
-	private async cacheInheritableInferences(
-		edgeType: string,
-		parentType: string,
-	): Promise<number> {
+	private async cacheInheritableInferences(edgeType: string): Promise<number> {
 		return new Promise((resolve, reject) => {
 			const sql = `
         INSERT OR IGNORE INTO edge_inference_cache
@@ -512,7 +514,7 @@ export class InferenceEngine {
 
 			this.database["db"]!.run(
 				sql,
-				[edgeType, parentType, edgeType],
+				[edgeType, edgeType, edgeType],
 				function (err: Error | null) {
 					if (err) {
 						reject(new Error(`Inheritable cache failed: ${err.message}`));
@@ -629,39 +631,11 @@ export class InferenceEngine {
 	// ========== Private Methods ==========
 
 	/**
-	 * 자식 타입들 재귀적으로 수집
-	 */
-	private getChildTypes(
-		edgeType: string,
-		maxDepth: number = Infinity,
-		currentDepth: number = 0,
-	): string[] {
-		if (currentDepth >= maxDepth) {
-			return [];
-		}
-
-		const children = EdgeTypeRegistry.getChildren(edgeType);
-		const allChildren: string[] = [...children];
-
-		for (const child of children) {
-			const grandChildren = this.getChildTypes(
-				child,
-				maxDepth,
-				currentDepth + 1,
-			);
-			allChildren.push(...grandChildren);
-		}
-
-		return allChildren;
-	}
-
-	/**
 	 * 계층 깊이 계산
 	 */
 	private calculateHierarchyDepth(fromType: string, toType: string): number {
-		const path = EdgeTypeRegistry.getHierarchyPath(fromType);
-		const index = path.indexOf(toType);
-		return index === -1 ? 1 : path.length - index;
+		// Flat List에서는 단순히 타입이 같은지 확인
+		return fromType === toType ? 0 : 1;
 	}
 
 	/**

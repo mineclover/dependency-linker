@@ -11,7 +11,6 @@ export interface EdgeTypeDefinition {
 	isTransitive: boolean;
 	isInheritable: boolean;
 	priority: number;
-	parentType?: string;
 }
 
 /**
@@ -19,7 +18,7 @@ export interface EdgeTypeDefinition {
  *
  * 역할:
  * 1. 모든 edge type 정의를 코드로 명확히 관리
- * 2. 계층 구조 일관성 보장
+ * 2. Flat Edge Type List 관리 (계층 구조 제거)
  * 3. schema.sql과 동기화 기준점 제공
  * 4. 동적 edge type 추가 시 검증 기준
  */
@@ -376,68 +375,137 @@ export class EdgeTypeRegistry {
 	}
 
 	/**
-	 * 특정 타입의 자식 타입들을 조회
+	 * Edge type 동적 등록
 	 */
-	static getChildren(type: string): string[] {
+	static register(type: string, definition: EdgeTypeDefinition): void {
+		if (EdgeTypeRegistry.definitions.size === 0) {
+			EdgeTypeRegistry.initialize();
+		}
+		EdgeTypeRegistry.definitions.set(type, definition);
+	}
+
+	/**
+	 * Edge type 동적 제거
+	 */
+	static unregister(type: string): boolean {
+		if (EdgeTypeRegistry.definitions.size === 0) {
+			EdgeTypeRegistry.initialize();
+		}
+		return EdgeTypeRegistry.definitions.delete(type);
+	}
+
+	/**
+	 * Edge type 존재 여부 확인
+	 */
+	static exists(type: string): boolean {
+		if (EdgeTypeRegistry.definitions.size === 0) {
+			EdgeTypeRegistry.initialize();
+		}
+		return EdgeTypeRegistry.definitions.has(type);
+	}
+
+	/**
+	 * 특정 속성을 가진 Edge types 조회
+	 */
+	static getByProperty(
+		property: keyof EdgeTypeDefinition,
+		value: any,
+	): EdgeTypeDefinition[] {
 		if (EdgeTypeRegistry.definitions.size === 0) {
 			EdgeTypeRegistry.initialize();
 		}
 
-		const children: string[] = [];
-		for (const [typeName, definition] of EdgeTypeRegistry.definitions) {
-			if (definition.parentType === type) {
-				children.push(typeName);
+		const results: EdgeTypeDefinition[] = [];
+		for (const definition of EdgeTypeRegistry.definitions.values()) {
+			if (definition[property] === value) {
+				results.push(definition);
 			}
 		}
-		return children;
+		return results;
 	}
 
 	/**
-	 * 특정 타입의 계층 구조 경로를 조회 (부모부터 시작)
+	 * Transitive edge types 조회
 	 */
-	static getHierarchyPath(type: string): string[] {
+	static getTransitiveTypes(): EdgeTypeDefinition[] {
+		return EdgeTypeRegistry.getByProperty("isTransitive", true);
+	}
+
+	/**
+	 * Inheritable edge types 조회
+	 */
+	static getInheritableTypes(): EdgeTypeDefinition[] {
+		return EdgeTypeRegistry.getByProperty("isInheritable", true);
+	}
+
+	/**
+	 * Priority별 Edge types 조회 (낮은 우선순위부터)
+	 */
+	static getByPriority(): EdgeTypeDefinition[] {
 		if (EdgeTypeRegistry.definitions.size === 0) {
 			EdgeTypeRegistry.initialize();
 		}
 
-		const path: string[] = [];
-		let currentType = type;
-
-		while (currentType) {
-			const definition = EdgeTypeRegistry.definitions.get(currentType);
-			if (!definition || !definition.parentType) {
-				break;
-			}
-			path.unshift(definition.parentType);
-			currentType = definition.parentType;
-		}
-
-		return path;
+		return Array.from(EdgeTypeRegistry.definitions.values()).sort(
+			(a, b) => a.priority - b.priority,
+		);
 	}
 
 	/**
-	 * All edge types 목록 출력
+	 * All edge types 목록 출력 (Flat List)
 	 */
-	static printHierarchy(): string {
+	static printFlatList(): string {
 		const lines: string[] = [];
 
 		if (EdgeTypeRegistry.definitions.size === 0) {
 			EdgeTypeRegistry.initialize();
 		}
 
-		const allTypes = Array.from(EdgeTypeRegistry.definitions.values());
+		// Priority별로 정렬
+		const allTypes = EdgeTypeRegistry.getByPriority();
 
 		for (const def of allTypes) {
 			const properties = [];
 			if (def.isTransitive) properties.push("transitive");
 			if (def.isInheritable) properties.push("inheritable");
+			if (def.isDirected) properties.push("directed");
 			const propStr =
 				properties.length > 0 ? ` (${properties.join(", ")})` : "";
 
-			lines.push(`• ${def.type}${propStr}`);
+			lines.push(`• ${def.type} [priority: ${def.priority}]${propStr}`);
 		}
 
 		return lines.join("\n");
+	}
+
+	/**
+	 * Edge types 통계 정보
+	 */
+	static getStatistics(): {
+		total: number;
+		transitive: number;
+		inheritable: number;
+		directed: number;
+		byPriority: Record<number, number>;
+	} {
+		if (EdgeTypeRegistry.definitions.size === 0) {
+			EdgeTypeRegistry.initialize();
+		}
+
+		const allTypes = Array.from(EdgeTypeRegistry.definitions.values());
+		const byPriority: Record<number, number> = {};
+
+		for (const def of allTypes) {
+			byPriority[def.priority] = (byPriority[def.priority] || 0) + 1;
+		}
+
+		return {
+			total: allTypes.length,
+			transitive: allTypes.filter((t) => t.isTransitive).length,
+			inheritable: allTypes.filter((t) => t.isInheritable).length,
+			directed: allTypes.filter((t) => t.isDirected).length,
+			byPriority,
+		};
 	}
 }
 

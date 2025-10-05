@@ -58,6 +58,8 @@ export interface GraphQueryOptions {
 	relationshipTypes?: string[];
 	sourceFiles?: string[];
 	languages?: SupportedLanguage[];
+	fromNodeIds?: number[];
+	toNodeIds?: number[];
 	limit?: number;
 	offset?: number;
 }
@@ -392,6 +394,20 @@ export class GraphDatabase {
 				`(n1.source_file IN (${options.sourceFiles.map(() => "?").join(", ")}) OR n2.source_file IN (${options.sourceFiles.map(() => "?").join(", ")}))`,
 			);
 			params.push(...options.sourceFiles, ...options.sourceFiles);
+		}
+
+		if (options.fromNodeIds?.length) {
+			conditions.push(
+				`r.start_node_id IN (${options.fromNodeIds.map(() => "?").join(", ")})`,
+			);
+			params.push(...options.fromNodeIds);
+		}
+
+		if (options.toNodeIds?.length) {
+			conditions.push(
+				`r.end_node_id IN (${options.toNodeIds.map(() => "?").join(", ")})`,
+			);
+			params.push(...options.toNodeIds);
 		}
 
 		const whereClause = conditions.length
@@ -1139,6 +1155,26 @@ export class GraphDatabase {
 	}
 
 	/**
+	 * Raw SQL 쿼리 실행
+	 */
+	async runQuery(sql: string, params: any[] = []): Promise<any[]> {
+		return new Promise((resolve, reject) => {
+			if (!this.db) {
+				reject(new Error("Database not initialized"));
+				return;
+			}
+
+			this.db.all(sql, params, (err: Error | null, rows: any[]) => {
+				if (err) {
+					reject(new Error(`Query execution failed: ${err.message}`));
+				} else {
+					resolve(rows || []);
+				}
+			});
+		});
+	}
+
+	/**
 	 * 데이터베이스 정보 조회
 	 */
 	async getStats(): Promise<{
@@ -1193,39 +1229,41 @@ export class GraphDatabase {
 	// ========== Inference Methods ==========
 
 	/**
-	 * Hierarchical 관계 조회: 자식 타입들을 부모 타입으로 조회
-	 * @param edgeType 조회할 edge type (부모 타입)
+	 * Hierarchical 관계 조회: Flat Edge Type List 기반 조회
+	 * @param edgeType 조회할 edge type
 	 * @param options 조회 옵션
 	 */
 	async queryHierarchicalRelationships(
 		edgeType: string,
-		options: { includeChildren?: boolean; includeParents?: boolean } = {},
+		options: { includeSimilar?: boolean; includeByProperty?: string } = {},
 	): Promise<GraphRelationship[]> {
 		if (!this.db) throw new Error("Database not initialized");
 
-		const { includeChildren = true, includeParents = false } = options;
+		const { includeSimilar = false, includeByProperty } = options;
 
 		// Dynamic import to avoid circular dependency
 		const { EdgeTypeRegistry } = await import("./inference/EdgeTypeRegistry");
 		const relatedTypes = new Set<string>([edgeType]);
 
-		// 자식 타입 수집
-		if (includeChildren) {
-			const children = EdgeTypeRegistry.getChildren(edgeType);
-			const collectChildren = (type: string): void => {
-				const directChildren = EdgeTypeRegistry.getChildren(type);
-				directChildren.forEach((child) => {
-					relatedTypes.add(child);
-					collectChildren(child);
-				});
-			};
-			children.forEach(collectChildren);
+		// 유사한 타입들 수집 (이름 기반)
+		if (includeSimilar) {
+			const allTypes = EdgeTypeRegistry.getAll();
+			allTypes.forEach((type) => {
+				if (type.type.includes(edgeType) || edgeType.includes(type.type)) {
+					relatedTypes.add(type.type);
+				}
+			});
 		}
 
-		// 부모 타입 수집
-		if (includeParents) {
-			const parents = EdgeTypeRegistry.getHierarchyPath(edgeType);
-			parents.forEach((type) => relatedTypes.add(type));
+		// 특정 속성을 가진 타입들 수집
+		if (includeByProperty) {
+			const propertyTypes = EdgeTypeRegistry.getByProperty(
+				includeByProperty as keyof import("./inference/EdgeTypeRegistry").EdgeTypeDefinition,
+				true,
+			);
+			propertyTypes.forEach((type) => {
+				relatedTypes.add(type.type);
+			});
 		}
 
 		// 모든 관련 타입의 관계 조회

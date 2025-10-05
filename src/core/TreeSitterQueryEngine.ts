@@ -4,6 +4,7 @@
  */
 
 import Parser from "tree-sitter";
+import TypeScript from "tree-sitter-typescript";
 import type { QueryMatch, SupportedLanguage } from "./types";
 
 /**
@@ -45,14 +46,25 @@ export class TreeSitterQueryEngine {
 		language: SupportedLanguage,
 	): QueryMatch[] {
 		try {
-			const parser = this.parsers.get(language);
-			if (!parser) {
-				throw new Error(`No parser available for language: ${language}`);
+			// 언어별 Language 객체 가져오기
+			let languageObj;
+			switch (language) {
+				case "typescript":
+				case "tsx":
+					languageObj = TypeScript.typescript;
+					break;
+				case "javascript":
+				case "jsx":
+					languageObj = TypeScript.typescript; // JavaScript도 TypeScript 파서 사용
+					break;
+				default:
+					throw new Error(
+						`Unsupported language for tree-sitter queries: ${language}`,
+					);
 			}
 
-			// Tree-sitter Query 객체 생성 (올바른 API 사용)
-			const parserLanguage = parser.getLanguage();
-			const query = new Parser.Query(parserLanguage, queryString);
+			// Tree-sitter Query 객체 생성
+			const query = new Parser.Query(languageObj, queryString);
 
 			// 쿼리 실행
 			const captures = query.captures(tree.rootNode);

@@ -1,8 +1,9 @@
 # Type Management - Implementation Tasks
 
 **Feature**: 타입 관리 시스템 개선
-**Status**: 📋 Planned
+**Status**: 🚧 In Development
 **Target Version**: 3.2.0
+**Progress**: 37.5% (3/8 tasks completed)
 
 ---
 
