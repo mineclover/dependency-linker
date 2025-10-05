@@ -65,14 +65,9 @@ export const TYPESCRIPT_TREE_SITTER_QUERIES = {
 	 */
 	"ts-export-declarations": `
 		(export_statement
-			declaration: [
-				(variable_statement) @declaration
-				(function_declaration) @declaration
-				(class_declaration) @declaration
-				(interface_declaration) @declaration
-				(type_alias_declaration) @declaration
-				(enum_declaration) @declaration
-			])
+			(lexical_declaration
+				(variable_declarator
+					name: (identifier) @export_name))) @export_statement
 	`,
 
 	/**
@@ -80,20 +75,7 @@ export const TYPESCRIPT_TREE_SITTER_QUERIES = {
 	 * 예: export default Component, export = module
 	 */
 	"ts-export-assignments": `
-		[
-			(export_statement
-				"default"
-				value: [
-					(identifier) @default_export
-					(call_expression) @default_export
-					(arrow_function) @default_export
-					(function_expression) @default_export
-					(class_expression) @default_export
-				])
-			(export_assignment
-				"="
-				(identifier) @export_assignment)
-		]
+		(export_statement "default") @default_export
 	`,
 
 	// ===== SYMBOL DEFINITION QUERIES =====

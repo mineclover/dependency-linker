@@ -42,6 +42,19 @@ report.[0-9]_.[0-9]_.[0-9]_.[0-9]_.json
 .cache
 *.tsbuildinfo
 
+# dependency-linker cache directories
+.dependency-linker-cache/
+dependency-linker-cache/
+cache/
+*.cache
+
+# analysis reports and outputs
+reports/
+analysis-*.json
+analysis-*.csv
+analysis-*.md
+dependency-linker.config.json
+
 # AI tool directories
 .claude/
 .gemini/

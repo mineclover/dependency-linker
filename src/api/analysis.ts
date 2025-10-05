@@ -75,6 +75,9 @@ export async function analyzeFile(
 	const startTime = performance.now();
 
 	try {
+		// 0. 쿼리 등록 (필요한 경우)
+		await initializeQueryBridge();
+
 		// 1. 파싱
 		const parseResult = await parseCode(sourceCode, language, filePath);
 		const context: QueryExecutionContext = parseResult.context;

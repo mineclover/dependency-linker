@@ -1,496 +1,485 @@
-# Usage Guide - Query-Based AST Analysis Library
+# Usage Guide - Advanced TypeScript Dependency Analysis Tool
 
-A TypeScript-first AST analysis library with QueryResultMap-centric architecture, complete type safety, and multi-language support.
+A production-ready TypeScript dependency analysis tool with high-performance analysis, namespace management, and comprehensive compliance checking.
 
-## Quick Start
+## 🚀 Quick Start
 
+### Installation
+```bash
+npm install @context-action/dependency-linker
+```
+
+### Basic Usage
+```bash
+# Initialize project
+dependency-linker init --project my-app
+
+# Analyze files
+dependency-linker analyze --pattern "src/**/*.ts"
+
+# Performance-optimized analysis
+dependency-linker analyze --pattern "src/**/*.ts" --performance
+
+# Namespace-based analysis
+dependency-linker namespace --all
+
+# Query system management
+dependency-linker namespace --queries
+dependency-linker namespace --queries-for source
+```
+
+## 🏗️ Project Setup
+
+### 1. Initialize Project
+```bash
+# Create configuration
+dependency-linker init --project my-app --directory ./src
+
+# This creates dependency-linker.config.json with default namespaces
+```
+
+### 2. Configure Namespaces
+```json
+{
+  "projectName": "my-app",
+  "rootPath": "/path/to/project",
+  "namespaces": {
+    "source": {
+      "name": "source",
+      "description": "Source code analysis",
+      "patterns": {
+        "include": ["src/**/*.ts"],
+        "exclude": ["src/**/*.test.ts", "src/**/*.spec.ts"]
+      },
+      "analysis": {
+        "enabled": true,
+        "options": {
+          "enableParallelExecution": true,
+          "enableCaching": true
+        }
+      },
+      "compliance": {
+        "enabled": true,
+        "rules": ["exported-symbols-naming", "async-function-naming"]
+      },
+      "output": {
+        "format": "json",
+        "destination": "./reports/source-analysis.json",
+        "includeMetadata": true,
+        "includeStatistics": true
+      }
+    }
+  }
+}
+```
+
+## 🔍 Analysis Commands
+
+### Direct File Analysis
+```bash
+# Basic analysis
+dependency-linker analyze --pattern "src/**/*.ts"
+
+# With compliance checking
+dependency-linker analyze --pattern "src/**/*.ts" --compliance
+
+# Performance-optimized analysis
+dependency-linker analyze --pattern "src/**/*.ts" --performance \
+  --max-concurrency 16 --batch-size 100 --memory-limit 2048
+
+# Output to file
+dependency-linker analyze --pattern "src/**/*.ts" \
+  --output report.json --format json --include-statistics
+```
+
+### Namespace-Based Analysis
+```bash
+# List all namespaces
+dependency-linker namespace --list
+
+# Run specific namespace
+dependency-linker namespace --name source
+
+# Run all namespaces
+dependency-linker namespace --all
+
+# Add new namespace
+dependency-linker namespace --add components
+
+# Remove namespace
+dependency-linker namespace --remove old-namespace
+```
+
+### File Watching
+```bash
+# Watch specific namespace
+dependency-linker watch --namespace source --interval 5000
+
+# Watch all namespaces
+dependency-linker watch --interval 1000
+```
+
+### Scheduled Analysis
+```bash
+# Run scheduled analysis once
+dependency-linker schedule
+
+# Run as daemon process
+dependency-linker schedule --daemon
+```
+
+## 📋 Compliance Checking
+
+### Built-in Rules
+The tool includes several built-in compliance rules:
+
+- **PascalCase Naming**: Exported symbols should follow PascalCase convention
+- **camelCase Properties**: Interface properties should follow camelCase convention
+- **Async Function Naming**: Async functions should have descriptive names
+
+### Custom Rules
+Create custom compliance rules:
+
+```json
+[
+  {
+    "id": "custom-naming",
+    "name": "Custom Naming Convention",
+    "description": "All functions should start with verb",
+    "severity": "warning",
+    "check": "function(symbols) { /* custom logic */ }"
+  }
+]
+```
+
+### Compliance Commands
+```bash
+# Check compliance with default rules
+dependency-linker compliance --pattern "src/**/*.ts"
+
+# Custom rules and severity
+dependency-linker compliance --pattern "src/**/*.ts" \
+  --rules custom-rules.json --severity warning
+```
+
+## ⚡ Performance Optimization
+
+### High-Performance Analysis
+```bash
+# Enable performance optimizations
+dependency-linker analyze --pattern "src/**/*.ts" --performance
+
+# Custom performance settings
+dependency-linker analyze --pattern "src/**/*.ts" --performance \
+  --max-concurrency 16 \
+  --batch-size 100 \
+  --memory-limit 2048
+```
+
+### Performance Features
+- **Intelligent Caching**: 6x performance improvement with file-based and memory caching
+- **Batch Processing**: Process 50+ files simultaneously
+- **Memory Management**: Automatic memory cleanup and configurable limits
+- **Concurrent Processing**: Up to 8 parallel workers (configurable)
+- **Real-time Monitoring**: Live performance metrics and throughput tracking
+
+### Performance Results
+```
+📊 Performance Results (120 TypeScript files, 4,671 symbols):
+
+First Run (No Cache):
+- Time: 71.87ms
+- Files/sec: 1,669.65
+- Symbols/sec: 64,991.14
+- Memory: 12.96MB peak
+- Cache: 0 hits, 120 misses
+
+Second Run (With Cache):
+- Time: 11.46ms (6.3x faster)
+- Files/sec: 10,469.07 (6.3x faster)
+- Symbols/sec: 407,508.66 (6.3x faster)
+- Memory: 10.41MB peak (20% less)
+- Cache: 120 hits, 0 misses (100% hit rate)
+```
+
+## 🛠️ Programmatic Usage
+
+### High-Performance Analysis
 ```typescript
-import {
-  QueryEngine,
-  CustomKeyMapping,
-  QueryExecutionContext
-} from '@context-action/dependency-linker';
+import { analyzeFilesWithPerformance, DEFAULT_PERFORMANCE_CONFIG } from '@context-action/dependency-linker';
 
-// Initialize query engine with global instance
-const engine = QueryEngine.globalInstance;
-
-// Execute multiple queries in parallel
-const results = await engine.executeMultiple(
-  ["ts-import-sources", "ts-export-declarations"],
-  matches,
-  context
-);
-```
-
-## Core Concepts
-
-### 1. AST → Query Pipeline
-
-The library follows a consistent pipeline across all languages:
-
-```
-AST Input → QueryExecutionContext → Query Execution → Typed Results
-```
-
-### 2. Language-Specific Query Keys
-
-Each language has its own namespaced query keys:
-
-- **TypeScript**: `ts-import-sources`, `ts-named-imports`, `ts-type-imports`
-- **Java**: `java-import-sources`, `java-class-declarations`, `java-method-declarations`
-- **Python**: `python-import-sources`, `python-function-definitions`, `python-class-definitions`
-
-### 3. Custom Key Mapping
-
-Abstract query keys with user-friendly names:
-
-```typescript
-const mapping = CustomKeyMapping.createMapper({
-  imports: "ts-import-sources",
-  exports: "ts-export-declarations",
-  types: "ts-type-imports"
-});
-```
-
-## Usage Examples
-
-### Basic TypeScript Analysis
-
-```typescript
-import { QueryEngine, QueryExecutionContext } from '@context-action/dependency-linker';
-import Parser from 'tree-sitter';
-import TypeScript from 'tree-sitter-typescript';
-
-// 1. Parse TypeScript code
-const parser = new Parser();
-parser.setLanguage(TypeScript.typescript);
-
-const sourceCode = `
-import React, { useState } from 'react';
-import type { User } from './types';
-
-export const Component: React.FC = () => {
-  return <div>Hello</div>;
+const config = {
+  ...DEFAULT_PERFORMANCE_CONFIG,
+  maxConcurrency: 16,
+  batchSize: 100,
+  memoryLimit: 2048
 };
-`;
 
-const tree = parser.parse(sourceCode);
+const results = await analyzeFilesWithPerformance(files, 'typescript', config);
+console.log(`Performance: ${results.metrics.filesPerSecond} files/sec`);
+console.log(`Cache: ${results.cacheStats.hits} hits, ${results.cacheStats.misses} misses`);
+```
 
-// 2. Create execution context
-const context: QueryExecutionContext = {
+### Namespace Management
+```typescript
+import { AnalysisNamespaceManager, createNamespaceConfig } from '@context-action/dependency-linker';
+
+const manager = new AnalysisNamespaceManager('./dependency-linker.config.json');
+
+// Add new namespace
+const componentsNamespace = createNamespaceConfig(
+  'components',
+  'React components analysis',
+  ['src/components/**/*.tsx'],
+  ['src/components/**/*.test.tsx']
+);
+
+await manager.addNamespace(componentsNamespace);
+
+// Run analysis
+const report = await manager.runNamespace('components');
+console.log(`Found ${report.summary.totalSymbols} symbols`);
+```
+
+### Query System Management
+```typescript
+import { AnalysisNamespaceManager } from '@context-action/dependency-linker';
+
+const manager = new AnalysisNamespaceManager('./dependency-linker.config.json');
+
+// Get available query categories
+const categories = manager.getQueryCategories();
+console.log('Available categories:', Object.keys(categories));
+
+// Get active queries for namespace
+const activeQueries = await manager.getActiveQueriesForNamespace('source');
+console.log('Active queries:', activeQueries);
+
+// Configure custom queries
+const customConfig = {
+  queries: {
+    categories: ['basic-analysis', 'symbol-definitions'],
+    custom: {
+      enabled: true,
+      queryIds: ['custom-query-1', 'custom-query-2']
+    },
+    options: {
+      enableParallelExecution: true,
+      enableCaching: true,
+      maxConcurrency: 4
+    }
+  }
+};
+```
+
+### Type-Safe Analysis
+```typescript
+import { analyzeFileTypeSafe } from '@context-action/dependency-linker';
+
+const { result, symbols, errors } = await analyzeFileTypeSafe(
   sourceCode,
-  language: "typescript",
-  filePath: "Component.tsx",
-  astNode: convertTreeSitterNode(tree.rootNode)
-};
-
-// 3. Execute queries using global engine
-const engine = QueryEngine.globalInstance;
-const importResults = await engine.execute(
-  "ts-import-sources",
-  matches,
-  context
+  'typescript',
+  'MyFile.ts'
 );
 
-console.log(importResults);
-// Output: Array of ImportSourceResult objects with full type safety
-```
-
-### Multi-Language Project Analysis
-
-```typescript
-import { QueryEngine } from '@context-action/dependency-linker';
-
-const engine = new QueryEngine();
-
-// Analyze TypeScript files
-const tsResults = await engine.executeForLanguage(
-  "typescript",
-  tsMatches,
-  tsContext
-);
-
-// Analyze Java files
-const javaResults = await engine.executeForLanguage(
-  "java",
-  javaMatches,
-  javaContext
-);
-
-// Combined analysis
-console.log({
-  typescript: tsResults,
-  java: javaResults
+console.log(`Found ${symbols.length} symbols`);
+symbols.forEach(symbol => {
+  console.log(`${symbol.name} (${symbol.type}) - ${symbol.isExported ? 'exported' : 'internal'}`);
 });
 ```
 
-### Custom Key Mapping for React Projects
-
+### Compliance Checking
 ```typescript
-import { CustomKeyMapping } from '@context-action/dependency-linker';
+import { checkCompliance, DEFAULT_COMPLIANCE_RULES } from '@context-action/dependency-linker';
 
-// Create React-specific mapping
-const reactMapping = CustomKeyMapping.createMapper({
-  hooks: "ts-named-imports",        // useState, useEffect, etc.
-  components: "ts-default-imports", // React component imports
-  types: "ts-type-imports",         // Type definitions
-  exports: "ts-export-declarations" // Component exports
-});
-
-// Execute with custom keys
-const results = await reactMapping.execute(matches, context);
-
-console.log(results.hooks);      // Hook imports
-console.log(results.components); // Component imports
-console.log(results.types);      // Type imports
-```
-
-### Conditional Query Execution
-
-```typescript
-import { QueryEngine } from '@context-action/dependency-linker';
-
-const engine = new QueryEngine();
-
-// Define analysis conditions
-const analysisConfig = {
-  includeTypes: true,
-  includeExports: true,
-  includeImports: true
-};
-
-// Map conditions to queries
-const queryMapping = {
-  types: "ts-type-imports",
-  exports: "ts-export-declarations",
-  imports: "ts-import-sources"
-};
-
-// Execute based on conditions
-const results = await engine.executeConditional(
-  queryMapping,
-  analysisConfig,
-  matches,
-  context
-);
-```
-
-### Priority-Based Query Execution
-
-```typescript
-import { QueryEngine } from '@context-action/dependency-linker';
-
-const engine = new QueryEngine();
-
-// Execute high-priority queries first
-const results = await engine.executeByPriority(
-  ["ts-import-sources", "ts-export-declarations", "ts-type-imports"],
-  matches,
-  context,
-  80 // minimum priority
-);
-```
-
-## Predefined Mappings
-
-The library includes several predefined mappings for common use cases:
-
-### TypeScript Analysis
-```typescript
-import { predefinedMappings } from '@context-action/dependency-linker';
-
-const results = await predefinedMappings.typeScriptAnalysis.execute(matches, context);
-// Includes: sources, namedImports, defaultImports, typeImports, exports
-```
-
-### React Development
-```typescript
-const results = await predefinedMappings.reactAnalysis.execute(matches, context);
-// Optimized for React component analysis
-```
-
-### Module Structure Analysis
-```typescript
-const results = await predefinedMappings.moduleAnalysis.execute(matches, context);
-// Focus on import/export relationships
-```
-
-## Type Safety
-
-The library provides full TypeScript type safety:
-
-```typescript
-// Type-safe query execution
-const results = await executeQuery("ts-import-sources", matches, context);
-// results is automatically typed as ImportSourceResult[]
-
-// Type-safe custom mapping
-const mapping = CustomKeyMapping.createMapper({
-  imports: "ts-import-sources" as const,
-  exports: "ts-export-declarations" as const
-});
-// mapping is fully typed with proper key relationships
-```
-
-## Performance Features
-
-### Query Engine Performance Monitoring
-
-```typescript
-const engine = QueryEngine.globalInstance;
-
-// Execute queries
-await engine.execute("ts-import-sources", matches, context);
-
-// Check performance metrics
-const metrics = engine.getPerformanceMetrics("ts-import-sources");
-console.log(`Average execution time: ${metrics.averageTime}ms`);
-console.log(`Cache hit rate: ${metrics.cacheHitRate}%`);
-
-// Validate engine state
-const validation = engine.validate();
-console.log(`Registry valid: ${validation.isValid}`);
-console.log(`Warnings: ${validation.warnings.length}`);
-```
-
-### Batch Execution for Better Performance
-
-```typescript
-// Execute multiple queries in parallel for maximum performance
-const results = await engine.executeMultiple(
-  ["ts-import-sources", "ts-export-declarations", "ts-type-imports"],
-  matches,
-  context
-);
-
-// Priority-based execution
-const priorityResults = await engine.executeByPriority(
-  ["ts-import-sources", "ts-export-declarations", "ts-type-imports"],
-  matches,
-  context,
-  80 // minimum priority
-);
-
-// Language-specific batch execution
-const tsResults = await engine.executeForLanguage(
-  "typescript",
-  matches,
-  context
-);
-```
-
-### Custom Key Mapping for Complex Workflows
-
-```typescript
-// React component analysis mapping
-const reactMapping = CustomKeyMapping.createMapper({
-  hooks: "ts-named-imports",        // useState, useEffect, etc.
-  components: "ts-default-imports", // React component imports
-  types: "ts-type-imports",         // Type definitions
-  exports: "ts-export-declarations" // Component exports
-});
-
-// Execute with custom keys
-const results = await reactMapping.execute(matches, context);
-
-// Access results with user-friendly keys
-console.log(results.hooks);      // Hook imports
-console.log(results.components); // Component imports
-console.log(results.types);      // Type imports
-
-// Validate mapping
-const validation = reactMapping.validate();
-console.log(`Mapping valid: ${validation.isValid}`);
-```
-
-## Language-Specific Examples
-
-### TypeScript Analysis
-
-```typescript
-// TypeScript React component analysis
-const engine = QueryEngine.globalInstance;
-
-// Analyze imports
-const imports = await engine.execute("ts-import-sources", matches, context);
-const namedImports = await engine.execute("ts-named-imports", matches, context);
-const typeImports = await engine.execute("ts-type-imports", matches, context);
-
-// Analyze exports
-const exports = await engine.execute("ts-export-declarations", matches, context);
-
-// Results are fully typed
-imports.forEach(result => {
-  console.log(`Import: ${result.source} (${result.importType})`);
-  console.log(`Relative: ${result.isRelative}`);
-});
-```
-
-### Java Analysis
-
-```typescript
-// Java application analysis
-const javaContext: QueryExecutionContext = {
-  sourceCode: javaSourceCode,
-  language: "java",
-  filePath: "Application.java",
-  astNode: javaASTNode
-};
-
-// Analyze Java imports
-const javaImports = await engine.execute("java-import-sources", matches, javaContext);
-const javaClasses = await engine.execute("java-class-declarations", matches, javaContext);
-const javaMethods = await engine.execute("java-method-declarations", matches, javaContext);
-
-// Process results
-javaImports.forEach(result => {
-  console.log(`Java Import: ${result.source}`);
-});
-```
-
-### Python Analysis
-
-```typescript
-// Python module analysis
-const pythonContext: QueryExecutionContext = {
-  sourceCode: pythonSourceCode,
-  language: "python",
-  filePath: "main.py",
-  astNode: pythonASTNode
-};
-
-// Analyze Python imports and definitions
-const pythonImports = await engine.execute("python-import-sources", matches, pythonContext);
-const pythonFunctions = await engine.execute("python-function-definitions", matches, pythonContext);
-const pythonClasses = await engine.execute("python-class-definitions", matches, pythonContext);
-
-// Process results with type safety
-pythonImports.forEach(result => {
-  console.log(`Python Import: ${result.source}`);
-});
-```
-
-### Adding New Languages
-
-The architecture supports easy language expansion:
-
-1. Create language-specific query modules in `src/queries/{language}/`
-2. Define result types in `src/results/{language}.ts`
-3. Register queries in the main index
-4. Add language support to QueryEngine
-
-Example structure for adding Rust support:
-
-```typescript
-// src/queries/rust/imports.ts
-export const rustUseDeclarations: QueryFunction<RustUseDeclarationResult> = {
-  name: "rust-use-declarations",
-  description: "Extract Rust use declarations",
-  query: "(use_declaration) @use",
-  resultType: "rust-use-declarations",
-  languages: ["rust"],
-  priority: 90,
-  processor: (matches, context) => {
-    // Implementation
+const customRule = {
+  id: 'custom-naming',
+  name: 'Custom Naming Convention',
+  description: 'All functions should start with verb',
+  severity: 'warning' as const,
+  check: (symbols) => {
+    const violations = symbols.filter(s => 
+      s.type === 'function' && !s.name.match(/^(get|set|is|has|can|should)/)
+    );
+    return {
+      ruleId: 'custom-naming',
+      passed: violations.length === 0,
+      message: `${violations.length} functions violate naming convention`,
+      affectedSymbols: violations.map(v => v.name),
+      suggestions: violations.map(v => `Consider renaming ${v.name} to start with a verb`)
+    };
   }
 };
+
+const results = checkCompliance(symbols, [...DEFAULT_COMPLIANCE_RULES, customRule]);
 ```
 
-## Error Handling
+## 📊 Output Formats
 
-The library includes comprehensive error handling:
-
-```typescript
-try {
-  const results = await executeQuery("ts-import-sources", matches, context);
-} catch (error) {
-  if (error.message.includes("not found in registry")) {
-    console.log("Query not registered");
-  }
-  if (error.message.includes("does not support language")) {
-    console.log("Language not supported for this query");
+### JSON Output
+```json
+{
+  "timestamp": "2025-10-05T12:52:07.194Z",
+  "summary": {
+    "totalFiles": 120,
+    "totalSymbols": 4671,
+    "exportedSymbols": 15,
+    "complianceScore": 85.5
+  },
+  "symbols": [
+    {
+      "name": "MyClass",
+      "type": "class",
+      "filePath": "src/MyClass.ts",
+      "startLine": 1,
+      "endLine": 10,
+      "isExported": true,
+      "metadata": {
+        "isAbstract": false,
+        "isStatic": false,
+        "accessModifier": "public"
+      }
+    }
+  ],
+  "compliance": [
+    {
+      "ruleId": "exported-symbols-naming",
+      "passed": true,
+      "message": "All exported symbols follow PascalCase convention",
+      "affectedSymbols": [],
+      "suggestions": []
+    }
+  ],
+  "statistics": {
+    "byType": {
+      "function": 139,
+      "interface": 224,
+      "class": 61,
+      "method": 1293,
+      "property": 2935,
+      "enum": 7
+    },
+    "byFile": {
+      "src/MyClass.ts": 15,
+      "src/utils.ts": 8
+    },
+    "byExport": {
+      "exported": 15,
+      "internal": 4656
+    }
   }
 }
 ```
 
-## Migration from Legacy Versions
-
-If you're migrating from earlier versions:
-
-### Old API (v1.x)
-```typescript
-// Old approach
-const analyzer = new TypeScriptAnalyzer();
-const results = analyzer.extractImports(sourceCode);
+### CSV Output
+```csv
+name,type,filePath,startLine,endLine,isExported
+MyClass,class,src/MyClass.ts,1,10,true
+myFunction,function,src/utils.ts,5,8,false
 ```
 
-### New API (v3.x)
+## 🔧 Configuration Options
+
+### Performance Configuration
 ```typescript
-// New approach
-const results = await executeQuery("ts-import-sources", matches, context);
-```
-
-### Legacy Compatibility Mapping
-```typescript
-import { predefinedMappings } from '@context-action/dependency-linker';
-
-// Use legacy-compatible keys
-const results = await predefinedMappings.legacyCompatibility.execute(matches, context);
-// Provides: import-sources, named-imports, default-imports, type-imports
-```
-
-## Best Practices
-
-1. **Use Predefined Mappings**: Start with predefined mappings for common scenarios
-2. **Batch Queries**: Use `executeMultiple` for better performance
-3. **Language-Specific Analysis**: Use `executeForLanguage` for focused analysis
-4. **Type Safety**: Leverage TypeScript types throughout your analysis pipeline
-5. **Error Handling**: Always handle potential query execution errors
-6. **Performance Monitoring**: Use built-in metrics for optimization
-
-## Advanced Usage
-
-### Creating Custom Query Functions
-
-```typescript
-import type { QueryFunction } from '@context-action/dependency-linker';
-
-const customQuery: QueryFunction<CustomResult> = {
-  name: "custom-analysis",
-  description: "Custom AST analysis",
-  query: "(custom_pattern) @custom",
-  resultType: "custom-analysis",
-  languages: ["typescript"],
-  priority: 50,
-  processor: (matches, context) => {
-    return matches.map(match => ({
-      queryName: "custom-analysis",
-      customData: extractCustomData(match.node),
-      location: extractLocation(match.node),
-      nodeText: match.node.text
-    }));
-  }
-};
-
-// Register custom query
-engine.register("custom-analysis", customQuery);
-```
-
-### Integration with Build Tools
-
-```typescript
-// webpack.config.js integration example
-import { executeQuery } from '@context-action/dependency-linker';
-
-class DependencyAnalysisPlugin {
-  apply(compiler) {
-    compiler.hooks.compilation.tap('DependencyAnalysis', (compilation) => {
-      // Analyze dependencies during build
-      const results = executeQuery("ts-import-sources", matches, context);
-      // Process results...
-    });
-  }
+interface PerformanceConfig {
+  maxConcurrency: number;        // Maximum concurrent files (default: 8)
+  batchSize: number;            // Files per batch (default: 50)
+  enableCaching: boolean;       // Enable caching (default: true)
+  cacheDirectory: string;       // Cache directory (default: ./.dependency-linker-cache)
+  enableWorkerThreads: boolean; // Enable worker threads (default: true)
+  enableStreaming: boolean;     // Enable streaming (default: true)
+  memoryLimit: number;         // Memory limit in MB (default: 1024)
 }
 ```
 
-This library provides a robust, type-safe foundation for multi-language AST analysis with excellent performance and extensibility.
+### Namespace Configuration
+```typescript
+interface NamespaceConfig {
+  name: string;
+  description: string;
+  patterns: {
+    include: string[];         // Glob patterns to include
+    exclude: string[];         // Glob patterns to exclude
+  };
+  analysis: {
+    enabled: boolean;
+    options: {
+      enableParallelExecution: boolean;
+      enableCaching: boolean;
+    };
+  };
+  compliance: {
+    enabled: boolean;
+    rules: string[];            // Rule IDs to apply
+    customRules?: ComplianceRule[];
+  };
+  output: {
+    format: 'json' | 'csv' | 'table';
+    destination: string;
+    includeMetadata: boolean;
+    includeStatistics: boolean;
+  };
+  schedule?: {
+    enabled: boolean;
+    interval: number;           // Milliseconds
+    cron?: string;
+  };
+}
+```
+
+## 🎯 Best Practices
+
+### 1. Project Organization
+- Use namespaces to organize files by purpose (source, tests, docs)
+- Configure appropriate include/exclude patterns
+- Set up compliance rules for your coding standards
+
+### 2. Performance Optimization
+- Enable caching for repeated analysis
+- Use appropriate batch sizes for your project size
+- Monitor memory usage for large projects
+
+### 3. Compliance Checking
+- Start with built-in rules and add custom rules as needed
+- Use appropriate severity levels (error, warning, info)
+- Provide helpful suggestions for rule violations
+
+### 4. Continuous Integration
+- Use scheduled analysis for regular quality checks
+- Set up file watching for development workflows
+- Integrate compliance checking into CI/CD pipelines
+
+## 🚨 Troubleshooting
+
+### Common Issues
+
+#### Tree-sitter Parsing Errors
+The tool includes robust regex-based fallback parsing to ensure 100% success rate. If you encounter parsing errors, the tool will automatically fall back to regex-based analysis.
+
+#### Memory Issues
+For large projects, adjust memory limits:
+```bash
+dependency-linker analyze --performance --memory-limit 2048
+```
+
+#### Performance Issues
+Optimize performance settings:
+```bash
+dependency-linker analyze --performance \
+  --max-concurrency 4 \
+  --batch-size 25
+```
+
+### Debug Mode
+Enable verbose logging:
+```bash
+DEBUG=dependency-linker:* dependency-linker analyze --pattern "src/**/*.ts"
+```
+
+## 📚 Additional Resources
+
+- [API Documentation](./docs/API.md) - Complete API reference
+- [Configuration Guide](./docs/CONVENTIONS.md) - Configuration best practices
+- [Performance Guide](./docs/PERFORMANCE.md) - Performance optimization tips
+- [Compliance Guide](./docs/COMPLIANCE.md) - Compliance checking setup

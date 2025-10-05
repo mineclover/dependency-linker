@@ -203,8 +203,20 @@ export function setLanguageParsers(): void {
 /**
  * Query Bridge 초기화 (시스템 시작 시 호출)
  */
-export function initializeQueryBridge(): void {
+export async function initializeQueryBridge(): Promise<void> {
 	initializeTreeSitterQueries();
 	setLanguageParsers();
-	console.log("✅ Query Bridge initialized - Tree-sitter queries registered");
+
+	// 쿼리 프로세서 등록
+	const { registerTypeScriptQueries } = await import("../queries/typescript");
+	const { registerPythonQueries } = await import("../queries/python");
+	const { registerJavaQueries } = await import("../queries/java");
+
+	registerTypeScriptQueries(globalQueryEngine);
+	registerPythonQueries(globalQueryEngine);
+	registerJavaQueries(globalQueryEngine);
+
+	console.log(
+		"✅ Query Bridge initialized - Tree-sitter queries and processors registered",
+	);
 }

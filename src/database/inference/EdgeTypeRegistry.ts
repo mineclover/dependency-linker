@@ -65,8 +65,8 @@ export class EdgeTypeRegistry {
 			schema: { dependencyType: "string" },
 			isDirected: true,
 			isTransitive: true,
-			isInheritable: false,
-			priority: 0,
+			isInheritable: true,
+			priority: 1,
 		},
 
 		// ===== 코드 관계 (Code Relationships) =====
@@ -80,10 +80,10 @@ export class EdgeTypeRegistry {
 			isDirected: true,
 			isTransitive: false,
 			isInheritable: false,
-			priority: 5,
+			priority: 1,
 		},
 		{
-			type: "exports_to",
+			type: "exports",
 			description: "File exports to another file",
 			schema: {
 				exportName: "string",
@@ -92,7 +92,7 @@ export class EdgeTypeRegistry {
 			isDirected: true,
 			isTransitive: false,
 			isInheritable: false,
-			priority: 0,
+			priority: 1,
 		},
 		{
 			type: "calls",
@@ -104,7 +104,7 @@ export class EdgeTypeRegistry {
 			isDirected: true,
 			isTransitive: false,
 			isInheritable: false,
-			priority: 5,
+			priority: 3,
 		},
 		{
 			type: "references",
@@ -113,16 +113,16 @@ export class EdgeTypeRegistry {
 			isDirected: true,
 			isTransitive: false,
 			isInheritable: false,
-			priority: 5,
+			priority: 3,
 		},
 		{
 			type: "extends",
 			description: "Class extends another class",
 			schema: {},
 			isDirected: true,
-			isTransitive: false,
+			isTransitive: true,
 			isInheritable: true,
-			priority: 5,
+			priority: 2,
 		},
 		{
 			type: "implements",
@@ -131,7 +131,7 @@ export class EdgeTypeRegistry {
 			isDirected: true,
 			isTransitive: false,
 			isInheritable: true,
-			priority: 5,
+			priority: 2,
 		},
 		{
 			type: "uses",
@@ -140,7 +140,7 @@ export class EdgeTypeRegistry {
 			isDirected: true,
 			isTransitive: false,
 			isInheritable: false,
-			priority: 5,
+			priority: 3,
 		},
 		{
 			type: "instantiates",
@@ -229,6 +229,62 @@ export class EdgeTypeRegistry {
 			isInheritable: false,
 			priority: 0,
 		},
+
+		// ===== CORE-SPECIFICATION.md 추가 Edge Types =====
+		{
+			type: "links_to",
+			description: "Links to another resource",
+			schema: { linkType: "string" },
+			isDirected: true,
+			isTransitive: false,
+			isInheritable: false,
+			priority: 4,
+		},
+		{
+			type: "relates_to",
+			description: "Related to another element",
+			schema: { relationType: "string" },
+			isDirected: false,
+			isTransitive: false,
+			isInheritable: false,
+			priority: 4,
+		},
+		{
+			type: "tests",
+			description: "Tests another component",
+			schema: { testType: "string" },
+			isDirected: true,
+			isTransitive: false,
+			isInheritable: false,
+			priority: 5,
+		},
+		{
+			type: "mocks",
+			description: "Mocks another component",
+			schema: { mockType: "string" },
+			isDirected: true,
+			isTransitive: false,
+			isInheritable: false,
+			priority: 5,
+		},
+		{
+			type: "documents",
+			description: "Documents another component",
+			schema: { docType: "string" },
+			isDirected: true,
+			isTransitive: false,
+			isInheritable: false,
+			priority: 6,
+		},
+		{
+			type: "describes",
+			description: "Describes another component",
+			schema: { descriptionType: "string" },
+			isDirected: true,
+			isTransitive: false,
+			isInheritable: false,
+			priority: 6,
+		},
 	];
 
 	/**
@@ -284,7 +340,7 @@ export class EdgeTypeRegistry {
 			isDirected: true,
 			isTransitive: false,
 			isInheritable: false,
-			priority: 10,
+			priority: 6,
 		},
 	];
 

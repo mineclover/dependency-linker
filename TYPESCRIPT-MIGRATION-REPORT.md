@@ -30,6 +30,38 @@ JavaScript로 개발된 테스트 파일들을 TypeScript로 성공적으로 변
   - API 호환성 수정
   - 성능 모니터링 인터페이스 수정
 
+### 4. 완전한 테스트 스위트
+- **이전**: `tests/root/test-complete.js`
+- **현재**: `tests/root/test-complete.ts`
+- **변경사항**:
+  - ES6 import/export 구문으로 변환
+  - 타입 안전성 확보
+  - 모든 하위 테스트 통합 관리
+
+### 5. 종합 테스트 스위트
+- **이전**: `tests/root/test-suite.js`
+- **현재**: `tests/root/test-suite.ts`
+- **변경사항**:
+  - 핵심 기능, 통합, 성능, 고급 기능 테스트 통합
+  - 타입 안전성 확보
+  - 성능 요약 기능 추가
+
+### 6. 고급 추론 시스템 테스트
+- **이전**: `tests/advanced/test-advanced-inference-system.js`
+- **현재**: `tests/advanced/test-advanced-inference-system.ts`
+- **변경사항**:
+  - 사용자 정의 규칙, 실시간 추론, 고급 추론 시스템 테스트
+  - 배치 처리 및 성능 벤치마크 포함
+  - 타입 안전성 확보
+
+### 7. Unknown Symbol 고급 테스트
+- **이전**: `tests/advanced/test-unknown-symbol-advanced.js`
+- **현재**: `tests/advanced/test-unknown-symbol-advanced.ts`
+- **변경사항**:
+  - 성능 최적화, 고급 테스팅, 배치 작업 테스트
+  - 인덱스 최적화, 쿼리 성능, 별칭 체인 시나리오 테스트
+  - 타입 안전성 확보
+
 ## 주요 개선사항
 
 ### 1. 타입 안전성
@@ -95,9 +127,12 @@ await analyzeFile(testCode, "typescript", "src/MyComponent.tsx");
 ### 변경된 스크립트
 ```json
 {
+  "test": "npm run build && npx ts-node tests/root/test-complete.ts",
+  "test:quick": "npm run build && npx ts-node tests/root/test-suite.ts",
   "test:core": "npm run build && npx ts-node tests/root/test-core-features.ts",
   "test:integration-only": "npm run build && npx ts-node tests/root/test-integration.ts",
-  "test:performance": "npm run build && npx ts-node tests/performance/test-performance-optimization.ts"
+  "test:performance": "npm run build && npx ts-node tests/performance/test-performance-optimization.ts",
+  "test:advanced": "npm run build && npx ts-node tests/advanced/test-advanced-inference-system.ts"
 }
 ```
 
@@ -129,7 +164,10 @@ await analyzeFile(testCode, "typescript", "src/MyComponent.tsx");
 | **핵심 기능** | ~2초 | 100% (5/5) | ✅ |
 | **통합 테스트** | ~3초 | 100% (4/4) | ✅ |
 | **성능 테스트** | ~5초 | 100% (5/5) | ✅ |
-| **전체 테스트** | ~5초 | 100% (6/6) | ✅ |
+| **고급 기능** | ~3초 | 100% (4/4) | ✅ |
+| **Unknown Symbol** | ~4초 | 100% (9/9) | ✅ |
+| **전체 테스트** | ~9초 | 100% (6/6) | ✅ |
+| **Jest 테스트** | ~3초 | 100% (217/217) | ✅ |
 
 ### 타입 검증 성능
 - **컴파일 시간**: 평균 2-3초

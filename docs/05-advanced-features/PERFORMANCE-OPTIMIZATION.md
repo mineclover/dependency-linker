@@ -31,16 +31,15 @@ Dependency Linker v3.0에서는 다음과 같은 성능 최적화 기능을 제�
 ### 기본 사용법
 
 ```typescript
-import { InferenceLRUCache } from '@context-action/dependency-linker';
+import { analyzeFile } from '@context-action/dependency-linker';
 
-// LRU 캐시 생성 (최대 1000개 항목, 5분 TTL)
-const cache = new InferenceLRUCache(1000, 300000);
+// 파일 분석 (내부적으로 캐싱 처리)
+const result = await analyzeFile(sourceCode, 'typescript', filePath);
 
-// 결과 캐시
-cache.cacheResults('hierarchical', 'depends_on', results, { includeChildren: true });
-
-// 캐시된 결과 조회
-const cachedResults = cache.getResults('hierarchical', 'depends_on', { includeChildren: true });
+// 성능 최적화는 내부적으로 처리됨
+// - 파일 내용 해시 기반 캐싱
+// - Tree-sitter 파싱 실패 시 정규식 fallback
+// - 메모리 효율적인 배치 처리
 ```
 
 ### 고급 설정
