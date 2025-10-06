@@ -5,6 +5,7 @@ module.exports = {
 	testMatch: [
 		"**/tests/**/*.test.ts",
 		"**/tests/**/*.integration.test.ts",
+		"**/tests/cli/**/*.test.ts",
 		"**/__tests__/**/*.ts",
 		"**/?(*.)+(spec|test).ts",
 	],
