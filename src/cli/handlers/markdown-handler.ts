@@ -12,9 +12,21 @@ import { MarkdownTagConventionManager } from "../../parsers/markdown/MarkdownTag
 import { MarkdownTagDocumentGenerator } from "../../parsers/markdown/MarkdownTagDocumentGenerator.js";
 import { MarkdownTagTypeValidator } from "../../parsers/markdown/MarkdownTagTypeValidator.js";
 import { MarkdownTagTypeDocumentationGenerator } from "../../parsers/markdown/MarkdownTagTypeDocumentation.js";
-import { exampleMarkdown, exampleHeadings, exampleMarkdowns, markdownFiles } from "../examples/markdown-examples.js";
-import { exampleTags, exampleTagRelationships } from "../examples/tag-examples.js";
-import { exampleAnalysisResults, exampleProjectName, exampleOutputDir } from "../examples/analysis-examples.js";
+import {
+	exampleMarkdown,
+	exampleHeadings,
+	exampleMarkdowns,
+	markdownFiles,
+} from "../examples/markdown-examples.js";
+import {
+	exampleTags,
+	exampleTagRelationships,
+} from "../examples/tag-examples.js";
+import {
+	exampleAnalysisResults,
+	exampleProjectName,
+	exampleOutputDir,
+} from "../examples/analysis-examples.js";
 
 /**
  * 마크다운 분석 실행
@@ -50,7 +62,10 @@ export async function runMarkdownAnalysis(name: string): Promise<void> {
 		console.log(`\n📊 Statistics:`);
 		console.log(`   By Type:`, (result as any).statistics.tagsByType);
 		console.log(`   By Category:`, (result as any).statistics.tagsByCategory);
-		console.log(`   Most Used:`, (result as any).statistics.mostUsedTags.slice(0, 5));
+		console.log(
+			`   Most Used:`,
+			(result as any).statistics.mostUsedTags.slice(0, 5),
+		);
 
 		console.log(`\n✅ Markdown analysis completed for namespace: ${name}`);
 	} catch (error) {
@@ -112,14 +127,21 @@ export async function runHeadingExtraction(name: string): Promise<void> {
 		if ((result as any).headings?.length > 0) {
 			console.log(`\n📋 Headings:`);
 			(result as any).headings.forEach((heading: any, index: any) => {
-				console.log(`   ${index + 1}. ${"#".repeat(heading.level)} ${heading.text}`);
+				console.log(
+					`   ${index + 1}. ${"#".repeat(heading.level)} ${heading.text}`,
+				);
 				console.log(`      Line: ${heading.line}, Column: ${heading.column}`);
 			});
 		}
 
 		console.log(`\n📊 Statistics:`);
-		console.log(`   By Level:`, (result as any).statistics?.headingsByLevel || {});
-		console.log(`   Average Depth: ${((result as any).statistics?.averageDepth || 0).toFixed(2)}`);
+		console.log(
+			`   By Level:`,
+			(result as any).statistics?.headingsByLevel || {},
+		);
+		console.log(
+			`   Average Depth: ${((result as any).statistics?.averageDepth || 0).toFixed(2)}`,
+		);
 		console.log(`   Max Depth: ${(result as any).statistics?.maxDepth || 0}`);
 
 		console.log(`\n✅ Heading extraction completed for namespace: ${name}`);
@@ -155,7 +177,9 @@ export async function runTagCollection(name: string): Promise<void> {
 			console.log(`\n🏷️  Tags:`);
 			result.tags.forEach((tag, index) => {
 				console.log(`   ${index + 1}. ${tag.name} (${tag.type})`);
-				console.log(`      Location: Line ${tag.location.line}, Column ${tag.location.column}`);
+				console.log(
+					`      Location: Line ${tag.location.line}, Column ${tag.location.column}`,
+				);
 				console.log(
 					`      Category: ${(tag.metadata as any)?.category || "uncategorized"}`,
 				);
@@ -175,7 +199,10 @@ export async function runTagCollection(name: string): Promise<void> {
 		console.log(`\n📊 Statistics:`);
 		console.log(`   By Type:`, (result as any).statistics.tagsByType);
 		console.log(`   By Category:`, (result as any).statistics.tagsByCategory);
-		console.log(`   Most Used:`, (result as any).statistics.mostUsedTags.slice(0, 5));
+		console.log(
+			`   Most Used:`,
+			(result as any).statistics.mostUsedTags.slice(0, 5),
+		);
 
 		console.log(`\n✅ Tag collection completed for namespace: ${name}`);
 	} catch (error) {
@@ -215,14 +242,23 @@ export async function runTagHeadingMapping(name: string): Promise<void> {
 		}
 
 		console.log(`\n📊 Statistics:`);
-		console.log(`   Tags with Headings: ${(result as any).statistics.tagsWithHeadings}`);
-		console.log(`   Headings with Tags: ${(result as any).statistics.headingsWithTags}`);
+		console.log(
+			`   Tags with Headings: ${(result as any).statistics.tagsWithHeadings}`,
+		);
+		console.log(
+			`   Headings with Tags: ${(result as any).statistics.headingsWithTags}`,
+		);
 		console.log(`   Orphaned Tags: ${(result as any).statistics.orphanedTags}`);
-		console.log(`   Orphaned Headings: ${(result as any).statistics.orphanedHeadings}`);
+		console.log(
+			`   Orphaned Headings: ${(result as any).statistics.orphanedHeadings}`,
+		);
 
 		console.log(`\n✅ Tag-heading mapping completed for namespace: ${name}`);
 	} catch (error) {
-		console.error(`❌ Tag-heading mapping failed for namespace ${name}:`, error);
+		console.error(
+			`❌ Tag-heading mapping failed for namespace ${name}:`,
+			error,
+		);
 		throw error;
 	}
 }
@@ -251,11 +287,11 @@ export async function runTagDocumentGeneration(name: string): Promise<void> {
 				// outputDir: "./docs",
 				format: "markdown",
 				sections: [] as any, // {
-					// tagList: true,
-					// statistics: true,
-					// usageGuide: true,
-					// tagRelationships: true,
-					// definitions: true,
+				// tagList: true,
+				// statistics: true,
+				// usageGuide: true,
+				// tagRelationships: true,
+				// definitions: true,
 				// },
 				// style: {
 				// 	tableStyle: "pipe",
@@ -274,11 +310,18 @@ export async function runTagDocumentGeneration(name: string): Promise<void> {
 		);
 		console.log(`   File Size: ${(document as any).metadata.fileSize} bytes`);
 		console.log(`   Tag Count: ${(document as any).metadata.tagCount}`);
-		console.log(`   Convention Count: ${(document as any).metadata.conventionCount}`);
+		console.log(
+			`   Convention Count: ${(document as any).metadata.conventionCount}`,
+		);
 
-		console.log(`\n✅ Tag document generation completed for namespace: ${name}`);
+		console.log(
+			`\n✅ Tag document generation completed for namespace: ${name}`,
+		);
 	} catch (error) {
-		console.error(`❌ Tag document generation failed for namespace ${name}:`, error);
+		console.error(
+			`❌ Tag document generation failed for namespace ${name}:`,
+			error,
+		);
 		throw error;
 	}
 }
@@ -305,9 +348,13 @@ export async function runTagTypeValidation(name: string): Promise<void> {
 		if (result.validations.length > 0) {
 			console.log(`\n🔍 Validations:`);
 			(result as any).validations?.forEach((validation: any, index: any) => {
-				console.log(`   ${index + 1}. ${validation.tagName} (${validation.tagType})`);
+				console.log(
+					`   ${index + 1}. ${validation.tagName} (${validation.tagType})`,
+				);
 				console.log(`      Valid: ${validation.isValid ? "✅" : "❌"}`);
-				console.log(`      Confidence: ${(validation.confidence * 100).toFixed(1)}%`);
+				console.log(
+					`      Confidence: ${(validation.confidence * 100).toFixed(1)}%`,
+				);
 
 				if (validation.suggestions.length > 0) {
 					console.log(`      Suggestions:`);
@@ -321,11 +368,16 @@ export async function runTagTypeValidation(name: string): Promise<void> {
 		console.log(`\n📊 Statistics:`);
 		console.log(`   Valid Tags: ${result.statistics.validTags}`);
 		console.log(`   Invalid Tags: ${result.statistics.invalidTags}`);
-		console.log(`   Validation Rate: ${(result.statistics.validationRate * 100).toFixed(1)}%`);
+		console.log(
+			`   Validation Rate: ${(result.statistics.validationRate * 100).toFixed(1)}%`,
+		);
 
 		console.log(`\n✅ Tag type validation completed for namespace: ${name}`);
 	} catch (error) {
-		console.error(`❌ Tag type validation failed for namespace ${name}:`, error);
+		console.error(
+			`❌ Tag type validation failed for namespace ${name}:`,
+			error,
+		);
 		throw error;
 	}
 }
@@ -333,7 +385,9 @@ export async function runTagTypeValidation(name: string): Promise<void> {
 /**
  * 태그 타입 문서 생성 실행
  */
-export async function runTagTypeDocumentGeneration(name: string): Promise<void> {
+export async function runTagTypeDocumentGeneration(
+	name: string,
+): Promise<void> {
 	try {
 		console.log(`📝 Tag type document generation for namespace: ${name}`);
 		console.log("Generating tag type documentation...");
@@ -346,19 +400,25 @@ export async function runTagTypeDocumentGeneration(name: string): Promise<void> 
 			"test-project",
 		);
 
-		const document = await documentGenerator.generateTagTypeDocumentation(
-			result,
-		);
+		const document =
+			await documentGenerator.generateTagTypeDocumentation(result);
 
 		console.log("=".repeat(50));
 		console.log(`📊 Tag Type Document Generation Results:`);
 		console.log(`   Title: ${document.title}`);
 		console.log(`   File Path: ${(document as any).filePath || "Unknown"}`);
-		console.log(`   Generated At: ${document.generatedAt.toLocaleString("ko-KR")}`);
+		console.log(
+			`   Generated At: ${document.generatedAt.toLocaleString("ko-KR")}`,
+		);
 
-		console.log(`\n✅ Tag type document generation completed for namespace: ${name}`);
+		console.log(
+			`\n✅ Tag type document generation completed for namespace: ${name}`,
+		);
 	} catch (error) {
-		console.error(`❌ Tag type document generation failed for namespace ${name}:`, error);
+		console.error(
+			`❌ Tag type document generation failed for namespace ${name}:`,
+			error,
+		);
 		throw error;
 	}
 }

@@ -22,28 +22,41 @@
 
 ## 🛠️ Commands
 
-### `analyze <namespace>`
+### `npm run cli -- analyze`
 
-특정 네임스페이스의 파일들만 분석합니다.
+파일 패턴 기반 의존성 분석을 실행합니다.
 
 **Syntax**:
 ```bash
-node dist/cli/namespace-analyzer.js analyze <namespace> [options]
+npm run cli -- analyze --pattern <pattern> [options]
 ```
 
+**Implementation:**
+- **CLI Entry**: [`src/cli/main.ts#analyze`](../../../src/cli/main.ts#L50-L93) - Commander.js 기반 CLI 명령어
+- **Handler**: [`src/cli/handlers/typescript-handler.ts#runTypeScriptProjectAnalysis`](../../../src/cli/handlers/typescript-handler.ts#L24-L33) - TypeScript 프로젝트 분석 실행
+- **Core Logic**: [`src/namespace/analysis-namespace.ts#runNamespaceAnalysis`](../../../src/namespace/analysis-namespace.ts#L745-L758) - 네임스페이스 분석 실행
+
 **Options**:
-- `--cwd <path>` - Working directory (default: current)
-- `-c, --config <path>` - Config file path (default: deps.config.json)
-- `-d, --db <path>` - Database path (default: .dependency-linker/graph.db)
-- `--json` - Output as JSON
+- `--pattern <pattern>` - 분석할 파일 패턴 (기본값: "src/**/*.ts")
+- `--directory <dir>` - 분석할 디렉토리 (기본값: ".")
+- `--performance` - 성능 최적화 활성화
+- `--max-concurrency <num>` - 최대 동시 처리 파일 수 (기본값: 4)
+- `--batch-size <num>` - 배치 크기 (기본값: 10)
+- `--memory-limit <mb>` - 메모리 제한 (기본값: 1024MB)
+- `--output <file>` - 출력 파일
+- `--format <format>` - 출력 형식 (기본값: json)
+- `--include-statistics` - 상세 통계 포함
 
 **Example**:
 ```bash
-# source 네임스페이스 분석
-node dist/cli/namespace-analyzer.js analyze source
+# TypeScript 파일 분석
+npm run cli -- analyze --pattern "src/**/*.ts"
+
+# 성능 최적화 활성화
+npm run cli -- analyze --pattern "src/**/*.ts" --performance
 
 # JSON 출력
-node dist/cli/namespace-analyzer.js analyze source --json
+npm run cli -- analyze --pattern "src/**/*.ts" --format json
 ```
 
 **Output**:
@@ -65,26 +78,23 @@ Building dependency graph...
 
 ---
 
-### `analyze-all`
+### `npm run cli -- namespace --all`
 
-모든 네임스페이스를 하나의 통합 그래프로 분석합니다.
+모든 네임스페이스를 통합하여 분석합니다.
 
 **Syntax**:
 ```bash
-node dist/cli/namespace-analyzer.js analyze-all [options]
+npm run cli -- namespace --all
 ```
 
-**Options**:
-- `--cwd <path>` - Working directory
-- `-c, --config <path>` - Config file path
-- `-d, --db <path>` - Database path
-- `--show-cross` - Show cross-namespace dependencies summary
-- `--json` - Output as JSON
+**Implementation:**
+- **CLI Entry**: [`src/cli/main.ts#namespace`](../../../src/cli/main.ts#L218-L252) - 네임스페이스 관리 명령어
+- **Core Logic**: [`src/namespace/analysis-namespace.ts#runNamespaceAnalysis`](../../../src/namespace/analysis-namespace.ts#L745-L758) - 모든 네임스페이스 분석 실행
 
 **Example**:
 ```bash
-# 전체 분석
-node dist/cli/namespace-analyzer.js analyze-all
+# 모든 네임스페이스 분석
+npm run cli -- namespace --all
 
 # 크로스 네임스페이스 요약 포함
 node dist/cli/namespace-analyzer.js analyze-all --show-cross
@@ -149,16 +159,16 @@ Config: deps.config.json
 
 ### Key Components
 
-**DependencyGraphBuilder**:
+**DependencyGraphBuilder**: [`src/graph/DependencyGraphBuilder.ts`](../../../src/graph/DependencyGraphBuilder.ts)
 - 입력: 파일 경로 목록
 - 출력: DependencyGraph 객체
 - 역할: 파일별 의존성 추출 및 그래프 구성
 
-**NamespaceDependencyAnalyzer**:
+**NamespaceDependencyAnalyzer**: [`src/namespace/NamespaceDependencyAnalyzer.ts`](../../../src/namespace/NamespaceDependencyAnalyzer.ts)
 - 메서드: `analyzeAll()`, `analyzeNamespace()`
 - 역할: 네임스페이스 기반 분석 조정
 
-**NamespaceGraphDB**:
+**NamespaceGraphDB**: [`src/namespace/NamespaceGraphDB.ts`](../../../src/namespace/NamespaceGraphDB.ts)
 - 메서드: `storeUnifiedGraph()`, `storeNamespaceDependencies()`
 - 역할: 그래프 데이터 영속화
 

@@ -3,13 +3,19 @@
  * TypeScript 관련 CLI 명령어들을 처리
  */
 
-import { analyzeSingleFileFixed } from "../../api/single-file-analysis-fixed.js";
-import { analyzeFileWithSimpleGraph } from "../../api/simple-graph-analysis.js";
-import { analyzeFileWithGraphDB } from "../../api/graph-db-analysis.js";
-import { analyzeFileWithAdvancedGraph } from "../../api/advanced-graph-analysis.js";
-import { analyzeFileWithGraphDB as analyzeFileWithGraphBased } from "../../api/graph-based-analysis.js";
-import { analyzeFilesWithPerformance, DEFAULT_PERFORMANCE_CONFIG } from "../../api/performance-analysis.js";
-import { analyzeFilesRobust, generateRobustAnalysisReport } from "../../api/robust-analysis.js";
+import { analyzeSingleFileFixed } from "../../api/single-file-analysis-fixed";
+import { analyzeFileWithSimpleGraph } from "../../api/simple-graph-analysis";
+import { analyzeFileWithGraphDB } from "../../api/graph-db-analysis";
+import { analyzeFileWithAdvancedGraph } from "../../api/advanced-graph-analysis";
+import { analyzeFileWithGraphDB as analyzeFileWithGraphBased } from "../../api/graph-based-analysis";
+import {
+	analyzeFilesWithPerformance,
+	DEFAULT_PERFORMANCE_CONFIG,
+} from "../../api/performance-analysis.js";
+import {
+	analyzeFilesRobust,
+	generateRobustAnalysisReport,
+} from "../../api/robust-analysis.js";
 import { PerformanceHelper } from "../../core/PerformanceMonitor.js";
 
 /**
@@ -26,7 +32,7 @@ export async function runTypeScriptAnalysis(
 		output?: string;
 		format?: string;
 		includeStatistics?: boolean;
-	}
+	},
 ): Promise<void> {
 	try {
 		console.log(`🔍 TypeScript analysis for: ${filePath}`);
@@ -39,29 +45,44 @@ export async function runTypeScriptAnalysis(
 				break;
 
 			case "graph-db":
-				result = await analyzeFileWithGraphDB(filePath, process.cwd(), "typescript-project", {
-					includeGraphStats: options.includeStatistics !== false,
-					enableHotReload: true,
-				});
+				result = await analyzeFileWithGraphDB(
+					filePath,
+					process.cwd(),
+					"typescript-project",
+					{
+						includeGraphStats: options.includeStatistics !== false,
+						enableHotReload: true,
+					},
+				);
 				break;
 
 			case "advanced":
-				result = await analyzeFileWithAdvancedGraph(filePath, process.cwd(), "typescript-project", {
-					analyzeChains: true,
-					detectCircular: true,
-					analyzeDepth: true,
-					maxDepth: 5,
-					enableHotReload: true,
-					enablePerformanceMonitoring: true,
-					enableCaching: true,
-					enableBatchProcessing: true,
-				});
+				result = await analyzeFileWithAdvancedGraph(
+					filePath,
+					process.cwd(),
+					"typescript-project",
+					{
+						analyzeChains: true,
+						detectCircular: true,
+						analyzeDepth: true,
+						maxDepth: 5,
+						enableHotReload: true,
+						enablePerformanceMonitoring: true,
+						enableCaching: true,
+						enableBatchProcessing: true,
+					},
+				);
 				break;
 
 			case "graph-based":
-				result = await analyzeFileWithGraphBased(filePath, process.cwd(), "typescript-project", {
-					includeGraphStats: options.includeStatistics !== false,
-				});
+				result = await analyzeFileWithGraphBased(
+					filePath,
+					process.cwd(),
+					"typescript-project",
+					{
+						includeGraphStats: options.includeStatistics !== false,
+					},
+				);
 				break;
 
 			default:
@@ -75,12 +96,16 @@ export async function runTypeScriptAnalysis(
 		console.log(`   File: ${result.file.path}`);
 		console.log(`   Language: ${result.file.language}`);
 		console.log(`   Size: ${result.file.size} bytes`);
-		console.log(`   Last Modified: ${result.file.lastModified.toLocaleString("ko-KR")}`);
+		console.log(
+			`   Last Modified: ${result.file.lastModified.toLocaleString("ko-KR")}`,
+		);
 
 		if (result.dependencies) {
 			console.log(`\n🔗 Dependencies:`);
 			if (result.dependencies.internalFiles) {
-				console.log(`   Internal Files: ${result.dependencies.internalFiles.length}`);
+				console.log(
+					`   Internal Files: ${result.dependencies.internalFiles.length}`,
+				);
 			}
 			if (result.dependencies.libraries) {
 				console.log(`   Libraries: ${result.dependencies.libraries.length}`);
@@ -92,8 +117,12 @@ export async function runTypeScriptAnalysis(
 
 		if (result.metadata) {
 			console.log(`\n📊 Metadata:`);
-			console.log(`   Analyzed At: ${result.metadata.analyzedAt.toISOString()}`);
-			console.log(`   File Hash: ${result.metadata.fileHash.substring(0, 16)}...`);
+			console.log(
+				`   Analyzed At: ${result.metadata.analyzedAt.toISOString()}`,
+			);
+			console.log(
+				`   File Hash: ${result.metadata.fileHash.substring(0, 16)}...`,
+			);
 		}
 
 		// 출력 파일 저장
@@ -143,7 +172,7 @@ export async function runTypeScriptProjectAnalysis(
 		output?: string;
 		format?: string;
 		includeStatistics?: boolean;
-	}
+	},
 ): Promise<void> {
 	try {
 		console.log(`🔍 TypeScript project analysis for pattern: ${pattern}`);
@@ -185,7 +214,9 @@ export async function runTypeScriptProjectAnalysis(
 		console.log(`   Files analyzed: ${report.statistics.totalFiles}`);
 		console.log(`   Total symbols: ${report.statistics.totalSymbols}`);
 		console.log(`   Total errors: ${report.statistics.totalErrors}`);
-		console.log(`   Success rate: ${(report.statistics.successRate * 100).toFixed(1)}%`);
+		console.log(
+			`   Success rate: ${(report.statistics.successRate * 100).toFixed(1)}%`,
+		);
 
 		if (options.includeStatistics !== false) {
 			console.log(`\n📈 Statistics:`);
@@ -230,7 +261,9 @@ export async function runTypeScriptProjectAnalysis(
 /**
  * TypeScript 성능 벤치마크 실행
  */
-export async function runTypeScriptPerformanceBenchmark(name: string): Promise<void> {
+export async function runTypeScriptPerformanceBenchmark(
+	name: string,
+): Promise<void> {
 	try {
 		console.log(`🏃 TypeScript performance benchmark for namespace: ${name}`);
 		console.log("Running performance benchmarks...");
@@ -240,7 +273,9 @@ export async function runTypeScriptPerformanceBenchmark(name: string): Promise<v
 			`typescript-${name}`,
 			async () => {
 				// TypeScript 분석 시뮬레이션
-				const { analyzeFilesRobust } = await import("../../api/robust-analysis.js");
+				const { analyzeFilesRobust } = await import(
+					"../../api/robust-analysis.js"
+				);
 				const files = ["src/**/*.ts", "src/**/*.tsx"];
 				await analyzeFilesRobust(files, "typescript");
 			},
@@ -249,13 +284,24 @@ export async function runTypeScriptPerformanceBenchmark(name: string): Promise<v
 		console.log("=".repeat(50));
 		console.log(`📊 TypeScript Performance Benchmark Results:`);
 		console.log(`   Duration: ${(benchmark as any).duration || 0}ms`);
-		console.log(`   Memory Usage: ${((benchmark as any).memoryUsage || 0).toFixed(2)}MB`);
-		console.log(`   CPU Usage: ${((benchmark as any).cpuUsage || 0).toFixed(2)}%`);
-		console.log(`   Throughput: ${((benchmark as any).throughput || 0).toFixed(2)} ops/sec`);
+		console.log(
+			`   Memory Usage: ${((benchmark as any).memoryUsage || 0).toFixed(2)}MB`,
+		);
+		console.log(
+			`   CPU Usage: ${((benchmark as any).cpuUsage || 0).toFixed(2)}%`,
+		);
+		console.log(
+			`   Throughput: ${((benchmark as any).throughput || 0).toFixed(2)} ops/sec`,
+		);
 
-		console.log(`\n✅ TypeScript performance benchmark completed for namespace: ${name}`);
+		console.log(
+			`\n✅ TypeScript performance benchmark completed for namespace: ${name}`,
+		);
 	} catch (error) {
-		console.error(`❌ TypeScript performance benchmark failed for namespace ${name}:`, error);
+		console.error(
+			`❌ TypeScript performance benchmark failed for namespace ${name}:`,
+			error,
+		);
 		throw error;
 	}
 }
@@ -269,19 +315,23 @@ function generateCSVOutput(result: any): string {
 
 	if (result.file) {
 		lines.push(
-			`File,${result.file.name},${result.file.path},${result.file.language},${result.file.size},${result.file.lastModified.toISOString()}`
+			`File,${result.file.name},${result.file.path},${result.file.language},${result.file.size},${result.file.lastModified.toISOString()}`,
 		);
 	}
 
 	if (result.dependencies?.internalFiles) {
 		result.dependencies.internalFiles.forEach((dep: any) => {
-			lines.push(`InternalFile,${dep.path},${dep.path},internal,0,${new Date().toISOString()}`);
+			lines.push(
+				`InternalFile,${dep.path},${dep.path},internal,0,${new Date().toISOString()}`,
+			);
 		});
 	}
 
 	if (result.dependencies?.libraries) {
 		result.dependencies.libraries.forEach((lib: any) => {
-			lines.push(`Library,${lib.name},${lib.name},library,0,${new Date().toISOString()}`);
+			lines.push(
+				`Library,${lib.name},${lib.name},library,0,${new Date().toISOString()}`,
+			);
 		});
 	}
 
@@ -298,7 +348,9 @@ function generateMarkdownOutput(result: any): string {
 	lines.push(`**File:** ${result.file?.path || "Unknown"}`);
 	lines.push(`**Language:** ${result.file?.language || "Unknown"}`);
 	lines.push(`**Size:** ${result.file?.size || 0} bytes`);
-	lines.push(`**Last Modified:** ${result.file?.lastModified?.toISOString() || "Unknown"}`);
+	lines.push(
+		`**Last Modified:** ${result.file?.lastModified?.toISOString() || "Unknown"}`,
+	);
 	lines.push("");
 
 	if (result.dependencies) {

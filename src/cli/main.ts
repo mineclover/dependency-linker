@@ -22,6 +22,7 @@ import {
 	runTypeScriptProjectAnalysis,
 	runTypeScriptPerformanceBenchmark,
 } from "./handlers/typescript-handler.js";
+import { RDFHandler, UnknownSymbolHandler, QueryHandler, CrossNamespaceHandler, InferenceHandler, HandlerFactory } from "./handlers/index.js";
 
 // 네임스페이스 및 RDF 관련 임포트
 import {
@@ -258,61 +259,506 @@ program
 program
 	.command("rdf")
 	.description("RDF operations")
-	.option("-s, --search <query>", "Search RDF addresses")
-	.option("-f, --filter <filter>", "Filter RDF addresses")
-	.option("-g, --group <field>", "Group RDF addresses by field")
-	.option("-c, --create <address>", "Create RDF address")
-	.option("-v, --validate <address>", "Validate RDF address")
+	.option("-c, --create", "Create RDF address")
+	.option("-p, --project <project>", "Project name")
+	.option("-f, --file <file>", "File path")
+	.option("-t, --type <type>", "Node type")
+	.option("-s, --symbol <symbol>", "Symbol name")
+	.option("-q, --query <query>", "Search query")
+	.option("-n, --namespace <namespace>", "Namespace name")
+	.option("-v, --validate", "Validate RDF address")
+	.option("-a, --address <address>", "RDF address to validate")
+	.option("--uniqueness", "Check uniqueness")
 	.option("--stats", "Show RDF statistics")
+	.option("--by-type", "Group statistics by type")
+	.option("--all", "Show all statistics")
 	.action(async (options) => {
-		const api = new RDFDatabaseAPI();
+		const handler = new RDFHandler();
 		try {
-			await api.initialize();
-
-			if (options.search) {
-				const results = await api.searchRDFAddresses(options.search);
-				console.log(`🔍 Found ${results.length} RDF addresses:`);
-				results.forEach((result, index) => {
-					console.log(`   ${index + 1}. ${result.rdfAddress}`);
+			// RDF 주소 생성
+			if (options.create) {
+				if (!options.project || !options.file || !options.type || !options.symbol) {
+					console.log("❌ Please specify --project, --file, --type, and --symbol");
+					process.exit(1);
+				}
+				await handler.createRDFAddress({
+					project: options.project,
+					file: options.file,
+					type: options.type,
+					symbol: options.symbol
 				});
-			} else if (options.filter) {
-				const results = await api.searchRDFAddresses(options.filter);
-				console.log(`🔍 Filtered ${results.length} RDF addresses:`);
-				results.forEach((result, index) => {
-					console.log(`   ${index + 1}. ${result.rdfAddress}`);
+			}
+			// RDF 주소 검색
+			else if (options.query) {
+				await handler.searchRDFAddresses({
+					query: options.query,
+					namespace: options.namespace,
+					project: options.project,
+					file: options.file,
+					type: options.type
 				});
-			} else if (options.group) {
-				const results = await api.searchRDFAddresses("");
-				console.log(`📊 Grouped RDF addresses by ${options.group}:`);
-				console.log(`   Total: ${results.length} addresses`);
-			} else if (options.create) {
-				const address = createRDFAddress(options.create);
-				console.log(`✅ Created RDF address: ${address}`);
-			} else if (options.validate) {
-				const isValid = validateRDFAddress(options.validate);
-				console.log(
-					`✅ RDF address validation: ${isValid ? "Valid" : "Invalid"}`,
-				);
-			} else if (options.stats) {
-				const stats = await api.generateRDFStatistics();
-				console.log("📊 RDF Statistics:");
-				console.log(`   Total addresses: ${stats.totalAddresses || 0}`);
-				console.log(`   Total relationships: ${stats.totalRelationships || 0}`);
-				console.log(`   Projects: ${stats.projectCount || 0}`);
-				console.log(`   Files: ${stats.fileCount || 0}`);
-				console.log(`   By node type:`, stats.nodeTypeCount || {});
-				console.log(`   By namespace:`, stats.namespaceCount || {});
-				console.log(`   By relationship type:`, stats.relationshipTypeCount || {});
-				console.log(`   Invalid addresses: ${stats.invalidAddresses || 0}`);
-			} else {
-				console.log("❌ Please specify an RDF operation");
+			}
+			// RDF 주소 검증
+			else if (options.validate) {
+				await handler.validateRDFAddress({
+					address: options.address,
+					namespace: options.namespace,
+					uniqueness: options.uniqueness
+				});
+			}
+			// RDF 통계
+			else if (options.stats) {
+				await handler.generateRDFStatistics({
+					namespace: options.namespace,
+					project: options.project,
+					all: options.all,
+					byType: options.byType
+				});
+			}
+			else {
+				console.log("❌ Please specify an RDF operation (--create, --query, --validate, --stats)");
 				process.exit(1);
 			}
 		} catch (error) {
 			console.error("❌ RDF operation failed:", error);
 			process.exit(1);
+		}
+	});
+
+// ============================================================================
+// Unknown Symbol 관리 명령어
+// ============================================================================
+
+program
+	.command("unknown")
+	.description("Unknown Symbol 관리")
+	.option("-r, --register", "Unknown Symbol 등록")
+	.option("-f, --file <file>", "파일 경로")
+	.option("-s, --symbol <symbol>", "심볼 이름")
+	.option("-t, --type <type>", "심볼 타입")
+	.option("--imported", "Import된 심볼")
+	.option("--alias", "Alias 심볼")
+	.option("--original <name>", "원본 심볼 이름")
+	.option("--from <file>", "Import된 파일")
+	.option("-q, --query <query>", "검색 쿼리")
+	.option("--candidates", "동등성 후보 검색")
+	.option("--equivalence", "동등성 관계 생성")
+	.option("--unknown-id <id>", "Unknown Symbol ID")
+	.option("--known-id <id>", "Known Symbol ID")
+	.option("--confidence <number>", "신뢰도 (0-1)")
+	.option("--match-type <type>", "매칭 타입")
+	.option("--infer", "추론 규칙 적용")
+	.option("--list", "동등성 관계 조회")
+	.option("--stats", "통계 생성")
+	.action(async (options) => {
+		const handler = new UnknownSymbolHandler();
+		try {
+			// Unknown Symbol 등록
+			if (options.register) {
+				if (!options.file || !options.symbol) {
+					console.log("❌ Please specify --file and --symbol");
+					process.exit(1);
+				}
+				await handler.registerUnknownSymbol({
+					file: options.file,
+					symbol: options.symbol,
+					type: options.type,
+					isImported: options.imported,
+					isAlias: options.alias,
+					originalName: options.original,
+					importedFrom: options.from
+				});
+			}
+			// Unknown Symbol 검색
+			else if (options.query) {
+				await handler.searchUnknownSymbols({
+					query: options.query,
+					type: options.type,
+					file: options.file
+				});
+			}
+			// 동등성 후보 검색
+			else if (options.candidates) {
+				if (!options.symbol) {
+					console.log("❌ Please specify --symbol");
+					process.exit(1);
+				}
+				await handler.searchEquivalenceCandidates({
+					symbol: options.symbol,
+					type: options.type,
+					file: options.file
+				});
+			}
+			// 동등성 관계 생성
+			else if (options.equivalence) {
+				if (!options.unknownId || !options.knownId) {
+					console.log("❌ Please specify --unknown-id and --known-id");
+					process.exit(1);
+				}
+				await handler.createEquivalenceRelation({
+					unknownId: options.unknownId,
+					knownId: options.knownId,
+					confidence: options.confidence ? parseFloat(options.confidence) : undefined,
+					matchType: options.matchType
+				});
+			}
+			// 추론 규칙 적용
+			else if (options.infer) {
+				if (!options.symbol) {
+					console.log("❌ Please specify --symbol");
+					process.exit(1);
+				}
+				await handler.applyInferenceRules({
+					symbol: options.symbol,
+					type: options.type,
+					file: options.file
+				});
+			}
+			// 동등성 관계 조회
+			else if (options.list) {
+				await handler.listEquivalenceRelations({
+					symbol: options.symbol,
+					type: options.type,
+					file: options.file
+				});
+			}
+			// 통계 생성
+			else if (options.stats) {
+				await handler.generateStatistics();
+			}
+			else {
+				console.log("❌ Please specify an Unknown Symbol operation (--register, --query, --candidates, --equivalence, --infer, --list, --stats)");
+				process.exit(1);
+			}
+		} catch (error) {
+			console.error("❌ Unknown Symbol operation failed:", error);
+			process.exit(1);
 		} finally {
-			await api.close();
+			await handler.close();
+		}
+	});
+
+// ============================================================================
+// Query System 명령어
+// ============================================================================
+
+program
+	.command("query")
+	.description("Query System 관리")
+	.option("-s, --sql <query>", "SQL 쿼리 실행")
+	.option("-g, --graphql <query>", "GraphQL 쿼리 실행")
+	.option("-n, --natural <query>", "자연어 쿼리 실행")
+	.option("-a, --auto <query>", "자동 쿼리 타입 감지 및 실행")
+	.option("-r, --realtime", "실시간 쿼리 등록")
+	.option("--query-type <type>", "쿼리 타입 (SQL, GraphQL, NaturalLanguage)")
+	.option("--client-id <id>", "클라이언트 ID")
+	.option("--subscribe", "실시간 쿼리 구독")
+	.option("--query-id <id>", "쿼리 ID")
+	.option("--event-type <type>", "이벤트 타입 (data, error, complete)")
+	.option("--stats", "쿼리 성능 통계")
+	.option("--cache <action>", "캐시 관리 (clear, stats, optimize)")
+	.option("--data-source <source>", "데이터 소스")
+	.action(async (options) => {
+		const handler = new QueryHandler();
+		try {
+			await handler.initialize();
+
+			// SQL 쿼리 실행
+			if (options.sql) {
+				await handler.executeSQLQuery(options.sql, options.dataSource || {});
+			}
+			// GraphQL 쿼리 실행
+			else if (options.graphql) {
+				await handler.executeGraphQLQuery(options.graphql, options.dataSource || {});
+			}
+			// 자연어 쿼리 실행
+			else if (options.natural) {
+				await handler.executeNaturalLanguageQuery(options.natural, options.dataSource || {});
+			}
+			// 자동 쿼리 실행
+			else if (options.auto) {
+				await handler.executeQuery(options.auto, options.dataSource || {});
+			}
+			// 실시간 쿼리 등록
+			else if (options.realtime) {
+				if (!options.queryType || !options.clientId) {
+					console.log("❌ Please specify --query-type and --client-id");
+					process.exit(1);
+				}
+				await handler.registerRealtimeQuery(
+					options.auto || options.sql || options.graphql || options.natural,
+					options.queryType,
+					options.clientId,
+					options.dataSource || {}
+				);
+			}
+			// 실시간 쿼리 구독
+			else if (options.subscribe) {
+				if (!options.queryId || !options.clientId || !options.eventType) {
+					console.log("❌ Please specify --query-id, --client-id, and --event-type");
+					process.exit(1);
+				}
+				await handler.subscribeToRealtimeQuery(
+					options.queryId,
+					options.clientId,
+					options.eventType
+				);
+			}
+			// 쿼리 통계
+			else if (options.stats) {
+				await handler.getQueryStatistics();
+			}
+			// 캐시 관리
+			else if (options.cache) {
+				await handler.manageCache(options.cache);
+			}
+			else {
+				console.log("❌ Please specify a query operation (--sql, --graphql, --natural, --auto, --realtime, --subscribe, --stats, --cache)");
+				process.exit(1);
+			}
+		} catch (error) {
+			console.error("❌ Query operation failed:", error);
+			process.exit(1);
+		} finally {
+			await handler.close();
+		}
+	});
+
+// ============================================================================
+// Cross-Namespace Dependencies 명령어
+// ============================================================================
+
+program
+	.command("cross-namespace")
+	.description("Cross-Namespace Dependencies 관리")
+	.option("-n, --namespace <name>", "단일 네임스페이스 분석")
+	.option("-m, --multiple <names>", "다중 네임스페이스 분석 (쉼표로 구분)")
+	.option("-a, --all", "전체 네임스페이스 분석")
+	.option("-c, --cross", "Cross-Namespace 의존성 조회")
+	.option("-s, --source <namespace>", "소스 네임스페이스 필터")
+	.option("-t, --target <namespace>", "타겟 네임스페이스 필터")
+	.option("--circular", "순환 의존성 조회")
+	.option("--circular-namespace <name>", "특정 네임스페이스 순환 의존성 조회")
+	.option("--stats", "통계 생성")
+	.option("--include-cross", "Cross-Namespace 의존성 포함")
+	.option("--include-circular", "순환 의존성 포함")
+	.option("--include-graph", "그래프 통계 포함")
+	.option("--config <path>", "설정 파일 경로")
+	.option("--project-root <path>", "프로젝트 루트 경로")
+	.option("--cwd <path>", "작업 디렉토리")
+	.option("--max-concurrency <number>", "최대 동시 실행 수")
+	.option("--enable-caching", "캐싱 활성화")
+	.action(async (options) => {
+		const handler = new CrossNamespaceHandler({
+			configPath: options.config,
+			projectRoot: options.projectRoot,
+			cwd: options.cwd,
+			maxConcurrency: options.maxConcurrency ? parseInt(options.maxConcurrency) : undefined,
+			enableCaching: options.enableCaching,
+		});
+
+		try {
+			await handler.initialize();
+
+			// 단일 네임스페이스 분석
+			if (options.namespace) {
+				await handler.analyzeNamespace(options.namespace, {
+					includeCrossDependencies: options.includeCross,
+					includeCircularDependencies: options.includeCircular,
+				});
+			}
+			// 다중 네임스페이스 분석
+			else if (options.multiple) {
+				const namespaces = options.multiple.split(",").map((n: string) => n.trim());
+				await handler.analyzeNamespaces(namespaces, {
+					includeCrossDependencies: options.includeCross,
+					includeStatistics: options.stats,
+				});
+			}
+			// 전체 네임스페이스 분석
+			else if (options.all) {
+				await handler.analyzeAll({
+					includeGraph: options.includeGraph,
+					includeCrossDependencies: options.includeCross,
+					includeStatistics: options.stats,
+				});
+			}
+			// Cross-Namespace 의존성 조회
+			else if (options.cross) {
+				await handler.getCrossNamespaceDependencies({
+					sourceNamespace: options.source,
+					targetNamespace: options.target,
+					includeStatistics: options.stats,
+				});
+			}
+			// 순환 의존성 조회
+			else if (options.circular) {
+				await handler.getCircularDependencies(options.circularNamespace, {
+					includeStatistics: options.stats,
+				});
+			}
+			// 통계 생성
+			else if (options.stats) {
+				await handler.generateStatistics({
+					includeCrossDependencies: options.includeCross,
+					includeCircularDependencies: options.includeCircular,
+					includeGraphStatistics: options.includeGraph,
+				});
+			}
+			else {
+				console.log("❌ Please specify an operation (--namespace, --multiple, --all, --cross, --circular, --stats)");
+				process.exit(1);
+			}
+		} catch (error) {
+			console.error("❌ Cross-Namespace operation failed:", error);
+			process.exit(1);
+		} finally {
+			await handler.close();
+		}
+	});
+
+// ============================================================================
+// Inference System 명령어
+// ============================================================================
+
+program
+	.command("inference")
+	.description("Inference System 관리")
+	.option("-e, --execute <nodeId>", "통합 추론 실행")
+	.option("-h, --hierarchical <nodeId>", "계층적 추론 실행")
+	.option("-t, --transitive <nodeId>", "전이적 추론 실행")
+	.option("-i, --inheritable <nodeId>", "상속 가능한 추론 실행")
+	.option("-o, --optimized <nodeId>", "최적화된 추론 실행")
+	.option("-r, --realtime <nodeId>", "실시간 추론 실행")
+	.option("-a, --all <nodeId>", "모든 추론 실행")
+	.option("--edge-type <type>", "엣지 타입")
+	.option("--rule-ids <ids>", "규칙 ID 목록 (쉼표로 구분)")
+	.option("--include-children", "자식 노드 포함")
+	.option("--max-depth <depth>", "최대 깊이")
+	.option("--max-path-length <length>", "최대 경로 길이")
+	.option("--include-intermediate", "중간 노드 포함")
+	.option("--include-inherited", "상속된 관계 포함")
+	.option("--max-inheritance-depth <depth>", "최대 상속 깊이")
+	.option("--enable-caching", "캐싱 활성화")
+	.option("--enable-parallel", "병렬 처리 활성화")
+	.option("--max-concurrency <number>", "최대 동시 실행 수")
+	.option("--enable-auto-inference", "자동 추론 활성화")
+	.option("--use-custom-rules", "사용자 정의 규칙 사용")
+	.option("--use-realtime", "실시간 추론 사용")
+	.option("--use-optimized", "최적화된 추론 사용")
+	.option("--use-legacy", "레거시 추론 사용")
+	.option("--stats", "추론 통계 생성")
+	.option("--cache <action>", "캐시 관리 (clear, stats, optimize)")
+	.option("--database <path>", "데이터베이스 경로")
+	.option("--enable-custom-rules", "사용자 정의 규칙 활성화")
+	.option("--enable-realtime-inference", "실시간 추론 활성화")
+	.option("--enable-optimized-inference", "최적화된 추론 활성화")
+	.option("--enable-legacy-inference", "레거시 추론 활성화")
+	.action(async (options) => {
+		const handler = new InferenceHandler({
+			databasePath: options.database,
+			enableCustomRules: options.enableCustomRules,
+			enableRealTimeInference: options.enableRealtimeInference,
+			enableOptimizedInference: options.enableOptimizedInference,
+			enableLegacyInference: options.enableLegacyInference,
+			maxConcurrency: options.maxConcurrency ? parseInt(options.maxConcurrency) : undefined,
+			enableCaching: options.enableCaching,
+		});
+
+		try {
+			await handler.initialize();
+
+			// 통합 추론 실행
+			if (options.execute) {
+				const nodeId = parseInt(options.execute);
+				await handler.executeInference(nodeId, {
+					ruleIds: options.ruleIds ? options.ruleIds.split(",") : undefined,
+					useCustomRules: options.useCustomRules,
+					useRealTime: options.useRealtime,
+					useOptimized: options.useOptimized,
+					useLegacy: options.useLegacy,
+				});
+			}
+			// 계층적 추론 실행
+			else if (options.hierarchical) {
+				const nodeId = parseInt(options.hierarchical);
+				if (!options.edgeType) {
+					console.log("❌ Please specify --edge-type for hierarchical inference");
+					process.exit(1);
+				}
+				await handler.executeHierarchicalInference(nodeId, options.edgeType, {
+					includeChildren: options.includeChildren,
+					maxDepth: options.maxDepth ? parseInt(options.maxDepth) : undefined,
+				});
+			}
+			// 전이적 추론 실행
+			else if (options.transitive) {
+				const nodeId = parseInt(options.transitive);
+				if (!options.edgeType) {
+					console.log("❌ Please specify --edge-type for transitive inference");
+					process.exit(1);
+				}
+				await handler.executeTransitiveInference(nodeId, options.edgeType, {
+					maxPathLength: options.maxPathLength ? parseInt(options.maxPathLength) : undefined,
+					includeIntermediate: options.includeIntermediate,
+				});
+			}
+			// 상속 가능한 추론 실행
+			else if (options.inheritable) {
+				const nodeId = parseInt(options.inheritable);
+				if (!options.edgeType) {
+					console.log("❌ Please specify --edge-type for inheritable inference");
+					process.exit(1);
+				}
+				await handler.executeInheritableInference(nodeId, options.edgeType, {
+					includeInherited: options.includeInherited,
+					maxInheritanceDepth: options.maxInheritanceDepth ? parseInt(options.maxInheritanceDepth) : undefined,
+				});
+			}
+			// 최적화된 추론 실행
+			else if (options.optimized) {
+				const nodeId = parseInt(options.optimized);
+				await handler.executeOptimizedInference(nodeId, {
+					enableCaching: options.enableCaching,
+					enableParallel: options.enableParallel,
+					maxConcurrency: options.maxConcurrency ? parseInt(options.maxConcurrency) : undefined,
+				});
+			}
+			// 실시간 추론 실행
+			else if (options.realtime) {
+				const nodeId = parseInt(options.realtime);
+				await handler.executeRealTimeInference(nodeId, {
+					ruleIds: options.ruleIds ? options.ruleIds.split(",") : undefined,
+					enableAutoInference: options.enableAutoInference,
+				});
+			}
+			// 모든 추론 실행
+			else if (options.all) {
+				const nodeId = parseInt(options.all);
+				await handler.executeAllInferences(nodeId, {
+					includeCustomRules: options.useCustomRules,
+					includeRealTime: options.useRealtime,
+					includeOptimized: options.useOptimized,
+					includeLegacy: options.useLegacy,
+				});
+			}
+			// 추론 통계
+			else if (options.stats) {
+				await handler.generateStatistics();
+			}
+			// 캐시 관리
+			else if (options.cache) {
+				await handler.manageCache(options.cache);
+			}
+			else {
+				console.log("❌ Please specify an inference operation (--execute, --hierarchical, --transitive, --inheritable, --optimized, --realtime, --all, --stats, --cache)");
+				process.exit(1);
+			}
+		} catch (error) {
+			console.error("❌ Inference operation failed:", error);
+			process.exit(1);
+		} finally {
+			await handler.close();
 		}
 	});
 

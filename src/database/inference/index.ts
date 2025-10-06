@@ -23,6 +23,13 @@ export type {
 	ResolutionStatistics,
 } from "./UnknownNodeResolver";
 
+// Equivalence Inference Engine (Unknown Symbol System)
+export { EquivalenceInferenceEngine } from "./EquivalenceInferenceEngine";
+export type {
+	EquivalenceRule,
+	EquivalenceInferenceResult,
+} from "./EquivalenceInferenceEngine";
+
 // Type definitions
 export type {
 	// Rules and validation

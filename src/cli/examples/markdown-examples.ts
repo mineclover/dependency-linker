@@ -56,14 +56,10 @@ export const exampleHeadings = [
 
 export const exampleMarkdowns = [
 	"docs/README.md",
-	"docs/API.md", 
+	"docs/API.md",
 	"docs/USAGE.md",
 	"docs/CHANGELOG.md",
 	"docs/CONTRIBUTING.md",
 ];
 
-export const markdownFiles = [
-	"docs/README.md",
-	"docs/API.md",
-	"docs/USAGE.md",
-];
+export const markdownFiles = ["docs/README.md", "docs/API.md", "docs/USAGE.md"];

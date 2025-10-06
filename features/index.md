@@ -112,9 +112,16 @@ features/rdf-addressing/
 ### 1. [Dependency Analysis](./dependency-analysis/)
 **핵심**: 프로젝트 전체 또는 특정 네임스페이스의 의존성 분석
 
-**Commands**:
-- `analyze` - 특정 네임스페이스 분석
-- `analyze-all` - 모든 네임스페이스 통합 분석
+**CLI Commands**:
+- `npm run cli -- analyze` - 파일 패턴 기반 의존성 분석
+- `npm run cli -- namespace --name <name>` - 특정 네임스페이스 분석
+- `npm run cli -- namespace --all` - 모든 네임스페이스 통합 분석
+
+**Implementation**:
+- **CLI Entry**: [`src/cli/main.ts#analyze`](../../src/cli/main.ts#L50-L93) - Commander.js 기반 CLI 명령어
+- **Handler**: [`src/cli/handlers/typescript-handler.ts#runTypeScriptProjectAnalysis`](../../src/cli/handlers/typescript-handler.ts#L24-L33) - TypeScript 프로젝트 분석 실행
+- **Core Logic**: [`src/namespace/analysis-namespace.ts#runNamespaceAnalysis`](../../src/namespace/analysis-namespace.ts#L745-L758) - 네임스페이스 분석 실행
+- **Graph Builder**: [`src/graph/DependencyGraphBuilder.ts`](../../src/graph/DependencyGraphBuilder.ts) - 의존성 그래프 구성
 
 **Output**: SQLite GraphDB (`.dependency-linker/graph.db`)
 
@@ -128,11 +135,17 @@ features/rdf-addressing/
 ### 2. [Namespace Management](./namespace-management/)
 **핵심**: 코드를 목적별로 조직화하고 관리
 
-**Commands**:
-- `list-namespaces` - 네임스페이스 목록 조회
-- `create-namespace` - 새 네임스페이스 생성
-- `delete-namespace` - 네임스페이스 삭제
-- `list-files` - 네임스페이스 내 파일 목록
+**CLI Commands**:
+- `npm run cli -- namespace --list` - 네임스페이스 목록 조회
+- `npm run cli -- namespace --name <name>` - 특정 네임스페이스 실행
+- `npm run cli -- namespace --all` - 모든 네임스페이스 실행
+- `npm run cli -- namespace --optimize` - 네임스페이스 최적화 (개발 중)
+
+**Implementation**:
+- **CLI Entry**: [`src/cli/main.ts#namespace`](../../src/cli/main.ts#L218-L252) - 네임스페이스 관리 명령어
+- **Core Logic**: [`src/namespace/analysis-namespace.ts#runNamespaceAnalysis`](../../src/namespace/analysis-namespace.ts#L745-L758) - 네임스페이스 분석 실행
+- **Config Manager**: [`src/namespace/ConfigManager.ts`](../../src/namespace/ConfigManager.ts) - 네임스페이스 설정 관리
+- **Namespace Optimizer**: [`src/cli/namespace-optimizer.ts`](../../src/cli/namespace-optimizer.ts) - 네임스페이스 최적화 (개발 중)
 
 **Configuration**: `deps.config.json`
 
@@ -146,8 +159,15 @@ features/rdf-addressing/
 ### 3. [Cross-Namespace Dependencies](./cross-namespace/)
 **핵심**: 네임스페이스 경계를 넘는 의존성 추적
 
-**Commands**:
-- `cross-namespace` - 크로스 네임스페이스 의존성 조회
+**CLI Commands**:
+- `npm run cli -- namespace --all` - 모든 네임스페이스 분석 후 크로스 의존성 자동 탐지
+- `npm run cli -- namespace --name <name>` - 특정 네임스페이스 분석
+
+**Implementation**:
+- **CLI Entry**: [`src/cli/main.ts#namespace`](../../src/cli/main.ts#L218-L252) - 네임스페이스 명령어
+- **Core Logic**: [`src/namespace/NamespaceDependencyAnalyzer.ts#analyzeAll`](../../src/namespace/NamespaceDependencyAnalyzer.ts) - 크로스 네임스페이스 의존성 탐지
+- **Database**: [`src/namespace/NamespaceGraphDB.ts#getCrossNamespaceDependencies`](../../src/namespace/NamespaceGraphDB.ts) - 크로스 의존성 조회
+- **Analysis**: [`src/namespace/analysis-namespace.ts#runNamespaceAnalysis`](../../src/namespace/analysis-namespace.ts#L745-L758) - 분석 실행
 
 **Key Insight**:
 > 네임스페이스는 목적에 따라 분리하지만, 의존성은 같은 차원에 존재합니다.
@@ -163,10 +183,17 @@ features/rdf-addressing/
 ### 4. [Context Documents](./context-documents/)
 **핵심**: 파일과 심볼에 대한 메타데이터 및 개념 문서 생성
 
-**Commands**:
-- `generate-context` - 특정 파일 컨텍스트 생성
-- `generate-context-all` - 모든 파일 컨텍스트 생성
-- `list-context` - 생성된 컨텍스트 문서 목록
+**CLI Commands**:
+- `npm run cli -- markdown --name <namespace> --action document` - 컨텍스트 문서 생성
+- `npm run cli -- markdown --name <namespace> --action analysis` - 마크다운 분석
+- `npm run cli -- markdown --name <namespace> --action tags` - 태그 수집
+
+**Implementation**:
+- **CLI Entry**: [`src/cli/main.ts#markdown`](../../src/cli/main.ts#L99-L146) - 마크다운 분석 명령어
+- **Handler**: [`src/cli/handlers/markdown-handler.ts#runTagDocumentGeneration`](../../src/cli/handlers/markdown-handler.ts#L34-L75) - 컨텍스트 문서 생성
+- **Parser**: [`src/parsers/markdown/MarkdownParser.ts`](../../src/parsers/markdown/MarkdownParser.ts) - 마크다운 파싱
+- **Tag Collector**: [`src/parsers/markdown/MarkdownTagCollector.ts`](../../src/parsers/markdown/MarkdownTagCollector.ts) - 태그 수집
+- **Document Generator**: [`src/parsers/markdown/MarkdownTagDocumentGenerator.ts`](../../src/parsers/markdown/MarkdownTagDocumentGenerator.ts) - 문서 생성
 
 **Structure**: 프로젝트 구조 미러링
 ```
@@ -185,8 +212,16 @@ features/rdf-addressing/
 ### 5. [Query System](./query-system/)
 **핵심**: GraphDB에 저장된 의존성 정보 조회 (Query only)
 
-**Commands**:
-- `query` - 네임스페이스별 의존성 쿼리
+**CLI Commands**:
+- `npm run cli -- typescript --file <file>` - 단일 파일 분석 및 쿼리
+- `npm run cli -- typescript --pattern <pattern>` - 패턴 기반 분석 및 쿼리
+- `npm run cli -- analyze --pattern <pattern>` - 파일 패턴 기반 분석
+
+**Implementation**:
+- **CLI Entry**: [`src/cli/main.ts#typescript`](../../src/cli/main.ts#L152-L189) - TypeScript 분석 명령어
+- **Handler**: [`src/cli/handlers/typescript-handler.ts#runTypeScriptAnalysis`](../../src/cli/handlers/typescript-handler.ts#L24-L33) - TypeScript 분석 실행
+- **Database**: [`src/database/GraphDatabase.ts`](../../src/database/GraphDatabase.ts) - GraphDB 쿼리 엔진
+- **Query Engine**: [`src/core/QueryEngine.ts`](../../src/core/QueryEngine.ts) - 의존성 쿼리 엔진
 
 **Query Types**:
 - 파일 간 의존성
@@ -207,6 +242,19 @@ features/rdf-addressing/
 
 **Status**: ✅ **Production Ready** (v3.1.0 완료)
 
+**CLI Commands**:
+- `npm run cli -- rdf --search <query>` - RDF 주소 검색
+- `npm run cli -- rdf --create <address>` - RDF 주소 생성
+- `npm run cli -- rdf --validate <address>` - RDF 주소 검증
+- `npm run cli -- rdf --stats` - RDF 통계 조회
+
+**Implementation**:
+- **CLI Entry**: [`src/cli/main.ts#rdf`](../../src/cli/main.ts#L258-L317) - RDF 관련 명령어
+- **RDF Address**: [`src/core/RDFAddress.ts`](../../src/core/RDFAddress.ts) - RDF 주소 생성/파싱
+- **Node Identifier**: [`src/database/core/NodeIdentifier.ts`](../../src/database/core/NodeIdentifier.ts) - RDF 기반 노드 식별자
+- **Database API**: [`src/api/rdf-database-integration.ts`](../../src/api/rdf-database-integration.ts) - RDF 데이터베이스 통합
+- **Address Parser**: [`src/core/RDFAddressParser.ts`](../../src/core/RDFAddressParser.ts) - 고급 검색 및 필터링
+
 **Key Features**:
 - **명확한 식별**: `dependency-linker/src/parser.ts#Class:TypeScriptParser`
 - **역파싱**: RDF 주소 → 파일 위치 자동 변환
@@ -215,13 +263,6 @@ features/rdf-addressing/
 - **메타 태그**: 시멘틱 태그 방식으로 확장 가능한 주소 체계
 - **언어별 매핑**: TypeScript, JavaScript, Java, Python, Go 지원
 - **고급 검색**: 부분 일치, 필터링, 그룹화, 통계 생성
-
-**Architecture Components**:
-- **RDFAddress.ts**: 핵심 RDF 주소 생성/파싱
-- **RDFNodeIdentifier.ts**: RDF 기반 노드 식별자 관리
-- **RDFAddressParser.ts**: 고급 검색 및 필터링
-- **RDFUniquenessValidator.ts**: 고유성 검증 및 충돌 해결
-- **rdf-analysis.ts**: RDF 기반 분석 API
 
 **Use Cases**:
 - 심볼 정의 위치 빠른 탐색
@@ -289,6 +330,18 @@ features/rdf-addressing/
 
 **Status**: ✅ Production Ready (Enhancement Phase)
 
+**CLI Commands**:
+- `npm run cli -- analyze --pattern <pattern>` - 파일 분석 시 Unknown 노드 자동 생성
+- `npm run cli -- typescript --file <file>` - 단일 파일 분석 시 Alias 추적
+- `npm run cli -- namespace --all` - 전체 분석 시 Unknown → Actual 연결
+
+**Implementation**:
+- **CLI Entry**: [`src/cli/main.ts#analyze`](../../src/cli/main.ts#L50-L93) - 분석 명령어
+- **File Analyzer**: [`src/database/services/FileDependencyAnalyzer.ts#createUnknownSymbolNodes`](../../src/database/services/FileDependencyAnalyzer.ts) - Unknown 노드 생성
+- **Dual-Node Pattern**: [`src/database/services/FileDependencyAnalyzer.ts`](../../src/database/services/FileDependencyAnalyzer.ts) - Original/Alias 노드 분리
+- **Alias Tracking**: [`src/database/inference/EdgeTypeRegistry.ts`](../../src/database/inference/EdgeTypeRegistry.ts) - aliasOf 엣지 타입
+- **Inference Engine**: [`src/database/inference/InferenceEngine.ts`](../../src/database/inference/InferenceEngine.ts) - Unknown → Actual 추론
+
 **Key Features**:
 - **Dual-Node Pattern**: Original 노드와 Alias 노드 분리
 - **Alias 추적**: `import { User as UserType }` → aliasOf edge 생성
@@ -306,6 +359,19 @@ features/rdf-addressing/
 **핵심**: 3가지 추론 타입으로 간접 의존성 자동 추론
 
 **Status**: 🚧 In Development (v3.2.0 타겟)
+
+**CLI Commands**:
+- `npm run cli -- analyze --pattern <pattern>` - 분석 시 자동 추론 실행
+- `npm run cli -- namespace --all` - 전체 분석 시 추론 엔진 실행
+- `npm run cli -- typescript --pattern <pattern>` - TypeScript 분석 시 추론
+
+**Implementation**:
+- **CLI Entry**: [`src/cli/main.ts#analyze`](../../src/cli/main.ts#L50-L93) - 분석 명령어
+- **Inference Engine**: [`src/database/inference/InferenceEngine.ts`](../../src/database/inference/InferenceEngine.ts) - 추론 엔진 핵심
+- **Edge Type Registry**: [`src/database/inference/EdgeTypeRegistry.ts`](../../src/database/inference/EdgeTypeRegistry.ts) - 엣지 타입 관리
+- **Hierarchical Query**: [`src/database/inference/InferenceEngine.ts#queryHierarchical`](../../src/database/inference/InferenceEngine.ts) - 계층적 추론
+- **Transitive Query**: [`src/database/inference/InferenceEngine.ts#queryTransitive`](../../src/database/inference/InferenceEngine.ts) - 전이적 추론
+- **Inheritable Query**: [`src/database/inference/InferenceEngine.ts#inferInheritable`](../../src/database/inference/InferenceEngine.ts) - 상속 가능 추론
 
 **Inference Types**:
 - **Hierarchical (계층적)**: 타입 계층 활용 (`imports` → `imports_file` + `imports_package`)
@@ -326,6 +392,20 @@ features/rdf-addressing/
 
 ### 9. [Scenario System](./scenario-system/)
 **핵심**: 재사용 가능한 분석 명세로서의 시나리오 시스템
+
+**Status**: 🚧 In Development (v1.0.0)
+
+**CLI Commands**:
+- `npm run cli -- analyze --pattern <pattern>` - 기본 시나리오로 분석
+- `npm run cli -- namespace --name <name>` - 네임스페이스별 시나리오 실행
+- `npm run cli -- markdown --name <namespace> --action analysis` - 마크다운 시나리오
+
+**Implementation**:
+- **CLI Entry**: [`src/cli/main.ts#analyze`](../../src/cli/main.ts#L50-L93) - 분석 명령어
+- **Scenario Registry**: [`src/scenarios/ScenarioRegistry.ts`](../../src/scenarios/ScenarioRegistry.ts) - 시나리오 중앙 관리
+- **Base Analyzer**: [`src/scenarios/BaseScenarioAnalyzer.ts`](../../src/scenarios/BaseScenarioAnalyzer.ts) - 기본 분석 패턴
+- **Built-in Scenarios**: [`src/scenarios/built-in/`](../../src/scenarios/built-in/) - 내장 시나리오들
+- **Type System**: [`src/scenarios/types.ts`](../../src/scenarios/types.ts) - 시나리오 타입 정의
 
 **Components**:
 - ScenarioSpec - 분석 방법의 완전한 정의 (nodeTypes, edgeTypes, semanticTags, queryPatterns)
@@ -351,6 +431,20 @@ features/rdf-addressing/
 ### 10. [Namespace-Scenario Integration](./namespace-scenario-integration/)
 **핵심**: Namespace가 Scenario를 선택하여 진정한 수평적 확장 실현
 
+**Status**: 🚧 In Development (87.5% 완료)
+
+**CLI Commands**:
+- `npm run cli -- namespace --name <name>` - 특정 네임스페이스 시나리오 실행
+- `npm run cli -- namespace --all` - 모든 네임스페이스 시나리오 실행
+- `npm run cli -- analyze --pattern <pattern>` - 패턴 기반 시나리오 분석
+
+**Implementation**:
+- **CLI Entry**: [`src/cli/main.ts#namespace`](../../src/cli/main.ts#L218-L252) - 네임스페이스 명령어
+- **Namespace Analyzer**: [`src/namespace/NamespaceDependencyAnalyzer.ts`](../../src/namespace/NamespaceDependencyAnalyzer.ts) - 시나리오 통합 분석
+- **Config Manager**: [`src/namespace/ConfigManager.ts`](../../src/namespace/ConfigManager.ts) - 시나리오 설정 관리
+- **Scenario Registry**: [`src/scenarios/ScenarioRegistry.ts`](../../src/scenarios/ScenarioRegistry.ts) - 시나리오 중앙 관리
+- **Execution Order**: [`src/namespace/NamespaceDependencyAnalyzer.ts#getScenarioExecutionOrder`](../../src/namespace/NamespaceDependencyAnalyzer.ts) - 실행 순서 계산
+
 **Key Concept**:
 ```
 새 분석 = Namespace 추가 + Scenario 조합 선택
@@ -375,75 +469,188 @@ features/rdf-addressing/
 - **재사용성**: 시나리오 한 번 정의, 여러 namespace에서 재사용
 - **확장성**: 코드 변경 없이 설정만으로 새 분석 추가
 
-**CLI Commands**:
-- `analyze <namespace> --scenarios <list>` - 시나리오 선택
-- `scenarios` - 사용 가능한 시나리오 목록
-- `scenarios <namespace>` - 특정 namespace의 시나리오 확인
-
 ---
 
-## 🔄 Typical Workflows
+## 🔄 **CLI 핵심 기능**
 
-### Workflow 1: 초기 프로젝트 분석
+### **1. 분석 환경 설정 (Namespace Config)**
+```bash
+# 네임스페이스 설정 관리
+npm run cli -- namespace --list                    # 네임스페이스 목록
+npm run cli -- namespace --create <name>           # 네임스페이스 생성
+npm run cli -- namespace --config <name>            # 네임스페이스 설정 조회
+npm run cli -- namespace --update <name>           # 네임스페이스 설정 업데이트
+```
+
+### **2. 특정 파일 정보 조회 및 최신 정보 획득**
+```bash
+# 단일 파일 분석
+npm run cli -- analyze --file <path>                # 특정 파일 분석
+npm run cli -- analyze --file <path> --fresh        # 최신 정보로 재분석
+npm run cli -- analyze --file <path> --info         # 파일 정보만 조회
+```
+
+### **3. 네임스페이스 범위 의존성 분석**
+```bash
+# 네임스페이스 전체 분석
+npm run cli -- namespace --name <name>              # 특정 네임스페이스 분석
+npm run cli -- namespace --all                     # 모든 네임스페이스 분석
+npm run cli -- namespace --name <name> --fresh     # 최신 정보로 재분석
+```
+
+### **4. 네임스페이스 특정 범위 의존성 분석**
+```bash
+# 범위별 분석
+npm run cli -- analyze --namespace <name> --pattern "src/**/*.ts"  # 패턴 기반
+npm run cli -- analyze --namespace <name> --depth <n>             # 깊이 제한
+npm run cli -- analyze --namespace <name> --circular              # 순환 의존성만
+```
+
+## 🔄 **Typical Workflows**
+
+### **Workflow 1: 초기 프로젝트 분석**
 
 ```bash
 # 1. 네임스페이스 확인
-node dist/cli/namespace-analyzer.js list-namespaces
+npm run cli -- namespace --list
 
 # 2. 전체 의존성 분석
-node dist/cli/namespace-analyzer.js analyze-all
+npm run cli -- namespace --all
 
-# 3. 크로스 네임스페이스 의존성 확인
-node dist/cli/namespace-analyzer.js cross-namespace --detailed
+# 3. 크로스 네임스페이스 의존성 확인 (자동 탐지)
+npm run cli -- namespace --all
 
 # 4. 컨텍스트 문서 생성
-node dist/cli/namespace-analyzer.js generate-context-all
+npm run cli -- markdown --name <namespace> --action document
 ```
 
 ### Workflow 2: 특정 파일 분석
 
 ```bash
 # 1. 특정 네임스페이스 분석
-node dist/cli/namespace-analyzer.js analyze source
+npm run cli -- namespace --name source
 
-# 2. 특정 파일 컨텍스트 생성
-node dist/cli/namespace-analyzer.js generate-context src/database/GraphDatabase.ts
+# 2. 특정 파일 분석
+npm run cli -- typescript --file src/database/GraphDatabase.ts
 
-# 3. 의존성 쿼리
-node dist/cli/namespace-analyzer.js query source
+# 3. 패턴 기반 분석
+npm run cli -- analyze --pattern "src/**/*.ts"
 ```
 
 ### Workflow 3: 추론 테스트
 
 ```bash
 # 1. 전체 분석 (필요시)
-node dist/cli/namespace-analyzer.js analyze-all
+npm run cli -- namespace --all
 
 # 2. 특정 파일의 의존성 추출
-npx tsx test-inference.ts src/namespace/NamespaceGraphDB.ts
+npm run cli -- typescript --file src/namespace/NamespaceGraphDB.ts
 
-# 3. 결과 활용 (LLM 컨텍스트 구성 등)
+# 3. RDF 주소 검색
+npm run cli -- rdf --search "TypeScriptParser"
+
+# 4. 결과 활용 (LLM 컨텍스트 구성 등)
 ```
 
 ### Workflow 4: 네임스페이스 관리
 
 ```bash
-# 1. 새 네임스페이스 생성
-node dist/cli/namespace-analyzer.js create-namespace integration-tests \
-  --patterns "tests/integration/**/*" \
-  --description "Integration test files"
+# 1. 네임스페이스 목록 확인
+npm run cli -- namespace --list
 
-# 2. 파일 목록 확인
-node dist/cli/namespace-analyzer.js list-files integration-tests
+# 2. 특정 네임스페이스 실행
+npm run cli -- namespace --name source
 
-# 3. 분석 실행
-node dist/cli/namespace-analyzer.js analyze integration-tests
+# 3. 모든 네임스페이스 실행
+npm run cli -- namespace --all
+
+# 4. 네임스페이스 최적화 (개발 중)
+npm run cli -- namespace --optimize
 ```
 
 ---
 
-## 📊 Data Flow
+## 🔗 CLI 명령어와 구현 코드 매핑
 
+### CLI 명령어 구조
+
+| CLI 명령어 | 구현 파일 | 핵심 함수 | 기능 |
+|------------|-----------|-----------|------|
+| `npm run cli -- analyze` | [`src/cli/main.ts#L50-L93`](../../src/cli/main.ts#L50-L93) | `runTypeScriptProjectAnalysis` | 파일 패턴 기반 의존성 분석 |
+| `npm run cli -- analyze --file <path>` | [`src/cli/main.ts#L50-L93`](../../src/cli/main.ts#L50-L93) | `runTypeScriptAnalysis` | 특정 파일 분석 |
+| `npm run cli -- namespace --list` | [`src/cli/main.ts#L218-L252`](../../src/cli/main.ts#L218-L252) | `runNamespaceAnalysis` | 네임스페이스 목록 조회 |
+| `npm run cli -- namespace --name <name>` | [`src/cli/main.ts#L218-L252`](../../src/cli/main.ts#L218-L252) | `runNamespaceAnalysis` | 특정 네임스페이스 분석 |
+| `npm run cli -- namespace --all` | [`src/cli/main.ts#L218-L252`](../../src/cli/main.ts#L218-L252) | `runNamespaceAnalysis` | 모든 네임스페이스 분석 |
+| `npm run cli -- typescript --file <file>` | [`src/cli/main.ts#L152-L189`](../../src/cli/main.ts#L152-L189) | `runTypeScriptAnalysis` | 단일 파일 TypeScript 분석 |
+| `npm run cli -- typescript --pattern <pattern>` | [`src/cli/main.ts#L152-L189`](../../src/cli/main.ts#L152-L189) | `runTypeScriptProjectAnalysis` | 패턴 기반 TypeScript 분석 |
+| `npm run cli -- markdown --name <namespace> --action <action>` | [`src/cli/main.ts#L99-L146`](../../src/cli/main.ts#L99-L146) | `runMarkdownAnalysis` | 마크다운 분석 및 문서 생성 |
+| `npm run cli -- rdf --search <query>` | [`src/cli/main.ts#L258-L317`](../../src/cli/main.ts#L258-L317) | `RDFDatabaseAPI.searchRDFAddresses` | RDF 주소 검색 |
+| `npm run cli -- rdf --create <address>` | [`src/cli/main.ts#L258-L317`](../../src/cli/main.ts#L258-L317) | `createRDFAddress` | RDF 주소 생성 |
+| `npm run cli -- rdf --validate <address>` | [`src/cli/main.ts#L258-L317`](../../src/cli/main.ts#L258-L317) | `validateRDFAddress` | RDF 주소 검증 |
+
+### 🚧 **누락된 핵심 CLI 기능들**
+
+| 필요한 CLI 명령어 | 현재 상태 | 구현 필요도 |
+|------------------|-----------|-------------|
+| `npm run cli -- query <namespace>` | ❌ 누락 | 🔴 높음 |
+| `npm run cli -- query --circular` | ❌ 누락 | 🔴 높음 |
+| `npm run cli -- query --depth <n>` | ❌ 누락 | 🔴 높음 |
+| `npm run cli -- cross-namespace` | ❌ 누락 | 🔴 높음 |
+| `npm run cli -- cross-namespace --detailed` | ❌ 누락 | 🔴 높음 |
+| `npm run cli -- infer <namespace>` | ❌ 누락 | 🟡 중간 |
+| `npm run cli -- infer --hierarchical` | ❌ 누락 | 🟡 중간 |
+| `npm run cli -- unknown --list` | ❌ 누락 | 🟡 중간 |
+| `npm run cli -- unknown --resolve` | ❌ 누락 | 🟡 중간 |
+| `npm run cli -- namespace --create <name>` | ❌ 누락 | 🟡 중간 |
+| `npm run cli -- namespace --delete <name>` | ❌ 누락 | 🟡 중간 |
+| `npm run cli -- namespace --files <name>` | ❌ 누락 | 🟡 중간 |
+
+### 핸들러별 구현 구조
+
+| 핸들러 | 파일 | 주요 함수 | 역할 |
+|--------|------|-----------|------|
+| **TypeScript Handler** | [`src/cli/handlers/typescript-handler.ts`](../../src/cli/handlers/typescript-handler.ts) | `runTypeScriptAnalysis`, `runTypeScriptProjectAnalysis` | TypeScript 파일 분석 |
+| **Markdown Handler** | [`src/cli/handlers/markdown-handler.ts`](../../src/cli/handlers/markdown-handler.ts) | `runMarkdownAnalysis`, `runTagDocumentGeneration` | 마크다운 분석 및 문서 생성 |
+| **Namespace Analysis** | [`src/namespace/analysis-namespace.ts`](../../src/namespace/analysis-namespace.ts) | `runNamespaceAnalysis` | 네임스페이스 분석 실행 |
+
+### 핵심 구현 컴포넌트
+
+| 컴포넌트 | 파일 | 주요 클래스/함수 | 역할 |
+|----------|------|------------------|------|
+| **Dependency Graph Builder** | [`src/graph/DependencyGraphBuilder.ts`](../../src/graph/DependencyGraphBuilder.ts) | `DependencyGraphBuilder` | 의존성 그래프 구성 |
+| **Namespace Dependency Analyzer** | [`src/namespace/NamespaceDependencyAnalyzer.ts`](../../src/namespace/NamespaceDependencyAnalyzer.ts) | `NamespaceDependencyAnalyzer` | 네임스페이스 의존성 분석 |
+| **Graph Database** | [`src/database/GraphDatabase.ts`](../../src/database/GraphDatabase.ts) | `GraphDatabase` | GraphDB 쿼리 엔진 |
+| **RDF Address** | [`src/core/RDFAddress.ts`](../../src/core/RDFAddress.ts) | `RDFAddress` | RDF 주소 생성/파싱 |
+| **Node Identifier** | [`src/database/core/NodeIdentifier.ts`](../../src/database/core/NodeIdentifier.ts) | `NodeIdentifier` | RDF 기반 노드 식별자 |
+| **Inference Engine** | [`src/database/inference/InferenceEngine.ts`](../../src/database/inference/InferenceEngine.ts) | `InferenceEngine` | 추론 엔진 |
+| **Edge Type Registry** | [`src/database/inference/EdgeTypeRegistry.ts`](../../src/database/inference/EdgeTypeRegistry.ts) | `EdgeTypeRegistry` | 엣지 타입 관리 |
+
+---
+
+## 📊 **시스템 아키텍처**
+
+### **RDF 주소 생성 플로우**
+```
+Source Code → AST Parsing → Symbol Extraction → RDF Address Generation
+     ↓              ↓              ↓                    ↓
+  TypeScript    Tree-sitter    Symbol Info      <project>/<file>#<type>:<name>
+```
+
+### **검색 및 참조 플로우**
+```
+RDF Address → Parser → File Location → Editor Navigation
+     ↓           ↓           ↓              ↓
+  Search Key   Extract    File Path    Open in Editor
+```
+
+### **고유성 검증 플로우**
+```
+Symbols → Group by RDF → Check Duplicates → Resolve Conflicts
+   ↓           ↓              ↓                ↓
+ Extract   Grouping      Validation      Suggestions
+```
+
+### **핵심 데이터 플로우**
 ```
 ┌──────────────┐
 │ Source Files │

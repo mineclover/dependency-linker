@@ -30,6 +30,8 @@ export { createGraphStorage, GraphStorage } from "./GraphStorage";
 export * from "./inference";
 // Search module - RDF-based symbol search
 export * from "./search";
+// Services module - Unknown Symbol System and other services
+export * from "./services";
 
 import type { GraphNode } from "./GraphDatabase";
 import {

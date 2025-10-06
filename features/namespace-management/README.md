@@ -25,21 +25,22 @@
 
 ## 🛠️ Commands
 
-### `list-namespaces`
+### `npm run cli -- namespace --list`
 
 설정된 모든 네임스페이스 목록을 조회합니다.
 
 **Syntax**:
 ```bash
-node dist/cli/namespace-analyzer.js list-namespaces [options]
+npm run cli -- namespace --list
 ```
 
-**Options**:
-- `-c, --config <path>` - Config file path (default: deps.config.json)
+**Implementation:**
+- **CLI Entry**: [`src/cli/main.ts#namespace`](../../../src/cli/main.ts#L218-L252) - 네임스페이스 관리 명령어
+- **Core Logic**: [`src/namespace/analysis-namespace.ts#runNamespaceAnalysis`](../../../src/namespace/analysis-namespace.ts#L745-L758) - 네임스페이스 분석 실행
 
 **Example**:
 ```bash
-node dist/cli/namespace-analyzer.js list-namespaces
+npm run cli -- namespace --list
 ```
 
 **Output**:

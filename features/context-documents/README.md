@@ -22,26 +22,27 @@
 
 ## 🛠️ Commands
 
-### `generate-context <file>`
+### `npm run cli -- markdown --name <namespace> --action document`
 
-특정 파일의 컨텍스트 문서를 생성합니다.
+특정 네임스페이스의 컨텍스트 문서를 생성합니다.
 
 **Syntax**:
 ```bash
-node dist/cli/namespace-analyzer.js generate-context <file> [options]
+npm run cli -- markdown --name <namespace> --action document
 ```
 
-**Options**:
-- `--cwd <path>` - Working directory
-- `-d, --db <path>` - Database path
+**Implementation:**
+- **CLI Entry**: [`src/cli/main.ts#markdown`](../../../src/cli/main.ts#L99-L146) - 마크다운 분석 명령어
+- **Handler**: [`src/cli/handlers/markdown-handler.ts#runTagDocumentGeneration`](../../../src/cli/handlers/markdown-handler.ts#L34-L75) - 컨텍스트 문서 생성
+- **Document Generator**: [`src/parsers/markdown/MarkdownTagDocumentGenerator.ts`](../../../src/parsers/markdown/MarkdownTagDocumentGenerator.ts) - 문서 생성
 
 **Example**:
 ```bash
-# 특정 파일 컨텍스트 생성
-node dist/cli/namespace-analyzer.js generate-context src/database/GraphDatabase.ts
+# 마크다운 네임스페이스 컨텍스트 문서 생성
+npm run cli -- markdown --name markdown --action document
 
-# 다른 경로에서 실행
-node dist/cli/namespace-analyzer.js generate-context src/core/QueryEngine.ts --cwd /path/to/project
+# 문서 분석
+npm run cli -- markdown --name markdown --action analysis
 ```
 
 **Output**:
