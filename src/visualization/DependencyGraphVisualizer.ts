@@ -248,32 +248,32 @@ export class DependencyGraphVisualizer {
 		let filteredEdges = edges;
 
 		// 노드 타입 필터링
-		if (this.options.filters.nodeTypes.length > 0) {
+		if (this.options.filters?.nodeTypes && this.options.filters.nodeTypes.length > 0) {
 			filteredNodes = nodes.filter((node) =>
-				this.options.filters.nodeTypes.includes(node.type),
+				this.options.filters!.nodeTypes!.includes(node.type),
 			);
 		}
 
 		// 관계 타입 필터링
-		if (this.options.filters.relationshipTypes.length > 0) {
+		if (this.options.filters?.relationshipTypes && this.options.filters.relationshipTypes.length > 0) {
 			filteredEdges = edges.filter((edge) =>
-				this.options.filters.relationshipTypes.includes(edge.type),
+				this.options.filters!.relationshipTypes!.includes(edge.type),
 			);
 		}
 
 		// 가중치 필터링
-		if (this.options.filters.minWeight > 0) {
+		if ((this.options.filters?.minWeight ?? 0) > 0) {
 			filteredEdges = filteredEdges.filter(
-				(edge) => edge.weight >= this.options.filters.minWeight,
+				(edge) => (edge.weight ?? 0) >= this.options.filters!.minWeight!,
 			);
 		}
 
 		// 성능 최적화
-		if (filteredNodes.length > this.options.performance.maxNodes) {
+		if (filteredNodes.length > (this.options.performance?.maxNodes ?? 1000)) {
 			filteredNodes = this.clusterNodes(filteredNodes);
 		}
 
-		if (filteredEdges.length > this.options.performance.maxEdges) {
+		if (filteredEdges.length > (this.options.performance?.maxEdges ?? 5000)) {
 			filteredEdges = this.simplifyEdges(filteredEdges);
 		}
 
@@ -372,8 +372,10 @@ export class DependencyGraphVisualizer {
 			const x = margin + Math.random() * (width - 2 * margin);
 			const y = margin + Math.random() * (height - 2 * margin);
 
-			svg += `<rect x="${x - this.options.nodeStyle.width / 2}" y="${y - this.options.nodeStyle.height / 2}" 
-				width="${this.options.nodeStyle.width}" height="${this.options.nodeStyle.height}" 
+			const nodeWidth = this.options.nodeStyle?.width ?? 100;
+			const nodeHeight = this.options.nodeStyle?.height ?? 50;
+			svg += `<rect x="${x - nodeWidth / 2}" y="${y - nodeHeight / 2}" 
+				width="${nodeWidth}" height="${nodeHeight}" 
 				class="node" rx="5"/>`;
 			svg += `<text x="${x}" y="${y + 5}" class="label">${node.label}</text>`;
 		}

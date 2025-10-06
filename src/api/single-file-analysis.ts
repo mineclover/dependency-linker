@@ -129,8 +129,6 @@ export async function analyzeSingleFile(
 	// 의존성 분석
 	const dependencies = await analyzeDependencies(
 		filePath,
-		content,
-		fileInfo.language,
 		analyzer,
 		projectRoot,
 	);
@@ -216,8 +214,6 @@ function detectLanguage(filePath: string): SupportedLanguage {
  */
 async function analyzeDependencies(
 	filePath: string,
-	content: string,
-	language: SupportedLanguage,
 	analyzer: FileDependencyAnalyzer,
 	projectRoot: string,
 ): Promise<SingleFileAnalysisResult["dependencies"]> {
@@ -328,19 +324,19 @@ async function analyzeMarkdownLinks(
 	const result = await linkTracker.trackLinks(filePath, "project");
 
 	return {
-		internal: result.internal.map((link: any) => ({
+		internal: result.targetFiles.map((link: any) => ({
 			text: link.text,
 			url: link.url,
 			exists: true, // TODO: 실제 파일 존재 확인
 		})),
-		external: result.external.map((link: any) => ({
+		external: result.externalLinks.map((link: any) => ({
 			text: link.text,
 			url: link.url,
 			status: link.validation?.status || "unknown",
 			statusCode: link.validation?.statusCode,
 			responseTime: link.validation?.responseTime,
 		})),
-		anchors: result.anchors.map((link: any) => ({
+		anchors: result.relationships.map((link: any) => ({
 			text: link.text,
 			anchorId: link.anchorId,
 			isValid: link.isValid,

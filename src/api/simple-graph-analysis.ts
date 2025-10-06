@@ -189,11 +189,11 @@ async function queryDependenciesFromGraphDB(
 				graphStats.totalNodes = allNodes.length;
 
 				// 파일 노드 수 조회
-				const fileNodes = await database.findNodes({ type: "file" });
+				const fileNodes = await database.findNodes({ nodeTypes: ["file"] });
 				graphStats.fileNodes = fileNodes.length;
 
 				// 라이브러리 노드 수 조회
-				const libraryNodes = await database.findNodes({ type: "library" });
+				const libraryNodes = await database.findNodes({ nodeTypes: ["library"] });
 				graphStats.libraryNodes = libraryNodes.length;
 			} catch (statsError) {
 				console.warn("Graph stats collection failed:", statsError);

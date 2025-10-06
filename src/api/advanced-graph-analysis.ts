@@ -627,10 +627,10 @@ async function getAdvancedGraphStatistics(
 	try {
 		// 기본 통계
 		const allNodes = await database.findNodes({});
-		const fileNodes = await database.findNodes({ type: "file" });
-		const libraryNodes = await database.findNodes({ type: "library" });
-		const functionNodes = await database.findNodes({ type: "function" });
-		const classNodes = await database.findNodes({ type: "class" });
+		const fileNodes = await database.findNodes({ nodeTypes: ["file"] });
+		const libraryNodes = await database.findNodes({ nodeTypes: ["library"] });
+		const functionNodes = await database.findNodes({ nodeTypes: ["function"] });
+		const classNodes = await database.findNodes({ nodeTypes: ["class"] });
 		const symbolNodes = functionNodes.length + classNodes.length;
 
 		// 고급 통계

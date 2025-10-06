@@ -148,15 +148,11 @@ export async function analyzeSingleFileFixed(
 				projectName,
 			);
 
-			// 파일 내용 읽기
-			const content = await fs.readFile(filePath, "utf-8");
-
-			// 파일 분석 실행 (Graph DB에 데이터 저장)
 			// 언어 감지
-			const language = detectLanguage(filePath);
+		const language = detectLanguage(filePath);
 
-			// 파일 내용 읽기
-			const content = await fs.readFile(filePath, "utf-8");
+		// 파일 내용 읽기
+		const content = await fs.readFile(filePath, "utf-8");
 
 			// import 소스 추출
 			const importSources: ImportSource[] = [];
@@ -329,11 +325,11 @@ async function queryDependenciesFromGraph(
 				graphStats.totalNodes = allNodes.length;
 
 				// 파일 노드 수 조회
-				const fileNodes = await database.findNodes({ type: "file" });
+				const fileNodes = await database.findNodes({ nodeTypes: ["file"] });
 				graphStats.fileNodes = fileNodes.length;
 
 				// 라이브러리 노드 수 조회
-				const libraryNodes = await database.findNodes({ type: "library" });
+				const libraryNodes = await database.findNodes({ nodeTypes: ["library"] });
 				graphStats.libraryNodes = libraryNodes.length;
 
 				// 의존성 관계 수 조회 (간접적으로 계산)
@@ -428,19 +424,19 @@ async function analyzeMarkdownLinks(
 		const result = await linkTracker.trackLinks(filePath, "project");
 
 		return {
-			internal: result.internal.map((link: any) => ({
+			internal: result.targetFiles.map((link: any) => ({
 				text: link.text,
 				url: link.url,
 				exists: true, // TODO: 실제 파일 존재 확인
 			})),
-			external: result.external.map((link: any) => ({
+			external: result.externalLinks.map((link: any) => ({
 				text: link.text,
 				url: link.url,
 				status: link.validation?.status || "unknown",
 				statusCode: link.validation?.statusCode,
 				responseTime: link.validation?.responseTime,
 			})),
-			anchors: result.anchors.map((link: any) => ({
+			anchors: result.relationships.map((link: any) => ({
 				text: link.text,
 				anchorId: link.anchorId,
 				isValid: link.isValid,

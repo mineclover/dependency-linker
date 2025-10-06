@@ -466,14 +466,14 @@ async function getGraphStatistics(
 		const allNodes = await database.findNodes({});
 
 		// 파일 노드 수 조회
-		const fileNodes = await database.findNodes({ type: "file" });
+		const fileNodes = await database.findNodes({ nodeTypes: ["file"] });
 
 		// 라이브러리 노드 수 조회
-		const libraryNodes = await database.findNodes({ type: "library" });
+		const libraryNodes = await database.findNodes({ nodeTypes: ["library"] });
 
 		// 심볼 노드 수 조회
-		const functionNodes = await database.findNodes({ type: "function" });
-		const classNodes = await database.findNodes({ type: "class" });
+		const functionNodes = await database.findNodes({ nodeTypes: ["function"] });
+		const classNodes = await database.findNodes({ nodeTypes: ["class"] });
 		const symbolNodes = functionNodes.length + classNodes.length;
 
 		return {

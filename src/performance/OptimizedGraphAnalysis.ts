@@ -13,7 +13,10 @@
 import * as path from "node:path";
 import * as fs from "node:fs/promises";
 import { GraphDatabase } from "../database/GraphDatabase.js";
-import { FileDependencyAnalyzer } from "../database/services/FileDependencyAnalyzer.js";
+import {
+	FileDependencyAnalyzer,
+	type ImportSource,
+} from "../database/services/FileDependencyAnalyzer.js";
 import { AdvancedCache } from "../cache/AdvancedCache.js";
 import { BatchProcessor, FileBatchProcessor } from "../batch/BatchProcessor.js";
 import { DependencyGraphVisualizer } from "../visualization/DependencyGraphVisualizer.js";
@@ -113,7 +116,7 @@ export class OptimizedGraphAnalysis {
 		};
 
 		// 데이터베이스 초기화
-		this.database = new GraphDatabase();
+		this.database = new GraphDatabase(".dependency-linker/graph.db");
 
 		// 캐시 초기화
 		if (this.options.enableCaching) {
@@ -122,6 +125,8 @@ export class OptimizedGraphAnalysis {
 				maxEntries: 1000,
 				defaultTTL: 3600000, // 1시간
 			});
+		} else {
+			this.cache = new AdvancedCache();
 		}
 
 		// 배치 처리기 초기화
@@ -136,6 +141,10 @@ export class OptimizedGraphAnalysis {
 					memoryLimit: this.options.memoryLimit,
 				},
 			);
+		} else {
+			this.batchProcessor = new FileBatchProcessor(
+				async (filePath: string) => await this.processFile(filePath),
+			);
 		}
 
 		// 시각화기 초기화
@@ -149,7 +158,12 @@ export class OptimizedGraphAnalysis {
 					enableSimplification: true,
 				},
 			});
+		} else {
+			this.visualizer = new DependencyGraphVisualizer();
 		}
+
+		// 시작 시간 기록
+		this.startTime = Date.now();
 	}
 
 	/**
@@ -304,7 +318,30 @@ export class OptimizedGraphAnalysis {
 			"unknown-project",
 		);
 
-		await analyzer.analyzeFile(filePath);
+		// 언어 감지
+		const language = this.detectLanguage(filePath);
+
+		// 파일 내용 읽기
+		const content = await fs.readFile(filePath, "utf-8");
+
+		// import 소스 추출
+		const importSources: ImportSource[] = [];
+		const importRegex = /import\s+.*?\s+from\s+['"](.+?)['"]/g;
+		let match;
+		while ((match = importRegex.exec(content)) !== null) {
+			importSources.push({
+				type: match[1].startsWith(".")
+					? "relative"
+					: match[1].startsWith("/")
+						? "absolute"
+						: "library",
+				source: match[1],
+				imports: [],
+				location: { line: 0, column: 0 },
+			});
+		}
+
+		await analyzer.analyzeFile(filePath, language, importSources);
 
 		// 결과 생성
 		const result = {
@@ -465,5 +502,30 @@ export class OptimizedGraphAnalysis {
 			return await this.cache.loadFromFile();
 		}
 		return false;
+	}
+
+	/**
+	 * 언어 감지
+	 */
+	private detectLanguage(filePath: string): SupportedLanguage {
+		const ext = path.extname(filePath).toLowerCase();
+
+		switch (ext) {
+			case ".ts":
+			case ".tsx":
+				return "typescript";
+			case ".js":
+			case ".jsx":
+				return "javascript";
+			case ".py":
+				return "python";
+			case ".java":
+				return "java";
+			case ".md":
+			case ".markdown":
+				return "markdown";
+			default:
+				return "typescript"; // 기본값
+		}
 	}
 }

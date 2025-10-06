@@ -143,10 +143,6 @@ export async function analyzeSingleFileImproved(
 			projectName,
 		);
 
-		// 파일 내용 읽기
-		const content = await fs.readFile(filePath, "utf-8");
-
-		// 파일 분석 실행 (Graph DB에 데이터 저장)
 		// 언어 감지
 		const language = detectLanguage(filePath);
 
@@ -267,7 +263,7 @@ async function queryDependenciesFromGraph(
 		[];
 
 	for (const dep of dependencies) {
-		const relationshipType = dep.relationshipType || "unknown";
+		const relationshipType = (dep as any).relationshipType || "unknown";
 
 		if (dep.type === "file") {
 			// 내부 파일 의존성
@@ -320,16 +316,16 @@ async function queryDependenciesFromGraph(
 		graphStats.totalRelationships = allRelationships.length;
 
 		// 파일 노드 수 조회
-		const fileNodes = await database.findNodes({ type: "file" });
+		const fileNodes = await database.findNodes({ nodeTypes: ["file"] });
 		graphStats.fileNodes = fileNodes.length;
 
 		// 라이브러리 노드 수 조회
-		const libraryNodes = await database.findNodes({ type: "library" });
+		const libraryNodes = await database.findNodes({ nodeTypes: ["library"] });
 		graphStats.libraryNodes = libraryNodes.length;
 
 		// 의존성 관계 수 조회
 		const dependencyRelationships = await database.findRelationships({
-			types: ["imports_file", "imports_library", "uses"],
+			relationshipTypes: ["imports_file", "imports_library", "uses"],
 		});
 		graphStats.dependencyRelationships = dependencyRelationships.length;
 	}
@@ -403,19 +399,19 @@ async function analyzeMarkdownLinks(
 	const result = await linkTracker.trackLinks(filePath, "project");
 
 	return {
-		internal: result.internal.map((link: any) => ({
+		internal: result.targetFiles.map((link: any) => ({
 			text: link.text,
 			url: link.url,
 			exists: true, // TODO: 실제 파일 존재 확인
 		})),
-		external: result.external.map((link: any) => ({
+		external: result.externalLinks.map((link: any) => ({
 			text: link.text,
 			url: link.url,
 			status: link.validation?.status || "unknown",
 			statusCode: link.validation?.statusCode,
 			responseTime: link.validation?.responseTime,
 		})),
-		anchors: result.anchors.map((link: any) => ({
+		anchors: result.relationships.map((link: any) => ({
 			text: link.text,
 			anchorId: link.anchorId,
 			isValid: link.isValid,

@@ -165,15 +165,11 @@ export async function analyzeFileWithGraphDB(
 				projectName,
 			);
 
-			// 파일 내용 읽기
-			const content = await fs.readFile(filePath, "utf-8");
+		// 언어 감지
+		const language = detectLanguage(filePath);
 
-			// 파일 분석 실행 (Graph DB에 데이터 저장)
-			// 언어 감지
-			const language = detectLanguage(filePath);
-
-			// 파일 내용 읽기
-			const content = await fs.readFile(filePath, "utf-8");
+		// 파일 내용 읽기
+		const content = await fs.readFile(filePath, "utf-8");
 
 			// import 소스 추출
 			const importSources: ImportSource[] = [];
@@ -445,21 +441,21 @@ async function getGraphStatistics(
 		const allNodes = await database.findNodes({});
 
 		// 파일 노드 수 조회
-		const fileNodes = await database.findNodes({ type: "file" });
+		const fileNodes = await database.findNodes({ nodeTypes: ["file"] });
 
 		// 라이브러리 노드 수 조회
-		const libraryNodes = await database.findNodes({ type: "library" });
+		const libraryNodes = await database.findNodes({ nodeTypes: ["library"] });
 
 		// 심볼 노드 수 조회 (함수, 클래스 등)
 		const symbolNodes =
 			(await database
 				.findNodes({
-					type: "function",
+					nodeTypes: ["function"],
 				})
 				.then((nodes) => nodes.length)) +
 			(await database
 				.findNodes({
-					type: "class",
+					nodeTypes: ["class"],
 				})
 				.then((nodes) => nodes.length));
 
@@ -554,19 +550,19 @@ async function analyzeMarkdownLinks(
 		const result = await linkTracker.trackLinks(filePath, "project");
 
 		return {
-			internal: result.internal.map((link: any) => ({
+			internal: result.targetFiles.map((link: any) => ({
 				text: link.text,
 				url: link.url,
 				exists: true, // TODO: 실제 파일 존재 확인
 			})),
-			external: result.external.map((link: any) => ({
+			external: result.externalLinks.map((link: any) => ({
 				text: link.text,
 				url: link.url,
 				status: link.validation?.status || "unknown",
 				statusCode: link.validation?.statusCode,
 				responseTime: link.validation?.responseTime,
 			})),
-			anchors: result.anchors.map((link: any) => ({
+			anchors: result.relationships.map((link: any) => ({
 				text: link.text,
 				anchorId: link.anchorId,
 				isValid: link.isValid,
