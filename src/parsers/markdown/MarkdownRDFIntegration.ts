@@ -26,6 +26,14 @@ export interface MarkdownRDFResult {
 	symbols: RDFSymbolExtractionResult[];
 	/** 링크 관계 */
 	relationships: MarkdownRelationship[];
+	/** 통계 */
+	statistics: {
+		tagsByType: Record<string, number>;
+		tagsByCategory: Record<string, number>;
+		mostUsedTags: string[];
+		totalSymbols: number;
+		totalRelationships: number;
+	};
 	/** 에러 */
 	errors: string[];
 	/** 경고 */
@@ -88,11 +96,15 @@ export class MarkdownRDFIntegration {
 
 		// 링크 관계는 별도로 처리하지 않음 (parseResult에 links가 없음)
 
+		// 통계 계산
+		const statistics = this.calculateStatistics(rdfSymbols, relationships);
+
 		return {
 			filePath,
 			projectName,
 			symbols: rdfSymbols,
 			relationships,
+			statistics,
 			errors: [],
 			warnings: [],
 		};
@@ -250,5 +262,44 @@ export class MarkdownRDFIntegration {
 			};
 		}
 		return { localName: symbolName };
+	}
+
+	/**
+	 * 통계 계산
+	 */
+	private calculateStatistics(
+		symbols: RDFSymbolExtractionResult[],
+		relationships: MarkdownRelationship[],
+	) {
+		const tagsByType: Record<string, number> = {};
+		const tagsByCategory: Record<string, number> = {};
+		const mostUsedTags: string[] = [];
+
+		// 심볼별 타입 통계
+		for (const symbol of symbols) {
+			const nodeType = symbol.nodeType || "Unknown";
+			tagsByType[nodeType] = (tagsByType[nodeType] || 0) + 1;
+		}
+
+		// 관계별 카테고리 통계
+		for (const relationship of relationships) {
+			const category = relationship.type;
+			tagsByCategory[category] = (tagsByCategory[category] || 0) + 1;
+		}
+
+		// 가장 많이 사용된 태그 (타입별)
+		const sortedTypes = Object.entries(tagsByType)
+			.sort(([, a], [, b]) => b - a)
+			.slice(0, 5)
+			.map(([type]) => type);
+		mostUsedTags.push(...sortedTypes);
+
+		return {
+			tagsByType,
+			tagsByCategory,
+			mostUsedTags,
+			totalSymbols: symbols.length,
+			totalRelationships: relationships.length,
+		};
 	}
 }

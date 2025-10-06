@@ -60,12 +60,19 @@ export async function runMarkdownAnalysis(name: string): Promise<void> {
 		}
 
 		console.log(`\n📊 Statistics:`);
-		console.log(`   By Type:`, (result as any).statistics.tagsByType);
-		console.log(`   By Category:`, (result as any).statistics.tagsByCategory);
-		console.log(
-			`   Most Used:`,
-			(result as any).statistics.mostUsedTags.slice(0, 5),
-		);
+		if ((result as any).statistics) {
+			console.log(`   By Type:`, (result as any).statistics.tagsByType || {});
+			console.log(
+				`   By Category:`,
+				(result as any).statistics.tagsByCategory || {},
+			);
+			console.log(
+				`   Most Used:`,
+				(result as any).statistics.mostUsedTags?.slice(0, 5) || [],
+			);
+		} else {
+			console.log(`   Statistics not available`);
+		}
 
 		console.log(`\n✅ Markdown analysis completed for namespace: ${name}`);
 	} catch (error) {
