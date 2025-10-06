@@ -10,6 +10,8 @@ import { UnknownSymbolHandler } from "./unknown-handler";
 import { QueryHandler } from "./query-handler";
 import { CrossNamespaceHandler } from "./cross-namespace-handler";
 import { InferenceHandler } from "./inference-handler";
+import { ContextDocumentsHandler } from "./context-documents-handler";
+import { PerformanceOptimizationHandler } from "./performance-optimization-handler";
 
 // RDF Handler
 export { RDFHandler } from "./rdf-handler";
@@ -25,6 +27,12 @@ export { CrossNamespaceHandler } from "./cross-namespace-handler";
 
 // Inference Handler
 export { InferenceHandler } from "./inference-handler";
+
+// Context Documents Handler
+export { ContextDocumentsHandler } from "./context-documents-handler";
+
+// Performance Optimization Handler
+export { PerformanceOptimizationHandler } from "./performance-optimization-handler";
 
 // TypeScript Handler
 export {
@@ -43,6 +51,9 @@ export class HandlerFactory {
 	private static queryHandler: QueryHandler | null = null;
 	private static crossNamespaceHandler: CrossNamespaceHandler | null = null;
 	private static inferenceHandler: InferenceHandler | null = null;
+	private static contextDocumentsHandler: ContextDocumentsHandler | null = null;
+	private static performanceOptimizationHandler: PerformanceOptimizationHandler | null =
+		null;
 
 	/**
 	 * RDF Handler 싱글톤 인스턴스 반환
@@ -95,6 +106,27 @@ export class HandlerFactory {
 	}
 
 	/**
+	 * Context Documents Handler 싱글톤 인스턴스 반환
+	 */
+	static getContextDocumentsHandler(): ContextDocumentsHandler {
+		if (!this.contextDocumentsHandler) {
+			this.contextDocumentsHandler = new ContextDocumentsHandler();
+		}
+		return this.contextDocumentsHandler;
+	}
+
+	/**
+	 * Performance Optimization Handler 싱글톤 인스턴스 반환
+	 */
+	static getPerformanceOptimizationHandler(): PerformanceOptimizationHandler {
+		if (!this.performanceOptimizationHandler) {
+			this.performanceOptimizationHandler =
+				new PerformanceOptimizationHandler();
+		}
+		return this.performanceOptimizationHandler;
+	}
+
+	/**
 	 * 모든 핸들러 초기화
 	 */
 	static async initializeAll(): Promise<void> {
@@ -102,11 +134,16 @@ export class HandlerFactory {
 		const queryHandler = this.getQueryHandler();
 		const crossNamespaceHandler = this.getCrossNamespaceHandler();
 		const inferenceHandler = this.getInferenceHandler();
+		const contextDocumentsHandler = this.getContextDocumentsHandler();
+		const performanceOptimizationHandler =
+			this.getPerformanceOptimizationHandler();
 
 		await unknownHandler.initialize();
 		await queryHandler.initialize();
 		await crossNamespaceHandler.initialize();
 		await inferenceHandler.initialize();
+		await contextDocumentsHandler.initialize();
+		await performanceOptimizationHandler.initialize();
 
 		console.log("✅ 모든 CLI 핸들러 초기화 완료");
 	}
@@ -133,6 +170,16 @@ export class HandlerFactory {
 		if (this.inferenceHandler) {
 			await this.inferenceHandler.close();
 			this.inferenceHandler = null;
+		}
+
+		if (this.contextDocumentsHandler) {
+			await this.contextDocumentsHandler.close();
+			this.contextDocumentsHandler = null;
+		}
+
+		if (this.performanceOptimizationHandler) {
+			await this.performanceOptimizationHandler.close();
+			this.performanceOptimizationHandler = null;
 		}
 
 		console.log("✅ 모든 CLI 핸들러 종료 완료");

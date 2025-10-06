@@ -1,0 +1,113 @@
+{
+	"namespaces": {
+		"auth": {
+			"path": "src/auth/**/*",
+			"description": "Authentication module",
+			"semanticTags": ["auth-domain", "security-layer"],
+			"dependencies": ["user", "utils"]
+		},
+		"user": {
+			"path": "src/user/**/*",
+			"description": "User management module",
+			"semanticTags": ["user-domain", "service-layer"],
+			"dependencies": ["auth", "database"]
+		},
+		"order": {
+			"path": "src/order/**/*",
+			"description": "Order management module",
+			"semanticTags": ["order-domain", "business-layer"],
+			"dependencies": ["user", "product", "payment"]
+		},
+		"product": {
+			"path": "src/product/**/*",
+			"description": "Product management module",
+			"semanticTags": ["product-domain", "catalog-layer"],
+			"dependencies": ["database", "utils"]
+		},
+		"payment": {
+			"path": "src/payment/**/*",
+			"description": "Payment processing module",
+			"semanticTags": ["payment-domain", "external-service"],
+			"dependencies": ["auth", "order"]
+		},
+		"database": {
+			"path": "src/database/**/*",
+			"description": "Database access layer",
+			"semanticTags": ["data-layer", "infrastructure"],
+			"dependencies": []
+		},
+		"utils": {
+			"path": "src/utils/**/*",
+			"description": "Utility functions",
+			"semanticTags": ["utility-layer", "shared"],
+			"dependencies": []
+		},
+		"components": {
+			"path": "src/components/**/*",
+			"description": "React components",
+			"semanticTags": ["ui-layer", "react-component"],
+			"dependencies": ["utils"]
+		},
+		"api": {
+			"path": "src/api/**/*",
+			"description": "API layer",
+			"semanticTags": ["api-layer", "public-api"],
+			"dependencies": ["auth", "user", "order", "product"]
+		},
+		"tests": {
+			"path": "tests/**/*",
+			"description": "Test files",
+			"semanticTags": ["test-layer", "quality-assurance"],
+			"dependencies": ["auth", "user", "order", "product", "api"]
+		}
+	},
+	"crossNamespaceRules": {
+		"allowed": [
+			"auth -> user",
+			"user -> auth",
+			"order -> user",
+			"order -> product",
+			"order -> payment",
+			"api -> auth",
+			"api -> user",
+			"api -> order",
+			"api -> product",
+			"tests -> *"
+		],
+		"forbidden": [
+			"auth -> order",
+			"auth -> product",
+			"user -> order",
+			"user -> product",
+			"product -> user",
+			"product -> order"
+		]
+	},
+	"semanticTagRules": {
+		"architecture": {
+			"service-layer": "Business logic services",
+			"controller-layer": "HTTP request handlers",
+			"repository-layer": "Data access layer",
+			"domain-layer": "Business domain models",
+			"infrastructure-layer": "External service integrations",
+			"presentation-layer": "UI components and views"
+		},
+		"domain": {
+			"auth-domain": "Authentication and authorization",
+			"user-domain": "User management",
+			"order-domain": "Order processing",
+			"product-domain": "Product catalog",
+			"payment-domain": "Payment processing"
+		},
+		"access": {
+			"public-api": "Public API endpoints",
+			"private-api": "Internal API endpoints",
+			"admin-api": "Administrative API endpoints"
+		},
+		"quality": {
+			"tested": "Code with test coverage",
+			"documented": "Well-documented code",
+			"deprecated": "Deprecated functionality"
+		}
+	}
+}

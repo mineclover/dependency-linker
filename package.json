@@ -28,6 +28,7 @@
 		"lint": "biome check src/",
 		"lint:fix": "biome check --write src/",
 		"format": "biome format --write .",
+		"cli": "node dist/cli/main.js",
 		"format:check": "biome format .",
 		"typecheck": "tsc --noEmit",
 		"dev": "tsc --watch",

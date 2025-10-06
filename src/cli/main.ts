@@ -22,7 +22,8 @@ import {
 	runTypeScriptProjectAnalysis,
 	runTypeScriptPerformanceBenchmark,
 } from "./handlers/typescript-handler.js";
-import { RDFHandler, UnknownSymbolHandler, QueryHandler, CrossNamespaceHandler, InferenceHandler, HandlerFactory } from "./handlers/index.js";
+import { RDFHandler, UnknownSymbolHandler, QueryHandler, CrossNamespaceHandler, InferenceHandler, ContextDocumentsHandler, PerformanceOptimizationHandler, HandlerFactory } from "./handlers/index.js";
+import { RDFFileHandler } from "./handlers/rdf-file-handler.js";
 
 // 네임스페이스 및 RDF 관련 임포트
 import {
@@ -763,6 +764,337 @@ program
 	});
 
 // ============================================================================
+// Context Documents 명령어
+// ============================================================================
+
+program
+	.command("context-documents")
+	.description("Context Documents 관리")
+	.option("-f, --file <path>", "파일 컨텍스트 문서 생성")
+	.option("-s, --symbol <path>", "심볼 컨텍스트 문서 생성")
+	.option("-p, --project", "프로젝트 전체 컨텍스트 문서 생성")
+	.option("-l, --list", "컨텍스트 문서 목록 조회")
+	.option("-u, --update", "컨텍스트 문서 업데이트")
+	.option("-c, --cleanup", "컨텍스트 문서 정리")
+	.option("--stats", "컨텍스트 문서 통계 생성")
+	.option("--symbol-path <path>", "심볼 경로")
+	.option("--symbol-kind <kind>", "심볼 종류")
+	.option("--include-files", "파일 문서 포함")
+	.option("--include-symbols", "심볼 문서 포함")
+	.option("--include-dependencies", "의존성 정보 포함")
+	.option("--include-dependents", "의존자 정보 포함")
+	.option("--include-metadata", "메타데이터 포함")
+	.option("--overwrite-existing", "기존 문서 덮어쓰기")
+	.option("--confirm", "작업 확인")
+	.option("--project-root <path>", "프로젝트 루트 경로")
+	.option("--database <path>", "데이터베이스 경로")
+	.option("--output <path>", "출력 경로")
+	.option("--enable-auto-generation", "자동 생성 활성화")
+	.action(async (options) => {
+		const handler = new ContextDocumentsHandler({
+			projectRoot: options.projectRoot,
+			databasePath: options.database,
+			outputPath: options.output,
+			enableAutoGeneration: options.enableAutoGeneration,
+			includeDependencies: options.includeDependencies,
+			includeDependents: options.includeDependents,
+			includeMetadata: options.includeMetadata,
+			overwriteExisting: options.overwriteExisting,
+		});
+
+		try {
+			await handler.initialize();
+
+			// 파일 컨텍스트 문서 생성
+			if (options.file) {
+				await handler.generateFileContext(options.file, {
+					includeDependencies: options.includeDependencies,
+					includeDependents: options.includeDependents,
+					overwriteExisting: options.overwriteExisting,
+				});
+			}
+			// 심볼 컨텍스트 문서 생성
+			else if (options.symbol) {
+				if (!options.symbolPath) {
+					console.log("❌ Please specify --symbol-path for symbol context generation");
+					process.exit(1);
+				}
+				await handler.generateSymbolContext(options.symbol, options.symbolPath, {
+					symbolKind: options.symbolKind,
+					overwriteExisting: options.overwriteExisting,
+				});
+			}
+			// 프로젝트 전체 컨텍스트 문서 생성
+			else if (options.project) {
+				await handler.generateProjectContext({
+					includeFiles: options.includeFiles,
+					includeSymbols: options.includeSymbols,
+					includeDependencies: options.includeDependencies,
+					includeDependents: options.includeDependents,
+					overwriteExisting: options.overwriteExisting,
+				});
+			}
+			// 컨텍스트 문서 목록 조회
+			else if (options.list) {
+				await handler.listDocuments();
+			}
+			// 컨텍스트 문서 업데이트
+			else if (options.update) {
+				await handler.updateDocuments({
+					includeFiles: options.includeFiles,
+					includeSymbols: options.includeSymbols,
+					includeDependencies: options.includeDependencies,
+					includeDependents: options.includeDependents,
+					overwriteExisting: options.overwriteExisting,
+				});
+			}
+			// 컨텍스트 문서 정리
+			else if (options.cleanup) {
+				await handler.cleanupDocuments({
+					includeFiles: options.includeFiles,
+					includeSymbols: options.includeSymbols,
+					confirm: options.confirm,
+				});
+			}
+			// 컨텍스트 문서 통계
+			else if (options.stats) {
+				await handler.generateStatistics();
+			}
+			else {
+				console.log("❌ Please specify an operation (--file, --symbol, --project, --list, --update, --cleanup, --stats)");
+				process.exit(1);
+			}
+		} catch (error) {
+			console.error("❌ Context Documents operation failed:", error);
+			process.exit(1);
+		} finally {
+			await handler.close();
+		}
+	});
+
+// ============================================================================
+// Performance Optimization 명령어
+// ============================================================================
+
+program
+	.command("performance")
+	.description("Performance Optimization 관리")
+	.option("-a, --analyze <project>", "최적화된 프로젝트 분석")
+	.option("-c, --cache <action>", "캐시 관리 (clear, stats, optimize)")
+	.option("-b, --batch <action>", "배치 처리 관리 (start, stop, stats, retry)")
+	.option("-m, --monitor", "성능 모니터링 시작")
+	.option("-o, --optimize-memory", "메모리 최적화")
+	.option("-r, --benchmark", "성능 벤치마크 실행")
+	.option("--stats", "성능 통계 생성")
+	.option("--file-patterns <patterns>", "파일 패턴 (쉼표로 구분)")
+	.option("--max-concurrency <number>", "최대 동시 실행 수")
+	.option("--batch-size <number>", "배치 크기")
+	.option("--cache-size-limit <bytes>", "캐시 크기 제한")
+	.option("--memory-limit <bytes>", "메모리 제한")
+	.option("--visualization-format <format>", "시각화 형식 (svg, html, json, dot)")
+	.option("--visualization-output <path>", "시각화 출력 경로")
+	.option("--monitoring-interval <ms>", "모니터링 간격")
+	.option("--include-memory", "메모리 정보 포함")
+	.option("--include-cpu", "CPU 정보 포함")
+	.option("--include-cache", "캐시 정보 포함")
+	.option("--iterations <number>", "벤치마크 반복 횟수")
+	.option("--project-root <path>", "프로젝트 루트 경로")
+	.option("--database <path>", "데이터베이스 경로")
+	.option("--enable-caching", "캐싱 활성화")
+	.option("--enable-batch-processing", "배치 처리 활성화")
+	.option("--enable-visualization", "시각화 활성화")
+	.option("--enable-monitoring", "모니터링 활성화")
+	.action(async (options) => {
+		const handler = new PerformanceOptimizationHandler({
+			projectRoot: options.projectRoot,
+			databasePath: options.database,
+			enableCaching: options.enableCaching,
+			enableBatchProcessing: options.enableBatchProcessing,
+			enableVisualization: options.enableVisualization,
+			enableMonitoring: options.enableMonitoring,
+			maxConcurrency: options.maxConcurrency ? parseInt(options.maxConcurrency) : undefined,
+			batchSize: options.batchSize ? parseInt(options.batchSize) : undefined,
+			cacheSizeLimit: options.cacheSizeLimit ? parseInt(options.cacheSizeLimit) : undefined,
+			memoryLimit: options.memoryLimit ? parseInt(options.memoryLimit) : undefined,
+			visualizationFormat: options.visualizationFormat,
+			visualizationOutput: options.visualizationOutput,
+		});
+
+		try {
+			await handler.initialize();
+
+			// 최적화된 프로젝트 분석
+			if (options.analyze) {
+				await handler.analyzeProject(
+					options.analyze,
+					options.filePatterns ? options.filePatterns.split(",") : undefined,
+					{
+						enableCaching: options.enableCaching,
+						enableBatchProcessing: options.enableBatchProcessing,
+						enableVisualization: options.enableVisualization,
+						enableMonitoring: options.enableMonitoring,
+					},
+				);
+			}
+			// 캐시 관리
+			else if (options.cache) {
+				await handler.manageCache(options.cache);
+			}
+			// 배치 처리 관리
+			else if (options.batch) {
+				await handler.manageBatchProcessing(options.batch, {
+					filePaths: options.filePatterns ? options.filePatterns.split(",") : undefined,
+					maxConcurrency: options.maxConcurrency ? parseInt(options.maxConcurrency) : undefined,
+					batchSize: options.batchSize ? parseInt(options.batchSize) : undefined,
+				});
+			}
+			// 성능 모니터링
+			else if (options.monitor) {
+				await handler.startMonitoring({
+					interval: options.monitoringInterval ? parseInt(options.monitoringInterval) : undefined,
+					includeMemory: options.includeMemory,
+					includeCPU: options.includeCPU,
+					includeCache: options.includeCache,
+				});
+			}
+			// 메모리 최적화
+			else if (options.optimizeMemory) {
+				await handler.optimizeMemory();
+			}
+			// 성능 벤치마크
+			else if (options.benchmark) {
+				await handler.runBenchmark({
+					iterations: options.iterations ? parseInt(options.iterations) : undefined,
+					includeMemory: options.includeMemory,
+					includeCPU: options.includeCPU,
+					includeCache: options.includeCache,
+				});
+			}
+			// 성능 통계
+			else if (options.stats) {
+				await handler.generateStatistics();
+			}
+			else {
+				console.log("❌ Please specify an operation (--analyze, --cache, --batch, --monitor, --optimize-memory, --benchmark, --stats)");
+				process.exit(1);
+			}
+		} catch (error) {
+			console.error("❌ Performance Optimization operation failed:", error);
+			process.exit(1);
+		} finally {
+			await handler.close();
+		}
+	});
+
+// ============================================================================
+// ============================================================================
+// RDF File 명령어
+// ============================================================================
+
+program
+	.command("rdf-file")
+	.description("RDF 주소 기반 파일 위치 반환 및 파일 열기")
+	.option("-l, --location <rdf-address>", "RDF 주소로 파일 위치 반환")
+	.option("-o, --open <rdf-address>", "RDF 주소로 파일 열기")
+	.option("-p, --path <rdf-address>", "RDF 주소로 파일 경로 반환")
+	.option("-r, --relative <rdf-address>", "RDF 주소로 상대 경로 반환")
+	.option("-c, --content <rdf-address>", "RDF 주소로 파일 내용 반환")
+	.option("-s, --symbol <rdf-address>", "RDF 주소로 심볼 정보 반환")
+	.option("-e, --exists <rdf-address>", "RDF 주소로 파일 존재 여부 확인")
+	.option("-v, --validate <rdf-address>", "RDF 주소 유효성 검증")
+	.option("--editor <editor>", "에디터 지정 (code, vim, nano, emacs, subl, atom)")
+	.option("--line <number>", "라인 번호")
+	.option("--column <number>", "컬럼 번호")
+	.option("--wait", "에디터 종료까지 대기")
+	.option("--start-line <number>", "파일 내용 시작 라인")
+	.option("--end-line <number>", "파일 내용 끝 라인")
+	.option("--database <path>", "데이터베이스 경로")
+	.action(async (options) => {
+		const handler = new RDFFileHandler(options.database);
+
+		try {
+			// 파일 위치 반환
+			if (options.location) {
+				const location = await handler.getFileLocation(options.location);
+				console.log(`📁 RDF 주소: ${location.rdfAddress}`);
+				console.log(`📄 파일 경로: ${location.filePath}`);
+				console.log(`📍 절대 경로: ${location.absolutePath}`);
+				console.log(`📂 상대 경로: ${location.relativePath}`);
+				console.log(`✅ 존재 여부: ${location.exists ? 'Yes' : 'No'}`);
+				if (location.lineNumber) {
+					console.log(`📏 라인 번호: ${location.lineNumber}`);
+				}
+				if (location.columnNumber) {
+					console.log(`📐 컬럼 번호: ${location.columnNumber}`);
+				}
+			}
+			// 파일 열기
+			else if (options.open) {
+				await handler.openFile(options.open, {
+					editor: options.editor,
+					line: options.line ? parseInt(options.line) : undefined,
+					column: options.column ? parseInt(options.column) : undefined,
+					wait: options.wait
+				});
+				console.log(`✅ 파일 열기 완료: ${options.open}`);
+			}
+			// 파일 경로 반환
+			else if (options.path) {
+				const filePath = await handler.getFilePath(options.path);
+				console.log(`📄 파일 경로: ${filePath}`);
+			}
+			// 상대 경로 반환
+			else if (options.relative) {
+				const relativePath = await handler.getRelativePath(options.relative);
+				console.log(`📂 상대 경로: ${relativePath}`);
+			}
+			// 파일 내용 반환
+			else if (options.content) {
+				const content = await handler.getFileContent(
+					options.content,
+					options.startLine ? parseInt(options.startLine) : undefined,
+					options.endLine ? parseInt(options.endLine) : undefined
+				);
+				console.log(`📄 파일 내용:`);
+				console.log(content);
+			}
+			// 심볼 정보 반환
+			else if (options.symbol) {
+				const symbolInfo = await handler.getSymbolInfo(options.symbol);
+				console.log(`🔍 심볼 정보:`);
+				console.log(`  - RDF 주소: ${symbolInfo.rdfAddress}`);
+				console.log(`  - 파일 경로: ${symbolInfo.filePath}`);
+				console.log(`  - 심볼 이름: ${symbolInfo.symbolName}`);
+				console.log(`  - 심볼 타입: ${symbolInfo.symbolType}`);
+				console.log(`  - 라인 번호: ${symbolInfo.lineNumber}`);
+				console.log(`  - 컬럼 번호: ${symbolInfo.columnNumber}`);
+				console.log(`  - Export 여부: ${symbolInfo.exported ? 'Yes' : 'No'}`);
+				if (symbolInfo.metadata && Object.keys(symbolInfo.metadata).length > 0) {
+					console.log(`  - 메타데이터: ${JSON.stringify(symbolInfo.metadata, null, 2)}`);
+				}
+			}
+			// 파일 존재 여부 확인
+			else if (options.exists) {
+				const exists = await handler.fileExists(options.exists);
+				console.log(`✅ 파일 존재 여부: ${exists ? 'Yes' : 'No'}`);
+			}
+			// RDF 주소 유효성 검증
+			else if (options.validate) {
+				const isValid = await handler.validateRDFAddress(options.validate);
+				console.log(`✅ RDF 주소 유효성: ${isValid ? 'Valid' : 'Invalid'}`);
+			}
+			else {
+				console.log("❌ Please specify an operation (--location, --open, --path, --relative, --content, --symbol, --exists, --validate)");
+				process.exit(1);
+			}
+		} catch (error) {
+			console.error("❌ RDF File operation failed:", error);
+			process.exit(1);
+		} finally {
+			await handler.close();
+		}
+	});
+
 // 프로그램 실행
 // ============================================================================
 
