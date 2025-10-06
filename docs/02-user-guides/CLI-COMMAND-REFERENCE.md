@@ -4,7 +4,28 @@ dependency-linker의 모든 CLI 명령어에 대한 완전한 참조 가이드�
 
 ## 🎯 개요
 
-dependency-linker는 다양한 CLI 명령어를 통해 강력한 의존성 분석 기능을 제공합니다.
+dependency-linker는 13개의 핵심 CLI 명령어를 통해 강력한 의존성 분석 기능을 제공합니다. 중복이 제거되고 최적화된 명령어 구조로 사용자 경험을 향상시켰습니다.
+
+## 📋 명령어 목록
+
+### 기본 명령어
+- `analyze` - 파일 및 디렉토리 분석
+- `rdf` - RDF 주소 생성, 검색, 검증, 통계
+- `rdf-file` - RDF 기반 파일 위치 반환 및 파일 열기
+
+### 고급 기능 명령어
+- `unknown` - Unknown Symbol 등록, 검색, 추론
+- `query` - SQL, GraphQL, 자연어 쿼리 실행
+- `cross-namespace` - 네임스페이스 간 의존성 분석
+- `inference` - 계층적, 전이적 추론 실행
+- `context-documents` - 파일, 심볼, 프로젝트 컨텍스트 문서 생성
+
+### 성능 및 분석 명령어
+- `performance` - 성능 분석, 캐시 관리, 모니터링, 최적화
+- `markdown` - Markdown 파일 분석, 링크 추적, 헤딩 추출
+- `typescript` - TypeScript 파일/프로젝트 분석, 벤치마크
+- `namespace` - 네임스페이스 분석, 최적화, 통계
+- `benchmark` - 성능 벤치마크 실행
 
 ## 🚀 기본 명령어
 
@@ -16,16 +37,14 @@ npm run cli -- analyze [options]
 ```
 
 #### 옵션
-- `-p, --pattern <pattern>`: 분석할 파일 패턴 (기본값: "src/**/*.ts")
-- `-d, --directory <dir>`: 분석할 디렉토리 (기본값: ".")
-- `-t, --type <type>`: 분석 타입 (기본값: "fixed")
-- `--performance`: 성능 최적화 활성화
-- `--max-concurrency <num>`: 최대 동시 실행 수 (기본값: "4")
-- `--batch-size <num>`: 배치 크기 (기본값: "10")
-- `--memory-limit <mb>`: 메모리 제한 (기본값: "1024")
+- `-p, --pattern <pattern>`: 분석할 파일 패턴
+- `-d, --directory <dir>`: 분석할 디렉토리
+- `-r, --recursive`: 재귀적 분석
 - `-o, --output <file>`: 출력 파일
-- `--format <format>`: 출력 형식 (기본값: "json")
-- `--include-statistics`: 상세 통계 포함
+- `--format <format>`: 출력 형식 (json, csv, xml)
+- `--performance`: 성능 최적화 활성화
+- `--verbose`: 상세 출력
+- `--database <path>`: 데이터베이스 경로
 
 #### 사용 예시
 ```bash
@@ -35,23 +54,23 @@ npm run cli -- analyze --pattern "src/**/*.ts"
 # JavaScript 파일 분석
 npm run cli -- analyze --pattern "src/**/*.js"
 
+# 디렉토리 분석
+npm run cli -- analyze --directory "src"
+
+# 재귀적 분석
+npm run cli -- analyze --directory "src" --recursive
+
 # 성능 최적화와 함께 분석
 npm run cli -- analyze --pattern "src/**/*.ts" --performance
-
-# 최대 동시성 설정
-npm run cli -- analyze --pattern "src/**/*.ts" --max-concurrency 8
-
-# 배치 크기 설정
-npm run cli -- analyze --pattern "src/**/*.ts" --batch-size 20
-
-# 메모리 제한 설정
-npm run cli -- analyze --pattern "src/**/*.ts" --memory-limit 2048
 
 # JSON 형식으로 출력
 npm run cli -- analyze --pattern "src/**/*.ts" --format json
 
-# 통계 포함
-npm run cli -- analyze --pattern "src/**/*.ts" --include-statistics
+# 상세 출력
+npm run cli -- analyze --pattern "src/**/*.ts" --verbose
+
+# 출력 파일 지정
+npm run cli -- analyze --pattern "src/**/*.ts" --output "results.json"
 ```
 
 ### 2. rdf - RDF 주소 관리
@@ -153,27 +172,22 @@ npm run cli -- unknown [options]
 ```
 
 #### 옵션
-- `--register <symbol> <file>`: Unknown Symbol 등록
-- `--search <symbol>`: Unknown Symbol 검색
-- `--infer`: 추론 실행
-- `--results`: 추론 결과 조회
-- `--rules <rules>`: 추론 규칙 지정
-- `--threshold <threshold>`: 신뢰도 임계값
-- `--symbol <symbol>`: 특정 심볼의 결과 조회
+- `-r, --register <symbol>`: Unknown Symbol 등록
+- `-f, --file <file>`: 파일 경로
+- `-s, --search <query>`: Unknown Symbol 검색
+- `-i, --infer`: 추론 실행
+- `--database <path>`: 데이터베이스 경로
 
 #### 사용 예시
 ```bash
 # Unknown Symbol 등록
-npm run cli -- unknown --register "processUser" "src/UserService.ts"
+npm run cli -- unknown --register "processUser" --file "src/UserService.ts"
 
 # Unknown Symbol 검색
 npm run cli -- unknown --search "processUser"
 
 # 추론 실행
 npm run cli -- unknown --infer
-
-# 추론 결과 조회
-npm run cli -- unknown --results
 ```
 
 ### 5. query - Query 시스템
@@ -307,29 +321,18 @@ npm run cli -- performance [options]
 ```
 
 #### 옵션
-- `-a, --analyze <project>`: 최적화된 프로젝트 분석
-- `-c, --cache <action>`: 캐시 관리 (clear, stats, optimize)
-- `-b, --batch <action>`: 배치 처리 관리 (start, stop, stats, retry)
-- `-m, --monitor`: 성능 모니터링 시작
-- `-o, --optimize-memory`: 메모리 최적화
-- `-r, --benchmark`: 성능 벤치마크 실행
-- `--stats`: 성능 통계 생성
-- `--file-patterns <patterns>`: 파일 패턴
-- `--max-concurrency <number>`: 최대 동시 실행 수
-- `--batch-size <number>`: 배치 크기
-- `--cache-size-limit <bytes>`: 캐시 크기 제한
-- `--memory-limit <bytes>`: 메모리 제한
-- `--visualization-format <format>`: 시각화 형식
-- `--visualization-output <path>`: 시각화 출력 경로
-- `--monitoring-interval <ms>`: 모니터링 간격
-- `--include-memory`: 메모리 정보 포함
-- `--include-cpu`: CPU 정보 포함
-- `--include-cache`: 캐시 정보 포함
-- `--iterations <number>`: 벤치마크 반복 횟수
+- `-a, --analyze <project>`: 성능 분석
+- `-c, --cache <operation>`: 캐시 관리
+- `-b, --batch <operation>`: 배치 처리 관리
+- `-m, --monitor`: 성능 모니터링
+- `--optimize-memory`: 메모리 최적화
+- `--benchmark`: 성능 벤치마크
+- `-s, --stats`: 성능 통계
+- `--database <path>`: 데이터베이스 경로
 
 #### 사용 예시
 ```bash
-# 최적화된 프로젝트 분석
+# 성능 분석
 npm run cli -- performance --analyze "my-project"
 
 # 캐시 관리

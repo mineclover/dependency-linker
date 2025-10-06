@@ -28,7 +28,12 @@
 		"exactOptionalPropertyTypes": false,
 		"incremental": true,
 		"tsBuildInfoFile": "./dist/.tsbuildinfo",
-		"downlevelIteration": true
+		"downlevelIteration": true,
+		"baseUrl": ".",
+		"paths": {
+			"@/*": ["src/*"],
+			"@tests/*": ["tests/*"]
+		}
 	},
 	"include": ["src/**/*"],
 	"exclude": ["node_modules", "dist", "tests"],

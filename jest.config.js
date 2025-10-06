@@ -59,6 +59,11 @@ module.exports = {
 		"^.+\\.ts$": "ts-jest",
 	},
 	moduleFileExtensions: ["ts", "tsx", "js", "jsx", "json", "node"],
+	moduleNameMapper: {
+		"^@/(.*)$": "<rootDir>/src/$1",
+		"^@tests/(.*)$": "<rootDir>/tests/$1",
+	},
+	moduleDirectories: ["node_modules", "src", "dist"],
 	// Additional configuration for better reporting
 	collectCoverage: false, // Enable manually with --coverage flag
 	coveragePathIgnorePatterns: [

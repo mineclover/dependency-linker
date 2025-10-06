@@ -4,7 +4,7 @@
 Query-based AST analysis library with QueryResultMap-centric architecture. TypeScript-first multi-language AST analysis framework supporting TypeScript, JavaScript, Java, Python, and Go through tree-sitter parsers.
 
 ## Current Architecture (v3.0.0)
-- **Version**: 3.0.0
+- **Version**: 2.1.0
 - **Language**: TypeScript 5.x, Node.js 18+
 - **Architecture**: QueryResultMap-centric with type-safe query system + Namespace integration
 - **Dependencies**: tree-sitter with language-specific parsers
@@ -347,7 +347,7 @@ Namespace Module (file organization)
 
 ## Package Distribution
 - **Name**: `@context-action/dependency-linker`
-- **Version**: 3.0.0
+- **Version**: 2.1.0
 - **Architecture**: QueryResultMap-centric with type safety + Namespace integration
 - **Supported Languages**: TypeScript, JavaScript, Java, Python, Go
 - **Module System**: ESM with tree-shaking support

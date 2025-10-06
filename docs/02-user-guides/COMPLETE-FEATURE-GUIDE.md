@@ -4,17 +4,26 @@ dependency-linker의 모든 기능을 포괄하는 완전한 가이드입니다.
 
 ## 🎯 개요
 
-dependency-linker는 다국어 AST 분석 프레임워크로, 다음과 같은 핵심 기능들을 제공합니다:
+dependency-linker는 다국어 AST 분석 프레임워크로, 13개의 핵심 CLI 명령어를 통해 다음과 같은 기능들을 제공합니다:
 
-- **파일 분석 및 심볼 추출**
-- **RDF 기반 주소 시스템**
-- **Unknown Symbol 추론 시스템**
-- **Query 시스템**
-- **Cross-Namespace 의존성 분석**
-- **Inference 시스템**
-- **Context Documents 생성**
-- **Performance Optimization**
-- **RDF 기반 파일 위치 반환**
+### 기본 명령어
+- **analyze** - 파일 및 디렉토리 분석
+- **rdf** - RDF 주소 생성, 검색, 검증, 통계
+- **rdf-file** - RDF 기반 파일 위치 반환 및 파일 열기
+
+### 고급 기능 명령어
+- **unknown** - Unknown Symbol 등록, 검색, 추론
+- **query** - SQL, GraphQL, 자연어 쿼리 실행
+- **cross-namespace** - 네임스페이스 간 의존성 분석
+- **inference** - 계층적, 전이적 추론 실행
+- **context-documents** - 파일, 심볼, 프로젝트 컨텍스트 문서 생성
+
+### 성능 및 분석 명령어
+- **performance** - 성능 분석, 캐시 관리, 모니터링, 최적화
+- **markdown** - Markdown 파일 분석, 링크 추적, 헤딩 추출
+- **typescript** - TypeScript 파일/프로젝트 분석, 벤치마크
+- **namespace** - 네임스페이스 분석, 최적화, 통계
+- **benchmark** - 성능 벤치마크 실행
 
 ## 🚀 핵심 기능
 

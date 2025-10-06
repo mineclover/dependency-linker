@@ -1,6 +1,6 @@
 # Dependency Linker: Glossary and Concepts
 
-**Version**: 3.0.0
+**Version**: 2.1.0
 **Last Updated**: 2025-10-02
 
 This glossary defines key concepts, terminology, and generalized patterns used in the Dependency Linker system. It serves as a reference for understanding the architecture and implementing similar systems.

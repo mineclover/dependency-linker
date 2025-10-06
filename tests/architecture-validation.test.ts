@@ -1,5 +1,5 @@
 import { describe, it, expect } from "@jest/globals";
-import { HandlerFactory } from "../src/cli/handlers";
+import { HandlerFactory } from "../src/cli/handlers/index.js";
 
 describe("아키텍처 원칙 검증 테스트", () => {
 	describe("모듈성 (Modularity) 검증", () => {

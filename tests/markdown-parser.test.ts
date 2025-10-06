@@ -3,23 +3,29 @@
  */
 
 import { describe, it, expect, beforeAll, afterAll } from "@jest/globals";
-import { MarkdownParser } from "../src/parsers/markdown/MarkdownParser";
-import { MarkdownLinkTracker } from "../src/parsers/markdown/MarkdownLinkTracker";
-// import { MarkdownHeadingExtractor } from "../src/parsers/markdown/MarkdownHeadingExtractor";
-// import { MarkdownTagCollector } from "../src/parsers/markdown/MarkdownTagCollector";
-// import { MarkdownTagHeadingMapper } from "../src/parsers/markdown/MarkdownTagHeadingMapper";
-// import { MarkdownTagConventionManager } from "../src/parsers/markdown/MarkdownTagConventionManager";
-// import { MarkdownTagDocumentGenerator } from "../src/parsers/markdown/MarkdownTagDocumentGenerator";
-// import { MarkdownTagTypeValidator } from "../src/parsers/markdown/MarkdownTagTypeValidator";
-// import { MarkdownTagTypeDocumentationGenerator } from "../src/parsers/markdown/MarkdownTagTypeDocumentationGenerator";
-import { globalTagTypeContainer } from "../src/parsers/markdown/MarkdownTagTypeDefinitions";
+import { MarkdownParser } from "../src/parsers/markdown/MarkdownParser.js";
+import { MarkdownLinkTracker } from "../src/parsers/markdown/MarkdownLinkTracker.js";
+import { MarkdownHeadingExtractor } from "../src/parsers/markdown/MarkdownHeadingExtractor.js";
+import { MarkdownTagCollector } from "../src/parsers/markdown/MarkdownTagCollector.js";
+import { MarkdownTagHeadingMapper } from "../src/parsers/markdown/MarkdownTagHeadingMapper.js";
+import { MarkdownTagConventionManager } from "../src/parsers/markdown/MarkdownTagConventionManager.js";
+import { MarkdownTagDocumentGenerator } from "../src/parsers/markdown/MarkdownTagDocumentGenerator.js";
+import { MarkdownTagTypeValidator } from "../src/parsers/markdown/MarkdownTagTypeValidator.js";
+import { MarkdownTagTypeDocumentGenerator } from "../src/parsers/markdown/MarkdownTagTypeDocumentation.js";
+import { globalTagTypeContainer } from "../src/parsers/markdown/MarkdownTagTypeDefinitions.js";
 import * as fs from "fs";
 import * as path from "path";
 
 describe("마크다운 파서 테스트", () => {
 	let parser: MarkdownParser;
 	let linkTracker: MarkdownLinkTracker;
-	// let headingExtractor: MarkdownHeadingExtractor;
+	let headingExtractor: MarkdownHeadingExtractor;
+	let tagCollector: MarkdownTagCollector;
+	let tagHeadingMapper: MarkdownTagHeadingMapper;
+	let tagConventionManager: MarkdownTagConventionManager;
+	let tagDocumentGenerator: MarkdownTagDocumentGenerator;
+	let tagTypeValidator: MarkdownTagTypeValidator;
+	let tagTypeDocumentGenerator: MarkdownTagTypeDocumentGenerator;
 	// let tagCollector: MarkdownTagCollector;
 	// let tagHeadingMapper: MarkdownTagHeadingMapper;
 	// let tagConventionManager: MarkdownTagConventionManager;
@@ -30,13 +36,13 @@ describe("마크다운 파서 테스트", () => {
 	beforeAll(() => {
 		parser = new MarkdownParser();
 		linkTracker = new MarkdownLinkTracker("/tmp");
-		// headingExtractor = new MarkdownHeadingExtractor();
-		// tagCollector = new MarkdownTagCollector();
-		// tagHeadingMapper = new MarkdownTagHeadingMapper();
-		// tagConventionManager = new MarkdownTagConventionManager();
-		// tagDocumentGenerator = new MarkdownTagDocumentGenerator();
-		// tagTypeValidator = new MarkdownTagTypeValidator();
-		// tagTypeDocumentGenerator = new MarkdownTagTypeDocumentationGenerator();
+		headingExtractor = new MarkdownHeadingExtractor();
+		tagCollector = new MarkdownTagCollector();
+		tagHeadingMapper = new MarkdownTagHeadingMapper();
+		tagConventionManager = new MarkdownTagConventionManager();
+		tagDocumentGenerator = new MarkdownTagDocumentGenerator();
+		tagTypeValidator = new MarkdownTagTypeValidator();
+		tagTypeDocumentGenerator = new MarkdownTagTypeDocumentGenerator();
 	});
 
 	afterAll(() => {

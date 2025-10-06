@@ -1,7 +1,7 @@
 # Architectural Rules and Principles
 ## Multi-Language Dependency Linker
 
-**Version**: 3.0.0
+**Version**: 2.1.0
 **Architecture**: Query-Based AST Analysis with Multi-Language Support
 **Generated**: 2025-09-29
 
@@ -402,5 +402,5 @@ npm run diagnostic         # Architecture health check
 *This document defines the architectural constraints and principles for the Multi-Language Dependency Linker. Adherence to these rules ensures system reliability, maintainability, and extensibility.*
 
 **Last Updated**: 2025-09-29
-**Architecture Version**: 3.0.0
+**Architecture Version**: 2.1.0
 **Compliance**: Query-Centric Multi-Language AST Analysis Framework

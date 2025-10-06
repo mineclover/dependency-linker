@@ -573,6 +573,6 @@ npx tsx health-check.ts
 
 ---
 
-**Setup Guide Version**: 3.0.0
+**Setup Guide Version**: 2.1.0
 **Last Updated**: 2025-09-29
 **Support**: For setup issues, see [Migration Guide](./Migration-Guide.md) and [API Reference](./API.md)

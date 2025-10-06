@@ -1,6 +1,6 @@
 # Dependency Linker - Features Overview
 
-**Version**: 3.0.0
+**Version**: 2.1.0
 **Last Updated**: 2025-10-02
 
 ---
@@ -820,4 +820,4 @@ node dist/cli/namespace-analyzer.js list-context
 ---
 
 **Last Updated**: 2025-10-05
-**Version**: 3.1.0-dev (RDF Addressing, Unknown Symbol System, Inference System 추가)
+**Version**: 2.1.0 (RDF Addressing, Unknown Symbol System, Inference System 추가)

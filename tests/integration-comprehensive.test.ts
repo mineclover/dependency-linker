@@ -1,5 +1,5 @@
 import { describe, it, expect, beforeAll, afterAll } from "@jest/globals";
-import { HandlerFactory } from "../src/cli/handlers";
+import { HandlerFactory } from "../src/cli/handlers/index.js";
 import {
 	RDFHandler,
 	UnknownSymbolHandler,
@@ -8,7 +8,7 @@ import {
 	InferenceHandler,
 	ContextDocumentsHandler,
 	PerformanceOptimizationHandler,
-} from "../src/cli/handlers";
+} from "../src/cli/handlers/index.js";
 
 describe("전체 시스템 통합 테스트", () => {
 	let rdfHandler: RDFHandler;

@@ -600,4 +600,4 @@ UserType ---aliasOf---> User
 ---
 
 **Last Updated**: 2025-10-04
-**Version**: 3.0.0
+**Version**: 2.1.0
