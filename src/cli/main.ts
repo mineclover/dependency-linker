@@ -30,9 +30,26 @@ import {
 	suggestConflictResolution,
 } from "../core/RDFUniquenessValidator.js";
 import { RDFDatabaseAPI } from "../api/rdf-database-integration.js";
-import { analyzeSingleFileFixed, type FixedSingleFileAnalysisResult, type FixedAnalysisOptions } from "../api/single-file-analysis-fixed.js";
-import { analyzeFileWithSimpleGraph, type SimpleGraphAnalysisResult, type SimpleGraphOptions } from "../api/simple-graph-analysis.js";
-import { analyzeFileWithGraphDB, type GraphDBAnalysisResult, type GraphDBAnalysisOptions } from "../api/graph-db-analysis.js";
+import {
+	analyzeSingleFileFixed,
+	type FixedSingleFileAnalysisResult,
+	type FixedAnalysisOptions,
+} from "../api/single-file-analysis-fixed.js";
+import {
+	analyzeFileWithSimpleGraph,
+	type SimpleGraphAnalysisResult,
+	type SimpleGraphOptions,
+} from "../api/simple-graph-analysis.js";
+import {
+	analyzeFileWithGraphDB,
+	type GraphDBAnalysisResult,
+	type GraphDBAnalysisOptions,
+} from "../api/graph-db-analysis.js";
+import {
+	analyzeFileWithAdvancedGraph,
+	type AdvancedGraphAnalysisResult,
+	type AdvancedAnalysisOptions,
+} from "../api/advanced-graph-analysis.js";
 
 const program = new Command();
 
@@ -2150,8 +2167,10 @@ async function handleGenerateSpec(specManager: any) {
 async function handleNamespaceOptimization(specManager: any, options: any) {
 	try {
 		console.log("🚀 Optimizing namespace performance...");
-		
-		const { NamespaceOptimizer } = await import("../cli/namespace-optimizer.js");
+
+		const { NamespaceOptimizer } = await import(
+			"../cli/namespace-optimizer.js"
+		);
 		const optimizer = new NamespaceOptimizer({
 			parallelProcessing: true,
 			maxConcurrency: 8,
@@ -2163,17 +2182,27 @@ async function handleNamespaceOptimization(specManager: any, options: any) {
 
 		// namespace 목록 가져오기
 		const namespaces = options.name ? [options.name] : undefined;
-		
+
 		// 최적화 실행
 		const result = await optimizer.optimizeNamespaces(specManager, namespaces);
 
 		console.log("=".repeat(50));
 		console.log(`📊 Namespace Optimization Results:`);
-		console.log(`   Optimized Namespaces: ${result.optimizedNamespaces.length}`);
-		console.log(`   Processing Time: ${result.performanceMetrics.processingTime.toFixed(2)}ms`);
-		console.log(`   Throughput: ${result.performanceMetrics.throughput.toFixed(2)} files/sec`);
-		console.log(`   Memory Usage: ${result.performanceMetrics.memoryUsage.toFixed(2)}MB`);
-		console.log(`   Cache Hit Rate: ${(result.performanceMetrics.cacheHitRate * 100).toFixed(2)}%`);
+		console.log(
+			`   Optimized Namespaces: ${result.optimizedNamespaces.length}`,
+		);
+		console.log(
+			`   Processing Time: ${result.performanceMetrics.processingTime.toFixed(2)}ms`,
+		);
+		console.log(
+			`   Throughput: ${result.performanceMetrics.throughput.toFixed(2)} files/sec`,
+		);
+		console.log(
+			`   Memory Usage: ${result.performanceMetrics.memoryUsage.toFixed(2)}MB`,
+		);
+		console.log(
+			`   Cache Hit Rate: ${(result.performanceMetrics.cacheHitRate * 100).toFixed(2)}%`,
+		);
 
 		if (result.optimizationSuggestions.length > 0) {
 			console.log("\n💡 Optimization Suggestions:");
@@ -2206,8 +2235,10 @@ async function handleNamespaceOptimization(specManager: any, options: any) {
 async function handleOptimizeAll(specManager: any, options: any) {
 	try {
 		console.log("🚀 Optimizing all namespaces...");
-		
-		const { NamespaceOptimizer } = await import("../cli/namespace-optimizer.js");
+
+		const { NamespaceOptimizer } = await import(
+			"../cli/namespace-optimizer.js"
+		);
 		const optimizer = new NamespaceOptimizer({
 			parallelProcessing: true,
 			maxConcurrency: 16,
@@ -2222,11 +2253,21 @@ async function handleOptimizeAll(specManager: any, options: any) {
 
 		console.log("=".repeat(50));
 		console.log(`📊 All Namespaces Optimization Results:`);
-		console.log(`   Optimized Namespaces: ${result.optimizedNamespaces.length}`);
-		console.log(`   Processing Time: ${result.performanceMetrics.processingTime.toFixed(2)}ms`);
-		console.log(`   Throughput: ${result.performanceMetrics.throughput.toFixed(2)} files/sec`);
-		console.log(`   Memory Usage: ${result.performanceMetrics.memoryUsage.toFixed(2)}MB`);
-		console.log(`   Cache Hit Rate: ${(result.performanceMetrics.cacheHitRate * 100).toFixed(2)}%`);
+		console.log(
+			`   Optimized Namespaces: ${result.optimizedNamespaces.length}`,
+		);
+		console.log(
+			`   Processing Time: ${result.performanceMetrics.processingTime.toFixed(2)}ms`,
+		);
+		console.log(
+			`   Throughput: ${result.performanceMetrics.throughput.toFixed(2)} files/sec`,
+		);
+		console.log(
+			`   Memory Usage: ${result.performanceMetrics.memoryUsage.toFixed(2)}MB`,
+		);
+		console.log(
+			`   Cache Hit Rate: ${(result.performanceMetrics.cacheHitRate * 100).toFixed(2)}%`,
+		);
 
 		if (result.optimizationSuggestions.length > 0) {
 			console.log("\n💡 Optimization Suggestions:");
@@ -2245,8 +2286,10 @@ async function handleOptimizeAll(specManager: any, options: any) {
 async function handlePerformanceStats(specManager: any, options: any) {
 	try {
 		console.log("📊 Gathering namespace performance statistics...");
-		
-		const { NamespaceOptimizer } = await import("../cli/namespace-optimizer.js");
+
+		const { NamespaceOptimizer } = await import(
+			"../cli/namespace-optimizer.js"
+		);
 		const optimizer = new NamespaceOptimizer();
 
 		// 성능 통계 수집
@@ -2261,26 +2304,42 @@ async function handlePerformanceStats(specManager: any, options: any) {
 			stats.forEach((stat, index) => {
 				console.log(`   ${index + 1}. ${stat.name}`);
 				console.log(`      Files: ${stat.fileCount}`);
-				console.log(`      Processing Time: ${stat.processingTime.toFixed(2)}ms`);
+				console.log(
+					`      Processing Time: ${stat.processingTime.toFixed(2)}ms`,
+				);
 				console.log(`      Memory Usage: ${stat.memoryUsage.toFixed(2)}MB`);
-				console.log(`      Cache Hit Rate: ${(stat.cacheHitRate * 100).toFixed(2)}%`);
-				console.log(`      Success Rate: ${(stat.successRate * 100).toFixed(2)}%`);
+				console.log(
+					`      Cache Hit Rate: ${(stat.cacheHitRate * 100).toFixed(2)}%`,
+				);
+				console.log(
+					`      Success Rate: ${(stat.successRate * 100).toFixed(2)}%`,
+				);
 				console.log(`      Errors: ${stat.errorCount}`);
 			});
 
 			// 전체 통계
 			const totalFiles = stats.reduce((sum, stat) => sum + stat.fileCount, 0);
-			const totalTime = stats.reduce((sum, stat) => sum + stat.processingTime, 0);
-			const avgMemory = stats.reduce((sum, stat) => sum + stat.memoryUsage, 0) / stats.length;
-			const avgCacheHitRate = stats.reduce((sum, stat) => sum + stat.cacheHitRate, 0) / stats.length;
-			const avgSuccessRate = stats.reduce((sum, stat) => sum + stat.successRate, 0) / stats.length;
+			const totalTime = stats.reduce(
+				(sum, stat) => sum + stat.processingTime,
+				0,
+			);
+			const avgMemory =
+				stats.reduce((sum, stat) => sum + stat.memoryUsage, 0) / stats.length;
+			const avgCacheHitRate =
+				stats.reduce((sum, stat) => sum + stat.cacheHitRate, 0) / stats.length;
+			const avgSuccessRate =
+				stats.reduce((sum, stat) => sum + stat.successRate, 0) / stats.length;
 
 			console.log("\n📊 Overall Statistics:");
 			console.log(`   Total Files: ${totalFiles}`);
 			console.log(`   Total Processing Time: ${totalTime.toFixed(2)}ms`);
 			console.log(`   Average Memory Usage: ${avgMemory.toFixed(2)}MB`);
-			console.log(`   Average Cache Hit Rate: ${(avgCacheHitRate * 100).toFixed(2)}%`);
-			console.log(`   Average Success Rate: ${(avgSuccessRate * 100).toFixed(2)}%`);
+			console.log(
+				`   Average Cache Hit Rate: ${(avgCacheHitRate * 100).toFixed(2)}%`,
+			);
+			console.log(
+				`   Average Success Rate: ${(avgSuccessRate * 100).toFixed(2)}%`,
+			);
 		}
 
 		console.log("=".repeat(50));
@@ -2308,40 +2367,56 @@ program
 	.option("--detect-circular", "Detect circular dependencies", false)
 	.option("--enable-inference", "Enable relationship-based inference", true)
 	.option("--enable-hot-reload", "Enable hot reload for changed files", true)
-	.option("--hot-reload-threshold <ms>", "Hot reload threshold in milliseconds", "5000")
+	.option(
+		"--hot-reload-threshold <ms>",
+		"Hot reload threshold in milliseconds",
+		"5000",
+	)
+	.option("--analyze-chains", "Analyze dependency chains", true)
+	.option("--detect-circular", "Detect circular dependencies", true)
+	.option("--analyze-depth", "Analyze dependency depth", true)
+	.option(
+		"--enable-performance-monitoring",
+		"Enable performance monitoring",
+		true,
+	)
+	.option("--enable-caching", "Enable caching", true)
+	.option("--enable-batch-processing", "Enable batch processing", true)
 	.option("-f, --format <format>", "Output format (json|csv|markdown)", "json")
 	.option("-o, --output <file>", "Output file path")
 	.action(async (filePath, options) => {
 		try {
 			console.log(`🔍 Analyzing file: ${filePath}`);
-			
+
 			// 파일 존재 확인
 			if (!fs.existsSync(filePath)) {
 				console.error(`❌ File not found: ${filePath}`);
 				process.exit(1);
 			}
-			
-			// Graph DB 기반 분석 옵션 설정
-			const analysisOptions: GraphDBAnalysisOptions = {
+
+			// 고급 Graph DB 기반 분석 옵션 설정
+			const analysisOptions: AdvancedAnalysisOptions = {
+				analyzeChains: options.analyzeChains,
+				detectCircular: options.detectCircular,
+				analyzeDepth: options.analyzeDepth,
+				maxDepth: parseInt(options.maxDepth) || 5,
 				enableHotReload: options.enableHotReload,
-				enableInference: options.enableInference,
-				inferenceDepth: parseInt(options.maxDepth) || 3,
-				hotReloadThreshold: parseInt(options.hotReloadThreshold) || 5000,
-				includeGraphStats: true,
+				enablePerformanceMonitoring: options.enablePerformanceMonitoring,
+				enableCaching: options.enableCaching,
+				enableBatchProcessing: options.enableBatchProcessing,
 				outputFormat: options.format,
 			};
-			
-			// Graph DB 기반 파일 분석 실행
-			const result = await analyzeFileWithGraphDB(
+
+			// 고급 Graph DB 기반 파일 분석 실행
+			const result = await analyzeFileWithAdvancedGraph(
 				filePath,
 				options.projectRoot,
 				options.projectName,
 				analysisOptions,
 			);
-			
+
 			// 결과 출력
 			await outputAnalysisResult(result, options.format, options.output);
-			
 		} catch (error: any) {
 			console.error("❌ File analysis failed:", error);
 			process.exit(1);
@@ -2352,12 +2427,12 @@ program
  * 분석 결과 출력
  */
 async function outputAnalysisResult(
-	result: GraphDBAnalysisResult,
+	result: AdvancedGraphAnalysisResult,
 	format: string,
 	outputFile?: string,
 ): Promise<void> {
 	let output: string;
-	
+
 	switch (format) {
 		case "json":
 			output = JSON.stringify(result, null, 2);
@@ -2371,7 +2446,7 @@ async function outputAnalysisResult(
 		default:
 			output = generateConsoleOutput(result);
 	}
-	
+
 	if (outputFile) {
 		await fs.promises.writeFile(outputFile, output, "utf-8");
 		console.log(`📄 Results saved to: ${outputFile}`);
@@ -2383,13 +2458,13 @@ async function outputAnalysisResult(
 /**
  * 콘솔 출력 생성
  */
-function generateConsoleOutput(result: GraphDBAnalysisResult): string {
+function generateConsoleOutput(result: AdvancedGraphAnalysisResult): string {
 	const output: string[] = [];
-	
+
 	output.push("=".repeat(60));
 	output.push(`📁 FILE ANALYSIS REPORT`);
 	output.push("=".repeat(60));
-	
+
 	// 파일 정보
 	output.push(`\n📄 File Information:`);
 	output.push(`   Path: ${result.file.path}`);
@@ -2397,14 +2472,19 @@ function generateConsoleOutput(result: GraphDBAnalysisResult): string {
 	output.push(`   Language: ${result.file.language}`);
 	output.push(`   Size: ${(result.file.size / 1024).toFixed(2)} KB`);
 	output.push(`   Modified: ${result.file.lastModified.toISOString()}`);
-	
+
 	// 의존성 정보
 	output.push(`\n🔗 Dependencies:`);
 	output.push(`   Total: ${result.metadata.statistics.totalDependencies}`);
 	output.push(`   Direct: ${result.metadata.statistics.directDependencies}`);
-	output.push(`   Inferred: ${result.metadata.statistics.inferredDependencies}`);
-	output.push(`   Hot Reloaded: ${result.metadata.statistics.hotReloadedDependencies}`);
-	
+	output.push(`   Chains: ${result.metadata.statistics.chainDependencies}`);
+	output.push(
+		`   Circular: ${result.metadata.statistics.circularDependencies}`,
+	);
+	output.push(
+		`   Hot Reloaded: ${result.metadata.statistics.hotReloadedDependencies}`,
+	);
+
 	// 직접 의존성
 	if (result.dependencies.direct.length > 0) {
 		output.push(`\n📁 Direct Dependencies:`);
@@ -2417,18 +2497,43 @@ function generateConsoleOutput(result: GraphDBAnalysisResult): string {
 			}
 		});
 	}
-	
-	// 추론된 의존성
-	if (result.dependencies.inferred.length > 0) {
-		output.push(`\n🧠 Inferred Dependencies:`);
-		result.dependencies.inferred.forEach((dep, index) => {
-			output.push(`   ${index + 1}. ${dep.name} (${dep.type})`);
-			output.push(`      Identifier: ${dep.identifier}`);
-			output.push(`      Inference Type: ${dep.inferenceType}`);
-			output.push(`      Confidence: ${(dep.confidence * 100).toFixed(1)}%`);
+
+	// 의존성 체인
+	if (result.dependencies.chains.length > 0) {
+		output.push(`\n🔗 Dependency Chains:`);
+		result.dependencies.chains.forEach((chain, index) => {
+			output.push(`   ${index + 1}. Chain (${chain.length} nodes)`);
+			output.push(`      Path: ${chain.chain.join(" → ")}`);
+			output.push(`      Types: ${chain.types.join(", ")}`);
+			output.push(`      Confidence: ${(chain.confidence * 100).toFixed(1)}%`);
 		});
 	}
-	
+
+	// 순환 의존성
+	if (result.dependencies.circular.length > 0) {
+		output.push(`\n🔄 Circular Dependencies:`);
+		result.dependencies.circular.forEach((circular, index) => {
+			output.push(`   ${index + 1}. Cycle (${circular.severity} severity)`);
+			output.push(`      Path: ${circular.cycle.join(" → ")}`);
+			output.push(`      Participants: ${circular.participants.length} nodes`);
+		});
+	}
+
+	// 깊이 분석
+	if (result.dependencies.depthAnalysis.maxDepth > 0) {
+		output.push(`\n📊 Depth Analysis:`);
+		output.push(`   Max Depth: ${result.dependencies.depthAnalysis.maxDepth}`);
+		output.push(
+			`   Average Depth: ${result.dependencies.depthAnalysis.averageDepth.toFixed(2)}`,
+		);
+		output.push(`   Depth Distribution:`);
+		for (const [depth, count] of Object.entries(
+			result.dependencies.depthAnalysis.depthDistribution,
+		)) {
+			output.push(`      Depth ${depth}: ${count} nodes`);
+		}
+	}
+
 	// 핫리로드된 의존성
 	if (result.dependencies.hotReloaded.length > 0) {
 		output.push(`\n🔥 Hot Reloaded Dependencies:`);
@@ -2439,15 +2544,14 @@ function generateConsoleOutput(result: GraphDBAnalysisResult): string {
 			output.push(`      Last Analyzed: ${dep.lastAnalyzed.toISOString()}`);
 		});
 	}
-	
-	
+
 	// 마크다운 링크 정보
 	if (result.markdownLinks) {
 		output.push(`\n🔗 Markdown Links:`);
 		output.push(`   Internal: ${result.markdownLinks.internal.length}`);
 		output.push(`   External: ${result.markdownLinks.external.length}`);
 		output.push(`   Anchors: ${result.markdownLinks.anchors.length}`);
-		
+
 		if (result.markdownLinks.external.length > 0) {
 			output.push(`\n🌐 External Links:`);
 			result.markdownLinks.external.forEach((link, index) => {
@@ -2456,26 +2560,49 @@ function generateConsoleOutput(result: GraphDBAnalysisResult): string {
 			});
 		}
 	}
-	
+
 	// Graph DB 통계
 	output.push(`\n📊 Graph Database Statistics:`);
 	output.push(`   Total Nodes: ${result.graphStats.totalNodes}`);
-	output.push(`   Total Relationships: ${result.graphStats.totalRelationships}`);
+	output.push(
+		`   Total Relationships: ${result.graphStats.totalRelationships}`,
+	);
 	output.push(`   File Nodes: ${result.graphStats.fileNodes}`);
 	output.push(`   Library Nodes: ${result.graphStats.libraryNodes}`);
 	output.push(`   Symbol Nodes: ${result.graphStats.symbolNodes}`);
-	output.push(`   Inferred Relationships: ${result.graphStats.inferredRelationships}`);
+	output.push(
+		`   Inferred Relationships: ${result.graphStats.inferredRelationships}`,
+	);
 	output.push(`   Hot Reloaded Nodes: ${result.graphStats.hotReloadedNodes}`);
-	
+	output.push(
+		`   Circular Dependencies: ${result.graphStats.circularDependencies}`,
+	);
+	output.push(`   Max Chain Length: ${result.graphStats.maxChainLength}`);
+	output.push(
+		`   Average Chain Length: ${result.graphStats.averageChainLength.toFixed(2)}`,
+	);
+
+	// 성능 메트릭
+	output.push(`\n⚡ Performance Metrics:`);
+	output.push(`   Analysis Time: ${result.performance.analysisTime}ms`);
+	output.push(`   Query Time: ${result.performance.queryTime}ms`);
+	output.push(
+		`   Cache Hit Rate: ${(result.performance.cacheHitRate * 100).toFixed(1)}%`,
+	);
+	output.push(
+		`   Memory Usage: ${result.performance.memoryUsage.toFixed(2)}MB`,
+	);
+	output.push(
+		`   Throughput: ${result.performance.throughput.toFixed(2)} ops/sec`,
+	);
+
 	// 메타데이터
 	output.push(`\n📊 Analysis Metadata:`);
 	output.push(`   Analyzed At: ${result.metadata.analyzedAt.toISOString()}`);
-	output.push(`   Analysis Time: ${result.metadata.analysisTime}ms`);
-	output.push(`   Query Time: ${result.metadata.queryTime}ms`);
 	output.push(`   File Hash: ${result.metadata.fileHash.substring(0, 16)}...`);
-	
+
 	output.push("\n" + "=".repeat(60));
-	
+
 	return output.join("\n");
 }
 
@@ -2484,26 +2611,32 @@ function generateConsoleOutput(result: GraphDBAnalysisResult): string {
  */
 function generateCSVOutput(result: FixedSingleFileAnalysisResult): string {
 	const rows: string[] = [];
-	
+
 	// 헤더
 	rows.push("Type,Name,Path,Status,Imports");
-	
+
 	// 내부 파일
-	result.dependencies.internalFiles.forEach(dep => {
-		rows.push(`Internal File,${dep.path},${dep.path},${dep.exists ? "Exists" : "Missing"},${dep.imports.join(";")}`);
+	result.dependencies.internalFiles.forEach((dep) => {
+		rows.push(
+			`Internal File,${dep.path},${dep.path},${dep.exists ? "Exists" : "Missing"},${dep.imports.join(";")}`,
+		);
 	});
-	
+
 	// 외부 라이브러리
-	result.dependencies.libraries.forEach(lib => {
+	result.dependencies.libraries.forEach((lib) => {
 		const version = lib.version ? `@${lib.version}` : "";
-		rows.push(`Library,${lib.name}${version},,${lib.isInstalled ? "Installed" : "Not Installed"},${lib.imports.join(";")}`);
+		rows.push(
+			`Library,${lib.name}${version},,${lib.isInstalled ? "Installed" : "Not Installed"},${lib.imports.join(";")}`,
+		);
 	});
-	
+
 	// 내장 모듈
-	result.dependencies.builtins.forEach(builtin => {
-		rows.push(`Built-in,${builtin.name},,Available,${builtin.imports.join(";")}`);
+	result.dependencies.builtins.forEach((builtin) => {
+		rows.push(
+			`Built-in,${builtin.name},,Available,${builtin.imports.join(";")}`,
+		);
 	});
-	
+
 	return rows.join("\n");
 }
 
@@ -2512,7 +2645,7 @@ function generateCSVOutput(result: FixedSingleFileAnalysisResult): string {
  */
 function generateMarkdownOutput(result: FixedSingleFileAnalysisResult): string {
 	const output: string[] = [];
-	
+
 	output.push(`# File Analysis Report`);
 	output.push(``);
 	output.push(`**File:** \`${result.file.path}\``);
@@ -2520,44 +2653,52 @@ function generateMarkdownOutput(result: FixedSingleFileAnalysisResult): string {
 	output.push(`**Size:** ${(result.file.size / 1024).toFixed(2)} KB`);
 	output.push(`**Last Modified:** ${result.file.lastModified.toISOString()}`);
 	output.push(``);
-	
+
 	// 의존성 요약
 	output.push(`## Dependencies Summary`);
 	output.push(``);
 	output.push(`| Type | Count |`);
 	output.push(`|------|-------|`);
 	output.push(`| Total | ${result.metadata.statistics.totalDependencies} |`);
-	output.push(`| Internal | ${result.metadata.statistics.internalDependencies} |`);
-	output.push(`| External | ${result.metadata.statistics.externalDependencies} |`);
+	output.push(
+		`| Internal | ${result.metadata.statistics.internalDependencies} |`,
+	);
+	output.push(
+		`| External | ${result.metadata.statistics.externalDependencies} |`,
+	);
 	output.push(`| Broken | ${result.metadata.statistics.brokenDependencies} |`);
 	output.push(``);
-	
+
 	// 내부 파일 의존성
 	if (result.dependencies.internalFiles.length > 0) {
 		output.push(`## Internal Files`);
 		output.push(``);
 		output.push(`| File | Status | Imports |`);
 		output.push(`|------|--------|---------|`);
-		result.dependencies.internalFiles.forEach(dep => {
-			output.push(`| \`${dep.path}\` | ${dep.exists ? "✅" : "❌"} | ${dep.imports.join(", ")} |`);
+		result.dependencies.internalFiles.forEach((dep) => {
+			output.push(
+				`| \`${dep.path}\` | ${dep.exists ? "✅" : "❌"} | ${dep.imports.join(", ")} |`,
+			);
 		});
 		output.push(``);
 	}
-	
+
 	// 외부 라이브러리 의존성
 	if (result.dependencies.libraries.length > 0) {
 		output.push(`## External Libraries`);
 		output.push(``);
 		output.push(`| Library | Version | Status | Imports |`);
 		output.push(`|---------|---------|--------|---------|`);
-		result.dependencies.libraries.forEach(lib => {
+		result.dependencies.libraries.forEach((lib) => {
 			const version = lib.version || "unknown";
 			const status = lib.isInstalled ? "✅ Installed" : "❌ Not Installed";
-			output.push(`| \`${lib.name}\` | ${version} | ${status} | ${lib.imports.join(", ")} |`);
+			output.push(
+				`| \`${lib.name}\` | ${version} | ${status} | ${lib.imports.join(", ")} |`,
+			);
 		});
 		output.push(``);
 	}
-	
+
 	// 마크다운 링크 정보
 	if (result.markdownLinks) {
 		output.push(`## Markdown Links`);
@@ -2569,7 +2710,7 @@ function generateMarkdownOutput(result: FixedSingleFileAnalysisResult): string {
 		output.push(`| Anchors | ${result.markdownLinks.anchors.length} |`);
 		output.push(``);
 	}
-	
+
 	return output.join("\n");
 }
 

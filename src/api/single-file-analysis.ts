@@ -5,7 +5,10 @@
 
 import * as path from "node:path";
 import * as fs from "node:fs/promises";
-import { FileDependencyAnalyzer } from "../database/services/FileDependencyAnalyzer";
+import {
+	FileDependencyAnalyzer,
+	type ImportSource,
+} from "../database/services/FileDependencyAnalyzer";
 import { GraphDatabase } from "../database/GraphDatabase";
 import { MarkdownLinkTracker } from "../parsers/markdown/MarkdownLinkTracker";
 import { MarkdownParser } from "../parsers/markdown/MarkdownParser";
@@ -110,7 +113,7 @@ export async function analyzeSingleFile(
 	const fileInfo = await getFileInfo(filePath);
 
 	// 데이터베이스 초기화
-	const database = new GraphDatabase();
+	const database = new GraphDatabase(".dependency-linker/graph.db");
 	await database.initialize();
 
 	// 분석기 초기화
@@ -219,7 +222,31 @@ async function analyzeDependencies(
 	projectRoot: string,
 ): Promise<SingleFileAnalysisResult["dependencies"]> {
 	// 파일 분석 실행
-	await analyzer.analyzeFile(filePath);
+	// 언어 감지
+	const language = detectLanguage(filePath);
+
+	// 파일 내용 읽기
+	const content = await fs.readFile(filePath, "utf-8");
+
+	// import 소스 추출
+	const importSources: ImportSource[] = [];
+	const importRegex = /import\s+.*?\s+from\s+['"](.+?)['"]/g;
+	let match;
+	while ((match = importRegex.exec(content)) !== null) {
+		importSources.push({
+			type: match[1].startsWith(".")
+				? "relative"
+				: match[1].startsWith("/")
+					? "absolute"
+					: "library",
+			source: match[1],
+			imports: [],
+			location: { line: 0, column: 0 },
+		});
+	}
+
+	// 파일 분석 실행 (Graph DB에 데이터 저장)
+	await analyzer.analyzeFile(filePath, language, importSources);
 
 	// 데이터베이스에서 의존성 정보 조회
 	const database = analyzer["database"]; // private 접근
