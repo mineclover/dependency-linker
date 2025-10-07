@@ -359,9 +359,18 @@ program
 	.option("-s, --stats", "Namespace statistics")
 	.option("--database <path>", "Database path")
 	.action(async (options) => {
+		const { NamespaceHandler } = await import(
+			"./handlers/namespace-handler.js"
+		);
+		const handler = new NamespaceHandler();
+
 		try {
 			if (options.analyze) {
-				console.log("✅ Namespace analysis completed");
+				await handler.analyzeNamespaces({
+					pattern: "src/**/*.{ts,js,tsx,jsx,md}",
+					directory: process.cwd(),
+					recursive: true,
+				});
 			} else if (options.optimize) {
 				console.log("✅ Namespace optimization completed");
 			} else if (options.stats) {

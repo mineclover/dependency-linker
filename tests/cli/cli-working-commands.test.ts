@@ -87,6 +87,24 @@ export class UserService {
 		}, 30000);
 	});
 
+	describe("dependencies 명령어", () => {
+		it("dependencies 명령어가 정상적으로 작동해야 함", async () => {
+			const testFile = path.join(TEST_PROJECT_ROOT, "UserService.ts");
+
+			// 먼저 파일을 분석
+			await execAsync(
+				`npm run cli -- analyze --pattern "tests/fixtures/test-project/UserService.ts"`,
+			);
+
+			const { stdout, stderr } = await execAsync(
+				`npm run cli -- dependencies --file "${testFile}" --output list`,
+			);
+
+			// stderr에 경고가 있을 수 있지만 정상 동작 확인
+			expect(stdout).toContain("Symbol-centric dependency analysis");
+		});
+	});
+
 	describe("rdf-file 명령어", () => {
 		it("파일 위치 정보 반환이 정상적으로 작동해야 함", async () => {
 			const testFile = path.join(TEST_PROJECT_ROOT, "UserService.ts");
@@ -98,8 +116,8 @@ export class UserService {
 			);
 
 			// stderr에 경고가 있을 수 있지만 정상 동작 확인
-			expect(stdout).toContain("RDF 주소:");
-			expect(stdout).toContain("파일 경로:");
+			expect(stdout).toContain("RDF Address:");
+			expect(stdout).toContain("Relative Path:");
 		}, 30000);
 
 		it("파일 경로 반환이 정상적으로 작동해야 함", async () => {
@@ -112,7 +130,7 @@ export class UserService {
 			);
 
 			// stderr에 경고가 있을 수 있지만 정상 동작 확인
-			expect(stdout).toContain("파일 경로:");
+			expect(stdout).toContain("File Path:");
 		}, 30000);
 
 		it("파일 존재 여부 확인이 정상적으로 작동해야 함", async () => {
@@ -125,7 +143,7 @@ export class UserService {
 			);
 
 			// stderr에 경고가 있을 수 있지만 정상 동작 확인
-			expect(stdout).toContain("파일 존재 여부:");
+			expect(stdout).toContain("File exists:");
 		}, 30000);
 
 		it("RDF 주소 유효성 검증이 정상적으로 작동해야 함", async () => {
@@ -134,7 +152,7 @@ export class UserService {
 			);
 
 			// stderr에 경고가 있을 수 있지만 정상 동작 확인
-			expect(stdout).toContain("RDF 주소 유효성:");
+			expect(stdout).toContain("RDF Address valid:");
 		}, 30000);
 	});
 
@@ -142,7 +160,7 @@ export class UserService {
 		it("메인 도움말이 정상적으로 작동해야 함", async () => {
 			const { stdout, stderr } = await execAsync(`npm run cli -- --help`);
 
-			expect(stdout).toContain("Advanced dependency analysis tool");
+			expect(stdout).toContain("Dependency analysis tool");
 			expect(stdout).toContain("Commands:");
 		}, 10000);
 
@@ -158,7 +176,7 @@ export class UserService {
 		it("rdf 도움말이 정상적으로 작동해야 함", async () => {
 			const { stdout, stderr } = await execAsync(`npm run cli -- rdf --help`);
 
-			expect(stdout).toContain("RDF operations");
+			expect(stdout).toContain("RDF address operations");
 			expect(stdout).toContain("Options:");
 		}, 10000);
 
@@ -167,7 +185,7 @@ export class UserService {
 				`npm run cli -- rdf-file --help`,
 			);
 
-			expect(stdout).toContain("RDF 주소 기반 파일 위치 반환 및 파일 열기");
+			expect(stdout).toContain("RDF-based file operations");
 			expect(stdout).toContain("Options:");
 		}, 10000);
 	});

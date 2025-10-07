@@ -82,7 +82,7 @@ export interface DatabaseStatistics {
  * SQLite 기반 그래프 데이터베이스 관리자
  */
 export class GraphDatabase {
-	private db: Database | null = null;
+	protected db: Database | null = null;
 	private dbPath: string;
 	private initialized = false;
 

@@ -9,14 +9,19 @@ export { default as exportQueries } from "./exports";
 // ===== IMPORT QUERIES =====
 export * from "./imports";
 export { default as importQueries } from "./imports";
+// ===== CLASS QUERIES =====
+export * from "./classes";
+export { default as classQueries } from "./classes";
 
 import typeScriptExportQueries from "./exports";
 // ===== CONSOLIDATED EXPORT =====
 import typeScriptImportQueries from "./imports";
+import typeScriptClassQueries from "./classes";
 
 export const typeScriptQueries = {
 	...typeScriptImportQueries,
 	...typeScriptExportQueries,
+	...typeScriptClassQueries,
 } as const;
 
 export default typeScriptQueries;
@@ -36,6 +41,11 @@ export function registerTypeScriptQueries(engine: QueryEngine): void {
 
 	// Export queries
 	Object.entries(typeScriptExportQueries).forEach(([key, query]) => {
+		engine.register(key as QueryKey, query);
+	});
+
+	// Class queries
+	Object.entries(typeScriptClassQueries).forEach(([key, query]) => {
 		engine.register(key as QueryKey, query);
 	});
 }

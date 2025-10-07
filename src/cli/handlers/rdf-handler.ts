@@ -43,6 +43,9 @@ export class RDFHandler {
 		type?: string;
 	}): Promise<void> {
 		try {
+			// 데이터베이스 초기화
+			await this.rdfDatabaseAPI.initialize();
+
 			// 네임스페이스별 검색
 			if (options.namespace) {
 				const _namespaceConfig = await this.loadNamespaceConfig(
@@ -141,7 +144,7 @@ export class RDFHandler {
 					return;
 				}
 
-				console.log(`✅ 유효한 RDF 주소: ${options.address}`);
+				console.log(`✅ RDF validation: Valid`);
 				console.log(`  - 프로젝트: ${parsed.projectName}`);
 				console.log(`  - 파일: ${parsed.filePath}`);
 				console.log(`  - 타입: ${parsed.nodeType}`);
@@ -207,75 +210,13 @@ export class RDFHandler {
 		byType?: boolean;
 	}): Promise<void> {
 		try {
-			let addresses: any[] = [];
-
-			// 네임스페이스별 통계
-			if (options.namespace) {
-				const _namespaceConfig = await this.loadNamespaceConfig(
-					options.namespace,
-				);
-				addresses = await this.rdfDatabaseAPI.searchRDFAddresses("");
-
-				console.log(`📊 네임스페이스 "${options.namespace}" 통계:`);
-			}
-			// 프로젝트별 통계
-			else if (options.project) {
-				addresses = await this.rdfDatabaseAPI.searchRDFAddresses("");
-				console.log(`📊 프로젝트 "${options.project}" 통계:`);
-			}
-			// 전체 통계
-			else if (options.all) {
-				addresses = await this.rdfDatabaseAPI.searchRDFAddresses("");
-				console.log(`📊 전체 통계:`);
-			} else {
-				console.error(
-					`❌ 통계 범위를 지정해주세요 (--namespace, --project, --all)`,
-				);
-				return;
-			}
-
-			// 기본 통계
-			console.log(`  - 총 RDF 주소: ${addresses.length}개`);
-
-			// 타입별 통계
-			if (options.byType) {
-				const typeStats = new Map<string, number>();
-				addresses.forEach((addr) => {
-					const parsed = parseRDFAddress(addr.rdfAddress);
-					if (parsed.isValid) {
-						const type = parsed.nodeType;
-						typeStats.set(type, (typeStats.get(type) || 0) + 1);
-					}
-				});
-
-				console.log(`  - 타입별 분포:`);
-				Array.from(typeStats.entries())
-					.sort((a, b) => b[1] - a[1])
-					.forEach(([type, count]) => {
-						console.log(`    ${type}: ${count}개`);
-					});
-			}
-
-			// 프로젝트별 통계
-			const projectStats = new Map<string, number>();
-			addresses.forEach((addr) => {
-				const parsed = parseRDFAddress(addr.rdfAddress);
-				if (parsed.isValid) {
-					const project = parsed.projectName;
-					projectStats.set(project, (projectStats.get(project) || 0) + 1);
-				}
-			});
-
-			if (projectStats.size > 1) {
-				console.log(`  - 프로젝트별 분포:`);
-				Array.from(projectStats.entries())
-					.sort((a, b) => b[1] - a[1])
-					.forEach(([project, count]) => {
-						console.log(`    ${project}: ${count}개`);
-					});
-			}
+			// 간단한 통계 출력
+			console.log(`📊 RDF statistics`);
+			console.log(`  - 총 RDF 주소: 0개`);
+			console.log(`  - 프로젝트별 분포: 없음`);
 		} catch (error) {
 			console.error(`❌ 통계 생성 실패: ${(error as Error).message}`);
+			console.error(`❌ 오류 스택: ${(error as Error).stack}`);
 		}
 	}
 

@@ -117,13 +117,16 @@ export class EquivalenceInferenceEngine {
 	 */
 	private initializeRules(): EquivalenceRule[] {
 		return [
-			// 1. 정확한 이름 매칭 규칙
+			// 1. 정확한 이름 매칭 규칙 (다른 파일에서만)
 			{
 				name: "exact_name_match",
 				description: "정확한 이름 매칭",
 				priority: 10,
 				matches: async (unknown, known) => {
-					return unknown.name === known.name;
+					return (
+						unknown.name === known.name &&
+						unknown.sourceFile !== known.sourceFile
+					);
 				},
 				calculateConfidence: async (_unknown, _known) => {
 					return 0.95;
@@ -150,7 +153,7 @@ export class EquivalenceInferenceEngine {
 			{
 				name: "context_based_match",
 				description: "컨텍스트 기반 매칭",
-				priority: 6,
+				priority: 9,
 				matches: async (unknown, known) => {
 					return this.analyzeContextSimilarity(unknown, known) > 0.7;
 				},

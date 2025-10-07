@@ -149,7 +149,7 @@ class Calculator {
 
 		it("RDF 주소 검증이 정상적으로 작동해야 함", async () => {
 			const { stdout, stderr } = await execAsync(
-				`npm run cli -- rdf --validate "test-project/src/UserService.ts#class:UserService"`,
+				`npm run cli -- rdf --validate "test-project/src/UserService.ts#Class:UserService"`,
 			);
 
 			// stderr에 경고가 있을 수 있지만 정상 동작 확인
@@ -171,12 +171,12 @@ class Calculator {
 			fs.writeFileSync(testFile, testContent);
 
 			const { stdout, stderr } = await execAsync(
-				`npm run cli -- rdf-file --location "test-project/${path.relative(process.cwd(), testFile)}#class:UserService"`,
+				`npm run cli -- rdf-file --location "test-project/${path.relative(process.cwd(), testFile)}#Class:UserService"`,
 			);
 
 			// stderr에 경고가 있을 수 있지만 정상 동작 확인
-			expect(stdout).toContain("RDF 주소:");
-			expect(stdout).toContain("파일 경로:");
+			expect(stdout).toContain("RDF Address:");
+			expect(stdout).toContain("Relative Path:");
 		});
 
 		it("파일 경로 반환이 정상적으로 작동해야 함", async () => {
@@ -185,11 +185,11 @@ class Calculator {
 			fs.writeFileSync(testFile, testContent);
 
 			const { stdout, stderr } = await execAsync(
-				`npm run cli -- rdf-file --path "test-project/${path.relative(process.cwd(), testFile)}#class:UserService" `,
+				`npm run cli -- rdf-file --path "test-project/${path.relative(process.cwd(), testFile)}#Class:UserService" `,
 			);
 
 			// stderr에 경고가 있을 수 있지만 정상 동작 확인
-			expect(stdout).toContain("파일 경로:");
+			expect(stdout).toContain("File Path:");
 		});
 
 		it("파일 존재 여부 확인이 정상적으로 작동해야 함", async () => {
@@ -198,20 +198,20 @@ class Calculator {
 			fs.writeFileSync(testFile, testContent);
 
 			const { stdout, stderr } = await execAsync(
-				`npm run cli -- rdf-file --exists "test-project/${path.relative(process.cwd(), testFile)}#class:UserService" `,
+				`npm run cli -- rdf-file --exists "test-project/${path.relative(process.cwd(), testFile)}#Class:UserService" `,
 			);
 
 			// stderr에 경고가 있을 수 있지만 정상 동작 확인
-			expect(stdout).toContain("파일 존재 여부:");
+			expect(stdout).toContain("File exists:");
 		});
 
 		it("RDF 주소 유효성 검증이 정상적으로 작동해야 함", async () => {
 			const { stdout, stderr } = await execAsync(
-				`npm run cli -- rdf-file --validate "test-project/src/UserService.ts#class:UserService" `,
+				`npm run cli -- rdf-file --validate "test-project/src/UserService.ts#Class:UserService" `,
 			);
 
 			// stderr에 경고가 있을 수 있지만 정상 동작 확인
-			expect(stdout).toContain("RDF 주소 유효성:");
+			expect(stdout).toContain("RDF Address valid:");
 		});
 	});
 

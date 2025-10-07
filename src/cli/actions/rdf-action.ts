@@ -3,6 +3,7 @@ import { RDFHandler } from "../handlers/rdf-handler.js";
 export interface RDFActionOptions {
 	create?: boolean;
 	search?: string;
+	query?: string;
 	validate?: string;
 	stats?: boolean;
 	project?: string;
@@ -39,11 +40,11 @@ export async function executeRDFAction(
 				symbol: options.symbol,
 			});
 
-			console.log(`✅ RDF Address created: ${rdfAddress}`);
-		} else if (options.search) {
+			console.log(`✅ RDF address created: ${rdfAddress}`);
+		} else if (options.search || options.query) {
 			// RDF 주소 검색
 			await handler.searchRDFAddresses({
-				query: options.search,
+				query: (options.search || options.query) as string,
 			});
 		} else if (options.validate) {
 			// RDF 주소 검증
@@ -52,9 +53,13 @@ export async function executeRDFAction(
 			});
 		} else if (options.stats) {
 			// RDF 통계
+			console.log("Debug: Calling generateRDFStatistics with all: true");
+			console.log("Debug: options.stats =", options.stats);
+			console.log("Debug: About to call generateRDFStatistics");
 			await handler.generateRDFStatistics({
 				all: true,
 			});
+			console.log("Debug: generateRDFStatistics completed");
 		} else {
 			console.log(
 				"❌ Please specify an action: --create, --search, --validate, or --stats",

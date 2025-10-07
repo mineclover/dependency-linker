@@ -340,12 +340,11 @@ export class DependencyAnalysisHandler {
 				ORDER BY line_number
 			`;
 
-			const searchPatterns = [filePath, `%/${filePath}`, `%${filePath}%`];
-
-			const symbols = await this.database.runQuery(
-				symbolsQuery,
-				searchPatterns,
-			);
+			const symbols = await this.database.runQuery(symbolsQuery, [
+				filePath,
+				`%/${filePath}`,
+				`%${filePath}%`,
+			]);
 
 			const symbolList = symbols.map((symbol) => ({
 				name: symbol.symbol_name,
@@ -371,6 +370,17 @@ export class DependencyAnalysisHandler {
 	 */
 	async analyzeFileSymbols(filePath: string): Promise<SymbolAnalysisResult[]> {
 		try {
+			// 실제 파일 분석 수행
+			const fs = await import("node:fs");
+			if (!fs.existsSync(filePath)) {
+				console.log(`❌ File not found: ${filePath}`);
+				return [];
+			}
+
+			const sourceCode = fs.readFileSync(filePath, "utf-8");
+			console.log(`📝 Analyzing file: ${filePath}`);
+			console.log(`📝 File size: ${sourceCode.length} characters`);
+
 			// 파일에서 심볼들 추출 (실제 스키마 사용)
 			// 파일 경로 매칭을 더 유연하게 처리
 			const symbolsQuery = `

@@ -115,12 +115,16 @@ export async function executeAllLanguageQueries(
 	const languageQueries = getLanguageTreeSitterQueries(context.language);
 	const queryKeys = Object.keys(languageQueries) as QueryKey[];
 
+	console.log(`Language queries for ${context.language}:`, queryKeys);
+
 	// 지원되는 쿼리만 필터링 (프로세서가 등록된 것들만)
 	const registry = globalQueryEngine.getRegistry();
 	const supportedQueryKeys = queryKeys.filter(
 		(key) =>
 			registry.get(key) && registry.supportsLanguage(key, context.language),
 	);
+
+	console.log(`Supported query keys:`, supportedQueryKeys);
 
 	return executeMultipleTreeSitterQueries(supportedQueryKeys, context);
 }
@@ -132,7 +136,14 @@ export async function executeAllLanguageQueries(
 export function initializeTreeSitterQueries(): void {
 	// TypeScript/JavaScript 쿼리 등록
 	const tsQueries = getTreeSitterQueries("typescript");
+	console.log("TypeScript queries:", Object.keys(tsQueries));
 	for (const [queryName, queryString] of Object.entries(tsQueries)) {
+		if (queryName === "ts-class-definitions") {
+			console.log(
+				`Registering ${queryName}:`,
+				queryString.substring(0, 100) + "...",
+			);
+		}
 		globalTreeSitterQueryEngine.registerQuery(
 			"typescript",
 			queryName,

@@ -121,7 +121,11 @@ export class RDFIntegratedGraphDatabase extends GraphDatabase {
 		`;
 
 		await new Promise<void>((resolve, reject) => {
-			(this as any).db.run(
+			if (!this.db) {
+				reject(new Error("Database not initialized"));
+				return;
+			}
+			this.db.run(
 				query,
 				[
 					rdfAddress,
@@ -157,7 +161,11 @@ export class RDFIntegratedGraphDatabase extends GraphDatabase {
 		`;
 
 		const result = await new Promise<any>((resolve, reject) => {
-			(this as any).db.get(query, [rdfAddress], (err: any, row: any) => {
+			if (!this.db) {
+				reject(new Error("Database not initialized"));
+				return;
+			}
+			this.db.get(query, [rdfAddress], (err: any, row: any) => {
 				if (err) reject(err);
 				else resolve(row);
 			});
@@ -177,7 +185,11 @@ export class RDFIntegratedGraphDatabase extends GraphDatabase {
 		`;
 
 		const results = await new Promise<any[]>((resolve, reject) => {
-			(this as any).db.all(query, [projectName], (err: any, rows: any) => {
+			if (!this.db) {
+				reject(new Error("Database not initialized"));
+				return;
+			}
+			this.db.all(query, [projectName], (err: any, rows: any) => {
 				if (err) reject(err);
 				else resolve(rows);
 			});
@@ -197,7 +209,11 @@ export class RDFIntegratedGraphDatabase extends GraphDatabase {
 		`;
 
 		const results = await new Promise<any[]>((resolve, reject) => {
-			(this as any).db.all(query, [filePath], (err: any, rows: any) => {
+			if (!this.db) {
+				reject(new Error("Database not initialized"));
+				return;
+			}
+			this.db.all(query, [filePath], (err: any, rows: any) => {
 				if (err) reject(err);
 				else resolve(rows);
 			});
@@ -217,7 +233,11 @@ export class RDFIntegratedGraphDatabase extends GraphDatabase {
 		`;
 
 		const results = await new Promise<any[]>((resolve, reject) => {
-			(this as any).db.all(query, [nodeType], (err: any, rows: any) => {
+			if (!this.db) {
+				reject(new Error("Database not initialized"));
+				return;
+			}
+			this.db.all(query, [nodeType], (err: any, rows: any) => {
 				if (err) reject(err);
 				else resolve(rows);
 			});
@@ -237,7 +257,11 @@ export class RDFIntegratedGraphDatabase extends GraphDatabase {
 		`;
 
 		const results = await new Promise<any[]>((resolve, reject) => {
-			(this as any).db.all(query, [namespace], (err: any, rows: any) => {
+			if (!this.db) {
+				reject(new Error("Database not initialized"));
+				return;
+			}
+			this.db.all(query, [namespace], (err: any, rows: any) => {
 				if (err) reject(err);
 				else resolve(rows);
 			});
@@ -313,7 +337,11 @@ export class RDFIntegratedGraphDatabase extends GraphDatabase {
 
 		params.push(limit);
 		const results = await new Promise<any[]>((resolve, reject) => {
-			(this as any).db.all(sql, params, (err: any, rows: any) => {
+			if (!this.db) {
+				reject(new Error("Database not initialized"));
+				return;
+			}
+			this.db.all(sql, params, (err: any, rows: any) => {
 				if (err) reject(err);
 				else resolve(rows);
 			});
@@ -343,7 +371,11 @@ export class RDFIntegratedGraphDatabase extends GraphDatabase {
 		`;
 
 		await new Promise<void>((resolve, reject) => {
-			(this as any).db.run(
+			if (!this.db) {
+				reject(new Error("Database not initialized"));
+				return;
+			}
+			this.db.run(
 				query,
 				[
 					sourceRdfAddress,
@@ -395,7 +427,11 @@ export class RDFIntegratedGraphDatabase extends GraphDatabase {
 		`;
 
 		const results = await new Promise<any[]>((resolve, reject) => {
-			(this as any).db.all(sql, params, (err: any, rows: any) => {
+			if (!this.db) {
+				reject(new Error("Database not initialized"));
+				return;
+			}
+			this.db.all(sql, params, (err: any, rows: any) => {
 				if (err) reject(err);
 				else resolve(rows);
 			});
@@ -409,9 +445,13 @@ export class RDFIntegratedGraphDatabase extends GraphDatabase {
 	 * RDF 통계 생성
 	 */
 	async generateRDFStatistics(): Promise<RDFStatistics> {
+		if (!this.db) {
+			throw new Error("Database not initialized");
+		}
+
 		// 기본 통계
 		const totalAddresses = await new Promise<any>((resolve, reject) => {
-			(this as any).db.get(
+			this.db!.get(
 				"SELECT COUNT(*) as count FROM rdf_addresses",
 				(err: any, row: any) => {
 					if (err) reject(err);
@@ -420,7 +460,7 @@ export class RDFIntegratedGraphDatabase extends GraphDatabase {
 			);
 		});
 		const totalRelationships = await new Promise<any>((resolve, reject) => {
-			(this as any).db.get(
+			this.db!.get(
 				"SELECT COUNT(*) as count FROM rdf_relationships",
 				(err: any, row: any) => {
 					if (err) reject(err);
@@ -431,7 +471,7 @@ export class RDFIntegratedGraphDatabase extends GraphDatabase {
 
 		// 프로젝트 수
 		const projectCount = await new Promise<any>((resolve, reject) => {
-			(this as any).db.get(
+			this.db!.get(
 				"SELECT COUNT(DISTINCT project_name) as count FROM rdf_addresses",
 				(err: any, row: any) => {
 					if (err) reject(err);
@@ -442,7 +482,7 @@ export class RDFIntegratedGraphDatabase extends GraphDatabase {
 
 		// 파일 수
 		const fileCount = await new Promise<any>((resolve, reject) => {
-			(this as any).db.get(
+			this.db!.get(
 				"SELECT COUNT(DISTINCT file_path) as count FROM rdf_addresses",
 				(err: any, row: any) => {
 					if (err) reject(err);
@@ -453,7 +493,7 @@ export class RDFIntegratedGraphDatabase extends GraphDatabase {
 
 		// NodeType별 통계
 		const nodeTypeStats = await new Promise<any[]>((resolve, reject) => {
-			(this as any).db.all(
+			this.db!.all(
 				`
 				SELECT node_type, COUNT(*) as count 
 				FROM rdf_addresses 
@@ -468,7 +508,7 @@ export class RDFIntegratedGraphDatabase extends GraphDatabase {
 
 		// 네임스페이스별 통계
 		const namespaceStats = await new Promise<any[]>((resolve, reject) => {
-			(this as any).db.all(
+			this.db!.all(
 				`
 				SELECT namespace, COUNT(*) as count 
 				FROM rdf_addresses 
@@ -485,7 +525,7 @@ export class RDFIntegratedGraphDatabase extends GraphDatabase {
 		// 관계 타입별 통계
 		const relationshipTypeStats = await new Promise<any[]>(
 			(resolve, reject) => {
-				(this as any).db.all(
+				this.db!.all(
 					`
 				SELECT relationship_type, COUNT(*) as count 
 				FROM rdf_relationships 
@@ -501,7 +541,7 @@ export class RDFIntegratedGraphDatabase extends GraphDatabase {
 
 		// 유효하지 않은 주소 수 (파싱 실패)
 		const invalidAddresses = await new Promise<any>((resolve, reject) => {
-			(this as any).db.get(
+			this.db!.get(
 				`
 				SELECT COUNT(*) as count FROM rdf_addresses 
 				WHERE rdf_address NOT LIKE '%#%' OR rdf_address NOT LIKE '%:%'
@@ -588,7 +628,11 @@ export class RDFIntegratedGraphDatabase extends GraphDatabase {
 	async deleteRDFAddress(rdfAddress: string): Promise<void> {
 		// 관련 관계도 삭제
 		await new Promise<void>((resolve, reject) => {
-			(this as any).db.run(
+			if (!this.db) {
+				reject(new Error("Database not initialized"));
+				return;
+			}
+			this.db.run(
 				"DELETE FROM rdf_relationships WHERE source_rdf_address = ? OR target_rdf_address = ?",
 				[rdfAddress, rdfAddress],
 				(err: any) => {
@@ -600,7 +644,11 @@ export class RDFIntegratedGraphDatabase extends GraphDatabase {
 
 		// RDF 주소 삭제
 		await new Promise<void>((resolve, reject) => {
-			(this as any).db.run(
+			if (!this.db) {
+				reject(new Error("Database not initialized"));
+				return;
+			}
+			this.db.run(
 				"DELETE FROM rdf_addresses WHERE rdf_address = ?",
 				[rdfAddress],
 				(err: any) => {
@@ -635,7 +683,11 @@ export class RDFIntegratedGraphDatabase extends GraphDatabase {
 		const query = `UPDATE rdf_addresses SET ${setClause.join(", ")} WHERE rdf_address = ?`;
 
 		await new Promise<void>((resolve, reject) => {
-			(this as any).db.run(query, params, (err: any) => {
+			if (!this.db) {
+				reject(new Error("Database not initialized"));
+				return;
+			}
+			this.db.run(query, params, (err: any) => {
 				if (err) reject(err);
 				else resolve();
 			});

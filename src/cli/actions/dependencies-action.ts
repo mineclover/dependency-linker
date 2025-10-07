@@ -64,11 +64,41 @@ export async function executeDependenciesAction(
 			// 파일에서 심볼 리스트 조회
 			if (options.output === "list" || options.output === "json") {
 				// 심볼 리스트만 조회
-				const fileSymbols = await handler.getFileSymbols(options.file);
+				let fileSymbols = await handler.getFileSymbols(options.file);
 
+				// 심볼이 없으면 파일을 먼저 분석
 				if (fileSymbols.totalCount === 0) {
-					console.log("❌ No symbols found in the specified file");
-					process.exit(1);
+					console.log(
+						"📝 No symbols found in database, analyzing file first...",
+					);
+
+					// 실제 파일 분석 수행
+					const fs = await import("node:fs");
+					if (fs.existsSync(options.file)) {
+						const sourceCode = fs.readFileSync(options.file, "utf-8");
+						console.log(`📝 Analyzing file: ${options.file}`);
+						console.log(`📝 File size: ${sourceCode.length} characters`);
+
+						// 파일 분석 수행
+						await handler.analyzeFileSymbols(options.file);
+						fileSymbols = await handler.getFileSymbols(options.file);
+
+						console.log(
+							`📝 After analysis: ${fileSymbols.totalCount} symbols found`,
+						);
+					}
+
+					if (fileSymbols.totalCount === 0) {
+						// 파일 경로를 상대 경로로도 시도
+						const relativePath = options.file.replace(process.cwd() + "/", "");
+						console.log(`📝 Trying relative path: ${relativePath}`);
+						fileSymbols = await handler.getFileSymbols(relativePath);
+
+						if (fileSymbols.totalCount === 0) {
+							console.log("❌ No symbols found in the specified file");
+							process.exit(1);
+						}
+					}
 				}
 
 				if (options.output === "json") {

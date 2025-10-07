@@ -86,7 +86,7 @@ export class UserService {
 			);
 
 			// stderr에 경고가 있을 수 있지만 정상 동작 확인
-			expect(stdout).toContain("RDF address created");
+			expect(stdout).toContain("RDF address created:");
 		}, 30000);
 
 		it("RDF 주소 검색이 정상적으로 작동해야 함", async () => {
@@ -106,7 +106,7 @@ export class UserService {
 
 		it("RDF 주소 검증이 정상적으로 작동해야 함", async () => {
 			const { stdout, stderr } = await execAsync(
-				`npm run cli -- rdf --validate "test-project/src/UserService.ts#class:UserService"`,
+				`npm run cli -- rdf --validate "test-project/src/UserService.ts#Class:UserService"`,
 			);
 
 			// stderr에 경고가 있을 수 있지만 정상 동작 확인
@@ -117,7 +117,7 @@ export class UserService {
 			const { stdout, stderr } = await execAsync(`npm run cli -- rdf --stats`);
 
 			// stderr에 경고가 있을 수 있지만 정상 동작 확인
-			expect(stdout).toContain("RDF statistics");
+			expect(stdout).toContain("📊 RDF statistics");
 		}, 30000);
 	});
 
@@ -132,8 +132,8 @@ export class UserService {
 			);
 
 			// stderr에 경고가 있을 수 있지만 정상 동작 확인
-			expect(stdout).toContain("RDF 주소:");
-			expect(stdout).toContain("파일 경로:");
+			expect(stdout).toContain("RDF Address:");
+			expect(stdout).toContain("Relative Path:");
 		}, 30000);
 
 		it("파일 경로 반환이 정상적으로 작동해야 함", async () => {
@@ -146,7 +146,7 @@ export class UserService {
 			);
 
 			// stderr에 경고가 있을 수 있지만 정상 동작 확인
-			expect(stdout).toContain("파일 경로:");
+			expect(stdout).toContain("File Path:");
 		}, 30000);
 
 		it("파일 존재 여부 확인이 정상적으로 작동해야 함", async () => {
@@ -159,7 +159,7 @@ export class UserService {
 			);
 
 			// stderr에 경고가 있을 수 있지만 정상 동작 확인
-			expect(stdout).toContain("파일 존재 여부:");
+			expect(stdout).toContain("File exists:");
 		}, 30000);
 
 		it("RDF 주소 유효성 검증이 정상적으로 작동해야 함", async () => {
@@ -168,7 +168,7 @@ export class UserService {
 			);
 
 			// stderr에 경고가 있을 수 있지만 정상 동작 확인
-			expect(stdout).toContain("RDF 주소 유효성:");
+			expect(stdout).toContain("RDF Address valid:");
 		}, 30000);
 	});
 

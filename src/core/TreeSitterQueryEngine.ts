@@ -51,11 +51,11 @@ export class TreeSitterQueryEngine {
 			switch (language) {
 				case "typescript":
 				case "tsx":
-					languageObj = TypeScript.typescript;
+					languageObj = TypeScript.typescript.language;
 					break;
 				case "javascript":
 				case "jsx":
-					languageObj = TypeScript.typescript; // JavaScript도 TypeScript 파서 사용
+					languageObj = TypeScript.typescript.language; // JavaScript도 TypeScript 파서 사용
 					break;
 				default:
 					throw new Error(
@@ -69,8 +69,21 @@ export class TreeSitterQueryEngine {
 			// 쿼리 실행
 			const captures = query.captures(tree.rootNode);
 
+			// 디버깅 로그 (특정 쿼리만)
+			if (queryName === "ts-class-definitions") {
+				console.log(`Query ${queryName} executed:`, {
+					language,
+					capturesCount: captures.length,
+					rootNodeType: tree.rootNode?.type,
+					queryString: queryString.substring(0, 100) + "...",
+				});
+			}
+
 			// 캡처가 없으면 빈 배열 반환
 			if (captures.length === 0) {
+				if (queryName === "ts-class-definitions") {
+					console.log(`No captures found for query ${queryName}`);
+				}
 				return [];
 			}
 

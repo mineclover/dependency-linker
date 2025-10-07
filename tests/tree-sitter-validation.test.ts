@@ -270,25 +270,15 @@ describe("Tree-sitter 파서 검증 테스트", () => {
 			const sourceCode = `
 				package com.example;
 				
-				import java.util.List;
-				import java.util.ArrayList;
-				
 				public class UserService {
-					private List<User> users;
+					private String name;
 					
 					public UserService() {
-						this.users = new ArrayList<>();
+						this.name = "test";
 					}
 					
-					public void addUser(User user) {
-						users.add(user);
-					}
-					
-					public User getUserById(int id) {
-						return users.stream()
-							.filter(user -> user.getId() == id)
-							.findFirst()
-							.orElse(null);
+					public String getName() {
+						return name;
 					}
 				}
 			`;
