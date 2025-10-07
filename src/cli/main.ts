@@ -18,6 +18,7 @@ import {
 	PerformanceOptimizationHandler,
 	UnknownSymbolHandler,
 } from "./handlers/index.js";
+import { NamespaceHandler } from "./handlers/namespace-handler.js";
 // 핸들러 임포트
 import {
 	runHeadingExtraction,
@@ -359,9 +360,7 @@ program
 	.option("-s, --stats", "Namespace statistics")
 	.option("--database <path>", "Database path")
 	.action(async (options) => {
-		const { NamespaceHandler } = await import(
-			"./handlers/namespace-handler.js"
-		);
+		// NamespaceHandler는 이미 정적 임포트됨
 		const handler = new NamespaceHandler();
 
 		try {

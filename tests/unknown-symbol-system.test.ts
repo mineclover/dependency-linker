@@ -327,7 +327,9 @@ describe("Unknown Symbol System", () => {
 				file: "src/types.ts",
 			});
 
-			expect(consoleSpy).toHaveBeenCalledWith("🔍 Unknown Symbol 검색 결과");
+			expect(consoleSpy).toHaveBeenCalledWith(
+				"🔍 Unknown Symbol 검색 결과 (100개):",
+			);
 
 			consoleSpy.mockRestore();
 		});

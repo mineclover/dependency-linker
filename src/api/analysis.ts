@@ -82,6 +82,25 @@ export async function analyzeFile(
 		const parseResult = await parseCode(sourceCode, language, filePath);
 		const context: QueryExecutionContext = parseResult.context;
 
+		// 파싱 실패 시 빈 결과 반환
+		if (!context.tree || !context.tree.rootNode) {
+			console.warn(`Parsing failed for ${filePath}, returning empty results`);
+			return {
+				language,
+				filePath,
+				sourceCode,
+				parseMetadata: {
+					nodeCount: 0,
+					parseTime: 0,
+				},
+				queryResults: {} as Record<QueryKey, QueryResult<QueryKey>[]>,
+				performanceMetrics: {
+					totalExecutionTime: performance.now() - startTime,
+					queryExecutionTime: 0,
+				},
+			};
+		}
+
 		// 2. 쿼리 실행
 		const queryStartTime = performance.now();
 

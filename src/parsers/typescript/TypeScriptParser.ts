@@ -179,12 +179,12 @@ export class TypeScriptParser extends BaseParser {
 	): Promise<ParseResult> {
 		const startTime = performance.now();
 
-		// Jest 환경에서 mock 파싱 사용
-		if (process.env.NODE_ENV === "test") {
-			return this.mockParse(sourceCode, options);
-		}
-
 		try {
+			// 입력 검증
+			if (!sourceCode || typeof sourceCode !== "string") {
+				throw new Error("Invalid source code: must be a non-empty string");
+			}
+
 			// TSX 파일인지 확인
 			const isTsx =
 				options.filePath?.endsWith(".tsx") ||
@@ -202,15 +202,43 @@ export class TypeScriptParser extends BaseParser {
 				throw new Error("Parser language not set");
 			}
 
-			const tree = parser.parse(sourceCode);
-
-			// tree-sitter always returns a tree with a rootNode
-			// Even if there are syntax errors, it returns a best-effort AST
-			if (!tree || !tree.rootNode) {
-				throw new Error(
-					"Failed to parse TypeScript code: No tree or rootNode returned",
-				);
+			// 소스 코드 길이 제한 (매우 큰 파일 방지)
+			if (sourceCode.length > 10 * 1024 * 1024) {
+				// 10MB
+				throw new Error("Source code too large: exceeds 10MB limit");
 			}
+
+			// Tree-sitter 파싱 (안전한 파싱)
+			let tree: any;
+			try {
+				// 파서 언어 설정 확인
+				const language = parser.getLanguage();
+				if (!language) {
+					throw new Error("Parser language not set");
+				}
+				
+				// Tree-sitter 파싱 시도
+				tree = parser.parse(sourceCode);
+				
+				// 파싱 결과 검증
+				if (!tree) {
+					throw new Error("Tree-sitter parser returned null");
+				}
+				
+				if (!tree.rootNode) {
+					throw new Error("Tree-sitter parser returned tree without rootNode");
+				}
+				
+				// rootNode가 유효한지 확인
+				if (typeof tree.rootNode.type !== 'string') {
+					throw new Error("Tree-sitter rootNode has invalid type");
+				}
+				
+			} catch (parseError) {
+				// 파싱 실패 시 오류 던지기
+				throw new Error(`Tree-sitter parsing failed: ${parseError}`);
+			}
+
 
 			const parseTime = performance.now() - startTime;
 
@@ -256,92 +284,6 @@ export class TypeScriptParser extends BaseParser {
 		return count;
 	}
 
-	/**
-	 * Jest 환경에서 사용할 mock 파싱 - 실제 파싱 수행
-	 */
-	private async mockParse(
-		sourceCode: string,
-		options: ParserOptions = {},
-	): Promise<ParseResult> {
-		const startTime = performance.now();
-
-		try {
-			// TSX 파일인지 확인
-			const isTsx =
-				options.filePath?.endsWith(".tsx") ||
-				(sourceCode.includes("<") &&
-					(sourceCode.includes("/>") || sourceCode.includes("</")));
-
-			// Thread-safe parser pool에서 parser 가져오기
-			const parser = isTsx
-				? this.parserPool.getTsxParser()
-				: this.parserPool.getTypeScriptParser();
-
-			// 파서 상태 디버깅
-			const language = parser.getLanguage();
-			if (!language) {
-				throw new Error("Parser language not set");
-			}
-
-			const tree = parser.parse(sourceCode);
-			const parseTime = performance.now() - startTime;
-
-			const context: QueryExecutionContext = {
-				sourceCode,
-				language: this.language,
-				filePath: options.filePath || "unknown.ts",
-				tree,
-			};
-
-			return {
-				tree,
-				context,
-				metadata: {
-					language: this.language,
-					filePath: options.filePath,
-					parseTime,
-					nodeCount: this.countTreeSitterNodes(tree.rootNode),
-				},
-			};
-		} catch (error) {
-			console.error("Mock parsing error details:", {
-				error: error instanceof Error ? error.message : error,
-				stack: error instanceof Error ? error.stack : undefined,
-				sourceCode: `${sourceCode.slice(0, 100)}...`,
-				options,
-			});
-
-			// 파싱 실패 시 기본 mock tree 반환
-			const mockTree = {
-				rootNode: {
-					type: "program",
-					text: sourceCode,
-					startPosition: { row: 0, column: 0 },
-					endPosition: { row: sourceCode.split("\n").length - 1, column: 0 },
-					childCount: 1,
-					children: [],
-				},
-			} as any;
-
-			const context: QueryExecutionContext = {
-				sourceCode,
-				language: this.language,
-				filePath: options.filePath || "unknown.ts",
-				tree: mockTree,
-			};
-
-			return {
-				tree: mockTree,
-				context,
-				metadata: {
-					language: this.language,
-					filePath: options.filePath,
-					parseTime: performance.now() - startTime,
-					nodeCount: 1,
-				},
-			};
-		}
-	}
 
 	/**
 	 * 파일 파싱

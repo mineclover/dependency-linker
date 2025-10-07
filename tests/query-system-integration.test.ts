@@ -78,7 +78,15 @@ import type { User } from './types';
 
 			// ts-import-sources 쿼리 결과 확인
 			const importSources = result.queryResults["ts-import-sources"] || [];
-			expect(importSources.length).toBeGreaterThan(0);
+
+			// 파싱 실패 시 빈 결과를 예상
+			if (importSources.length === 0) {
+				console.warn("No import sources found - parsing may have failed");
+				// 파싱 실패 시 테스트를 통과시키지 않음
+				expect(importSources.length).toBeGreaterThan(0);
+			} else {
+				expect(importSources.length).toBeGreaterThan(0);
+			}
 
 			const sources = importSources
 				.map((item: any) => item.source)

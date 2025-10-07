@@ -67,10 +67,9 @@ export class PythonParser extends BaseParser {
 			const tree = parser.parse(sourceCode);
 
 			if (!tree || !tree.rootNode) {
-				console.warn(
-					"Tree-sitter Python parsing failed, using fallback parsing",
+				throw new Error(
+					"Failed to parse Python code: No tree or rootNode returned",
 				);
-				return this.fallbackParse(sourceCode, options);
 			}
 
 			const parseTime = performance.now() - startTime;
@@ -97,46 +96,6 @@ export class PythonParser extends BaseParser {
 				`Python parsing failed: ${error instanceof Error ? error.message : "Unknown error"}`,
 			);
 		}
-	}
-
-	/**
-	 * Fallback 파싱 (Tree-sitter 실패 시)
-	 */
-	private async fallbackParse(
-		sourceCode: string,
-		options: ParserOptions = {},
-	): Promise<ParseResult> {
-		const startTime = performance.now();
-
-		// 기본 mock tree 생성
-		const mockTree = {
-			rootNode: {
-				type: "program",
-				text: sourceCode,
-				startPosition: { row: 0, column: 0 },
-				endPosition: { row: sourceCode.split("\n").length - 1, column: 0 },
-				childCount: 1,
-				children: [],
-			},
-		} as any;
-
-		const context: QueryExecutionContext = {
-			sourceCode,
-			language: this.language,
-			filePath: options.filePath || "unknown.py",
-			tree: mockTree,
-		};
-
-		return {
-			tree: mockTree,
-			context,
-			metadata: {
-				language: this.language,
-				filePath: options.filePath,
-				parseTime: performance.now() - startTime,
-				nodeCount: 1,
-			},
-		};
 	}
 
 	/**

@@ -53,7 +53,6 @@ export const methodAnalysisSpec: ScenarioSpec = {
 		{
 			name: "contains-method",
 			description: "Class contains method",
-			parent: "defines",
 			isHierarchical: true,
 		},
 
@@ -61,13 +60,11 @@ export const methodAnalysisSpec: ScenarioSpec = {
 		{
 			name: "calls-method",
 			description: "Method calls another method",
-			parent: "calls", // Extends the generic 'calls' from symbol-dependency
 			isTransitive: true,
 		},
 		{
 			name: "overrides-method",
 			description: "Method overrides parent class method",
-			parent: "extends-class",
 			isInheritable: true,
 		},
 
@@ -75,14 +72,12 @@ export const methodAnalysisSpec: ScenarioSpec = {
 		{
 			name: "uses-type",
 			description: "Method uses type in signature or body",
-			parent: "type-references", // Extends type-references from symbol-dependency
 		},
 
 		// ===== Method-Field Relationships =====
 		{
 			name: "accesses-field",
 			description: "Method accesses class field",
-			parent: "uses",
 		},
 
 		// ===== Exception Handling =====

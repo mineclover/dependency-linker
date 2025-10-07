@@ -1,4 +1,5 @@
 import { DependencyAnalysisHandler } from "../handlers/dependency-analysis-handler.js";
+import * as fs from "node:fs";
 
 export interface DependenciesActionOptions {
 	symbol?: string;
@@ -41,7 +42,7 @@ export async function executeDependenciesAction(
 			options.file &&
 			!(options.output === "list" || options.output === "json")
 		) {
-			const fs = await import("node:fs");
+			// fs는 이미 정적 임포트됨
 			if (!fs.existsSync(options.file)) {
 				console.log(`❌ File not found: ${options.file}`);
 				process.exit(1);
@@ -73,7 +74,7 @@ export async function executeDependenciesAction(
 					);
 
 					// 실제 파일 분석 수행
-					const fs = await import("node:fs");
+					// fs는 이미 정적 임포트됨
 					if (fs.existsSync(options.file)) {
 						const sourceCode = fs.readFileSync(options.file, "utf-8");
 						console.log(`📝 Analyzing file: ${options.file}`);
