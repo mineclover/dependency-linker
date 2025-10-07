@@ -496,3 +496,6 @@ export class FileBatchProcessor extends BatchProcessor<string, any> {
 		return fileName === pattern;
 	}
 }
+
+
+

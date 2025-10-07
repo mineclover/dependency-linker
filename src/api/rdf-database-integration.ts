@@ -3,16 +3,16 @@
  * RDF 주소 시스템과 데이터베이스 통합 API
  */
 
-import { RDFIntegratedGraphDatabase } from "../database/RDFIntegratedGraphDatabase";
+import type { NodeType } from "../core/RDFAddress";
+import type { RDFSymbolExtractionResult } from "../core/types";
 import type {
-	RDFAddressStoreOptions,
-	RDFRelationshipStoreOptions,
 	RDFAddressSearchResult,
+	RDFAddressStoreOptions,
 	RDFRelationshipSearchResult,
+	RDFRelationshipStoreOptions,
 	RDFStatistics,
 } from "../database/RDFIntegratedGraphDatabase";
-import type { RDFSymbolExtractionResult } from "../core/types";
-import type { NodeType } from "../core/RDFAddress";
+import { RDFIntegratedGraphDatabase } from "../database/RDFIntegratedGraphDatabase";
 
 // ===== RDF DATABASE API =====
 

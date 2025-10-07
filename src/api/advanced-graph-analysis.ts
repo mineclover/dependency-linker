@@ -9,18 +9,18 @@
  * 4. 고급 분석 기능
  */
 
-import * as path from "node:path";
 import * as fs from "node:fs/promises";
-import {
-	FileDependencyAnalyzer,
-	type ImportSource,
-} from "../database/services/FileDependencyAnalyzer";
+import * as path from "node:path";
+import type { SupportedLanguage } from "../core/types";
 import {
 	GraphDatabase,
 	type GraphNode,
 	type GraphRelationship,
 } from "../database/GraphDatabase";
-import type { SupportedLanguage } from "../core/types";
+import {
+	FileDependencyAnalyzer,
+	type ImportSource,
+} from "../database/services/FileDependencyAnalyzer";
 
 export interface AdvancedGraphAnalysisResult {
 	/** 파일 정보 */
@@ -221,8 +221,8 @@ async function collectFileData(
 		// import 소스 추출
 		const importSources: ImportSource[] = [];
 		const importRegex = /import\s+.*?\s+from\s+['"](.+?)['"]/g;
-		let match;
-		while ((match = importRegex.exec(content)) !== null) {
+		const matches = content.matchAll(importRegex);
+		for (const match of matches) {
 			importSources.push({
 				type: match[1].startsWith(".")
 					? "relative"
@@ -277,8 +277,11 @@ async function performAdvancedAnalysis(
 		const fileNode = fileNodes[0];
 
 		// 직접 의존성 조회
+		if (!fileNode.id) {
+			throw new Error("File node ID is required");
+		}
 		const directDependencies = await database.findNodeDependencies(
-			fileNode.id!,
+			fileNode.id,
 			["imports_file", "imports_library", "uses"],
 		);
 
@@ -287,7 +290,7 @@ async function performAdvancedAnalysis(
 			options.analyzeChains !== false
 				? await analyzeDependencyChains(
 						database,
-						fileNode.id!,
+						fileNode.id,
 						options.maxDepth || 5,
 					)
 				: [];
@@ -295,7 +298,7 @@ async function performAdvancedAnalysis(
 		// 순환 의존성 감지
 		const circularDependencies =
 			options.detectCircular !== false
-				? await detectCircularDependencies(database, fileNode.id!)
+				? await detectCircularDependencies(database, fileNode.id)
 				: [];
 
 		// 깊이 분석
@@ -303,7 +306,7 @@ async function performAdvancedAnalysis(
 			options.analyzeDepth !== false
 				? await analyzeDependencyDepth(
 						database,
-						fileNode.id!,
+						fileNode.id,
 						options.maxDepth || 5,
 					)
 				: {
@@ -315,13 +318,13 @@ async function performAdvancedAnalysis(
 		// 핫리로드된 의존성
 		const hotReloadedDependencies = await getHotReloadedDependencies(
 			database,
-			fileNode.id!,
+			fileNode.id,
 			options.enableHotReload !== false,
 		);
 
 		return {
 			direct: directDependencies.map((dep) => ({
-				nodeId: dep.id!,
+				nodeId: dep.id || 0,
 				identifier: dep.identifier,
 				type: dep.type,
 				name: dep.name,

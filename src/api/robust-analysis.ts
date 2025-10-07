@@ -3,8 +3,7 @@
  * Tree-sitter 오류에 강건한 분석 API
  */
 
-import fs from "fs";
-import { glob } from "glob";
+import fs from "node:fs";
 import type { SupportedLanguage } from "../core/types.js";
 
 // ===== ROBUST ANALYSIS TYPES =====
@@ -43,7 +42,7 @@ export interface RobustAnalysisResult {
  */
 export function extractSymbolsWithRegex(
 	sourceCode: string,
-	filePath: string,
+	_filePath: string,
 ): {
 	symbols: any[];
 	parseTime: number;
@@ -330,7 +329,7 @@ export async function analyzeFilesRobust(
  */
 export function generateRobustAnalysisReport(
 	results: RobustAnalysisResult[],
-	config: any = {},
+	_config: any = {},
 ): {
 	timestamp: Date;
 	summary: {

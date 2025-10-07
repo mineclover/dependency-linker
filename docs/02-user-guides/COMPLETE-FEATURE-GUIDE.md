@@ -4,12 +4,13 @@ dependency-linker의 모든 기능을 포괄하는 완전한 가이드입니다.
 
 ## 🎯 개요
 
-dependency-linker는 다국어 AST 분석 프레임워크로, 13개의 핵심 CLI 명령어를 통해 다음과 같은 기능들을 제공합니다:
+dependency-linker는 다국어 AST 분석 프레임워크로, 14개의 핵심 CLI 명령어를 통해 다음과 같은 기능들을 제공합니다:
 
 ### 기본 명령어
 - **analyze** - 파일 및 디렉토리 분석
 - **rdf** - RDF 주소 생성, 검색, 검증, 통계
 - **rdf-file** - RDF 기반 파일 위치 반환 및 파일 열기
+- **dependencies** - 심볼 중심 의존성 분석 및 파일 내 심볼 리스트 조회
 
 ### 고급 기능 명령어
 - **unknown** - Unknown Symbol 등록, 검색, 추론
@@ -27,7 +28,36 @@ dependency-linker는 다국어 AST 분석 프레임워크로, 13개의 핵심 CL
 
 ## 🚀 핵심 기능
 
-### 1. 파일 분석 및 심볼 추출
+### 1. 심볼 중심 의존성 분석
+
+#### 기능 개요
+심볼 중심 의존성 분석은 특정 심볼을 찾아서 그 심볼과 연결된 최근점 노드들과 메타데이터를 조회하는 핵심 기능입니다.
+
+#### 주요 기능
+- **심볼 중심 분석**: 특정 심볼의 의존성 관계 분석
+- **파일 내 심볼 리스트**: 파일 내 모든 식별된 심볼 목록 조회
+- **Graph DB 연동**: 실제 SQLite 데이터베이스와 연동
+- **RDF 주소 시스템**: 고유한 심볼 식별자 사용
+- **다양한 출력 형식**: Table, JSON, List 형식 지원
+
+#### 사용 예시
+```bash
+# 심볼 중심 의존성 분석
+npm run cli -- dependencies --symbol "UserService"
+
+# 파일 내 심볼 리스트 조회
+npm run cli -- dependencies --file "src/parser.ts" --output list
+
+# JSON 형식으로 API 연동
+npm run cli -- dependencies --symbol "AuthService" --output json
+```
+
+#### 출력 정보
+- **타겟 심볼 메타데이터**: 타입, 파일 위치, 라인/컬럼, 설명, 태그, 복잡도
+- **최근점 노드들**: 관계 타입별 아이콘, 거리 기반 정렬, 상세 메타데이터
+- **그래프 통계**: 총 연결 노드 수, 직접/간접 연결 비율, 평균 거리, 복잡도 점수, 중심성 점수
+
+### 2. 파일 분석 및 심볼 추출
 
 #### 지원 언어
 - **TypeScript/JavaScript**: `.ts`, `.tsx`, `.js`, `.jsx`

@@ -468,6 +468,57 @@ class Calculator {
 		});
 	});
 
+	describe("dependencies 명령어", () => {
+		it("심볼 중심 의존성 분석이 정상적으로 작동해야 함", async () => {
+			const { stdout, stderr } = await execAsync(
+				`npm run cli -- dependencies --symbol "UserService"`,
+			);
+
+			// stderr에 경고가 있을 수 있지만 정상 동작 확인
+			expect(stdout).toContain("Symbol-centric analysis completed");
+		});
+
+		it("JSON 형식으로 심볼 분석이 정상적으로 작동해야 함", async () => {
+			const { stdout, stderr } = await execAsync(
+				`npm run cli -- dependencies --symbol "AuthService" --output json`,
+			);
+
+			// stderr에 경고가 있을 수 있지만 정상 동작 확인
+			expect(stdout).toContain("Symbol-centric analysis completed");
+		});
+
+		it("List 형식으로 심볼 분석이 정상적으로 작동해야 함", async () => {
+			const { stdout, stderr } = await execAsync(
+				`npm run cli -- dependencies --symbol "UserRepository" --output list`,
+			);
+
+			// stderr에 경고가 있을 수 있지만 정상 동작 확인
+			expect(stdout).toContain("Symbol-centric analysis completed");
+		});
+
+		it("파일과 심볼 모두 없을 때 에러 처리가 정상적으로 작동해야 함", async () => {
+			try {
+				await execAsync(`npm run cli -- dependencies`);
+			} catch (error: any) {
+				// 에러가 발생하는 것이 정상이므로 성공으로 처리
+				expect(error.code).toBe(1);
+			}
+		});
+
+		it("파일 지정 시에도 정상적으로 작동해야 함", async () => {
+			const testFile = path.join(TEST_PROJECT_ROOT, "UserService.ts");
+			const testContent = `export class UserService {}`;
+			fs.writeFileSync(testFile, testContent);
+
+			const { stdout, stderr } = await execAsync(
+				`npm run cli -- dependencies --file "${testFile}"`,
+			);
+
+			// stderr에 경고가 있을 수 있지만 정상 동작 확인
+			expect(stdout).toContain("Symbol-centric analysis completed");
+		});
+	});
+
 	describe("benchmark 명령어", () => {
 		it("성능 벤치마크가 정상적으로 작동해야 함", async () => {
 			const testFile = path.join(TEST_PROJECT_ROOT, "UserService.ts");

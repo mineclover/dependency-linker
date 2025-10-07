@@ -3,19 +3,15 @@
  * Graph Database 기반 수정된 단일 파일 분석 API
  */
 
-import * as path from "node:path";
 import * as fs from "node:fs/promises";
+import * as path from "node:path";
+import type { SupportedLanguage } from "../core/types";
+import { GraphDatabase } from "../database/GraphDatabase";
 import {
 	FileDependencyAnalyzer,
 	type ImportSource,
 } from "../database/services/FileDependencyAnalyzer";
-import {
-	GraphDatabase,
-	type GraphNode,
-	type GraphRelationship,
-} from "../database/GraphDatabase";
 import { MarkdownLinkTracker } from "../parsers/markdown/MarkdownLinkTracker";
-import type { SupportedLanguage } from "../core/types";
 
 export interface FixedSingleFileAnalysisResult {
 	/** 파일 정보 */
@@ -149,16 +145,16 @@ export async function analyzeSingleFileFixed(
 			);
 
 			// 언어 감지
-		const language = detectLanguage(filePath);
+			const language = detectLanguage(filePath);
 
-		// 파일 내용 읽기
-		const content = await fs.readFile(filePath, "utf-8");
+			// 파일 내용 읽기
+			const content = await fs.readFile(filePath, "utf-8");
 
 			// import 소스 추출
 			const importSources: ImportSource[] = [];
 			const importRegex = /import\s+.*?\s+from\s+['"](.+?)['"]/g;
-			let match;
-			while ((match = importRegex.exec(content)) !== null) {
+			const matches = content.matchAll(importRegex);
+			for (const match of matches) {
 				importSources.push({
 					type: match[1].startsWith(".")
 						? "relative"
@@ -182,7 +178,7 @@ export async function analyzeSingleFileFixed(
 			);
 
 			// 마크다운 링크 분석 (마크다운 파일인 경우)
-			let markdownLinks;
+			let markdownLinks: any;
 			if (
 				fileInfo.language === "markdown" &&
 				options.validateMarkdownLinks !== false
@@ -259,7 +255,10 @@ async function queryDependenciesFromGraph(
 		const fileNode = fileNodes[0];
 
 		// 의존성 관계 조회 (수정된 API 사용)
-		const dependencyNodes = await database.findNodeDependencies(fileNode.id!, [
+		if (!fileNode.id) {
+			throw new Error("File node ID is required");
+		}
+		const dependencyNodes = await database.findNodeDependencies(fileNode.id, [
 			"imports_file",
 			"imports_library",
 			"uses",
@@ -310,7 +309,7 @@ async function queryDependenciesFromGraph(
 		}
 
 		// Graph DB 통계 조회
-		let graphStats: FixedSingleFileAnalysisResult["graphStats"] = {
+		const graphStats: FixedSingleFileAnalysisResult["graphStats"] = {
 			totalNodes: 0,
 			totalRelationships: 0,
 			fileNodes: 0,
@@ -329,7 +328,9 @@ async function queryDependenciesFromGraph(
 				graphStats.fileNodes = fileNodes.length;
 
 				// 라이브러리 노드 수 조회
-				const libraryNodes = await database.findNodes({ nodeTypes: ["library"] });
+				const libraryNodes = await database.findNodes({
+					nodeTypes: ["library"],
+				});
 				graphStats.libraryNodes = libraryNodes.length;
 
 				// 의존성 관계 수 조회 (간접적으로 계산)
@@ -416,7 +417,7 @@ function detectLanguage(filePath: string): SupportedLanguage {
  */
 async function analyzeMarkdownLinks(
 	filePath: string,
-	content: string,
+	_content: string,
 	projectRoot: string,
 ): Promise<FixedSingleFileAnalysisResult["markdownLinks"]> {
 	try {
@@ -456,16 +457,16 @@ async function analyzeMarkdownLinks(
  * 메타데이터 생성
  */
 async function generateMetadata(
-	filePath: string,
+	_filePath: string,
 	content: string,
 	dependencies: FixedSingleFileAnalysisResult["dependencies"],
-	markdownLinks: FixedSingleFileAnalysisResult["markdownLinks"],
+	_markdownLinks: FixedSingleFileAnalysisResult["markdownLinks"],
 	startTime: number,
 	queryTime: number,
 ): Promise<FixedSingleFileAnalysisResult["metadata"]> {
 	try {
 		// 파일 해시 계산
-		const crypto = await import("crypto");
+		const crypto = await import("node:crypto");
 		const fileHash = crypto.createHash("sha256").update(content).digest("hex");
 
 		// 통계 계산

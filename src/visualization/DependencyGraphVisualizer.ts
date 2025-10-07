@@ -12,10 +12,10 @@
 
 import * as fs from "node:fs/promises";
 import * as path from "node:path";
-import {
+import type {
 	GraphDatabase,
-	type GraphNode,
-	type GraphRelationship,
+	GraphNode,
+	GraphRelationship,
 } from "../database/GraphDatabase.js";
 
 export interface GraphVisualizationOptions {
@@ -210,7 +210,7 @@ export class DependencyGraphVisualizer {
 		// 노드 조회
 		const graphNodes = await database.findNodes({});
 		const nodes: GraphNodeData[] = graphNodes.map((node) => ({
-			id: node.id!.toString(),
+			id: node.id?.toString() || `node-${Math.random()}`,
 			label: node.name || node.identifier || `Node ${node.id}`,
 			type: node.type || "unknown",
 			attributes: {
@@ -226,8 +226,8 @@ export class DependencyGraphVisualizer {
 		const graphEdges = await database.findRelationships({});
 		const edges: GraphEdgeData[] = graphEdges.map((edge) => ({
 			id: `${edge.fromNodeId}-${edge.toNodeId}`,
-			source: edge.fromNodeId!.toString(),
-			target: edge.toNodeId!.toString(),
+			source: edge.fromNodeId?.toString() || `node-${Math.random()}`,
+			target: edge.toNodeId?.toString() || `node-${Math.random()}`,
 			label: edge.type || "relationship",
 			type: edge.type || "unknown",
 			weight: edge.weight || 1,
@@ -248,23 +248,29 @@ export class DependencyGraphVisualizer {
 		let filteredEdges = edges;
 
 		// 노드 타입 필터링
-		if (this.options.filters?.nodeTypes && this.options.filters.nodeTypes.length > 0) {
+		if (
+			this.options.filters?.nodeTypes &&
+			this.options.filters.nodeTypes.length > 0
+		) {
 			filteredNodes = nodes.filter((node) =>
-				this.options.filters!.nodeTypes!.includes(node.type),
+				this.options.filters?.nodeTypes?.includes(node.type),
 			);
 		}
 
 		// 관계 타입 필터링
-		if (this.options.filters?.relationshipTypes && this.options.filters.relationshipTypes.length > 0) {
+		if (
+			this.options.filters?.relationshipTypes &&
+			this.options.filters.relationshipTypes.length > 0
+		) {
 			filteredEdges = edges.filter((edge) =>
-				this.options.filters!.relationshipTypes!.includes(edge.type),
+				this.options.filters?.relationshipTypes?.includes(edge.type),
 			);
 		}
 
 		// 가중치 필터링
 		if ((this.options.filters?.minWeight ?? 0) > 0) {
 			filteredEdges = filteredEdges.filter(
-				(edge) => (edge.weight ?? 0) >= this.options.filters!.minWeight!,
+				(edge) => (edge.weight ?? 0) >= (this.options.filters?.minWeight ?? 0),
 			);
 		}
 
@@ -297,7 +303,7 @@ export class DependencyGraphVisualizer {
 			if (!clusters.has(node.type)) {
 				clusters.set(node.type, []);
 			}
-			clusters.get(node.type)!.push(node);
+			clusters.get(node.type)?.push(node);
 		}
 
 		const clusteredNodes: GraphNodeData[] = [];

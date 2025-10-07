@@ -3,14 +3,14 @@
  * Graph DB를 활용한 간단한 의존성 분석 시스템
  */
 
-import * as path from "node:path";
 import * as fs from "node:fs/promises";
+import * as path from "node:path";
+import type { SupportedLanguage } from "../core/types";
+import { GraphDatabase } from "../database/GraphDatabase";
 import {
 	FileDependencyAnalyzer,
 	type ImportSource,
 } from "../database/services/FileDependencyAnalyzer";
-import { GraphDatabase } from "../database/GraphDatabase";
-import type { SupportedLanguage } from "../core/types";
 
 export interface SimpleGraphAnalysisResult {
 	/** 파일 정보 */
@@ -92,8 +92,8 @@ export async function analyzeFileWithSimpleGraph(
 			// import 소스 추출
 			const importSources: ImportSource[] = [];
 			const importRegex = /import\s+.*?\s+from\s+['"](.+?)['"]/g;
-			let match;
-			while ((match = importRegex.exec(content)) !== null) {
+			const matches = content.matchAll(importRegex);
+			for (const match of matches) {
 				importSources.push({
 					type: match[1].startsWith(".")
 						? "relative"
@@ -170,13 +170,16 @@ async function queryDependenciesFromGraphDB(
 		const fileNode = fileNodes[0];
 
 		// 직접 의존성 조회
+		if (!fileNode.id) {
+			throw new Error("File node ID is required");
+		}
 		const directDependencies = await database.findNodeDependencies(
-			fileNode.id!,
+			fileNode.id,
 			["imports_file", "imports_library", "uses"],
 		);
 
 		// Graph DB 통계 조회
-		let graphStats = {
+		const graphStats = {
 			totalNodes: 0,
 			fileNodes: 0,
 			libraryNodes: 0,
@@ -193,7 +196,9 @@ async function queryDependenciesFromGraphDB(
 				graphStats.fileNodes = fileNodes.length;
 
 				// 라이브러리 노드 수 조회
-				const libraryNodes = await database.findNodes({ nodeTypes: ["library"] });
+				const libraryNodes = await database.findNodes({
+					nodeTypes: ["library"],
+				});
 				graphStats.libraryNodes = libraryNodes.length;
 			} catch (statsError) {
 				console.warn("Graph stats collection failed:", statsError);
@@ -282,7 +287,7 @@ async function generateMetadata(
 		const content = await fs.readFile(filePath, "utf-8");
 
 		// 파일 해시 계산
-		const crypto = await import("crypto");
+		const crypto = await import("node:crypto");
 		const fileHash = crypto.createHash("sha256").update(content).digest("hex");
 
 		return {

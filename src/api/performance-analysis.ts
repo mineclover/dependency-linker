@@ -3,10 +3,8 @@
  * 대용량 프로젝트 처리를 위한 성능 최적화 분석 API
  */
 
-import fs from "fs";
-import { glob } from "glob";
-import { Worker } from "worker_threads";
-import { cpus } from "os";
+import fs from "node:fs";
+import { cpus } from "node:os";
 import type { SupportedLanguage } from "../core/types.js";
 
 // ===== PERFORMANCE CONFIGURATION =====
@@ -114,7 +112,7 @@ export class AnalysisCache {
 	}
 
 	private getCacheKey(filePath: string, sourceCode: string): string {
-		const crypto = require("crypto");
+		const crypto = require("node:crypto");
 		return crypto
 			.createHash("md5")
 			.update(filePath + sourceCode)
@@ -140,7 +138,7 @@ export class AnalysisCache {
 				const cached = JSON.parse(fs.readFileSync(cacheFilePath, "utf-8"));
 				this.cache.set(key, cached);
 				return cached;
-			} catch (error) {
+			} catch (_error) {
 				// 캐시 파일이 손상된 경우 삭제
 				fs.unlinkSync(cacheFilePath);
 			}
@@ -303,11 +301,9 @@ export class BatchProcessor {
 // ===== STREAMING PROCESSING =====
 
 export class StreamingProcessor {
-	private config: PerformanceConfig;
 	private cache: AnalysisCache;
 
 	constructor(config: PerformanceConfig = DEFAULT_PERFORMANCE_CONFIG) {
-		this.config = config;
 		this.cache = new AnalysisCache(config.cacheDirectory);
 	}
 
@@ -329,7 +325,7 @@ export class StreamingProcessor {
 				const sourceCode = fs.readFileSync(file, "utf-8");
 				const cached = this.cache.get(file, sourceCode);
 
-				let result;
+				let result: any;
 				if (cached) {
 					result = cached;
 				} else {

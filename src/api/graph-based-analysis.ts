@@ -3,19 +3,15 @@
  * Graph DB를 활용한 진정한 의존성 분석 시스템
  */
 
-import * as path from "node:path";
 import * as fs from "node:fs/promises";
+import * as path from "node:path";
+import type { SupportedLanguage } from "../core/types";
+import { GraphDatabase } from "../database/GraphDatabase";
 import {
 	FileDependencyAnalyzer,
 	type ImportSource,
 } from "../database/services/FileDependencyAnalyzer";
-import {
-	GraphDatabase,
-	type GraphNode,
-	type GraphRelationship,
-} from "../database/GraphDatabase";
 import { MarkdownLinkTracker } from "../parsers/markdown/MarkdownLinkTracker";
-import type { SupportedLanguage } from "../core/types";
 
 export interface GraphBasedAnalysisResult {
 	/** 파일 정보 */
@@ -165,17 +161,17 @@ export async function analyzeFileWithGraphDB(
 				projectName,
 			);
 
-		// 언어 감지
-		const language = detectLanguage(filePath);
+			// 언어 감지
+			const language = detectLanguage(filePath);
 
-		// 파일 내용 읽기
-		const content = await fs.readFile(filePath, "utf-8");
+			// 파일 내용 읽기
+			const content = await fs.readFile(filePath, "utf-8");
 
 			// import 소스 추출
 			const importSources: ImportSource[] = [];
 			const importRegex = /import\s+.*?\s+from\s+['"](.+?)['"]/g;
-			let match;
-			while ((match = importRegex.exec(content)) !== null) {
+			const matches = content.matchAll(importRegex);
+			for (const match of matches) {
 				importSources.push({
 					type: match[1].startsWith(".")
 						? "relative"
@@ -199,7 +195,7 @@ export async function analyzeFileWithGraphDB(
 			);
 
 			// 마크다운 링크 분석 (마크다운 파일인 경우)
-			let markdownLinks;
+			let markdownLinks: any;
 			if (
 				fileInfo.language === "markdown" &&
 				options.validateMarkdownLinks !== false
@@ -280,28 +276,31 @@ async function queryDependenciesFromGraphDB(
 		const fileNode = fileNodes[0];
 
 		// 직접 의존성 조회
+		if (!fileNode.id) {
+			throw new Error("File node ID is required");
+		}
 		const directDependencies = await database.findNodeDependencies(
-			fileNode.id!,
+			fileNode.id,
 			["imports_file", "imports_library", "uses"],
 		);
 
 		// 간접 의존성 분석 (재귀적)
 		const transitiveDependencies = await analyzeTransitiveDependencies(
 			database,
-			fileNode.id!,
+			fileNode.id,
 			options.maxDepth || 3,
 		);
 
 		// 순환 의존성 감지
 		const circularDependencies =
 			options.detectCircularDependencies !== false
-				? await detectCircularDependencies(database, fileNode.id!)
+				? await detectCircularDependencies(database, fileNode.id)
 				: [];
 
 		// 의존성 체인 분석
 		const dependencyChains = await analyzeDependencyChains(
 			database,
-			fileNode.id!,
+			fileNode.id,
 			options.maxDepth || 3,
 		);
 
@@ -314,7 +313,7 @@ async function queryDependenciesFromGraphDB(
 		return {
 			dependencies: {
 				direct: directDependencies.map((dep) => ({
-					nodeId: dep.id!,
+					nodeId: dep.id || 0,
 					identifier: dep.identifier,
 					type: dep.type,
 					name: dep.name,
@@ -363,7 +362,7 @@ async function analyzeTransitiveDependencies(
 		for (const dep of directDeps) {
 			// 간접 의존성으로 추가
 			result.push({
-				nodeId: dep.id!,
+				nodeId: dep.id || 0,
 				identifier: dep.identifier,
 				type: dep.type,
 				name: dep.name,
@@ -374,7 +373,7 @@ async function analyzeTransitiveDependencies(
 			// 재귀적으로 더 깊은 의존성 분석
 			const deeperDeps = await analyzeTransitiveDependencies(
 				database,
-				dep.id!,
+				dep.id || 0,
 				maxDepth,
 				new Set(visited),
 				currentDepth + 1,
@@ -395,8 +394,8 @@ async function analyzeTransitiveDependencies(
  * 순환 의존성 감지
  */
 async function detectCircularDependencies(
-	database: GraphDatabase,
-	nodeId: number,
+	_database: GraphDatabase,
+	_nodeId: number,
 ): Promise<GraphBasedAnalysisResult["dependencies"]["circular"]> {
 	// TODO: 순환 의존성 감지 알고리즘 구현
 	// DFS 기반 사이클 감지
@@ -407,9 +406,9 @@ async function detectCircularDependencies(
  * 의존성 체인 분석
  */
 async function analyzeDependencyChains(
-	database: GraphDatabase,
-	nodeId: number,
-	maxDepth: number,
+	_database: GraphDatabase,
+	_nodeId: number,
+	_maxDepth: number,
 ): Promise<GraphBasedAnalysisResult["dependencies"]["chains"]> {
 	// TODO: 의존성 체인 분석 구현
 	// BFS 기반 체인 탐색
@@ -542,7 +541,7 @@ function detectLanguage(filePath: string): SupportedLanguage {
  */
 async function analyzeMarkdownLinks(
 	filePath: string,
-	content: string,
+	_content: string,
 	projectRoot: string,
 ): Promise<GraphBasedAnalysisResult["markdownLinks"]> {
 	try {
@@ -582,16 +581,16 @@ async function analyzeMarkdownLinks(
  * 메타데이터 생성
  */
 async function generateMetadata(
-	filePath: string,
+	_filePath: string,
 	content: string,
 	dependencies: GraphBasedAnalysisResult["dependencies"],
-	markdownLinks: GraphBasedAnalysisResult["markdownLinks"],
+	_markdownLinks: GraphBasedAnalysisResult["markdownLinks"],
 	startTime: number,
 	queryTime: number,
 ): Promise<GraphBasedAnalysisResult["metadata"]> {
 	try {
 		// 파일 해시 계산
-		const crypto = await import("crypto");
+		const crypto = await import("node:crypto");
 		const fileHash = crypto.createHash("sha256").update(content).digest("hex");
 
 		// 통계 계산

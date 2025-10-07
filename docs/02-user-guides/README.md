@@ -12,6 +12,7 @@ dependency-linker 시스템을 효과적으로 사용하기 위한 사용자 가
 
 ### 📖 상세 가이드
 - **[완전한 기능 가이드](./COMPLETE-FEATURE-GUIDE.md)** - 모든 기능을 포괄하는 완전한 가이드
+- **[심볼 중심 의존성 분석 가이드](./SYMBOL-DEPENDENCY-ANALYSIS-GUIDE.md)** - 심볼 중심 의존성 분석 및 파일 내 심볼 리스트 조회
 - **[RDF 기반 파일 위치 반환 시스템 가이드](./RDF-FILE-SYSTEM-GUIDE.md)** - RDF 주소 기반 파일 위치 반환 및 파일 열기
 - **[CLI 명령어 참조](./CLI-COMMAND-REFERENCE.md)** - 모든 CLI 명령어에 대한 완전한 참조
 - **[기능 비교 가이드](./FEATURE-COMPARISON.md)** - 기능별 특징과 사용 시나리오 비교
@@ -23,12 +24,13 @@ dependency-linker 시스템을 효과적으로 사용하기 위한 사용자 가
 
 ## 🎯 주요 기능
 
-### 13개의 핵심 CLI 명령어
+### 14개의 핵심 CLI 명령어
 
 #### 기본 명령어
 - **analyze** - 파일 및 디렉토리 분석
 - **rdf** - RDF 주소 생성, 검색, 검증, 통계
 - **rdf-file** - RDF 기반 파일 위치 반환 및 파일 열기
+- **dependencies** - 심볼 중심 의존성 분석 및 파일 내 심볼 리스트 조회
 
 #### 고급 기능 명령어
 - **unknown** - Unknown Symbol 등록, 검색, 추론

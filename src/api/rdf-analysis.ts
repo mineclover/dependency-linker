@@ -11,11 +11,7 @@ import {
 	type RDFNodeIdentifier,
 	type RDFSymbolExtractionResult,
 } from "../core/RDFNodeIdentifier";
-import type {
-	RDFAnalysisResult,
-	SupportedLanguage,
-	QueryExecutionContext,
-} from "../core/types";
+import type { RDFAnalysisResult, SupportedLanguage } from "../core/types";
 import type { NamespaceConfig } from "../namespace/types";
 
 // ===== RDF ANALYSIS FUNCTIONS =====
@@ -81,8 +77,8 @@ export async function analyzeNamespaceWithRDF(
 	totalErrors: number;
 }> {
 	const files: RDFAnalysisResult[] = [];
-	let totalSymbols = 0;
-	let totalErrors = 0;
+	const totalSymbols = 0;
+	const totalErrors = 0;
 
 	// TODO: 실제 파일 패턴 매칭 및 분석 구현
 	// 현재는 예시 구조만 제공
@@ -231,13 +227,13 @@ export function createRDFAddressForSymbol(
 /**
  * RDF 주소 파싱 헬퍼
  */
-export function parseRDFAddressForSymbol(rdfAddress: string): {
+export function parseRDFAddressForSymbol(_rdfAddress: string): {
 	projectName: string;
 	filePath: string;
 	nodeType: import("../core/RDFAddress").NodeType;
 	symbolName: string;
 } | null {
-	const identifier = createRDFNodeIdentifier({
+	const _identifier = createRDFNodeIdentifier({
 		projectName: "",
 		filePath: "",
 		nodeType: "tag",

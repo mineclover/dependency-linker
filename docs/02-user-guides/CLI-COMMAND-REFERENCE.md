@@ -4,7 +4,7 @@ dependency-linker의 모든 CLI 명령어에 대한 완전한 참조 가이드�
 
 ## 🎯 개요
 
-dependency-linker는 13개의 핵심 CLI 명령어를 통해 강력한 의존성 분석 기능을 제공합니다. 중복이 제거되고 최적화된 명령어 구조로 사용자 경험을 향상시켰습니다.
+dependency-linker는 14개의 핵심 CLI 명령어를 통해 강력한 의존성 분석 기능을 제공합니다. 중복이 제거되고 최적화된 명령어 구조로 사용자 경험을 향상시켰습니다.
 
 ## 📋 명령어 목록
 
@@ -12,6 +12,7 @@ dependency-linker는 13개의 핵심 CLI 명령어를 통해 강력한 의존성
 - `analyze` - 파일 및 디렉토리 분석
 - `rdf` - RDF 주소 생성, 검색, 검증, 통계
 - `rdf-file` - RDF 기반 파일 위치 반환 및 파일 열기
+- `dependencies` - 심볼 중심 의존성 분석 및 파일 내 심볼 리스트 조회
 
 ### 고급 기능 명령어
 - `unknown` - Unknown Symbol 등록, 검색, 추론
@@ -29,7 +30,108 @@ dependency-linker는 13개의 핵심 CLI 명령어를 통해 강력한 의존성
 
 ## 🚀 기본 명령어
 
-### 1. analyze - 파일 분석
+### 1. dependencies - 심볼 중심 의존성 분석
+
+#### 기본 사용법
+```bash
+npm run cli -- dependencies [options]
+```
+
+#### 옵션
+- `-s, --symbol <name>`: 분석할 심볼 이름
+- `-f, --file <path>`: 분석할 파일 경로 (선택사항)
+- `-t, --type <type>`: 의존성 타입 (imports, exports, both) (기본값: "both")
+- `-d, --depth <number>`: 분석 깊이 (1-5) (기본값: "2")
+- `-o, --output <format>`: 출력 형식 (json, table, list) (기본값: "table")
+- `--include-external`: 외부 의존성 포함
+- `--include-internal`: 내부 의존성 포함
+- `--database <path>`: 데이터베이스 경로
+
+#### 사용 예시
+
+**심볼 중심 의존성 분석:**
+```bash
+# 특정 심볼의 의존성 분석
+npm run cli -- dependencies --symbol "UserService"
+
+# JSON 형식으로 API 연동용 데이터
+npm run cli -- dependencies --symbol "AuthService" --output json
+
+# 읽기 쉬운 리스트 형식
+npm run cli -- dependencies --symbol "UserRepository" --output list
+```
+
+**파일 내 심볼 리스트 조회:**
+```bash
+# 파일 내 모든 심볼 목록 조회 (테이블 형식)
+npm run cli -- dependencies --file "src/parser.ts" --output list
+
+# 파일 내 모든 심볼 목록 조회 (JSON 형식)
+npm run cli -- dependencies --file "src/utils.ts" --output json
+
+# 파일의 첫 번째 심볼 의존성 분석
+npm run cli -- dependencies --file "src/services/UserService.ts"
+```
+
+#### 출력 예시
+
+**심볼 의존성 분석 (Table 형식):**
+```
+🎯 Symbol Analysis Results:
+============================================================
+
+📊 Target Symbol: parse
+📄 File: src/parser.ts
+📍 Location: Line 0, Column 0
+📝 Description: Symbol 'parse' (Method)
+🏷️  Tags: Method
+⚡ Complexity: medium
+👤 Author: system
+📅 Last Modified: 2025-10-05 14:41:50
+
+🔗 Nearest Nodes:
+Name                Type        Relationship   Distance  File
+--------------------------------------------------------------------------------
+helper              Function    calls          1         src/utils.ts
+
+📈 Graph Statistics:
+  Total Connected Nodes: 1
+  Direct Connections: 1
+  Indirect Connections: 0
+  Average Distance: 1
+  Complexity Score: 2.5/10
+  Centrality Score: 1
+```
+
+**파일 심볼 리스트 (List 형식):**
+```
+📄 File: src/parser.ts
+📊 Total Symbols: 1
+
+🔍 Symbols:
+Name                Type           Line    Description
+------------------------------------------------------------
+parse               Method         0       Method parse
+```
+
+**JSON 형식:**
+```json
+{
+  "filePath": "src/utils.ts",
+  "symbols": [
+    {
+      "name": "helper",
+      "type": "Function",
+      "line": 0,
+      "column": 0,
+      "description": "Function helper"
+    }
+  ],
+  "totalCount": 1
+}
+```
+
+### 2. analyze - 파일 분석
 
 #### 기본 사용법
 ```bash

@@ -3,12 +3,12 @@
  * 마크다운 파일 분석을 위한 API
  */
 
-import { MarkdownParser } from "../parsers/markdown/MarkdownParser";
-import { MarkdownRDFIntegration } from "../parsers/markdown/MarkdownRDFIntegration";
+import type { LinkTrackingResult } from "../parsers/markdown/MarkdownLinkTracker";
 import { MarkdownLinkTracker } from "../parsers/markdown/MarkdownLinkTracker";
 import type { MarkdownParseResult } from "../parsers/markdown/MarkdownParser";
+import { MarkdownParser } from "../parsers/markdown/MarkdownParser";
 import type { MarkdownRDFResult } from "../parsers/markdown/MarkdownRDFIntegration";
-import type { LinkTrackingResult } from "../parsers/markdown/MarkdownLinkTracker";
+import { MarkdownRDFIntegration } from "../parsers/markdown/MarkdownRDFIntegration";
 
 // ===== MARKDOWN ANALYSIS API =====
 

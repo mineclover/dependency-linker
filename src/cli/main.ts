@@ -19,14 +19,20 @@ import {
 } from "./handlers/typescript-handler.js";
 import {
 	UnknownSymbolHandler,
-	QueryHandler,
 	CrossNamespaceHandler,
 	InferenceHandler,
 	ContextDocumentsHandler,
 	PerformanceOptimizationHandler,
 } from "./handlers/index.js";
-import { RDFFileHandler } from "./handlers/rdf-file-handler.js";
 import { createRDFAddress, validateRDFAddress } from "../core/RDFAddress.js";
+
+// Action 모듈 임포트
+import {
+	executeDependenciesAction,
+	executeAnalyzeAction,
+	executeRDFAction,
+	executeRDFFileAction,
+} from "./actions/index.js";
 
 // ============================================================================
 // CLI 프로그램 설정
@@ -55,48 +61,7 @@ program
 	.option("--verbose", "Verbose output")
 	.option("--database <path>", "Database path")
 	.action(async (options) => {
-		try {
-			console.log("🔍 Starting dependency analysis...");
-
-			// 성능 최적화 옵션 처리
-			if (options.performance) {
-				console.log("⚡ Performance optimization enabled");
-			}
-
-			// 파일 패턴 분석
-			if (options.pattern) {
-				const files = await glob(options.pattern, {
-					cwd: options.directory || process.cwd(),
-					absolute: true,
-				});
-
-				console.log(
-					`📁 Found ${files.length} files matching pattern: ${options.pattern}`,
-				);
-
-				for (const file of files) {
-					console.log(`  - ${file}`);
-				}
-			}
-
-			// 디렉토리 분석
-			else if (options.directory) {
-				const pattern = options.recursive ? "**/*" : "*";
-				const files = await glob(pattern, {
-					cwd: options.directory,
-					absolute: true,
-				});
-
-				console.log(
-					`📁 Found ${files.length} files in directory: ${options.directory}`,
-				);
-			}
-
-			console.log("✅ Analysis completed");
-		} catch (error) {
-			console.error("❌ Analysis failed:", error);
-			process.exit(1);
-		}
+		await executeAnalyzeAction(options);
 	});
 
 // ============================================================================
@@ -115,52 +80,7 @@ program
 	.option("-v, --validate <address>", "Validate RDF address")
 	.option("--stats", "RDF statistics")
 	.action(async (options) => {
-		try {
-			if (options.create) {
-				if (
-					!options.project ||
-					!options.file ||
-					!options.type ||
-					!options.symbol
-				) {
-					console.log(
-						"❌ Please specify --project, --file, --type, and --symbol",
-					);
-					process.exit(1);
-				}
-
-				const rdfAddress = createRDFAddress({
-					projectName: options.project,
-					filePath: options.file,
-					nodeType: options.type as any,
-					symbolName: options.symbol,
-				});
-				console.log(`✅ RDF address created: ${rdfAddress}`);
-			} else if (options.query) {
-				console.log(`🔍 Searching for: ${options.query}`);
-				console.log("✅ RDF search completed");
-			} else if (options.validate) {
-				if (!options.validate) {
-					console.log("❌ Please provide an RDF address to validate");
-					process.exit(1);
-				}
-				const isValid = validateRDFAddress(options.validate);
-				console.log(`✅ RDF validation: ${isValid ? "Valid" : "Invalid"}`);
-			} else if (options.stats) {
-				console.log("📊 RDF statistics:");
-				console.log("  - Total addresses: 0");
-				console.log("  - Valid addresses: 0");
-				console.log("  - Invalid addresses: 0");
-			} else {
-				console.log(
-					"❌ Please specify an operation (--create, --query, --validate, --stats)",
-				);
-				process.exit(1);
-			}
-		} catch (error) {
-			console.error("❌ RDF operation failed:", error);
-			process.exit(1);
-		}
+		await executeRDFAction(options);
 	});
 
 // ============================================================================
@@ -179,46 +99,7 @@ program
 	.option("-e, --exists <address>", "Check if file exists")
 	.option("-v, --validate <address>", "Validate RDF address")
 	.action(async (options) => {
-		const handler = new RDFFileHandler();
-
-		try {
-			if (options.location) {
-				const location = await handler.getFileLocation(options.location);
-				console.log(`📍 RDF 주소: ${options.location}`);
-				console.log(`📁 파일 경로: ${location.filePath}`);
-				console.log(`📂 절대 경로: ${location.absolutePath}`);
-			} else if (options.open) {
-				await handler.openFile(options.open);
-				console.log(`✅ 파일 열기 완료: ${options.open}`);
-			} else if (options.path) {
-				const filePath = await handler.getFilePath(options.path);
-				console.log(`📁 파일 경로: ${filePath}`);
-			} else if (options.relative) {
-				const relativePath = await handler.getRelativePath(options.relative);
-				console.log(`📂 상대 경로: ${relativePath}`);
-			} else if (options.content) {
-				const content = await handler.getFileContent(options.content);
-				console.log(`📄 파일 내용 (${content.length} bytes):`);
-				console.log(content.substring(0, 200) + "...");
-			} else if (options.symbol) {
-				const symbolInfo = await handler.getSymbolInfo(options.symbol);
-				console.log(`🔍 심볼 정보: ${JSON.stringify(symbolInfo, null, 2)}`);
-			} else if (options.exists) {
-				const exists = await handler.fileExists(options.exists);
-				console.log(`📁 파일 존재 여부: ${exists ? "존재" : "없음"}`);
-			} else if (options.validate) {
-				const isValid = await handler.validateRDFAddress(options.validate);
-				console.log(`✅ RDF 주소 유효성: ${isValid ? "유효" : "무효"}`);
-			} else {
-				console.log(
-					"❌ Please specify an operation (--location, --open, --path, --relative, --content, --symbol, --exists, --validate)",
-				);
-				process.exit(1);
-			}
-		} catch (error) {
-			console.error("❌ RDF file operation failed:", error);
-			process.exit(1);
-		}
+		await executeRDFFileAction(options);
 	});
 
 // ============================================================================
@@ -499,6 +380,24 @@ program
 			console.error("❌ Namespace operation failed:", error);
 			process.exit(1);
 		}
+	});
+
+// ============================================================================
+// 파일 의존성 분석 명령어
+// ============================================================================
+program
+	.command("dependencies")
+	.description("심볼 중심 의존성 분석 - 최근점 노드들과 메타데이터 조회")
+	.option("-s, --symbol <name>", "분석할 심볼 이름")
+	.option("-f, --file <path>", "분석할 파일 경로 (선택사항)")
+	.option("-t, --type <type>", "의존성 타입 (imports, exports, both)", "both")
+	.option("-d, --depth <number>", "분석 깊이 (1-5)", "2")
+	.option("-o, --output <format>", "출력 형식 (json, table, list)", "table")
+	.option("--include-external", "외부 의존성 포함")
+	.option("--include-internal", "내부 의존성 포함")
+	.option("--database <path>", "Database path")
+	.action(async (options) => {
+		await executeDependenciesAction(options);
 	});
 
 // ============================================================================
