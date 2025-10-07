@@ -302,6 +302,45 @@ export class GraphDatabase {
 	}
 
 	/**
+	 * RDF 관계 생성 또는 업데이트
+	 */
+	async upsertRDFRelationship(
+		sourceRdfAddress: string,
+		targetRdfAddress: string,
+		relationshipType: string,
+		metadata: any = {},
+	): Promise<number> {
+		if (!this.db) throw new Error("Database not initialized");
+
+		const metadataJson = JSON.stringify(metadata);
+
+		return new Promise((resolve, reject) => {
+			const sql = `
+        INSERT INTO rdf_relationships (source_rdf_address, target_rdf_address, relationship_type, metadata)
+        VALUES (?, ?, ?, ?)
+        ON CONFLICT(source_rdf_address, target_rdf_address, relationship_type) DO UPDATE SET
+          metadata = excluded.metadata,
+          created_at = CURRENT_TIMESTAMP
+        RETURNING id
+      `;
+
+			this.db?.get(
+				sql,
+				[sourceRdfAddress, targetRdfAddress, relationshipType, metadataJson],
+				(err: Error | null, row: any) => {
+					if (err) {
+						reject(
+							new Error(`Failed to upsert RDF relationship: ${err.message}`),
+						);
+					} else {
+						resolve(row.id);
+					}
+				},
+			);
+		});
+	}
+
+	/**
 	 * 노드 조회
 	 */
 	async findNodes(options: GraphQueryOptions = {}): Promise<GraphNode[]> {

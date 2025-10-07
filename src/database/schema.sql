@@ -60,7 +60,9 @@ CREATE TABLE IF NOT EXISTS rdf_relationships (
   created_at DATETIME DEFAULT CURRENT_TIMESTAMP,
   -- Foreign key constraints
   FOREIGN KEY (source_rdf_address) REFERENCES rdf_addresses(rdf_address),
-  FOREIGN KEY (target_rdf_address) REFERENCES rdf_addresses(rdf_address)
+  FOREIGN KEY (target_rdf_address) REFERENCES rdf_addresses(rdf_address),
+  -- Unique constraint for upsert operations
+  UNIQUE(source_rdf_address, target_rdf_address, relationship_type)
 );
 
 -- Indexes for RDF relationships

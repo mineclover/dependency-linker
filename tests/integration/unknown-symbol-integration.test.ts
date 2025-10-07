@@ -1,6 +1,7 @@
 import { describe, it, expect, beforeEach, afterEach } from "@jest/globals";
-import { ServiceFactory } from "../../src/database/services";
-import { HandlerFactory } from "../../src/cli/handlers";
+import { getUnknownSymbolManager } from "../../src/database/services";
+import { UnknownSymbolHandler } from "../../src/cli/handlers/unknown-handler";
+import { RDFHandler } from "../../src/cli/handlers/rdf-handler";
 import {
 	UnknownSymbolManager,
 	UnknownSymbol,
@@ -13,13 +14,13 @@ describe("Unknown Symbol System Integration", () => {
 
 	beforeEach(async () => {
 		// Service Factory를 통한 초기화
-		await ServiceFactory.initializeAll();
-		unknownSymbolManager = ServiceFactory.getUnknownSymbolManager();
+		unknownSymbolManager = getUnknownSymbolManager();
+		await unknownSymbolManager.initialize();
 		inferenceEngine = new EquivalenceInferenceEngine(unknownSymbolManager);
 	});
 
 	afterEach(async () => {
-		await ServiceFactory.closeAll();
+		// Service Factory는 함수형으로 전환되어 더 이상 사용하지 않음
 	});
 
 	describe("Service Factory Integration", () => {
@@ -29,8 +30,8 @@ describe("Unknown Symbol System Integration", () => {
 		});
 
 		it("should provide singleton instances", async () => {
-			const manager1 = ServiceFactory.getUnknownSymbolManager();
-			const manager2 = ServiceFactory.getUnknownSymbolManager();
+			const manager1 = getUnknownSymbolManager();
+			const manager2 = getUnknownSymbolManager();
 
 			expect(manager1).toBe(manager2);
 		});
@@ -38,20 +39,20 @@ describe("Unknown Symbol System Integration", () => {
 
 	describe("Handler Factory Integration", () => {
 		it("should initialize all handlers through factory", async () => {
-			await HandlerFactory.initializeAll();
+			// HandlerFactory는 함수형으로 전환되어 더 이상 사용하지 않음
 
-			const rdfHandler = HandlerFactory.getRDFHandler();
-			const unknownHandler = HandlerFactory.getUnknownHandler();
+			const rdfHandler = new RDFHandler();
+			const unknownHandler = new UnknownSymbolHandler();
 
 			expect(rdfHandler).toBeDefined();
 			expect(unknownHandler).toBeDefined();
 		});
 
 		it("should provide singleton handler instances", async () => {
-			const handler1 = HandlerFactory.getUnknownHandler();
-			const handler2 = HandlerFactory.getUnknownHandler();
+			const handler1 = new UnknownSymbolHandler();
+			const handler2 = new UnknownSymbolHandler();
 
-			expect(handler1).toBe(handler2);
+			expect(handler1).not.toBe(handler2);
 		});
 	});
 

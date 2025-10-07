@@ -538,3 +538,4 @@ export class DependencyGraphVisualizer {
 		await fs.writeFile(outputPath, content, "utf-8");
 	}
 }
+

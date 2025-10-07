@@ -208,13 +208,26 @@ export async function initializeQueryBridge(): Promise<void> {
 	setLanguageParsers();
 
 	// 쿼리 프로세서 등록
-	const { registerTypeScriptQueries } = await import("../queries/typescript");
-	const { registerPythonQueries } = await import("../queries/python");
-	const { registerJavaQueries } = await import("../queries/java");
+	try {
+		const { registerTypeScriptQueries } = await import("../queries/typescript");
+		registerTypeScriptQueries(globalQueryEngine);
+	} catch (error) {
+		console.warn("Failed to register TypeScript queries:", error);
+	}
 
-	registerTypeScriptQueries(globalQueryEngine);
-	registerPythonQueries(globalQueryEngine);
-	registerJavaQueries(globalQueryEngine);
+	try {
+		const { registerPythonQueries } = await import("../queries/python");
+		registerPythonQueries(globalQueryEngine);
+	} catch (error) {
+		console.warn("Failed to register Python queries:", error);
+	}
+
+	try {
+		const { registerJavaQueries } = await import("../queries/java");
+		registerJavaQueries(globalQueryEngine);
+	} catch (error) {
+		console.warn("Failed to register Java queries:", error);
+	}
 
 	console.log(
 		"✅ Query Bridge initialized - Tree-sitter queries and processors registered",

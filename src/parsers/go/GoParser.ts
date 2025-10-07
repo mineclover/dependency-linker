@@ -18,7 +18,14 @@ export class GoParser extends BaseParser {
 
 	private createParser(): Parser {
 		const parser = new Parser();
-		parser.setLanguage(Go);
+		try {
+			parser.setLanguage(Go);
+		} catch (error) {
+			console.warn(
+				`Go parsing failed: ${error instanceof Error ? error.message : "Unknown error"}`,
+			);
+			throw error;
+		}
 		return parser;
 	}
 

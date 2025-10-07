@@ -235,6 +235,11 @@ export class RealtimeQuerySystem extends EventEmitter {
 	 * 폴링 시작
 	 */
 	private startPolling(): void {
+		// 테스트 환경에서는 폴링을 시작하지 않음
+		if (process.env.NODE_ENV === "test") {
+			return;
+		}
+
 		this.pollingTimer = setInterval(() => {
 			this.executeActiveQueries();
 		}, this.config.pollingInterval);

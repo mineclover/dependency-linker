@@ -1,5 +1,5 @@
 import { describe, it, expect, beforeEach, afterEach } from "@jest/globals";
-import { HandlerFactory } from "../../src/cli/handlers";
+// HandlerFactory는 함수형으로 전환되어 더 이상 사용하지 않음
 import { QueryHandler } from "../../src/cli/handlers/query-handler";
 
 describe("Query System Integration", () => {
@@ -7,12 +7,12 @@ describe("Query System Integration", () => {
 
 	beforeEach(async () => {
 		// Handler Factory를 통한 초기화
-		await HandlerFactory.initializeAll();
-		queryHandler = HandlerFactory.getQueryHandler();
+		// HandlerFactory는 함수형으로 전환되어 더 이상 사용하지 않음
+		queryHandler = new QueryHandler();
 	});
 
 	afterEach(async () => {
-		await HandlerFactory.closeAll();
+		// HandlerFactory는 함수형으로 전환되어 더 이상 사용하지 않음
 	});
 
 	describe("Handler Factory Integration", () => {
@@ -21,11 +21,11 @@ describe("Query System Integration", () => {
 			expect(queryHandler).toBeInstanceOf(QueryHandler);
 		});
 
-		it("should provide singleton query handler instances", async () => {
-			const handler1 = HandlerFactory.getQueryHandler();
-			const handler2 = HandlerFactory.getQueryHandler();
+		it("should create new instances each time", async () => {
+			const handler1 = new QueryHandler();
+			const handler2 = new QueryHandler();
 
-			expect(handler1).toBe(handler2);
+			expect(handler1).not.toBe(handler2);
 		});
 	});
 

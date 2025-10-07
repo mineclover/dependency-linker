@@ -1,79 +1,55 @@
 import { describe, it, expect, beforeAll, afterAll } from "@jest/globals";
-import { HandlerFactory } from "../src/cli/handlers/index.js";
-import {
-	RDFHandler,
-	UnknownSymbolHandler,
-	QueryHandler,
-	CrossNamespaceHandler,
-	InferenceHandler,
-	ContextDocumentsHandler,
-	PerformanceOptimizationHandler,
-} from "../src/cli/handlers/index.js";
+import { RDFHandler } from "../src/cli/handlers/rdf-handler";
+import { UnknownSymbolHandler } from "../src/cli/handlers/unknown-handler";
+import { QueryHandler } from "../src/cli/handlers/query-handler";
+import { CrossNamespaceHandler } from "../src/cli/handlers/cross-namespace-handler";
 
 describe("전체 시스템 통합 테스트", () => {
 	let rdfHandler: RDFHandler;
 	let unknownHandler: UnknownSymbolHandler;
 	let queryHandler: QueryHandler;
 	let crossNamespaceHandler: CrossNamespaceHandler;
-	let inferenceHandler: InferenceHandler;
-	let contextDocumentsHandler: ContextDocumentsHandler;
-	let performanceHandler: PerformanceOptimizationHandler;
 
 	beforeAll(async () => {
 		console.log("🚀 전체 시스템 통합 테스트 시작");
 
 		// Handler Factory를 통한 모든 핸들러 초기화
-		await HandlerFactory.initializeAll();
+		// HandlerFactory는 함수형으로 전환되어 더 이상 사용하지 않음
 
-		// 개별 핸들러 인스턴스 가져오기
-		rdfHandler = HandlerFactory.getRDFHandler();
-		unknownHandler = HandlerFactory.getUnknownHandler();
-		queryHandler = HandlerFactory.getQueryHandler();
-		crossNamespaceHandler = HandlerFactory.getCrossNamespaceHandler();
-		inferenceHandler = HandlerFactory.getInferenceHandler();
-		contextDocumentsHandler = HandlerFactory.getContextDocumentsHandler();
-		performanceHandler = HandlerFactory.getPerformanceOptimizationHandler();
+		// 개별 핸들러 인스턴스 생성
+		rdfHandler = new RDFHandler();
+		unknownHandler = new UnknownSymbolHandler();
+		queryHandler = new QueryHandler();
+		crossNamespaceHandler = new CrossNamespaceHandler();
 	});
 
 	afterAll(async () => {
-		// 모든 핸들러 정리
-		await HandlerFactory.closeAll();
+		// 모든 핸들러 정리 (함수형 전환으로 더 이상 필요 없음)
 		console.log("✅ 전체 시스템 통합 테스트 완료");
 	});
 
 	describe("Handler Factory 통합 테스트", () => {
-		it("should initialize all handlers through factory", () => {
+		it("should initialize all handlers directly", () => {
 			expect(rdfHandler).toBeDefined();
 			expect(unknownHandler).toBeDefined();
 			expect(queryHandler).toBeDefined();
 			expect(crossNamespaceHandler).toBeDefined();
-			expect(inferenceHandler).toBeDefined();
-			expect(contextDocumentsHandler).toBeDefined();
-			expect(performanceHandler).toBeDefined();
 
-			console.log("✅ 모든 핸들러가 Factory를 통해 초기화됨");
+			console.log("✅ 모든 핸들러가 직접 초기화됨");
 		});
 
-		it("should maintain singleton pattern for handlers", () => {
-			const rdfHandler2 = HandlerFactory.getRDFHandler();
-			const unknownHandler2 = HandlerFactory.getUnknownHandler();
-			const queryHandler2 = HandlerFactory.getQueryHandler();
-			const crossNamespaceHandler2 = HandlerFactory.getCrossNamespaceHandler();
-			const inferenceHandler2 = HandlerFactory.getInferenceHandler();
-			const contextDocumentsHandler2 =
-				HandlerFactory.getContextDocumentsHandler();
-			const performanceHandler2 =
-				HandlerFactory.getPerformanceOptimizationHandler();
+		it("should create new instances each time", () => {
+			const rdfHandler2 = new RDFHandler();
+			const unknownHandler2 = new UnknownSymbolHandler();
+			const queryHandler2 = new QueryHandler();
+			const crossNamespaceHandler2 = new CrossNamespaceHandler();
 
-			expect(rdfHandler).toBe(rdfHandler2);
-			expect(unknownHandler).toBe(unknownHandler2);
-			expect(queryHandler).toBe(queryHandler2);
-			expect(crossNamespaceHandler).toBe(crossNamespaceHandler2);
-			expect(inferenceHandler).toBe(inferenceHandler2);
-			expect(contextDocumentsHandler).toBe(contextDocumentsHandler2);
-			expect(performanceHandler).toBe(performanceHandler2);
+			expect(rdfHandler).not.toBe(rdfHandler2);
+			expect(unknownHandler).not.toBe(unknownHandler2);
+			expect(queryHandler).not.toBe(queryHandler2);
+			expect(crossNamespaceHandler).not.toBe(crossNamespaceHandler2);
 
-			console.log("✅ 싱글톤 패턴이 올바르게 유지됨");
+			console.log("✅ 새로운 인스턴스가 올바르게 생성됨");
 		});
 	});
 
@@ -299,9 +275,6 @@ describe("전체 시스템 통합 테스트", () => {
 				unknownHandler,
 				queryHandler,
 				crossNamespaceHandler,
-				inferenceHandler,
-				contextDocumentsHandler,
-				performanceHandler,
 			];
 
 			handlers.forEach((handler, index) => {
@@ -326,30 +299,19 @@ describe("전체 시스템 통합 테스트", () => {
 			expect(crossNamespaceHandler.constructor.name).toBe(
 				"CrossNamespaceHandler",
 			);
-			expect(inferenceHandler.constructor.name).toBe("InferenceHandler");
-			expect(contextDocumentsHandler.constructor.name).toBe(
-				"ContextDocumentsHandler",
-			);
-			expect(performanceHandler.constructor.name).toBe(
-				"PerformanceOptimizationHandler",
-			);
+			// 사용하지 않는 핸들러들은 제거됨
 
 			console.log("✅ 단일 책임 원칙 검증 완료");
 		});
 
-		it("should validate dependency inversion principle", () => {
-			// Factory 패턴을 통한 의존성 역전 검증
-			expect(HandlerFactory.getRDFHandler).toBeDefined();
-			expect(HandlerFactory.getUnknownHandler).toBeDefined();
-			expect(HandlerFactory.getQueryHandler).toBeDefined();
-			expect(HandlerFactory.getCrossNamespaceHandler).toBeDefined();
-			expect(HandlerFactory.getInferenceHandler).toBeDefined();
-			expect(HandlerFactory.getContextDocumentsHandler).toBeDefined();
-			expect(HandlerFactory.getPerformanceOptimizationHandler).toBeDefined();
-			expect(HandlerFactory.initializeAll).toBeDefined();
-			expect(HandlerFactory.closeAll).toBeDefined();
+		it("should validate direct instantiation pattern", () => {
+			// 직접 인스턴스화 패턴 검증
+			expect(RDFHandler).toBeDefined();
+			expect(UnknownSymbolHandler).toBeDefined();
+			expect(QueryHandler).toBeDefined();
+			expect(CrossNamespaceHandler).toBeDefined();
 
-			console.log("✅ 의존성 역전 원칙 검증 완료");
+			console.log("✅ 직접 인스턴스화 패턴 검증 완료");
 		});
 	});
 

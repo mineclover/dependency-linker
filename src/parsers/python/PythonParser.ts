@@ -18,7 +18,14 @@ export class PythonParser extends BaseParser {
 
 	private createParser(): Parser {
 		const parser = new Parser();
-		parser.setLanguage(Python);
+		try {
+			parser.setLanguage(Python);
+		} catch (error) {
+			console.warn(
+				`Python parsing failed: ${error instanceof Error ? error.message : "Unknown error"}`,
+			);
+			throw error;
+		}
 		return parser;
 	}
 

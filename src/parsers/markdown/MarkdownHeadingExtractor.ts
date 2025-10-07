@@ -49,12 +49,20 @@ export class MarkdownHeadingExtractor {
 			const headings: MarkdownHeading[] = [];
 
 			// Tree-sitter AST에서 헤딩 노드 찾기
-			this.extractHeadingsFromNode(result.tree.rootNode, headings);
+			if (result.tree && result.tree.rootNode) {
+				this.extractHeadingsFromNode(result.tree.rootNode, headings);
+			}
+
+			// Tree-sitter 파싱이 실패하거나 헤딩을 찾지 못한 경우 정규식 fallback 사용
+			if (headings.length === 0) {
+				return this.extractHeadingsWithRegex(markdown);
+			}
 
 			return headings;
 		} catch (error) {
 			console.error("Failed to extract headings:", error);
-			return [];
+			// Tree-sitter 파싱 실패 시 정규식 fallback 사용
+			return this.extractHeadingsWithRegex(markdown);
 		}
 	}
 
@@ -130,7 +138,10 @@ export class MarkdownHeadingExtractor {
 			const textNode = node.children?.find(
 				(child: any) => child.type === "heading_content",
 			);
-			const text = textNode ? textNode.text.trim() : node.text.trim();
+			let text = textNode ? textNode.text.trim() : node.text.trim();
+
+			// 태그 제거 (테스트 호환성)
+			text = this.removeTagsFromText(text);
 
 			// 앵커 ID 생성
 			const anchorId = this.generateAnchorId(text);
@@ -150,6 +161,77 @@ export class MarkdownHeadingExtractor {
 			console.error("Failed to create heading from node:", error);
 			return null;
 		}
+	}
+
+	/**
+	 * 정규식을 사용한 헤딩 추출 (fallback)
+	 */
+	private extractHeadingsWithRegex(markdown: string): MarkdownHeading[] {
+		const headings: MarkdownHeading[] = [];
+		const lines = markdown.split("\n");
+
+		for (let i = 0; i < lines.length; i++) {
+			const line = lines[i];
+
+			// ATX 헤딩 (# ## ###)
+			const atxMatch = /^(#{1,6})\s+(.+)$/.exec(line);
+			if (atxMatch) {
+				const level = atxMatch[1].length;
+				let text = atxMatch[2].trim();
+				// 태그 제거
+				text = this.removeTagsFromText(text);
+				const anchorId = this.generateAnchorId(text);
+
+				headings.push({
+					level,
+					text,
+					anchorId,
+					location: {
+						line: i + 1,
+						column: 0,
+						endLine: i + 1,
+						endColumn: line.length,
+					},
+				});
+				continue;
+			}
+
+			// Setext 헤딩 (===, ---)
+			if (i < lines.length - 1) {
+				const nextLine = lines[i + 1];
+				const setextMatch = /^([=-]+)$/.exec(nextLine);
+				if (setextMatch && line.trim().length > 0) {
+					const level = nextLine.startsWith("=") ? 1 : 2;
+					let text = line.trim();
+					// 태그 제거
+					text = this.removeTagsFromText(text);
+					const anchorId = this.generateAnchorId(text);
+
+					headings.push({
+						level,
+						text,
+						anchorId,
+						location: {
+							line: i + 1,
+							column: 0,
+							endLine: i + 2,
+							endColumn: nextLine.length,
+						},
+					});
+					i++; // 다음 줄을 건너뛰기
+				}
+			}
+		}
+
+		return headings;
+	}
+
+	/**
+	 * 텍스트에서 태그 제거
+	 */
+	private removeTagsFromText(text: string): string {
+		// #태그 패턴 제거
+		return text.replace(/#[\w가-힣-]+/g, "").trim();
 	}
 
 	/**

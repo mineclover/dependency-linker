@@ -4,9 +4,13 @@
  */
 
 import Parser = require("tree-sitter");
+// @ts-ignore - tree-sitter-markdown has no type definitions
+const Markdown = require("tree-sitter-markdown");
 
 import type { SupportedLanguage } from "../../core/types";
 import { BaseParser, type ParseResult, type ParserOptions } from "../base";
+
+// MarkdownParseResult는 더 이상 사용하지 않음 - 기본 ParseResult 사용
 
 // ===== MARKDOWN TYPES =====
 
@@ -109,18 +113,52 @@ export class MarkdownParser extends BaseParser {
 	protected language: SupportedLanguage = "markdown";
 	protected fileExtensions: string[] = ["md", "markdown", "mdx"];
 	private parser: Parser;
+	private treeSitterAvailable: boolean | null = null; // 캐싱을 위한 플래그
 
 	constructor() {
 		super();
 		this.parser = new Parser();
 		// Tree-sitter 마크다운 언어 설정
+		this.initializeTreeSitter();
+	}
+
+	/**
+	 * Tree-sitter 초기화
+	 */
+	private initializeTreeSitter(): void {
 		try {
-			const markdownLanguage = require("tree-sitter-markdown");
-			this.parser.setLanguage(markdownLanguage);
-		} catch (_error) {
-			console.warn(
-				"Tree-sitter markdown language not available, using fallback parsing",
-			);
+			this.parser.setLanguage(Markdown);
+			console.log("✅ Tree-sitter markdown language initialized successfully");
+		} catch (error) {
+			// tree-sitter-markdown이 아직 완전히 안정화되지 않았으므로 fallback 사용
+			// 개발 환경에서만 경고 메시지 출력
+			if (process.env.NODE_ENV === "development") {
+				console.warn(
+					`Tree-sitter markdown language not available: ${error}. Using fallback parsing.`,
+				);
+			}
+		}
+	}
+
+	/**
+	 * Tree-sitter 파싱이 사용 가능한지 확인 (캐싱 적용)
+	 */
+	private isTreeSitterAvailable(): boolean {
+		// 이미 확인한 경우 캐시된 결과 반환
+		if (this.treeSitterAvailable !== null) {
+			return this.treeSitterAvailable;
+		}
+
+		try {
+			// 간단한 테스트 파싱으로 확인
+			const testSource = "# Test";
+			const tree = this.parser.parse(testSource);
+			this.treeSitterAvailable =
+				tree && tree.rootNode && tree.rootNode.type === "document";
+			return this.treeSitterAvailable;
+		} catch {
+			this.treeSitterAvailable = false;
+			return false;
 		}
 	}
 
@@ -140,29 +178,37 @@ export class MarkdownParser extends BaseParser {
 	): Promise<ParseResult> {
 		const startTime = Date.now();
 
-		try {
-			const tree = this.parser.parse(sourceCode);
-			const nodeCount = this.countTreeSitterNodes(tree.rootNode);
+		// Tree-sitter 사용 가능성 확인
+		if (this.isTreeSitterAvailable()) {
+			try {
+				const tree = this.parser.parse(sourceCode);
+				const nodeCount = this.countTreeSitterNodes(tree.rootNode);
 
-			return {
-				tree,
-				context: {
-					language: this.language,
-					filePath: options.filePath || "",
-					sourceCode,
+				return {
 					tree,
-				},
-				metadata: {
-					language: this.language,
-					filePath: options.filePath,
-					parseTime: Date.now() - startTime,
-					nodeCount,
-				},
-			};
-		} catch (_error) {
-			// Tree-sitter 파싱 실패 시 fallback 파싱 사용
-			return this.fallbackParse(sourceCode, options);
+					context: {
+						language: this.language,
+						filePath: options.filePath || "",
+						sourceCode,
+						tree,
+					},
+					metadata: {
+						language: this.language,
+						filePath: options.filePath,
+						parseTime: Date.now() - startTime,
+						nodeCount,
+					},
+				};
+			} catch (error) {
+				// Tree-sitter 파싱 실패 시 fallback으로 전환
+				if (process.env.NODE_ENV === "development") {
+					console.warn(`Tree-sitter parsing failed: ${error}. Using fallback.`);
+				}
+			}
 		}
+
+		// Tree-sitter 사용 불가능하거나 실패한 경우 fallback 파싱 사용
+		return this.fallbackParse(sourceCode, options);
 	}
 
 	/**
@@ -206,7 +252,21 @@ export class MarkdownParser extends BaseParser {
 		source: string,
 		filePath: string = "",
 		projectName: string = "",
-	): Promise<MarkdownParseResult> {
+	): Promise<{
+		tree: any;
+		symbols: MarkdownSymbol[];
+		links: MarkdownLink[];
+		filePath: string;
+		projectName: string;
+		errors: never[];
+		warnings: never[];
+		metadata: {
+			nodeCount: number;
+			headingCount: number;
+			linkCount: number;
+			tagCount: number;
+		};
+	}> {
 		try {
 			const parseResult = await this.parse(source);
 			const symbols = this.extractMarkdownSymbols(source);

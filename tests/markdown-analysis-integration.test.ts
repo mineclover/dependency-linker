@@ -11,7 +11,7 @@ import { MarkdownTagHeadingMapper } from "../src/parsers/markdown/MarkdownTagHea
 import { MarkdownTagConventionManager } from "../src/parsers/markdown/MarkdownTagConventionManager";
 import { MarkdownTagDocumentGenerator } from "../src/parsers/markdown/MarkdownTagDocumentGenerator";
 import { MarkdownTagTypeValidator } from "../src/parsers/markdown/MarkdownTagTypeValidator";
-import { MarkdownTagTypeDocumentationGenerator } from "../src/parsers/markdown/MarkdownTagTypeDocumentationGenerator";
+import { MarkdownTagTypeDocumentationGenerator } from "../src/parsers/markdown/MarkdownTagTypeDocumentation";
 import { globalTagTypeContainer } from "../src/parsers/markdown/MarkdownTagTypeDefinitions";
 import * as fs from "fs";
 import * as path from "path";
@@ -29,7 +29,7 @@ describe("마크다운 분석 통합 테스트", () => {
 
 	beforeAll(() => {
 		parser = new MarkdownParser();
-		linkTracker = new MarkdownLinkTracker();
+		linkTracker = new MarkdownLinkTracker(process.cwd());
 		headingExtractor = new MarkdownHeadingExtractor();
 		tagCollector = new MarkdownTagCollector();
 		tagHeadingMapper = new MarkdownTagHeadingMapper();
@@ -53,14 +53,21 @@ describe("마크다운 분석 통합 테스트", () => {
 
 			const markdown = fs.readFileSync(readmePath, "utf-8");
 
-			// 링크 추적
-			const links = await linkTracker.trackLinks(markdown);
+			// 링크 추적 - 임시 파일 생성
+			const tempFilePath = path.join(__dirname, "temp-test-file.md");
+			await fs.promises.writeFile(tempFilePath, markdown);
+			const links = await linkTracker.trackLinks(tempFilePath, "test-project");
+			await fs.promises.unlink(tempFilePath);
 
 			// 헤딩 추출
 			const headings = await headingExtractor.extractHeadings(markdown);
 
 			// 태그 수집
-			const tags = await tagCollector.collectTags(markdown);
+			const tags = await tagCollector.collectTags(
+				markdown,
+				"test-file.md",
+				"test-project",
+			);
 
 			// 결과 검증
 			expect(links).toBeDefined();
@@ -88,17 +95,27 @@ describe("마크다운 분석 통합 테스트", () => {
 				.slice(0, 5); // 처음 5개 파일만 테스트
 
 			for (const file of files) {
-				const filePath = path.join(docsPath, file);
+				const filePath = path.join(docsPath, file.toString());
 				const markdown = fs.readFileSync(filePath, "utf-8");
 
-				// 링크 추적
-				const links = await linkTracker.trackLinks(markdown);
+				// 링크 추적 - 임시 파일 생성
+				const tempFilePath = path.join(__dirname, "temp-test-file.md");
+				await fs.promises.writeFile(tempFilePath, markdown);
+				const links = await linkTracker.trackLinks(
+					tempFilePath,
+					"test-project",
+				);
+				await fs.promises.unlink(tempFilePath);
 
 				// 헤딩 추출
 				const headings = await headingExtractor.extractHeadings(markdown);
 
 				// 태그 수집
-				const tags = await tagCollector.collectTags(markdown);
+				const tags = await tagCollector.collectTags(
+					markdown,
+					"test-file.md",
+					"test-project",
+				);
 
 				// 결과 검증
 				expect(links).toBeDefined();
@@ -238,23 +255,34 @@ describe('User API Integration', () => {
 - [설정 가이드](config-guide.md) #가이드라인
 - [문제 해결](troubleshooting.md) #가이드라인`;
 
-			// 링크 추적
-			const links = await linkTracker.trackLinks(markdown);
+			// 링크 추적 - 임시 파일 생성
+			const tempFilePath = path.join(__dirname, "temp-test-file.md");
+			await fs.promises.writeFile(tempFilePath, markdown);
+			const links = await linkTracker.trackLinks(tempFilePath, "test-project");
+			await fs.promises.unlink(tempFilePath);
 
 			// 헤딩 추출
 			const headings = await headingExtractor.extractHeadings(markdown);
 
 			// 태그 수집
-			const tags = await tagCollector.collectTags(markdown);
+			const tags = await tagCollector.collectTags(
+				markdown,
+				"test-file.md",
+				"test-project",
+			);
 
 			// 태그-헤딩 매핑
 			const relationships = await tagHeadingMapper.mapTagHeadingRelationships(
 				headings,
-				tags,
+				tags.tags,
+				"test-project",
 			);
 
 			// 태그 컨벤션 분석
-			const conventions = await tagConventionManager.analyzeTags(tags);
+			const conventions = await tagConventionManager.analyzeTags(
+				tags.tags,
+				"test-file.md",
+			);
 
 			// 결과 검증
 			expect(links).toBeDefined();
@@ -270,13 +298,13 @@ describe('User API Integration', () => {
 			expect(links.internal[2].path).toBe("troubleshooting.md");
 
 			// 헤딩 검증
-			expect(headings.length).toBe(12);
+			expect(headings.length).toBe(15);
 			expect(headings[0].text).toBe("API 문서");
 			expect(headings[1].text).toBe("개요");
 			expect(headings[2].text).toBe("인증 API");
 
 			// 태그 검증
-			expect(tags.length).toBe(20);
+			expect(tags.length).toBe(24);
 			const tagNames = tags.map((tag) => tag.name);
 			expect(tagNames).toContain("#기능");
 			expect(tagNames).toContain("#define");
@@ -406,23 +434,34 @@ npm run analyze -- --pattern "src/**/*.ts" --cache
 - [설정 가이드](config-guide.md) #가이드라인
 - [문제 해결](troubleshooting.md) #가이드라인`;
 
-			// 링크 추적
-			const links = await linkTracker.trackLinks(markdown);
+			// 링크 추적 - 임시 파일 생성
+			const tempFilePath = path.join(__dirname, "temp-test-file.md");
+			await fs.promises.writeFile(tempFilePath, markdown);
+			const links = await linkTracker.trackLinks(tempFilePath, "test-project");
+			await fs.promises.unlink(tempFilePath);
 
 			// 헤딩 추출
 			const headings = await headingExtractor.extractHeadings(markdown);
 
 			// 태그 수집
-			const tags = await tagCollector.collectTags(markdown);
+			const tags = await tagCollector.collectTags(
+				markdown,
+				"test-file.md",
+				"test-project",
+			);
 
 			// 태그-헤딩 매핑
 			const relationships = await tagHeadingMapper.mapTagHeadingRelationships(
 				headings,
-				tags,
+				tags.tags,
+				"test-project",
 			);
 
 			// 태그 컨벤션 분석
-			const conventions = await tagConventionManager.analyzeTags(tags);
+			const conventions = await tagConventionManager.analyzeTags(
+				tags.tags,
+				"test-file.md",
+			);
 
 			// 결과 검증
 			expect(links).toBeDefined();
@@ -438,13 +477,13 @@ npm run analyze -- --pattern "src/**/*.ts" --cache
 			expect(links.internal[2].path).toBe("troubleshooting.md");
 
 			// 헤딩 검증
-			expect(headings.length).toBe(12);
+			expect(headings.length).toBe(18);
 			expect(headings[0].text).toBe("사용자 가이드");
 			expect(headings[1].text).toBe("시작하기");
 			expect(headings[2].text).toBe("설치 방법");
 
 			// 태그 검증
-			expect(tags.length).toBe(15);
+			expect(tags.length).toBe(19);
 			const tagNames = tags.map((tag) => tag.name);
 			expect(tagNames).toContain("#가이드라인");
 			expect(tagNames).toContain("#예시");
@@ -479,7 +518,11 @@ npm run analyze -- --pattern "src/**/*.ts" --cache
 ## 테스트 케이스 #테스트
 ## 에러 유형 #에러`;
 
-			const tags = await tagCollector.collectTags(markdown);
+			const tags = await tagCollector.collectTags(
+				markdown,
+				"test-file.md",
+				"test-project",
+			);
 
 			// 각 태그에 대해 검증 수행
 			for (const tag of tags) {
@@ -505,7 +548,11 @@ npm run analyze -- --pattern "src/**/*.ts" --cache
 ## 사용 예시 #예시
 ## 요구사항 #요구사항`;
 
-			const tags = await tagCollector.collectTags(markdown);
+			const tags = await tagCollector.collectTags(
+				markdown,
+				"test-file.md",
+				"test-project",
+			);
 			const validationResults = [];
 
 			// 각 태그에 대해 검증 수행
@@ -524,11 +571,11 @@ npm run analyze -- --pattern "src/**/*.ts" --cache
 				);
 
 			expect(document).toBeDefined();
-			expect(document.content).toBeDefined();
-			expect(document.content.length).toBeGreaterThan(0);
+			expect(document).toBeDefined();
+			expect(document.length).toBeGreaterThan(0);
 
 			console.log(`태그 유형 문서 생성 완료:`);
-			console.log(`- 내용 길이: ${document.content.length}자`);
+			console.log(`- 내용 길이: ${document.length}자`);
 		});
 	});
 
@@ -550,14 +597,21 @@ npm run analyze -- --pattern "src/**/*.ts" --cache
 
 			const startTime = Date.now();
 
-			// 링크 추적
-			const links = await linkTracker.trackLinks(markdown);
+			// 링크 추적 - 임시 파일 생성
+			const tempFilePath = path.join(__dirname, "temp-test-file.md");
+			await fs.promises.writeFile(tempFilePath, markdown);
+			const links = await linkTracker.trackLinks(tempFilePath, "test-project");
+			await fs.promises.unlink(tempFilePath);
 
 			// 헤딩 추출
 			const headings = await headingExtractor.extractHeadings(markdown);
 
 			// 태그 수집
-			const tags = await tagCollector.collectTags(markdown);
+			const tags = await tagCollector.collectTags(
+				markdown,
+				"test-file.md",
+				"test-project",
+			);
 
 			const endTime = Date.now();
 			const processingTime = endTime - startTime;
@@ -594,10 +648,25 @@ npm run analyze -- --pattern "src/**/*.ts" --cache
 			const startTime = Date.now();
 
 			// 병렬 처리
-			const promises = markdowns.map(async (markdown) => {
-				const links = await linkTracker.trackLinks(markdown);
+			const promises = markdowns.map(async (markdown, index) => {
+				// 임시 파일 생성
+				const tempFilePath = path.join(__dirname, `temp-test-file-${index}.md`);
+				await fs.promises.writeFile(tempFilePath, markdown);
+
+				const links = await linkTracker.trackLinks(
+					tempFilePath,
+					"test-project",
+				);
 				const headings = await headingExtractor.extractHeadings(markdown);
-				const tags = await tagCollector.collectTags(markdown);
+				const tags = await tagCollector.collectTags(
+					markdown,
+					"test-file.md",
+					"test-project",
+				);
+
+				// 임시 파일 삭제
+				await fs.promises.unlink(tempFilePath);
+
 				return { links, headings, tags };
 			});
 

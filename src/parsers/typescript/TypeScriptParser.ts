@@ -62,20 +62,49 @@ class ParserPool {
 	 * 각 Parser가 독립적인 Language 객체를 사용하도록 보장
 	 */
 	private initializeParsers(): void {
-		// TypeScript Parsers 초기화
-		for (let i = 0; i < this.maxPoolSize; i++) {
-			const parser = new Parser();
-			// 각 Parser에 독립적인 Language 객체 할당
-			parser.setLanguage(TypeScript.typescript);
-			this.tsParsers.push(parser);
-		}
+		try {
+			// TypeScript Parsers 초기화
+			for (let i = 0; i < this.maxPoolSize; i++) {
+				const parser = new Parser();
+				// TypeScript.typescript가 직접 Language 객체
+				const language = TypeScript.typescript;
+				if (!language) {
+					throw new Error("TypeScript.typescript not available");
+				}
 
-		// TSX Parsers 초기화
-		for (let i = 0; i < this.maxPoolSize; i++) {
-			const parser = new Parser();
-			// 각 Parser에 독립적인 Language 객체 할당
-			parser.setLanguage(TypeScript.tsx);
-			this.tsxParsers.push(parser);
+				parser.setLanguage(language);
+
+				// 언어 설정 검증
+				const setLanguage = parser.getLanguage();
+				if (!setLanguage) {
+					throw new Error("Failed to set TypeScript language on parser");
+				}
+
+				this.tsParsers.push(parser);
+			}
+
+			// TSX Parsers 초기화
+			for (let i = 0; i < this.maxPoolSize; i++) {
+				const parser = new Parser();
+				// TypeScript.tsx가 직접 Language 객체
+				const language = TypeScript.tsx;
+				if (!language) {
+					throw new Error("TypeScript.tsx not available");
+				}
+
+				parser.setLanguage(language);
+
+				// 언어 설정 검증
+				const setLanguage = parser.getLanguage();
+				if (!setLanguage) {
+					throw new Error("Failed to set TSX language on parser");
+				}
+
+				this.tsxParsers.push(parser);
+			}
+		} catch (error) {
+			console.error("Failed to initialize parsers:", error);
+			throw error;
 		}
 	}
 
@@ -110,7 +139,7 @@ class ParserPool {
 
 export class TypeScriptParser extends BaseParser {
 	protected language = "typescript" as const;
-	protected fileExtensions = ["ts", "tsx", "js", "jsx"];
+	protected fileExtensions = ["ts", "tsx"];
 
 	private parserPool: ParserPool;
 
@@ -133,6 +162,7 @@ export class TypeScriptParser extends BaseParser {
 	clearCache(): void {
 		this.parserPool.clearPool();
 	}
+
 
 	/**
 	 * 소스 코드 파싱 (Thread-Safe)

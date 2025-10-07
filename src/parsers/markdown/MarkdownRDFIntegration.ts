@@ -3,6 +3,7 @@
  * 마크다운 심볼을 RDF 형식으로 변환
  */
 
+import * as path from "node:path";
 import type { NodeType } from "../../core/RDFAddress";
 import { createRDFAddress } from "../../core/RDFAddress";
 import type { RDFSymbolExtractionResult } from "../../core/types";
@@ -90,7 +91,17 @@ export class MarkdownRDFIntegration {
 			}
 		}
 
-		// 링크 관계는 별도로 처리하지 않음 (parseResult에 links가 없음)
+		// 링크 관계 처리
+		for (const link of parseResult.links) {
+			const relationship = this.createLinkRelationship(
+				link,
+				filePath,
+				projectName,
+			);
+			if (relationship) {
+				relationships.push(relationship);
+			}
+		}
 
 		// 통계 계산
 		const statistics = this.calculateStatistics(rdfSymbols, relationships);
@@ -104,6 +115,76 @@ export class MarkdownRDFIntegration {
 			errors: [],
 			warnings: [],
 		};
+	}
+
+	/**
+	 * 링크 관계 생성
+	 */
+	private createLinkRelationship(
+		link: any,
+		filePath: string,
+		projectName: string,
+	): MarkdownRelationship | null {
+		try {
+			const sourceRDF = createRDFAddress({
+				nodeType: "Section",
+				projectName,
+				filePath,
+				symbolName: path.basename(filePath),
+			});
+
+			let targetRDF: string;
+			let relationshipType: "links_to" | "references" | "includes" | "defines";
+
+			if (link.url && link.url.startsWith("http")) {
+				// 외부 링크
+				targetRDF = link.url;
+				relationshipType = "links_to";
+			} else if (link.url && link.url.startsWith("#")) {
+				// 앵커 링크
+				targetRDF = createRDFAddress({
+					nodeType: "Heading",
+					projectName,
+					filePath,
+					symbolName: link.url.substring(1),
+				});
+				relationshipType = "references";
+			} else if (link.url) {
+				// 내부 파일 링크
+				targetRDF = createRDFAddress({
+					nodeType: "Section",
+					projectName,
+					filePath: link.url,
+					symbolName: path.basename(link.url),
+				});
+				relationshipType = "links_to";
+			} else {
+				return null;
+			}
+
+			return {
+				source: sourceRDF,
+				target: targetRDF,
+				type: relationshipType,
+				metadata: {
+					linkText: link.text || "",
+					url: link.url || "",
+					filePath:
+						link.url &&
+						!link.url.startsWith("http") &&
+						!link.url.startsWith("#")
+							? link.url
+							: undefined,
+					anchorId:
+						link.url && link.url.startsWith("#")
+							? link.url.substring(1)
+							: undefined,
+				},
+			};
+		} catch (error) {
+			console.warn(`Failed to create link relationship: ${error}`);
+			return null;
+		}
 	}
 
 	/**

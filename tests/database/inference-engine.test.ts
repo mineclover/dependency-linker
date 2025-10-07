@@ -11,7 +11,7 @@ import {
 	GraphDatabase,
 } from "../../src/database/GraphDatabase";
 import { InferenceEngine } from "../../src/database/inference/InferenceEngine";
-import { EdgeTypeRegistry } from "../../src/database/inference/EdgeTypeRegistry";
+import * as EdgeTypeRegistry from "../../src/database/inference/EdgeTypeRegistry";
 
 describe("InferenceEngine", () => {
 	let db: GraphDatabase;

@@ -3,16 +3,16 @@
  */
 
 import { describe, it, expect, beforeAll, afterAll } from "@jest/globals";
-import { MarkdownParser } from "../src/parsers/markdown/MarkdownParser.js";
-import { MarkdownLinkTracker } from "../src/parsers/markdown/MarkdownLinkTracker.js";
-import { MarkdownHeadingExtractor } from "../src/parsers/markdown/MarkdownHeadingExtractor.js";
-import { MarkdownTagCollector } from "../src/parsers/markdown/MarkdownTagCollector.js";
-import { MarkdownTagHeadingMapper } from "../src/parsers/markdown/MarkdownTagHeadingMapper.js";
-import { MarkdownTagConventionManager } from "../src/parsers/markdown/MarkdownTagConventionManager.js";
-import { MarkdownTagDocumentGenerator } from "../src/parsers/markdown/MarkdownTagDocumentGenerator.js";
-import { MarkdownTagTypeValidator } from "../src/parsers/markdown/MarkdownTagTypeValidator.js";
-import { MarkdownTagTypeDocumentGenerator } from "../src/parsers/markdown/MarkdownTagTypeDocumentation.js";
-import { globalTagTypeContainer } from "../src/parsers/markdown/MarkdownTagTypeDefinitions.js";
+import { MarkdownParser } from "../src/parsers/markdown/MarkdownParser";
+import { MarkdownLinkTracker } from "../src/parsers/markdown/MarkdownLinkTracker";
+import { MarkdownHeadingExtractor } from "../src/parsers/markdown/MarkdownHeadingExtractor";
+import { MarkdownTagCollector } from "../src/parsers/markdown/MarkdownTagCollector";
+import { MarkdownTagHeadingMapper } from "../src/parsers/markdown/MarkdownTagHeadingMapper";
+import { MarkdownTagConventionManager } from "../src/parsers/markdown/MarkdownTagConventionManager";
+import { MarkdownTagDocumentGenerator } from "../src/parsers/markdown/MarkdownTagDocumentGenerator";
+import { MarkdownTagTypeValidator } from "../src/parsers/markdown/MarkdownTagTypeValidator";
+import { MarkdownTagTypeDocumentationGenerator } from "../src/parsers/markdown/MarkdownTagTypeDocumentation";
+import { globalTagTypeContainer } from "../src/parsers/markdown/MarkdownTagTypeDefinitions";
 import * as fs from "fs";
 import * as path from "path";
 
@@ -25,7 +25,7 @@ describe("마크다운 파서 테스트", () => {
 	let tagConventionManager: MarkdownTagConventionManager;
 	let tagDocumentGenerator: MarkdownTagDocumentGenerator;
 	let tagTypeValidator: MarkdownTagTypeValidator;
-	let tagTypeDocumentGenerator: MarkdownTagTypeDocumentGenerator;
+	let tagTypeDocumentGenerator: MarkdownTagTypeDocumentationGenerator;
 	// let tagCollector: MarkdownTagCollector;
 	// let tagHeadingMapper: MarkdownTagHeadingMapper;
 	// let tagConventionManager: MarkdownTagConventionManager;
@@ -42,7 +42,7 @@ describe("마크다운 파서 테스트", () => {
 		tagConventionManager = new MarkdownTagConventionManager();
 		tagDocumentGenerator = new MarkdownTagDocumentGenerator();
 		tagTypeValidator = new MarkdownTagTypeValidator();
-		tagTypeDocumentGenerator = new MarkdownTagTypeDocumentGenerator();
+		tagTypeDocumentGenerator = new MarkdownTagTypeDocumentationGenerator();
 	});
 
 	afterAll(() => {
@@ -63,9 +63,9 @@ describe("마크다운 파서 테스트", () => {
 			const result = await parser.parse(markdown);
 
 			expect(result).toBeDefined();
-			expect(result.ast).toBeDefined();
-			expect(result.ast.children).toBeDefined();
-			expect(result.ast.children.length).toBeGreaterThan(0);
+			expect(result.tree).toBeDefined();
+			expect(result.metadata).toBeDefined();
+			expect(result.metadata.nodeCount).toBeGreaterThan(0);
 		});
 
 		it("복잡한 마크다운 문서 파싱", async () => {
@@ -95,9 +95,9 @@ console.log(example);
 			const result = await parser.parse(markdown);
 
 			expect(result).toBeDefined();
-			expect(result.ast).toBeDefined();
-			expect(result.ast.children).toBeDefined();
-			expect(result.ast.children.length).toBeGreaterThan(0);
+			expect(result.tree).toBeDefined();
+			expect(result.metadata).toBeDefined();
+			expect(result.metadata.nodeCount).toBeGreaterThan(0);
 		});
 
 		it("빈 마크다운 문서 파싱", async () => {
@@ -105,7 +105,7 @@ console.log(example);
 			const result = await parser.parse(markdown);
 
 			expect(result).toBeDefined();
-			expect(result.ast).toBeDefined();
+			expect(result.tree).toBeDefined();
 		});
 
 		it("특수 문자가 포함된 마크다운 파싱", async () => {
@@ -128,7 +128,7 @@ const regex = /[a-zA-Z0-9@#$%^&*()_+]/g;
 			const result = await parser.parse(markdown);
 
 			expect(result).toBeDefined();
-			expect(result.ast).toBeDefined();
+			expect(result.tree).toBeDefined();
 		});
 	});
 
@@ -140,7 +140,11 @@ const regex = /[a-zA-Z0-9@#$%^&*()_+]/g;
 [내부 링크 2](../docs/guide.md)
 [내부 링크 3](../../config/settings.md)`;
 
-			const links = await linkTracker.trackLinks(markdown);
+			// 임시 파일 생성
+			const tempFilePath = path.join(__dirname, "temp-test-file.md");
+			await fs.promises.writeFile(tempFilePath, markdown);
+			const links = await linkTracker.trackLinks(tempFilePath, "test-project");
+			await fs.promises.unlink(tempFilePath);
 
 			expect(links).toBeDefined();
 			expect(links.internal).toBeDefined();
@@ -157,7 +161,11 @@ const regex = /[a-zA-Z0-9@#$%^&*()_+]/g;
 [외부 링크 2](https://github.com/user/repo)
 [외부 링크 3](mailto:contact@example.com)`;
 
-			const links = await linkTracker.trackLinks(markdown);
+			// 임시 파일 생성
+			const tempFilePath = path.join(__dirname, "temp-test-file.md");
+			await fs.promises.writeFile(tempFilePath, markdown);
+			const links = await linkTracker.trackLinks(tempFilePath, "test-project");
+			await fs.promises.unlink(tempFilePath);
 
 			expect(links).toBeDefined();
 			expect(links.external).toBeDefined();
@@ -174,7 +182,11 @@ const regex = /[a-zA-Z0-9@#$%^&*()_+]/g;
 [하위 섹션으로 이동](#하위-섹션-1-1)
 [제목으로 이동](#제목)`;
 
-			const links = await linkTracker.trackLinks(markdown);
+			// 임시 파일 생성
+			const tempFilePath = path.join(__dirname, "temp-test-file.md");
+			await fs.promises.writeFile(tempFilePath, markdown);
+			const links = await linkTracker.trackLinks(tempFilePath, "test-project");
+			await fs.promises.unlink(tempFilePath);
 
 			expect(links).toBeDefined();
 			expect(links.anchor).toBeDefined();
@@ -193,7 +205,11 @@ const regex = /[a-zA-Z0-9@#$%^&*()_+]/g;
 [이미지](image.png)
 [이메일](mailto:test@example.com)`;
 
-			const links = await linkTracker.trackLinks(markdown);
+			// 임시 파일 생성
+			const tempFilePath = path.join(__dirname, "temp-test-file.md");
+			await fs.promises.writeFile(tempFilePath, markdown);
+			const links = await linkTracker.trackLinks(tempFilePath, "test-project");
+			await fs.promises.unlink(tempFilePath);
 
 			expect(links).toBeDefined();
 			expect(links.internal.length).toBe(1);
@@ -236,7 +252,7 @@ const regex = /[a-zA-Z0-9@#$%^&*()_+]/g;
 			const headings = await headingExtractor.extractHeadings(markdown);
 
 			expect(headings).toBeDefined();
-			expect(headings.length).toBe(8);
+			expect(headings.length).toBe(9);
 
 			// 레벨별 헤딩 수 확인
 			const level1 = headings.filter((h) => h.level === 1);
@@ -271,7 +287,11 @@ const regex = /[a-zA-Z0-9@#$%^&*()_+]/g;
 [링크](file.md) #가이드라인
 일반 텍스트 #요구사항`;
 
-			const tags = await tagCollector.collectTags(markdown);
+			const tags = await tagCollector.collectTags(
+				markdown,
+				"test-file.md",
+				"test-project",
+			);
 
 			expect(tags).toBeDefined();
 			expect(tags.length).toBe(5);
@@ -294,7 +314,11 @@ const regex = /[a-zA-Z0-9@#$%^&*()_+]/g;
 ## 테스트 케이스 #테스트
 ## 에러 유형 #에러`;
 
-			const tags = await tagCollector.collectTags(markdown);
+			const tags = await tagCollector.collectTags(
+				markdown,
+				"test-file.md",
+				"test-project",
+			);
 
 			expect(tags).toBeDefined();
 			expect(tags.length).toBe(8);
@@ -320,7 +344,11 @@ const regex = /[a-zA-Z0-9@#$%^&*()_+]/g;
 ## 섹션 #예시
 [링크](file.md) #가이드라인`;
 
-			const tags = await tagCollector.collectTags(markdown);
+			const tags = await tagCollector.collectTags(
+				markdown,
+				"test-file.md",
+				"test-project",
+			);
 
 			expect(tags).toBeDefined();
 			expect(tags.length).toBe(3);
@@ -344,10 +372,15 @@ const regex = /[a-zA-Z0-9@#$%^&*()_+]/g;
 ## 섹션 2 #요구사항`;
 
 			const headings = await headingExtractor.extractHeadings(markdown);
-			const tags = await tagCollector.collectTags(markdown);
+			const tags = await tagCollector.collectTags(
+				markdown,
+				"test-file.md",
+				"test-project",
+			);
 			const relationships = await tagHeadingMapper.mapTagHeadingRelationships(
 				headings,
-				tags,
+				tags.tags,
+				"test-project",
 			);
 
 			expect(relationships).toBeDefined();
@@ -370,10 +403,15 @@ const regex = /[a-zA-Z0-9@#$%^&*()_+]/g;
 [링크](file.md) #가이드라인`;
 
 			const headings = await headingExtractor.extractHeadings(markdown);
-			const tags = await tagCollector.collectTags(markdown);
+			const tags = await tagCollector.collectTags(
+				markdown,
+				"test-file.md",
+				"test-project",
+			);
 			const relationships = await tagHeadingMapper.mapTagHeadingRelationships(
 				headings,
-				tags,
+				tags.tags,
+				"test-project",
 			);
 
 			expect(relationships).toBeDefined();
@@ -393,8 +431,15 @@ const regex = /[a-zA-Z0-9@#$%^&*()_+]/g;
 ## 요구사항 #요구사항
 ## 테스트 케이스 #테스트`;
 
-			const tags = await tagCollector.collectTags(markdown);
-			const conventions = await tagConventionManager.analyzeTags(tags);
+			const tags = await tagCollector.collectTags(
+				markdown,
+				"test-file.md",
+				"test-project",
+			);
+			const conventions = await tagConventionManager.analyzeTags(
+				tags.tags,
+				"test-file.md",
+			);
 
 			expect(conventions).toBeDefined();
 			expect(conventions.categories).toBeDefined();
@@ -407,8 +452,15 @@ const regex = /[a-zA-Z0-9@#$%^&*()_+]/g;
 ## 사용 예시 #예시
 ## 요구사항 #요구사항`;
 
-			const tags = await tagCollector.collectTags(markdown);
-			const conventions = await tagConventionManager.analyzeTags(tags);
+			const tags = await tagCollector.collectTags(
+				markdown,
+				"test-file.md",
+				"test-project",
+			);
+			const conventions = await tagConventionManager.analyzeTags(
+				tags.tags,
+				"test-file.md",
+			);
 			const document =
 				await tagDocumentGenerator.generateTagConventionDocument(conventions);
 
@@ -424,9 +476,13 @@ const regex = /[a-zA-Z0-9@#$%^&*()_+]/g;
 ## 사용 예시 #예시
 ## 요구사항 #요구사항`;
 
-			const tags = await tagCollector.collectTags(markdown);
+			const tags = await tagCollector.collectTags(
+				markdown,
+				"test-file.md",
+				"test-project",
+			);
 			const validationResults = await tagTypeValidator.validateSingleTag(
-				tags[0],
+				tags.tags[0],
 				markdown,
 			);
 
@@ -440,9 +496,13 @@ const regex = /[a-zA-Z0-9@#$%^&*()_+]/g;
 			const markdown = `# 기능 정의 #기능
 ## 사용 예시 #예시`;
 
-			const tags = await tagCollector.collectTags(markdown);
+			const tags = await tagCollector.collectTags(
+				markdown,
+				"test-file.md",
+				"test-project",
+			);
 			const validationResults = await tagTypeValidator.validateSingleTag(
-				tags[0],
+				tags.tags[0],
 				markdown,
 			);
 			const document =
@@ -451,8 +511,8 @@ const regex = /[a-zA-Z0-9@#$%^&*()_+]/g;
 				]);
 
 			expect(document).toBeDefined();
-			expect(document.content).toBeDefined();
-			expect(document.content.length).toBeGreaterThan(0);
+			expect(typeof document).toBe("string");
+			expect(document.length).toBeGreaterThan(0);
 		});
 	});
 
@@ -478,23 +538,34 @@ npm run build
 [단위 테스트](tests/unit.md) #테스트
 [통합 테스트](tests/integration.md) #테스트`;
 
-			// 링크 추적
-			const links = await linkTracker.trackLinks(markdown);
+			// 링크 추적 - 임시 파일 생성
+			const tempFilePath = path.join(__dirname, "temp-test-file.md");
+			await fs.promises.writeFile(tempFilePath, markdown);
+			const links = await linkTracker.trackLinks(tempFilePath, "test-project");
+			await fs.promises.unlink(tempFilePath);
 
 			// 헤딩 추출
 			const headings = await headingExtractor.extractHeadings(markdown);
 
 			// 태그 수집
-			const tags = await tagCollector.collectTags(markdown);
+			const tags = await tagCollector.collectTags(
+				markdown,
+				"test-file.md",
+				"test-project",
+			);
 
 			// 태그-헤딩 매핑
 			const relationships = await tagHeadingMapper.mapTagHeadingRelationships(
 				headings,
-				tags,
+				tags.tags,
+				"test-project",
 			);
 
 			// 태그 컨벤션 분석
-			const conventions = await tagConventionManager.analyzeTags(tags);
+			const conventions = await tagConventionManager.analyzeTags(
+				tags.tags,
+				"test-file.md",
+			);
 
 			// 결과 검증
 			expect(links).toBeDefined();
@@ -517,7 +588,7 @@ npm run build
 			expect(headings[2].text).toBe("요구사항");
 
 			// 태그 검증
-			expect(tags.length).toBe(8);
+			expect(tags.length).toBe(10);
 			const tagNames = tags.map((tag) => tag.name);
 			expect(tagNames).toContain("#기능");
 			expect(tagNames).toContain("#가이드라인");

@@ -169,18 +169,25 @@ export class UnknownSymbolManager {
 				createdAt: new Date(),
 			};
 
-			// 데이터베이스에 관계 저장
-			await this.database.upsertRelationship({
-				fromNodeId: parseInt(unknownSymbol.id.replace(/\D/g, ""), 10) || 0,
-				toNodeId: parseInt(knownSymbol.id.replace(/\D/g, ""), 10) || 0,
-				type: "equivalence",
-				label: `${unknownSymbol.name} is equivalent to ${knownSymbol.name}`,
-				metadata: {
+			// RDF 주소 생성
+			const unknownRdfAddress = `unknown-symbols/${unknownSymbol.name}#symbol:${unknownSymbol.name}`;
+			const knownRdfAddress = `known-symbols/${knownSymbol.name}#symbol:${knownSymbol.name}`;
+
+			// RDF 주소가 존재하는지 확인하고, 없으면 생성
+			await this.ensureRDFAddressExists(unknownRdfAddress, unknownSymbol);
+			await this.ensureRDFAddressExists(knownRdfAddress, knownSymbol);
+
+			// RDF 관계 생성
+			await this.database.upsertRDFRelationship(
+				unknownRdfAddress,
+				knownRdfAddress,
+				"equivalence",
+				{
 					confidence,
 					matchType,
 					createdAt: relation.createdAt,
 				},
-			});
+			);
 
 			console.log(
 				`✅ 동등성 관계 생성: ${unknownSymbol.name} ↔ ${knownSymbol.name} (${confidence})`,
@@ -266,6 +273,44 @@ export class UnknownSymbolManager {
 		}
 
 		return Math.min(similarity, 1.0);
+	}
+
+	/**
+	 * RDF 주소가 존재하는지 확인하고, 없으면 생성
+	 */
+	private async ensureRDFAddressExists(
+		rdfAddress: string,
+		symbol: UnknownSymbol,
+	): Promise<void> {
+		try {
+			// RDF 주소가 이미 존재하는지 확인
+			const existing = await this.rdfAPI.searchByRDFAddress(rdfAddress);
+			if (existing) {
+				return; // 이미 존재하면 종료
+			}
+
+			// RDF 주소 생성
+			await this.rdfAPI.storeRDFAddress({
+				rdfAddress,
+				projectName: "unknown-symbols",
+				filePath: symbol.sourceFile,
+				nodeType: symbol.type as any,
+				symbolName: symbol.name,
+				namespace: "unknown-symbols",
+				localName: symbol.name,
+				lineNumber: symbol.metadata.lineNumber,
+				columnNumber: symbol.metadata.columnNumber,
+				accessModifier: "public",
+				isStatic: false,
+				isAsync: false,
+				isAbstract: false,
+			});
+
+			console.log(`✅ RDF 주소 생성: ${rdfAddress}`);
+		} catch (error) {
+			console.error(`❌ RDF 주소 생성 실패: ${(error as Error).message}`);
+			throw error;
+		}
 	}
 
 	/**

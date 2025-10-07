@@ -18,7 +18,14 @@ export class JavaParser extends BaseParser {
 
 	private createParser(): Parser {
 		const parser = new Parser();
-		parser.setLanguage(Java);
+		try {
+			parser.setLanguage(Java);
+		} catch (error) {
+			console.warn(
+				`Java parsing failed: ${error instanceof Error ? error.message : "Unknown error"}`,
+			);
+			throw error;
+		}
 		return parser;
 	}
 
