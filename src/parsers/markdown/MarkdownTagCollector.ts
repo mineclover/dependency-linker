@@ -32,6 +32,17 @@ export interface TagCollectionResult {
 	errors: string[];
 	/** 경고 */
 	warnings: string[];
+	/** 배열 메서드 (테스트 호환성) */
+	length: number;
+	map: <T>(callback: (tag: MarkdownTag, index: number) => T) => T[];
+	filter: (
+		callback: (tag: MarkdownTag, index: number) => boolean,
+	) => MarkdownTag[];
+	find: (
+		callback: (tag: MarkdownTag, index: number) => boolean,
+	) => MarkdownTag | undefined;
+	forEach: (callback: (tag: MarkdownTag, index: number) => void) => void;
+	[Symbol.iterator]: () => Iterator<MarkdownTag>;
 }
 
 /**
@@ -77,17 +88,41 @@ export class MarkdownTagCollector {
 			// 중복 제거
 			const uniqueTags = this.removeDuplicateTags(tags);
 
-			return {
+			// 배열 메서드를 지원하는 객체 생성
+			const result = {
 				tags: uniqueTags,
 				errors,
 				warnings,
+				length: uniqueTags.length,
+				map: <T>(callback: (tag: MarkdownTag, index: number) => T) =>
+					uniqueTags.map(callback),
+				filter: (callback: (tag: MarkdownTag, index: number) => boolean) =>
+					uniqueTags.filter(callback),
+				find: (callback: (tag: MarkdownTag, index: number) => boolean) =>
+					uniqueTags.find(callback),
+				forEach: (callback: (tag: MarkdownTag, index: number) => void) =>
+					uniqueTags.forEach(callback),
+				[Symbol.iterator]: () => uniqueTags[Symbol.iterator](),
 			};
+
+			return result;
 		} catch (error) {
 			errors.push(`Failed to collect tags: ${error}`);
+			const emptyTags: MarkdownTag[] = [];
 			return {
-				tags: [],
+				tags: emptyTags,
 				errors,
 				warnings,
+				length: 0,
+				map: <T>(callback: (tag: MarkdownTag, index: number) => T) =>
+					emptyTags.map(callback),
+				filter: (callback: (tag: MarkdownTag, index: number) => boolean) =>
+					emptyTags.filter(callback),
+				find: (callback: (tag: MarkdownTag, index: number) => boolean) =>
+					emptyTags.find(callback),
+				forEach: (callback: (tag: MarkdownTag, index: number) => void) =>
+					emptyTags.forEach(callback),
+				[Symbol.iterator]: () => emptyTags[Symbol.iterator](),
 			};
 		}
 	}

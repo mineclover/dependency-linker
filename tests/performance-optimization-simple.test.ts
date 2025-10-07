@@ -199,8 +199,6 @@ describe("Performance Optimization - Simple Test", () => {
 			batchSize: 20,
 			cacheSizeLimit: 200 * 1024 * 1024, // 200MB
 			memoryLimit: 2048 * 1024 * 1024, // 2GB
-			visualizationFormat: "svg",
-			visualizationOutput: "./output/graph.svg",
 		};
 
 		expect(configOptions.projectRoot).toBe("/path/to/project");
@@ -213,8 +211,6 @@ describe("Performance Optimization - Simple Test", () => {
 		expect(configOptions.batchSize).toBe(20);
 		expect(configOptions.cacheSizeLimit).toBe(200 * 1024 * 1024);
 		expect(configOptions.memoryLimit).toBe(2048 * 1024 * 1024);
-		expect(configOptions.visualizationFormat).toBe("svg");
-		expect(configOptions.visualizationOutput).toBe("./output/graph.svg");
 
 		console.log("✅ 설정 옵션 검증 통과");
 	});

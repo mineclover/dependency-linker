@@ -262,42 +262,6 @@ program
 	});
 
 // ============================================================================
-// 쿼리 명령어
-// ============================================================================
-
-program
-	.command("query")
-	.description("Query the dependency graph")
-	.option("-s, --sql <query>", "SQL query")
-	.option("-g, --graphql <query>", "GraphQL query")
-	.option("-n, --natural <query>", "Natural language query")
-	.option("--database <path>", "Database path")
-	.action(async (options) => {
-		const handler = new QueryHandler();
-
-		try {
-			if (options.sql) {
-				await handler.executeSQLQuery(options.sql, {});
-				console.log("✅ SQL query executed");
-			} else if (options.graphql) {
-				await handler.executeGraphQLQuery(options.graphql, {});
-				console.log("✅ GraphQL query executed");
-			} else if (options.natural) {
-				await handler.executeNaturalLanguageQuery(options.natural, {});
-				console.log("✅ Natural language query executed");
-			} else {
-				console.log(
-					"❌ Please specify a query type (--sql, --graphql, --natural)",
-				);
-				process.exit(1);
-			}
-		} catch (error) {
-			console.error("❌ Query operation failed:", error);
-			process.exit(1);
-		}
-	});
-
-// ============================================================================
 // Cross-Namespace 분석 명령어
 // ============================================================================
 

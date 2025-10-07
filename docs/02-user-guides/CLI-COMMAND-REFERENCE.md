@@ -510,8 +510,6 @@ npm run cli -- query --sql "SELECT * FROM nodes" --format table
 # 출력 파일 지정
 npm run cli -- analyze --pattern "src/**/*.ts" --output "results.json"
 
-# 시각화 출력 경로 지정
-npm run cli -- performance --visualization-output "./output/graph.svg"
 ```
 
 ## 📚 추가 리소스

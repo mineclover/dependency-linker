@@ -28,6 +28,14 @@ export interface TagHeadingMappingResult {
 	errors: string[];
 	/** 경고 */
 	warnings: string[];
+	/** 배열 메서드 (테스트 호환성) */
+	length: number;
+	filter: (
+		callback: (rel: TagHeadingRelationship, index: number) => boolean,
+	) => TagHeadingRelationship[];
+	forEach: (
+		callback: (rel: TagHeadingRelationship, index: number) => void,
+	) => void;
 }
 
 /**
@@ -59,17 +67,35 @@ export class MarkdownTagHeadingMapper {
 			// 관계 정렬 (강도 순)
 			relationships.sort((a, b) => b.strength - a.strength);
 
-			return {
+			// 배열 메서드를 지원하는 객체 생성
+			const result = {
 				relationships,
 				errors,
 				warnings,
+				length: relationships.length,
+				filter: (
+					callback: (rel: TagHeadingRelationship, index: number) => boolean,
+				) => relationships.filter(callback),
+				forEach: (
+					callback: (rel: TagHeadingRelationship, index: number) => void,
+				) => relationships.forEach(callback),
 			};
+
+			return result;
 		} catch (error) {
 			errors.push(`Failed to map tag-heading relationships: ${error}`);
+			const emptyRelationships: TagHeadingRelationship[] = [];
 			return {
-				relationships: [],
+				relationships: emptyRelationships,
 				errors,
 				warnings,
+				length: 0,
+				filter: (
+					callback: (rel: TagHeadingRelationship, index: number) => boolean,
+				) => emptyRelationships.filter(callback),
+				forEach: (
+					callback: (rel: TagHeadingRelationship, index: number) => void,
+				) => emptyRelationships.forEach(callback),
 			};
 		}
 	}

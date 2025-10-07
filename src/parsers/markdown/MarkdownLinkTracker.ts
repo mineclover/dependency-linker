@@ -33,6 +33,14 @@ export interface LinkTrackingResult {
 	externalLinks: ExternalLink[];
 	/** 앵커 링크들 */
 	anchorLinks: AnchorLink[];
+	/** 내부 링크들 (테스트 호환성) */
+	internal: InternalLink[];
+	/** 외부 링크들 (테스트 호환성) */
+	external: ExternalLink[];
+	/** 앵커 링크들 (테스트 호환성) */
+	anchor: AnchorLink[];
+	/** 이미지 링크들 (테스트 호환성) */
+	images: ImageLink[];
 	/** 통계 */
 	statistics: LinkStatistics;
 }
@@ -72,17 +80,49 @@ export interface ExternalLink {
 }
 
 /**
+ * 내부 링크 정보
+ */
+export interface InternalLink {
+	/** 링크 텍스트 */
+	text: string;
+	/** 파일 경로 */
+	path: string;
+	/** 소스 파일 */
+	sourceFile: string;
+	/** 라인 번호 */
+	line: number;
+	/** 유효성 */
+	isValid: boolean;
+}
+
+/**
  * 앵커 링크 정보
  */
 export interface AnchorLink {
 	/** 링크 텍스트 */
 	text: string;
 	/** 앵커 ID */
-	anchorId: string;
+	anchor: string;
 	/** 소스 파일 */
 	sourceFile: string;
 	/** 타겟 파일 */
 	targetFile: string;
+	/** 라인 번호 */
+	line: number;
+	/** 유효성 */
+	isValid: boolean;
+}
+
+/**
+ * 이미지 링크 정보
+ */
+export interface ImageLink {
+	/** 이미지 텍스트 */
+	alt: string;
+	/** 이미지 URL */
+	src: string;
+	/** 소스 파일 */
+	sourceFile: string;
 	/** 라인 번호 */
 	line: number;
 	/** 유효성 */
@@ -171,6 +211,18 @@ export class MarkdownLinkTracker {
 				anchorLinks,
 			);
 
+			// 내부 링크 추출 (테스트 호환성)
+			const internal: InternalLink[] = this.extractInternalLinks(
+				rdfResult.relationships,
+				filePath,
+			);
+
+			// 이미지 링크 추출 (테스트 호환성)
+			const images: ImageLink[] = this.extractImageLinks(
+				rdfResult.relationships,
+				filePath,
+			);
+
 			return {
 				sourceFile: filePath,
 				targetFiles: this.extractTargetFiles(rdfResult.relationships),
@@ -178,6 +230,10 @@ export class MarkdownLinkTracker {
 				brokenLinks,
 				externalLinks,
 				anchorLinks,
+				internal,
+				external: externalLinks,
+				anchor: anchorLinks,
+				images,
 				statistics,
 			};
 		} catch (error) {
@@ -240,7 +296,7 @@ export class MarkdownLinkTracker {
 			);
 			anchorLinks.push({
 				text: metadata.linkText || "",
-				anchorId: metadata.anchorId,
+				anchor: metadata.anchorId || "",
 				sourceFile,
 				targetFile: sourceFile,
 				line: 0, // TODO: 실제 라인 번호 추출
@@ -350,5 +406,41 @@ export class MarkdownLinkTracker {
 			validLinks,
 			validityRatio,
 		};
+	}
+
+	/**
+	 * 내부 링크 추출 (테스트 호환성)
+	 */
+	private extractInternalLinks(
+		relationships: MarkdownRelationship[],
+		sourceFile: string,
+	): InternalLink[] {
+		return relationships
+			.filter((rel) => rel.type === "links_to")
+			.map((rel, index) => ({
+				text: rel.metadata.linkText || "",
+				path: rel.target,
+				sourceFile,
+				line: index + 1,
+				isValid: true,
+			}));
+	}
+
+	/**
+	 * 이미지 링크 추출 (테스트 호환성)
+	 */
+	private extractImageLinks(
+		relationships: MarkdownRelationship[],
+		sourceFile: string,
+	): ImageLink[] {
+		return relationships
+			.filter((rel) => rel.type === "includes")
+			.map((rel, index) => ({
+				alt: rel.metadata.linkText || "",
+				src: rel.target,
+				sourceFile,
+				line: index + 1,
+				isValid: true,
+			}));
 	}
 }

@@ -39,10 +39,6 @@ export interface OptimizedAnalysisOptions {
 	cacheSizeLimit?: number;
 	/** 메모리 제한 (바이트) */
 	memoryLimit?: number;
-	/** 시각화 출력 형식 */
-	visualizationFormat?: "svg" | "html" | "json" | "dot";
-	/** 시각화 출력 경로 */
-	visualizationOutput?: string;
 }
 
 export interface OptimizedAnalysisResult {
@@ -111,8 +107,6 @@ export class OptimizedGraphAnalysis {
 			batchSize: options.batchSize || 10,
 			cacheSizeLimit: options.cacheSizeLimit || 100 * 1024 * 1024, // 100MB
 			memoryLimit: options.memoryLimit || 1024 * 1024 * 1024, // 1GB
-			visualizationFormat: options.visualizationFormat || "svg",
-			visualizationOutput: options.visualizationOutput || "./output/graph.svg",
 		};
 
 		// 데이터베이스 초기화
@@ -150,7 +144,7 @@ export class OptimizedGraphAnalysis {
 		// 시각화기 초기화
 		if (this.options.enableVisualization) {
 			this.visualizer = new DependencyGraphVisualizer({
-				format: this.options.visualizationFormat,
+				format: "json",
 				performance: {
 					maxNodes: 1000,
 					maxEdges: 5000,
@@ -374,12 +368,12 @@ export class OptimizedGraphAnalysis {
 		try {
 			const result = await this.visualizer.visualizeFromDatabase(
 				this.database,
-				this.options.visualizationOutput,
+				"./output/analysis.json",
 			);
 
 			return {
 				format: result.format,
-				outputPath: this.options.visualizationOutput,
+				outputPath: "./output/analysis.json",
 				fileSize: result.metadata.fileSize,
 				nodeCount: result.metadata.nodeCount,
 				edgeCount: result.metadata.edgeCount,

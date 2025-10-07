@@ -14,8 +14,6 @@ export interface PerformanceOptimizationHandlerOptions {
 	batchSize?: number;
 	cacheSizeLimit?: number;
 	memoryLimit?: number;
-	visualizationFormat?: "svg" | "html" | "json" | "dot";
-	visualizationOutput?: string;
 }
 
 export class PerformanceOptimizationHandler {
@@ -37,8 +35,6 @@ export class PerformanceOptimizationHandler {
 			batchSize: options.batchSize || 10,
 			cacheSizeLimit: options.cacheSizeLimit || 100 * 1024 * 1024, // 100MB
 			memoryLimit: options.memoryLimit || 1024 * 1024 * 1024, // 1GB
-			visualizationFormat: options.visualizationFormat || "svg",
-			visualizationOutput: options.visualizationOutput || "./output/graph.svg",
 		};
 
 		this.optimizedAnalysis = new OptimizedGraphAnalysis({
@@ -50,8 +46,6 @@ export class PerformanceOptimizationHandler {
 			batchSize: this.options.batchSize,
 			cacheSizeLimit: this.options.cacheSizeLimit,
 			memoryLimit: this.options.memoryLimit,
-			visualizationFormat: this.options.visualizationFormat,
-			visualizationOutput: this.options.visualizationOutput,
 		});
 
 		this.cache = new AdvancedCache({
@@ -470,8 +464,6 @@ export class PerformanceOptimizationHandler {
 			console.log(
 				`  - 메모리 제한: ${Math.round(this.options.memoryLimit / 1024 / 1024)}MB`,
 			);
-			console.log(`  - 시각화 형식: ${this.options.visualizationFormat}`);
-			console.log(`  - 시각화 출력: ${this.options.visualizationOutput}`);
 
 			// 현재 성능 상태
 			const memUsage = process.memoryUsage();
