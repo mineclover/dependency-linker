@@ -1243,13 +1243,13 @@ export class GraphDatabase {
 		const { includeSimilar = false, includeByProperty } = options;
 
 		// Dynamic import to avoid circular dependency
-		const { EdgeTypeRegistry } = await import("./inference/EdgeTypeRegistry");
+		const EdgeTypeRegistry = await import("./inference/EdgeTypeRegistry");
 		const relatedTypes = new Set<string>([edgeType]);
 
 		// 유사한 타입들 수집 (이름 기반)
 		if (includeSimilar) {
 			const allTypes = EdgeTypeRegistry.getAll();
-			allTypes.forEach((type) => {
+			allTypes.forEach((type: any) => {
 				if (type.type.includes(edgeType) || edgeType.includes(type.type)) {
 					relatedTypes.add(type.type);
 				}
@@ -1262,7 +1262,7 @@ export class GraphDatabase {
 				includeByProperty as keyof import("./inference/EdgeTypeRegistry").EdgeTypeDefinition,
 				true,
 			);
-			propertyTypes.forEach((type) => {
+			propertyTypes.forEach((type: any) => {
 				relatedTypes.add(type.type);
 			});
 		}
@@ -1473,7 +1473,7 @@ export class GraphDatabase {
 		// InferenceEngine을 사용하여 캐시 동기화
 		// Note: EdgeTypeRegistry가 초기화되어 있어야 함
 		const { InferenceEngine } = await import("./inference/InferenceEngine");
-		const { EdgeTypeRegistry } = await import("./inference/EdgeTypeRegistry");
+		const EdgeTypeRegistry = await import("./inference/EdgeTypeRegistry");
 
 		// EdgeTypeRegistry가 비어있으면 캐시 동기화를 건너뜀
 		const allTypes = EdgeTypeRegistry.getAll();

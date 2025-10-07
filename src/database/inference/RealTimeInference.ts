@@ -62,7 +62,6 @@ export interface RealTimeInferenceStats {
  * 실시간 추론 시스템
  */
 export class RealTimeInferenceSystem extends EventEmitter {
-	private database: GraphDatabase;
 	private customRuleEngine: CustomInferenceRuleEngine;
 	private config: Required<RealTimeInferenceConfig>;
 	private changeDetectionTimer?: NodeJS.Timeout;
@@ -77,7 +76,6 @@ export class RealTimeInferenceSystem extends EventEmitter {
 		config?: Partial<RealTimeInferenceConfig>,
 	) {
 		super();
-		this.database = database;
 		this.customRuleEngine = new CustomInferenceRuleEngine(database);
 
 		this.config = {

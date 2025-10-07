@@ -4,7 +4,7 @@
  */
 
 import type { GraphDatabase } from "../GraphDatabase";
-import { EdgeTypeRegistry } from "./EdgeTypeRegistry";
+import * as EdgeTypeRegistry from "./EdgeTypeRegistry";
 import type { InferredRelationship } from "./InferenceTypes";
 import { InferenceLRUCache } from "./LRUCache";
 

@@ -10,7 +10,7 @@
 export type { EdgeTypeDefinition } from "./EdgeTypeRegistry";
 
 // Edge type management
-export { EdgeTypeRegistry } from "./EdgeTypeRegistry";
+export * as EdgeTypeRegistry from "./EdgeTypeRegistry";
 export type {
 	EquivalenceInferenceResult,
 	EquivalenceRule,

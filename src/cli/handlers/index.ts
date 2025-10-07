@@ -38,143 +38,139 @@ export {
 export { UnknownSymbolHandler } from "./unknown-handler";
 
 // Handler Factory for dependency injection
-export class HandlerFactory {
-	private static rdfHandler: RDFHandler | null = null;
-	private static unknownHandler: UnknownSymbolHandler | null = null;
-	private static queryHandler: QueryHandler | null = null;
-	private static crossNamespaceHandler: CrossNamespaceHandler | null = null;
-	private static inferenceHandler: InferenceHandler | null = null;
-	private static contextDocumentsHandler: ContextDocumentsHandler | null = null;
-	private static performanceOptimizationHandler: PerformanceOptimizationHandler | null =
-		null;
+let rdfHandler: RDFHandler | null = null;
+let unknownHandler: UnknownSymbolHandler | null = null;
+let queryHandler: QueryHandler | null = null;
+let crossNamespaceHandler: CrossNamespaceHandler | null = null;
+let inferenceHandler: InferenceHandler | null = null;
+let contextDocumentsHandler: ContextDocumentsHandler | null = null;
+let performanceOptimizationHandler: PerformanceOptimizationHandler | null =
+	null;
 
-	/**
-	 * RDF Handler 싱글톤 인스턴스 반환
-	 */
-	static getRDFHandler(): RDFHandler {
-		if (!HandlerFactory.rdfHandler) {
-			HandlerFactory.rdfHandler = new RDFHandler();
-		}
-		return HandlerFactory.rdfHandler;
+/**
+ * RDF Handler 싱글톤 인스턴스 반환
+ */
+export function getRDFHandler(): RDFHandler {
+	if (!rdfHandler) {
+		rdfHandler = new RDFHandler();
+	}
+	return rdfHandler;
+}
+
+/**
+ * Unknown Symbol Handler 싱글톤 인스턴스 반환
+ */
+export function getUnknownHandler(): UnknownSymbolHandler {
+	if (!unknownHandler) {
+		unknownHandler = new UnknownSymbolHandler();
+	}
+	return unknownHandler;
+}
+
+/**
+ * Query Handler 싱글톤 인스턴스 반환
+ */
+export function getQueryHandler(): QueryHandler {
+	if (!queryHandler) {
+		queryHandler = new QueryHandler();
+	}
+	return queryHandler;
+}
+
+/**
+ * Cross-Namespace Handler 싱글톤 인스턴스 반환
+ */
+export function getCrossNamespaceHandler(): CrossNamespaceHandler {
+	if (!crossNamespaceHandler) {
+		crossNamespaceHandler = new CrossNamespaceHandler();
+	}
+	return crossNamespaceHandler;
+}
+
+/**
+ * Inference Handler 싱글톤 인스턴스 반환
+ */
+export function getInferenceHandler(): InferenceHandler {
+	if (!inferenceHandler) {
+		inferenceHandler = new InferenceHandler();
+	}
+	return inferenceHandler;
+}
+
+/**
+ * Context Documents Handler 싱글톤 인스턴스 반환
+ */
+export function getContextDocumentsHandler(): ContextDocumentsHandler {
+	if (!contextDocumentsHandler) {
+		contextDocumentsHandler = new ContextDocumentsHandler();
+	}
+	return contextDocumentsHandler;
+}
+
+/**
+ * Performance Optimization Handler 싱글톤 인스턴스 반환
+ */
+export function getPerformanceOptimizationHandler(): PerformanceOptimizationHandler {
+	if (!performanceOptimizationHandler) {
+		performanceOptimizationHandler = new PerformanceOptimizationHandler();
+	}
+	return performanceOptimizationHandler;
+}
+
+/**
+ * 모든 핸들러 초기화
+ */
+export async function initializeAllHandlers(): Promise<void> {
+	const unknownHandler = getUnknownHandler();
+	const queryHandler = getQueryHandler();
+	const crossNamespaceHandler = getCrossNamespaceHandler();
+	const inferenceHandler = getInferenceHandler();
+	const contextDocumentsHandler = getContextDocumentsHandler();
+	const performanceOptimizationHandler = getPerformanceOptimizationHandler();
+
+	await unknownHandler.initialize();
+	await queryHandler.initialize();
+	await crossNamespaceHandler.initialize();
+	await inferenceHandler.initialize();
+	await contextDocumentsHandler.initialize();
+	await performanceOptimizationHandler.initialize();
+
+	console.log("✅ 모든 CLI 핸들러 초기화 완료");
+}
+
+/**
+ * 모든 핸들러 종료
+ */
+export async function closeAllHandlers(): Promise<void> {
+	if (unknownHandler) {
+		await unknownHandler.close();
+		unknownHandler = null;
 	}
 
-	/**
-	 * Unknown Symbol Handler 싱글톤 인스턴스 반환
-	 */
-	static getUnknownHandler(): UnknownSymbolHandler {
-		if (!HandlerFactory.unknownHandler) {
-			HandlerFactory.unknownHandler = new UnknownSymbolHandler();
-		}
-		return HandlerFactory.unknownHandler;
+	if (queryHandler) {
+		await queryHandler.close();
+		queryHandler = null;
 	}
 
-	/**
-	 * Query Handler 싱글톤 인스턴스 반환
-	 */
-	static getQueryHandler(): QueryHandler {
-		if (!HandlerFactory.queryHandler) {
-			HandlerFactory.queryHandler = new QueryHandler();
-		}
-		return HandlerFactory.queryHandler;
+	if (crossNamespaceHandler) {
+		await crossNamespaceHandler.close();
+		crossNamespaceHandler = null;
 	}
 
-	/**
-	 * Cross-Namespace Handler 싱글톤 인스턴스 반환
-	 */
-	static getCrossNamespaceHandler(): CrossNamespaceHandler {
-		if (!HandlerFactory.crossNamespaceHandler) {
-			HandlerFactory.crossNamespaceHandler = new CrossNamespaceHandler();
-		}
-		return HandlerFactory.crossNamespaceHandler;
+	if (inferenceHandler) {
+		await inferenceHandler.close();
+		inferenceHandler = null;
 	}
 
-	/**
-	 * Inference Handler 싱글톤 인스턴스 반환
-	 */
-	static getInferenceHandler(): InferenceHandler {
-		if (!HandlerFactory.inferenceHandler) {
-			HandlerFactory.inferenceHandler = new InferenceHandler();
-		}
-		return HandlerFactory.inferenceHandler;
+	if (contextDocumentsHandler) {
+		await contextDocumentsHandler.close();
+		contextDocumentsHandler = null;
 	}
 
-	/**
-	 * Context Documents Handler 싱글톤 인스턴스 반환
-	 */
-	static getContextDocumentsHandler(): ContextDocumentsHandler {
-		if (!HandlerFactory.contextDocumentsHandler) {
-			HandlerFactory.contextDocumentsHandler = new ContextDocumentsHandler();
-		}
-		return HandlerFactory.contextDocumentsHandler;
+	if (performanceOptimizationHandler) {
+		await performanceOptimizationHandler.close();
+		performanceOptimizationHandler = null;
 	}
 
-	/**
-	 * Performance Optimization Handler 싱글톤 인스턴스 반환
-	 */
-	static getPerformanceOptimizationHandler(): PerformanceOptimizationHandler {
-		if (!HandlerFactory.performanceOptimizationHandler) {
-			HandlerFactory.performanceOptimizationHandler =
-				new PerformanceOptimizationHandler();
-		}
-		return HandlerFactory.performanceOptimizationHandler;
-	}
-
-	/**
-	 * 모든 핸들러 초기화
-	 */
-	static async initializeAll(): Promise<void> {
-		const unknownHandler = HandlerFactory.getUnknownHandler();
-		const queryHandler = HandlerFactory.getQueryHandler();
-		const crossNamespaceHandler = HandlerFactory.getCrossNamespaceHandler();
-		const inferenceHandler = HandlerFactory.getInferenceHandler();
-		const contextDocumentsHandler = HandlerFactory.getContextDocumentsHandler();
-		const performanceOptimizationHandler =
-			HandlerFactory.getPerformanceOptimizationHandler();
-
-		await unknownHandler.initialize();
-		await queryHandler.initialize();
-		await crossNamespaceHandler.initialize();
-		await inferenceHandler.initialize();
-		await contextDocumentsHandler.initialize();
-		await performanceOptimizationHandler.initialize();
-
-		console.log("✅ 모든 CLI 핸들러 초기화 완료");
-	}
-
-	/**
-	 * 모든 핸들러 종료
-	 */
-	static async closeAll(): Promise<void> {
-		if (HandlerFactory.unknownHandler) {
-			await HandlerFactory.unknownHandler.close();
-			HandlerFactory.unknownHandler = null;
-		}
-
-		if (HandlerFactory.queryHandler) {
-			await HandlerFactory.queryHandler.close();
-			HandlerFactory.queryHandler = null;
-		}
-
-		if (HandlerFactory.crossNamespaceHandler) {
-			await HandlerFactory.crossNamespaceHandler.close();
-			HandlerFactory.crossNamespaceHandler = null;
-		}
-
-		if (HandlerFactory.inferenceHandler) {
-			await HandlerFactory.inferenceHandler.close();
-			HandlerFactory.inferenceHandler = null;
-		}
-
-		if (HandlerFactory.contextDocumentsHandler) {
-			await HandlerFactory.contextDocumentsHandler.close();
-			HandlerFactory.contextDocumentsHandler = null;
-		}
-
-		if (HandlerFactory.performanceOptimizationHandler) {
-			await HandlerFactory.performanceOptimizationHandler.close();
-			HandlerFactory.performanceOptimizationHandler = null;
-		}
-
-		console.log("✅ 모든 CLI 핸들러 종료 완료");
-	}
+	console.log("✅ 모든 CLI 핸들러 종료 완료");
 }

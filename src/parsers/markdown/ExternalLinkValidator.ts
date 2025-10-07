@@ -46,10 +46,12 @@ export class ExternalLinkValidator {
 	async validateLink(url: string): Promise<LinkValidationResult> {
 		// 캐시 확인
 		if (this.options.cache && this.cache.has(url)) {
-			const cached = this.cache.get(url)!;
-			// 24시간 이내 캐시된 결과는 재사용
-			if (Date.now() - cached.lastChecked.getTime() < 24 * 60 * 60 * 1000) {
-				return cached;
+			const cached = this.cache.get(url);
+			if (cached) {
+				// 24시간 이내 캐시된 결과는 재사용
+				if (Date.now() - cached.lastChecked.getTime() < 24 * 60 * 60 * 1000) {
+					return cached;
+				}
 			}
 		}
 
@@ -131,7 +133,7 @@ export class ExternalLinkValidator {
 					clearTimeout(timeout);
 
 					const responseTime = Date.now() - startTime;
-					const statusCode = response.statusCode!;
+					const statusCode = response.statusCode || 0;
 
 					// 리다이렉트 처리
 					if (statusCode >= 300 && statusCode < 400) {

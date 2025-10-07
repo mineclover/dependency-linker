@@ -152,7 +152,6 @@ export async function markdownResultToGraph(
 
 	const {
 		baseDir = process.cwd(),
-		sessionId,
 		skipExternalUrls = true,
 		createMissingNodes = true,
 		metadata = {},
@@ -436,7 +435,7 @@ export async function queryMarkdownDependencies(
 
 	// Fetch all nodes to build a map
 	const allNodes = await db.findNodes({});
-	const nodeMap = new Map(allNodes.map((n) => [n.id!, n]));
+	const nodeMap = new Map(allNodes.map((n) => [n.id || 0, n]));
 
 	// Build result
 	return sourceRelationships.map((rel) => {

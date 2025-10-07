@@ -241,17 +241,17 @@ export class MarkdownParser extends BaseParser {
 
 		// 헤딩 추출
 		const headingRegex = /^(#{1,6})\s+(.+)$/gm;
-		let match;
-		while ((match = headingRegex.exec(source)) !== null) {
+		const headingMatches = source.matchAll(headingRegex);
+		for (const match of headingMatches) {
 			const level = match[1].length;
 			const text = match[2].trim();
 			symbols.push({
 				type: "heading",
 				name: text,
 				location: {
-					line: source.substring(0, match.index).split("\n").length,
+					line: source.substring(0, match.index || 0).split("\n").length,
 					column: 0,
-					endLine: source.substring(0, match.index).split("\n").length,
+					endLine: source.substring(0, match.index || 0).split("\n").length,
 					endColumn: match[0].length,
 				},
 				metadata: {
@@ -263,16 +263,17 @@ export class MarkdownParser extends BaseParser {
 
 		// 링크 추출
 		const linkRegex = /\[([^\]]+)\]\(([^)]+)\)/g;
-		while ((match = linkRegex.exec(source)) !== null) {
+		const linkMatches = source.matchAll(linkRegex);
+		for (const match of linkMatches) {
 			const text = match[1];
 			const url = match[2];
 			symbols.push({
 				type: "link",
 				name: text,
 				location: {
-					line: source.substring(0, match.index).split("\n").length,
+					line: source.substring(0, match.index || 0).split("\n").length,
 					column: 0,
-					endLine: source.substring(0, match.index).split("\n").length,
+					endLine: source.substring(0, match.index || 0).split("\n").length,
 					endColumn: match[0].length,
 				},
 				metadata: {
@@ -284,15 +285,16 @@ export class MarkdownParser extends BaseParser {
 
 		// 태그 추출
 		const tagRegex = /#[\w가-힣]+/g;
-		while ((match = tagRegex.exec(source)) !== null) {
+		const tagMatches = source.matchAll(tagRegex);
+		for (const match of tagMatches) {
 			const tag = match[0];
 			symbols.push({
 				type: "tag",
 				name: tag,
 				location: {
-					line: source.substring(0, match.index).split("\n").length,
+					line: source.substring(0, match.index || 0).split("\n").length,
 					column: 0,
-					endLine: source.substring(0, match.index).split("\n").length,
+					endLine: source.substring(0, match.index || 0).split("\n").length,
 					endColumn: match[0].length,
 				},
 				metadata: {
@@ -312,8 +314,8 @@ export class MarkdownParser extends BaseParser {
 
 		// 링크 추출
 		const linkRegex = /\[([^\]]+)\]\(([^)]+)\)/g;
-		let match;
-		while ((match = linkRegex.exec(source)) !== null) {
+		const linkMatches = source.matchAll(linkRegex);
+		for (const match of linkMatches) {
 			const text = match[1];
 			const url = match[2];
 			const linkType = this.determineLinkType(url);
@@ -326,7 +328,7 @@ export class MarkdownParser extends BaseParser {
 					linkType === "internal" ? this.extractInternalPath(url) : undefined,
 				anchorId: linkType === "anchor" ? this.extractAnchorId(url) : undefined,
 				location: {
-					line: source.substring(0, match.index).split("\n").length,
+					line: source.substring(0, match.index || 0).split("\n").length,
 					column: 0,
 				},
 			});

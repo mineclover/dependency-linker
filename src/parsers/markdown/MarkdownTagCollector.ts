@@ -222,7 +222,7 @@ export class MarkdownTagCollector {
 			if (!tagMatch) return null;
 
 			const tagName = tagMatch[0];
-			const startIndex = match.index!;
+			const startIndex = match.index || 0;
 			const endIndex = startIndex + fullMatch.length;
 
 			// 위치 정보 계산

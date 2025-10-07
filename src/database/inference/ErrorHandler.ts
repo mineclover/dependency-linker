@@ -84,126 +84,128 @@ export type ErrorCode = (typeof ERROR_CODES)[keyof typeof ERROR_CODES];
 /**
  * 표준화된 에러 핸들러
  */
-export class ErrorHandler {
-	/**
-	 * 에러를 처리하고 적절한 DependencyLinkerError로 변환
-	 */
-	static handle(error: unknown, context: string, code?: ErrorCode): never {
-		// 이미 DependencyLinkerError인 경우
-		if (error instanceof DependencyLinkerError) {
-			throw error;
-		}
+/**
+ * 에러를 처리하고 적절한 DependencyLinkerError로 변환
+ */
+export function handleError(
+	error: unknown,
+	context: string,
+	code?: ErrorCode,
+): never {
+	// 이미 DependencyLinkerError인 경우
+	if (error instanceof DependencyLinkerError) {
+		throw error;
+	}
 
-		// Error 객체인 경우
-		if (error instanceof Error) {
-			throw new DependencyLinkerError(
-				`Operation failed in ${context}: ${error.message}`,
-				code || ERROR_CODES.OPERATION_FAILED,
-				{
-					originalError: error.message,
-					context,
-					stack: error.stack,
-				},
-			);
-		}
-
-		// 알 수 없는 에러 타입
+	// Error 객체인 경우
+	if (error instanceof Error) {
 		throw new DependencyLinkerError(
-			`Unknown error in ${context}: ${String(error)}`,
-			code || ERROR_CODES.UNKNOWN_ERROR,
+			`Operation failed in ${context}: ${error.message}`,
+			code || ERROR_CODES.OPERATION_FAILED,
 			{
-				originalError: error,
+				originalError: error.message,
 				context,
-				errorType: typeof error,
+				stack: error.stack,
 			},
 		);
 	}
 
-	/**
-	 * 비동기 작업을 안전하게 실행
-	 */
-	static async safeExecute<T>(
-		operation: () => Promise<T>,
-		context: string,
-		code?: ErrorCode,
-	): Promise<T> {
+	// 알 수 없는 에러 타입
+	throw new DependencyLinkerError(
+		`Unknown error in ${context}: ${String(error)}`,
+		code || ERROR_CODES.UNKNOWN_ERROR,
+		{
+			originalError: error,
+			context,
+			errorType: typeof error,
+		},
+	);
+}
+
+/**
+ * 비동기 작업을 안전하게 실행
+ */
+export async function safeExecute<T>(
+	operation: () => Promise<T>,
+	context: string,
+	code?: ErrorCode,
+): Promise<T> {
+	try {
+		return await operation();
+	} catch (error) {
+		handleError(error, context, code);
+	}
+}
+
+/**
+ * 동기 작업을 안전하게 실행
+ */
+export function safeExecuteSync<T>(
+	operation: () => T,
+	context: string,
+	code?: ErrorCode,
+): T {
+	try {
+		return operation();
+	} catch (error) {
+		handleError(error, context, code);
+	}
+}
+
+/**
+ * 에러 로깅
+ */
+export function logError(
+	error: DependencyLinkerError,
+	additionalContext?: Record<string, any>,
+): void {
+	const logData = {
+		...error.toJSON(),
+		additionalContext,
+		severity: "error",
+	};
+
+	// 콘솔 로깅 (개발 환경)
+	if (process.env.NODE_ENV === "development") {
+		console.error("🚨 DependencyLinker Error:", logData);
+	}
+
+	// TODO: 실제 로깅 시스템과 연동
+	// Logger.error(logData);
+}
+
+/**
+ * 에러 복구 시도
+ */
+export async function retryOperation<T>(
+	operation: () => Promise<T>,
+	context: string,
+	maxRetries: number = 3,
+	delay: number = 1000,
+): Promise<T> {
+	let lastError: Error;
+
+	for (let attempt = 1; attempt <= maxRetries; attempt++) {
 		try {
 			return await operation();
 		} catch (error) {
-			ErrorHandler.handle(error, context, code);
-		}
-	}
+			lastError = error as Error;
 
-	/**
-	 * 동기 작업을 안전하게 실행
-	 */
-	static safeExecuteSync<T>(
-		operation: () => T,
-		context: string,
-		code?: ErrorCode,
-	): T {
-		try {
-			return operation();
-		} catch (error) {
-			ErrorHandler.handle(error, context, code);
-		}
-	}
-
-	/**
-	 * 에러 로깅
-	 */
-	static logError(
-		error: DependencyLinkerError,
-		additionalContext?: Record<string, any>,
-	): void {
-		const logData = {
-			...error.toJSON(),
-			additionalContext,
-			severity: "error",
-		};
-
-		// 콘솔 로깅 (개발 환경)
-		if (process.env.NODE_ENV === "development") {
-			console.error("🚨 DependencyLinker Error:", logData);
-		}
-
-		// TODO: 실제 로깅 시스템과 연동
-		// Logger.error(logData);
-	}
-
-	/**
-	 * 에러 복구 시도
-	 */
-	static async retry<T>(
-		operation: () => Promise<T>,
-		context: string,
-		maxRetries: number = 3,
-		delay: number = 1000,
-	): Promise<T> {
-		let lastError: Error;
-
-		for (let attempt = 1; attempt <= maxRetries; attempt++) {
-			try {
-				return await operation();
-			} catch (error) {
-				lastError = error as Error;
-
-				if (attempt === maxRetries) {
-					ErrorHandler.handle(lastError, context);
-				}
-
-				// 지연 후 재시도
-				await new Promise((resolve) => setTimeout(resolve, delay * attempt));
+			if (attempt === maxRetries) {
+				handleError(lastError, context);
 			}
-		}
 
-		// 이 지점에 도달하면 안 됨 (TypeScript 타입 안전성)
-		throw new DependencyLinkerError(
-			"Retry logic failed",
-			ERROR_CODES.OPERATION_FAILED,
-			{ context, maxRetries },
-		);
+			// 지연 후 재시도
+			await new Promise((resolve) => setTimeout(resolve, delay * attempt));
+		}
 	}
+
+	// 이 지점에 도달하면 안 됨 (TypeScript 타입 안전성)
+	throw new DependencyLinkerError(
+		"Retry logic failed",
+		ERROR_CODES.OPERATION_FAILED,
+		{ context, maxRetries },
+	);
 }
 
 /**

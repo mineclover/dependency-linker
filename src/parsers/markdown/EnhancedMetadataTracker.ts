@@ -97,8 +97,8 @@ export class EnhancedMetadataTracker {
 
 		// 캐시 확인
 		if (this.options.useCache && this.metadataCache.has(filePath)) {
-			const cached = this.metadataCache.get(filePath)!;
-			if (this.shouldUseCachedMetadata(cached)) {
+			const cached = this.metadataCache.get(filePath);
+			if (cached && this.shouldUseCachedMetadata(cached)) {
 				return cached;
 			}
 		}

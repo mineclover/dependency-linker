@@ -264,7 +264,7 @@ export class PerformanceMonitor {
 /**
  * 성능 측정 데코레이터
  */
-export function measurePerformance(
+export function measurePerformanceDecorator(
 	name: string,
 	metadata?: Record<string, any>,
 ) {
@@ -299,48 +299,43 @@ export function measurePerformance(
 }
 
 /**
- * 성능 측정 헬퍼
+ * 성능 측정 헬퍼 함수들
  */
-export class PerformanceHelper {
-	private static monitor = new PerformanceMonitor();
+const monitor = new PerformanceMonitor();
 
-	/**
-	 * 함수 실행 시간 측정
-	 */
-	static async measure<T>(
-		name: string,
-		fn: () => Promise<T>,
-		metadata?: Record<string, any>,
-	): Promise<{ result: T; measurement: PerformanceMeasurement }> {
-		const measurementId = PerformanceHelper.monitor.startMeasurement(
-			name,
-			metadata,
-		);
-		const result = await fn();
-		const measurement = PerformanceHelper.monitor.endMeasurement(measurementId);
+/**
+ * 함수 실행 시간 측정
+ */
+export async function measurePerformance<T>(
+	name: string,
+	fn: () => Promise<T>,
+	metadata?: Record<string, any>,
+): Promise<{ result: T; measurement: PerformanceMeasurement }> {
+	const measurementId = monitor.startMeasurement(name, metadata);
+	const result = await fn();
+	const measurement = monitor.endMeasurement(measurementId);
 
-		if (!measurement) {
-			throw new Error(`Failed to end measurement: ${measurementId}`);
-		}
-
-		return { result, measurement };
+	if (!measurement) {
+		throw new Error(`Failed to end measurement: ${measurementId}`);
 	}
 
-	/**
-	 * 벤치마크 실행
-	 */
-	static async benchmark<T>(
-		name: string,
-		fn: () => Promise<T>,
-		iterations: number = 10,
-	): Promise<PerformanceBenchmark> {
-		return await PerformanceHelper.monitor.runBenchmark(name, fn, iterations);
-	}
+	return { result, measurement };
+}
 
-	/**
-	 * 리포트 생성
-	 */
-	static generateReport(): PerformanceReport {
-		return PerformanceHelper.monitor.generateReport();
-	}
+/**
+ * 벤치마크 실행
+ */
+export async function runBenchmark<T>(
+	name: string,
+	fn: () => Promise<T>,
+	iterations: number = 10,
+): Promise<PerformanceBenchmark> {
+	return await monitor.runBenchmark(name, fn, iterations);
+}
+
+/**
+ * 리포트 생성
+ */
+export function generatePerformanceReport(): PerformanceReport {
+	return monitor.generateReport();
 }

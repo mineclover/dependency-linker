@@ -368,7 +368,10 @@ export class EdgeTypeManager {
 	}
 
 	private buildHierarchyNode(type: string): EdgeTypeHierarchyNode {
-		const edgeType = this.edgeTypes.get(type)!;
+		const edgeType = this.edgeTypes.get(type);
+		if (!edgeType) {
+			throw new Error(`Edge type '${type}' not found`);
+		}
 		const children = Array.from(this.edgeTypes.values())
 			.filter((et) => et.parentType === type)
 			.map((et) => this.buildHierarchyNode(et.type));
@@ -486,7 +489,8 @@ export class EdgeTypeManager {
 		const stack = [parentType];
 
 		while (stack.length > 0) {
-			const current = stack.pop()!;
+			const current = stack.pop();
+			if (!current) break;
 
 			if (visited.has(current)) {
 				continue;

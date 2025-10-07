@@ -124,8 +124,8 @@ export class MarkdownTagConventionManager {
 				});
 			}
 
-			const category = categoryMap.get(categoryName)!;
-			if (!category.tags.includes(tag.name)) {
+			const category = categoryMap.get(categoryName);
+			if (category && !category.tags.includes(tag.name)) {
 				category.tags.push(tag.name);
 			}
 		}
@@ -153,8 +153,10 @@ export class MarkdownTagConventionManager {
 				});
 			}
 
-			const priority = priorityMap.get(tagName)!;
-			priority.frequency++;
+			const priority = priorityMap.get(tagName);
+			if (priority) {
+				priority.frequency++;
+			}
 		}
 
 		return Array.from(priorityMap.values()).sort(

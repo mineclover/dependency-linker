@@ -10,7 +10,7 @@ import type {
 	GraphNode,
 	GraphRelationship,
 } from "../GraphDatabase";
-import { EdgeTypeRegistry } from "../inference/EdgeTypeRegistry";
+import * as EdgeTypeRegistry from "../inference/EdgeTypeRegistry";
 import {
 	generateFileIdentifier,
 	generateLibraryIdentifier,
@@ -393,7 +393,7 @@ export class FileDependencyAnalyzer {
 		let missingLink: MissingLink | undefined;
 		if (!found) {
 			const sourceLanguage = this.detectLanguageFromPath(sourceFile);
-			const expectedExtensions = DependencyAnalysisHelpers.inferFileExtension(
+			const expectedExtensions = inferFileExtension(
 				importSource.source,
 				sourceLanguage,
 			);
@@ -699,7 +699,7 @@ export class FileDependencyAnalyzer {
 
 		// 언어별 확장자 추론
 		const sourceLanguage = language || this.detectLanguageFromPath(sourceFile);
-		const preferredExtensions = DependencyAnalysisHelpers.inferFileExtension(
+		const preferredExtensions = inferFileExtension(
 			relativePath,
 			sourceLanguage,
 		);
@@ -973,8 +973,11 @@ export class FileDependencyAnalyzer {
 		}
 
 		const sourceNode = nodes[0];
+		if (!sourceNode.id) {
+			throw new Error("Source node ID is required");
+		}
 		const dependencies = await this.database.findNodeDependencies(
-			sourceNode.id!,
+			sourceNode.id,
 			["imports_file", "imports_library"],
 		);
 
@@ -1021,110 +1024,107 @@ export interface DependencyTree {
 }
 
 /**
- * 의존성 분석 헬퍼 함수들
+ * Import 소스에서 파일 확장자 추론
  */
-export class DependencyAnalysisHelpers {
-	/**
-	 * Import 소스에서 파일 확장자 추론
-	 */
-	static inferFileExtension(
-		_importPath: string,
-		sourceLanguage: SupportedLanguage,
-	): string[] {
-		const extensions: Record<SupportedLanguage, string[]> = {
-			typescript: [".ts", ".d.ts"],
-			tsx: [".tsx"],
-			javascript: [".js", ".mjs"],
-			jsx: [".jsx"],
-			go: [".go"],
-			java: [".java"],
-			python: [".py"],
-			markdown: [".md", ".markdown", ".mdx"],
-			external: [],
-			unknown: [],
-		};
+export function inferFileExtension(
+	_importPath: string,
+	sourceLanguage: SupportedLanguage,
+): string[] {
+	const extensions: Record<SupportedLanguage, string[]> = {
+		typescript: [".ts", ".d.ts"],
+		tsx: [".tsx"],
+		javascript: [".js", ".mjs"],
+		jsx: [".jsx"],
+		go: [".go"],
+		java: [".java"],
+		python: [".py"],
+		markdown: [".md", ".markdown", ".mdx"],
+		external: [],
+		unknown: [],
+	};
 
-		return extensions[sourceLanguage] || [".ts"];
+	return extensions[sourceLanguage] || [".ts"];
+}
+
+/**
+ * 라이브러리 vs 상대경로 판별
+ */
+export function categorizeImport(importPath: string): ImportSource["type"] {
+	if (importPath.startsWith("./") || importPath.startsWith("../")) {
+		return "relative";
 	}
-
-	/**
-	 * 라이브러리 vs 상대경로 판별
-	 */
-	static categorizeImport(importPath: string): ImportSource["type"] {
-		if (importPath.startsWith("./") || importPath.startsWith("../")) {
-			return "relative";
-		}
-		if (importPath.startsWith("@/") || importPath.startsWith("~/")) {
-			return "absolute";
-		}
-		if (
-			importPath.startsWith("node:") ||
-			["fs", "path", "os", "crypto"].includes(importPath)
-		) {
-			return "builtin";
-		}
-		return "library";
+	if (importPath.startsWith("@/") || importPath.startsWith("~/")) {
+		return "absolute";
 	}
+	if (
+		importPath.startsWith("node:") ||
+		["fs", "path", "os", "crypto"].includes(importPath)
+	) {
+		return "builtin";
+	}
+	return "library";
+}
 
-	/**
-	 * Import 구문 파싱 (간단한 예제)
-	 */
-	static parseImportStatement(importStatement: string): ImportSource | null {
-		// import { a, b as c } from './module'
-		// import * as name from 'library'
-		// import defaultName from './module'
+/**
+ * Import 구문 파싱 (간단한 예제)
+ */
+export function parseImportStatement(
+	importStatement: string,
+): ImportSource | null {
+	// import { a, b as c } from './module'
+	// import * as name from 'library'
+	// import defaultName from './module'
 
-		const importRegex = /import\s+(?:(.+?)\s+from\s+)?['"]([^'"]+)['"]/;
-		const match = importStatement.match(importRegex);
+	const importRegex = /import\s+(?:(.+?)\s+from\s+)?['"]([^'"]+)['"]/;
+	const match = importStatement.match(importRegex);
 
-		if (!match) return null;
+	if (!match) return null;
 
-		const [, importClause, source] = match;
-		const imports: ImportItem[] = [];
+	const [, importClause, source] = match;
+	const imports: ImportItem[] = [];
 
-		if (importClause) {
-			// 간단한 파싱 로직 (실제로는 더 복잡함)
-			if (importClause.includes("{")) {
-				// Named imports
-				const namedImports = importClause.match(/\{([^}]+)\}/)?.[1];
-				if (namedImports) {
-					namedImports.split(",").forEach((item) => {
-						const [name, alias] = item.trim().split(" as ");
-						imports.push({
-							name: name.trim(),
-							alias: alias?.trim(),
-							isDefault: false,
-							isNamespace: false,
-						});
-					});
-				}
-			} else if (importClause.includes("* as ")) {
-				// Namespace import
-				const alias = importClause.match(/\*\s+as\s+(\w+)/)?.[1];
-				if (alias) {
+	if (importClause) {
+		// 간단한 파싱 로직 (실제로는 더 복잡함)
+		if (importClause.includes("{")) {
+			// Named imports
+			const namedImports = importClause.match(/\{([^}]+)\}/)?.[1];
+			if (namedImports) {
+				namedImports.split(",").forEach((item) => {
+					const [name, alias] = item.trim().split(" as ");
 					imports.push({
-						name: "*",
-						alias,
+						name: name.trim(),
+						alias: alias?.trim(),
 						isDefault: false,
-						isNamespace: true,
+						isNamespace: false,
 					});
-				}
-			} else {
-				// Default import
-				imports.push({
-					name: "default",
-					alias: importClause.trim(),
-					isDefault: true,
-					isNamespace: false,
 				});
 			}
+		} else if (importClause.includes("* as ")) {
+			// Namespace import
+			const alias = importClause.match(/\*\s+as\s+(\w+)/)?.[1];
+			if (alias) {
+				imports.push({
+					name: "*",
+					alias,
+					isDefault: false,
+					isNamespace: true,
+				});
+			}
+		} else {
+			// Default import
+			imports.push({
+				name: "default",
+				alias: importClause.trim(),
+				isDefault: true,
+				isNamespace: false,
+			});
 		}
-
-		return {
-			type: DependencyAnalysisHelpers.categorizeImport(source),
-			source,
-			imports,
-			location: { line: 0, column: 0 }, // 실제로는 AST에서 추출
-		};
 	}
+
+	return {
+		type: categorizeImport(source),
+		source,
+		imports,
+		location: { line: 0, column: 0 }, // 실제로는 AST에서 추출
+	};
 }

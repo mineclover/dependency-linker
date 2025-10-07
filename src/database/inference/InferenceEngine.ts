@@ -7,8 +7,8 @@
 
 import type { GraphDatabase } from "../GraphDatabase";
 import { ConfigValidators, PERFORMANCE_CONSTANTS } from "./Constants";
-import { EdgeTypeRegistry } from "./EdgeTypeRegistry";
-import { ERROR_CODES, ErrorHandler } from "./ErrorHandler";
+import * as EdgeTypeRegistry from "./EdgeTypeRegistry";
+import { ERROR_CODES, handleError, safeExecute } from "./ErrorHandler";
 import type {
 	HierarchicalQueryOptions,
 	InferenceEngineConfig,
@@ -59,11 +59,7 @@ export class InferenceEngine {
 		edgeType: string,
 		options: HierarchicalQueryOptions = {},
 	): Promise<InferredRelationship[]> {
-		const {
-			includeChildren = true,
-			includeParents = false,
-			maxDepth = this.config.defaultMaxHierarchyDepth,
-		} = options;
+		const { includeChildren = true, includeParents = false } = options;
 
 		const _startTime = Date.now();
 		const inferences: InferredRelationship[] = [];
@@ -110,7 +106,7 @@ export class InferenceEngine {
 				toNodeId: rel.toNodeId,
 				type: edgeType, // 요청된 타입으로 정규화
 				path: {
-					edgeIds: [rel.id!],
+					edgeIds: [rel.id || 0],
 					depth,
 					inferenceType,
 					description: `${rel.type} → ${edgeType}`,
@@ -144,7 +140,7 @@ export class InferenceEngine {
 		// Edge type이 transitive인지 확인
 		const edgeTypeDef = EdgeTypeRegistry.get(edgeType);
 		if (!edgeTypeDef?.isTransitive) {
-			ErrorHandler.handle(
+			handleError(
 				new Error(`Edge type '${edgeType}' is not transitive`),
 				"queryTransitive",
 				ERROR_CODES.EDGE_TYPE_NOT_TRANSITIVE,
@@ -200,7 +196,7 @@ export class InferenceEngine {
       ORDER BY depth, from_node, to_node
     `;
 
-		return ErrorHandler.safeExecute(
+		return safeExecute(
 			() =>
 				new Promise<InferredRelationship[]>((resolve, reject) => {
 					(this.database as any).db?.all(

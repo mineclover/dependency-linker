@@ -9,10 +9,7 @@ import {
 	type TagTypeContainer,
 	type TagTypeDefinition,
 } from "./MarkdownTagTypeDefinitions";
-import {
-	MarkdownTagTypeValidator,
-	type TagValidationResult,
-} from "./MarkdownTagTypeValidator";
+import type { TagValidationResult } from "./MarkdownTagTypeValidator";
 
 // ===== DOCUMENTATION TYPES =====
 
@@ -53,11 +50,9 @@ export interface TagTypeDocumentation {
  */
 export class MarkdownTagTypeDocumentationGenerator {
 	private tagTypeContainer: TagTypeContainer;
-	private tagTypeValidator: MarkdownTagTypeValidator;
 
 	constructor() {
 		this.tagTypeContainer = globalTagTypeContainer;
-		this.tagTypeValidator = new MarkdownTagTypeValidator();
 	}
 
 	/**

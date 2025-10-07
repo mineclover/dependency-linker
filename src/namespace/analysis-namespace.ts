@@ -146,7 +146,10 @@ export class AnalysisNamespaceManager {
 			try {
 				const configContent = fs.readFileSync(this.configPath, "utf-8");
 				this.projectConfig = JSON.parse(configContent);
-				return this.projectConfig!;
+				if (!this.projectConfig) {
+					throw new Error("Failed to parse project config");
+				}
+				return this.projectConfig;
 			} catch (error) {
 				console.warn(
 					`⚠️  Failed to load config from ${this.configPath}:`,
@@ -302,7 +305,9 @@ export class AnalysisNamespaceManager {
 		const excludedFiles = new Set<string>();
 		for (const pattern of namespace.patterns.exclude) {
 			const matchedFiles = await glob(pattern);
-			matchedFiles.forEach((file) => excludedFiles.add(file));
+			matchedFiles.forEach((file) => {
+				excludedFiles.add(file);
+			});
 		}
 
 		return files.filter((file) => !excludedFiles.has(file));

@@ -16,7 +16,7 @@ import {
 } from "../../api/robust-analysis.js";
 import { analyzeFileWithSimpleGraph } from "../../api/simple-graph-analysis";
 import { analyzeSingleFileFixed } from "../../api/single-file-analysis-fixed";
-import { PerformanceHelper } from "../../core/PerformanceMonitor.js";
+import { runBenchmark } from "../../core/PerformanceMonitor.js";
 
 /**
  * TypeScript 파일 분석 실행
@@ -269,17 +269,14 @@ export async function runTypeScriptPerformanceBenchmark(
 		console.log("Running performance benchmarks...");
 
 		// 벤치마크 실행
-		const benchmark = await PerformanceHelper.benchmark(
-			`typescript-${name}`,
-			async () => {
-				// TypeScript 분석 시뮬레이션
-				const { analyzeFilesRobust } = await import(
-					"../../api/robust-analysis.js"
-				);
-				const files = ["src/**/*.ts", "src/**/*.tsx"];
-				await analyzeFilesRobust(files, "typescript");
-			},
-		);
+		const benchmark = await runBenchmark(`typescript-${name}`, async () => {
+			// TypeScript 분석 시뮬레이션
+			const { analyzeFilesRobust } = await import(
+				"../../api/robust-analysis.js"
+			);
+			const files = ["src/**/*.ts", "src/**/*.tsx"];
+			await analyzeFilesRobust(files, "typescript");
+		});
 
 		console.log("=".repeat(50));
 		console.log(`📊 TypeScript Performance Benchmark Results:`);

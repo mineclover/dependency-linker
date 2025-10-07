@@ -36,7 +36,8 @@ export class PackageJsonResolver {
 	async getPackageInfo(libraryName: string): Promise<PackageInfo | null> {
 		// 캐시에서 먼저 확인
 		if (this.nodeModulesCache.has(libraryName)) {
-			return this.nodeModulesCache.get(libraryName)!;
+			const cached = this.nodeModulesCache.get(libraryName);
+			if (cached) return cached;
 		}
 
 		// package.json에서 버전 정보 조회
@@ -159,7 +160,8 @@ export class PackageJsonResolver {
 
 		// 캐시에서 확인
 		if (this.packageJsonCache.has(packageJsonPath)) {
-			return this.packageJsonCache.get(packageJsonPath)!;
+			const cached = this.packageJsonCache.get(packageJsonPath);
+			if (cached) return cached;
 		}
 
 		try {

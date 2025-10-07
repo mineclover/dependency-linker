@@ -45,7 +45,6 @@ export class MarkdownTagDocumentGenerator {
 			title = "Tag Convention Document",
 			description = "마크다운 태그 컨벤션 문서",
 			sections = ["overview", "categories", "priorities", "definitions"],
-			format = "markdown",
 			includeMetadata = true,
 		} = options;
 
