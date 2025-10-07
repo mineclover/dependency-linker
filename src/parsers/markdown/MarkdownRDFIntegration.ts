@@ -154,66 +154,6 @@ export class MarkdownRDFIntegration {
 	}
 
 	/**
-	 * 링크 관계 생성
-	 */
-	private createLinkRelationship(
-		link: any,
-		projectName: string,
-		filePath: string,
-	): MarkdownRelationship | null {
-		try {
-			// 소스 RDF 주소 (현재 파일)
-			const sourceRdfAddress = createRDFAddress({
-				projectName,
-				filePath,
-				nodeType: "Class" as any,
-				symbolName: "document",
-			});
-
-			// 타겟 RDF 주소 생성
-			let targetRdfAddress: string;
-			let relationshipType: "links_to" | "references" | "includes" | "defines";
-
-			if (link.type === "internal" && link.targetPath) {
-				// 내부 파일 링크
-				targetRdfAddress = createRDFAddress({
-					projectName,
-					filePath: link.targetPath,
-					nodeType: "Class" as any,
-					symbolName: "document",
-				});
-				relationshipType = "links_to";
-			} else if (link.type === "anchor" && link.anchorId) {
-				// 앵커 링크 (같은 파일 내)
-				targetRdfAddress = createRDFAddress({
-					projectName,
-					filePath,
-					nodeType: "Class" as any,
-					symbolName: link.anchorId,
-				});
-				relationshipType = "references";
-			} else {
-				// 외부 링크는 관계 생성하지 않음
-				return null;
-			}
-
-			return {
-				source: sourceRdfAddress,
-				target: targetRdfAddress,
-				type: relationshipType,
-				metadata: {
-					linkText: link.text,
-					anchorId: link.anchorId,
-					filePath: link.targetPath,
-					url: link.url,
-				},
-			};
-		} catch (_error) {
-			return null;
-		}
-	}
-
-	/**
 	 * 마크다운 타입을 NodeType으로 매핑
 	 */
 	private mapMarkdownTypeToNodeType(markdownType: string): NodeType {

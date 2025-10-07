@@ -190,7 +190,7 @@ export class OptimizedGraphAnalysis {
 
 			// 시각화 생성
 			let visualization: any;
-			
+
 			if (this.options.enableVisualization) {
 				visualization = await this.generateVisualization();
 			}
@@ -328,19 +328,22 @@ export class OptimizedGraphAnalysis {
 		// import 소스 추출
 		const importSources: ImportSource[] = [];
 		const importRegex = /import\s+.*?\s+from\s+['"](.+?)['"]/g;
-		let match: RegExpExecArray | null;
-		
-		while ((match = importRegex.exec(content)) !== null) {
-			importSources.push({
-				type: match[1].startsWith(".")
-					? "relative"
-					: match[1].startsWith("/")
-						? "absolute"
-						: "library",
-				source: match[1],
-				imports: [],
-				location: { line: 0, column: 0 },
-			});
+
+		// 모든 매치를 한 번에 찾기
+		const matches = content.matchAll(importRegex);
+		for (const match of matches) {
+			if (match[1]) {
+				importSources.push({
+					type: match[1].startsWith(".")
+						? "relative"
+						: match[1].startsWith("/")
+							? "absolute"
+							: "library",
+					source: match[1],
+					imports: [],
+					location: { line: 0, column: 0 },
+				});
+			}
 		}
 
 		await analyzer.analyzeFile(filePath, language, importSources);

@@ -11,11 +11,6 @@ import {
 	runMarkdownAnalysis,
 	runLinkTracking,
 	runHeadingExtraction,
-	runTagCollection,
-	runTagHeadingMapping,
-	runTagDocumentGeneration,
-	runTagTypeValidation,
-	runTagTypeDocumentGeneration,
 } from "./handlers/markdown-handler.js";
 import {
 	runTypeScriptAnalysis,
@@ -23,7 +18,6 @@ import {
 	runTypeScriptPerformanceBenchmark,
 } from "./handlers/typescript-handler.js";
 import {
-	RDFHandler,
 	UnknownSymbolHandler,
 	QueryHandler,
 	CrossNamespaceHandler,
@@ -32,7 +26,6 @@ import {
 	PerformanceOptimizationHandler,
 } from "./handlers/index.js";
 import { RDFFileHandler } from "./handlers/rdf-file-handler.js";
-import { NamespaceOptimizer } from "./namespace-optimizer.js";
 import { createRDFAddress, validateRDFAddress } from "../core/RDFAddress.js";
 
 // ============================================================================
@@ -122,8 +115,6 @@ program
 	.option("-v, --validate <address>", "Validate RDF address")
 	.option("--stats", "RDF statistics")
 	.action(async (options) => {
-		const handler = new RDFHandler();
-
 		try {
 			if (options.create) {
 				if (
@@ -527,8 +518,6 @@ program
 	.option("-s, --stats", "Namespace statistics")
 	.option("--database <path>", "Database path")
 	.action(async (options) => {
-		const optimizer = new NamespaceOptimizer();
-
 		try {
 			if (options.analyze) {
 				console.log("✅ Namespace analysis completed");
