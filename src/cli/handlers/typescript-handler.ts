@@ -127,9 +127,9 @@ export async function runTypeScriptAnalysis(
 
 		// 출력 파일 저장
 		if (options.output) {
-			const outputPath = require("path").resolve(options.output);
-			const outputDir = require("path").dirname(outputPath);
-			const fs = require("fs");
+			const outputPath = require("node:path").resolve(options.output);
+			const outputDir = require("node:path").dirname(outputPath);
+			const fs = require("node:fs");
 
 			if (!fs.existsSync(outputDir)) {
 				fs.mkdirSync(outputDir, { recursive: true });
@@ -195,9 +195,9 @@ export async function runTypeScriptProjectAnalysis(
 
 			const _config = {
 				...DEFAULT_PERFORMANCE_CONFIG,
-				maxConcurrency: parseInt(options.maxConcurrency || "4"),
-				batchSize: parseInt(options.batchSize || "10"),
-				memoryLimit: parseInt(options.memoryLimit || "1024") * 1024 * 1024,
+				maxConcurrency: parseInt(options.maxConcurrency || "4", 10),
+				batchSize: parseInt(options.batchSize || "10", 10),
+				memoryLimit: parseInt(options.memoryLimit || "1024", 10) * 1024 * 1024,
 			};
 
 			const results = await analyzeFilesWithPerformance(files, "typescript");
@@ -226,9 +226,9 @@ export async function runTypeScriptProjectAnalysis(
 
 		// 출력 파일 저장
 		if (options.output) {
-			const outputPath = require("path").resolve(options.output);
-			const outputDir = require("path").dirname(outputPath);
-			const fs = require("fs");
+			const outputPath = require("node:path").resolve(options.output);
+			const outputDir = require("node:path").dirname(outputPath);
+			const fs = require("node:fs");
 
 			if (!fs.existsSync(outputDir)) {
 				fs.mkdirSync(outputDir, { recursive: true });

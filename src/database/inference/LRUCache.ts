@@ -82,7 +82,8 @@ export class LRUCache<T> {
 
 		// If key exists, update it
 		if (this.cache.has(key)) {
-			const entry = this.cache.get(key)!;
+			const entry = this.cache.get(key);
+			if (!entry) return;
 			entry.value = value;
 			entry.lastAccessed = now;
 			entry.accessCount++;
@@ -221,7 +222,9 @@ export class LRUCache<T> {
 			}
 		}
 
-		expiredKeys.forEach((key) => this.delete(key));
+		expiredKeys.forEach((key) => {
+			this.delete(key);
+		});
 	}
 
 	/**
@@ -321,7 +324,9 @@ export class InferenceLRUCache extends LRUCache<{
 			}
 		}
 
-		keysToDelete.forEach((key) => this.delete(key));
+		keysToDelete.forEach((key) => {
+			this.delete(key);
+		});
 	}
 
 	/**
@@ -338,7 +343,9 @@ export class InferenceLRUCache extends LRUCache<{
 			}
 		}
 
-		keysToDelete.forEach((key) => this.delete(key));
+		keysToDelete.forEach((key) => {
+			this.delete(key);
+		});
 	}
 
 	/**

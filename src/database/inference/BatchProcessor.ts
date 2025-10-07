@@ -6,7 +6,6 @@
  */
 
 import { PERFORMANCE_CONSTANTS, TypeGuards } from "./Constants";
-import { ERROR_CODES, ErrorHandler } from "./ErrorHandler";
 
 /**
  * 배치 처리 옵션
@@ -223,8 +222,8 @@ export class BatchProcessor<T, R> {
 	 */
 	private async processWithRetry<T>(
 		operation: () => Promise<T>,
-		item: any,
-		index: number,
+		_item: any,
+		_index: number,
 	): Promise<T> {
 		let lastError: Error;
 
@@ -244,7 +243,7 @@ export class BatchProcessor<T, R> {
 		}
 
 		// 이 지점에 도달하면 안 됨
-		throw lastError!;
+		throw lastError || new Error("Unknown error occurred");
 	}
 
 	/**

@@ -13,7 +13,6 @@ import type {
 	MarkdownDependency,
 	MarkdownDependencyType,
 	MarkdownExtractionResult,
-	MarkdownLocation,
 } from "./markdown-types";
 import {
 	extractFrontMatter,
@@ -91,11 +90,10 @@ function extractHeadings(content: string): Array<{
 			// Extract semantic tags from heading text (English only)
 			const tags: string[] = [];
 			MARKDOWN_PATTERNS.SEMANTIC_TAG.lastIndex = 0;
-			let tagMatch: RegExpExecArray | null;
+			let _tagMatch: RegExpExecArray | null;
 
-			while (
-				(tagMatch = MARKDOWN_PATTERNS.SEMANTIC_TAG.exec(fullText)) !== null
-			) {
+			const tagMatches = fullText.matchAll(MARKDOWN_PATTERNS.SEMANTIC_TAG);
+			for (const tagMatch of tagMatches) {
 				tags.push(tagMatch[1]);
 			}
 
@@ -327,8 +325,8 @@ function extractHashtags(
 		// Reset regex
 		MARKDOWN_PATTERNS.HASHTAG.lastIndex = 0;
 
-		let match: RegExpExecArray | null;
-		while ((match = MARKDOWN_PATTERNS.HASHTAG.exec(line)) !== null) {
+		const matches = line.matchAll(MARKDOWN_PATTERNS.HASHTAG);
+		for (const match of matches) {
 			const tag = match[1];
 			const tagKey = `${lineNum}:${tag}`; // Make unique per line to avoid duplicates
 
@@ -354,7 +352,7 @@ function extractHashtags(
  * Generic pattern extraction helper
  */
 function extractPattern(
-	filePath: string,
+	_filePath: string,
 	lines: string[],
 	pattern: RegExp,
 	createDependency: (
@@ -372,8 +370,8 @@ function extractPattern(
 		// Reset regex
 		pattern.lastIndex = 0;
 
-		let match: RegExpExecArray | null;
-		while ((match = pattern.exec(line)) !== null) {
+		const matches = line.matchAll(pattern);
+		for (const match of matches) {
 			const dep = createDependency(match, lineNum, match.index);
 			if (dep) {
 				// Add context (the full line)

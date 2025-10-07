@@ -176,7 +176,7 @@ export class NamespaceGraphDB {
 	/**
 	 * Get namespace dependency statistics
 	 */
-	async getNamespaceStats(namespace: string): Promise<{
+	async getNamespaceStats(_namespace: string): Promise<{
 		nodes: number;
 		edges: number;
 		files: string[];
@@ -242,7 +242,7 @@ export class NamespaceGraphDB {
 	 * Find circular dependencies in namespace
 	 */
 	async findNamespaceCircularDependencies(
-		namespace: string,
+		_namespace: string,
 	): Promise<string[][]> {
 		// Get circular dependencies from the database
 		const cycles = await this.db.findCircularDependencies();

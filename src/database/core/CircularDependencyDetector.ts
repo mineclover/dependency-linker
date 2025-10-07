@@ -170,7 +170,7 @@ export class CircularDependencyDetector {
 			nodes: combinedNodes,
 			edges: combinedEdges,
 			depth: combinedNodes.length,
-			weight: combinedEdges.reduce((sum, edge) => sum + 1, 0), // 단순 카운트
+			weight: combinedEdges.reduce((sum, _edge) => sum + 1, 0), // 단순 카운트
 		};
 	}
 
@@ -357,7 +357,9 @@ export class CircularDependencyDetector {
 		}> = [{ node: start, path: [start], edges: [] }];
 
 		while (queue.length > 0) {
-			const { node, path, edges } = queue.shift()!;
+			const item = queue.shift();
+			if (!item) continue;
+			const { node, path, edges } = item;
 
 			if (node === target) {
 				return { nodes: path, edges };

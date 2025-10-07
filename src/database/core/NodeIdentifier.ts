@@ -6,7 +6,6 @@
  * 예시: dependency-linker/src/parser.ts#Method:TypeScriptParser.parse
  */
 
-import { createHash } from "node:crypto";
 import type { SupportedLanguage } from "../../core/types";
 
 export interface NodeContext {
@@ -98,8 +97,8 @@ export class NodeIdentifier {
 		type: NodeType,
 		name: string,
 		context: NodeContext,
-		location?: NodeLocation,
-		metadata?: NodeMetadata,
+		_location?: NodeLocation,
+		_metadata?: NodeMetadata,
 	): string {
 		const normalizedContext = this.normalizeContext(context);
 		const { sourceFile } = normalizedContext;
@@ -179,7 +178,7 @@ export class NodeIdentifier {
 					projectName: projectName,
 				},
 			};
-		} catch (error) {
+		} catch (_error) {
 			return null;
 		}
 	}
@@ -248,7 +247,7 @@ export class NodeIdentifier {
 				symbolName: symbolName,
 				raw: address,
 			};
-		} catch (error) {
+		} catch (_error) {
 			return null;
 		}
 	}
@@ -293,7 +292,7 @@ export class NodeIdentifier {
 			}
 
 			return true;
-		} catch (error) {
+		} catch (_error) {
 			return false;
 		}
 	}

@@ -62,8 +62,8 @@ export class MarkdownTagCollector {
 	 */
 	async collectTags(
 		markdown: string,
-		filePath: string,
-		projectName: string,
+		_filePath: string,
+		_projectName: string,
 	): Promise<TagCollectionResult> {
 		const tags: MarkdownTag[] = [];
 		const errors: string[] = [];
@@ -272,7 +272,7 @@ export class MarkdownTagCollector {
 	 */
 	private calculatePriority(
 		tagName: string,
-		type: MarkdownTag["type"],
+		_type: MarkdownTag["type"],
 	): number {
 		const priorityMap: Record<string, number> = {
 			"#기능": 10,

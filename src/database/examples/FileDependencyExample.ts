@@ -283,7 +283,7 @@ export async function runFileDependencyAnalysisExample(
 	}
 
 	// 2. 전체 통계
-	console.log("\n" + "=".repeat(60));
+	console.log(`\n${"=".repeat(60)}`);
 	console.log("📈 전체 분석 결과");
 	console.log("=".repeat(60));
 
@@ -313,7 +313,7 @@ export async function runFileDependencyAnalysisExample(
 
 	// 3. 미싱 링크 상세 분석
 	if (allMissingLinks.length > 0) {
-		console.log("\n" + "=".repeat(60));
+		console.log(`\n${"=".repeat(60)}`);
 		console.log("🔗 미싱 링크 상세 분석");
 		console.log("=".repeat(60));
 
@@ -349,7 +349,7 @@ export async function runFileDependencyAnalysisExample(
 	printDependencyTree(dependencyTree, 0);
 
 	// 5. 데이터베이스 쿼리 예제
-	console.log("\n" + "=".repeat(60));
+	console.log(`\n${"=".repeat(60)}`);
 	console.log("🔍 GraphDatabase 쿼리 예제");
 	console.log("=".repeat(60));
 

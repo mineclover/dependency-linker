@@ -12,11 +12,7 @@
 import * as fs from "node:fs/promises";
 import * as path from "node:path";
 import type { SupportedLanguage } from "../core/types";
-import {
-	GraphDatabase,
-	type GraphNode,
-	type GraphRelationship,
-} from "../database/GraphDatabase";
+import { GraphDatabase } from "../database/GraphDatabase";
 import {
 	FileDependencyAnalyzer,
 	type ImportSource,
@@ -437,9 +433,9 @@ async function performHotReload(
  * 핫리로드된 의존성 조회
  */
 async function getHotReloadedDependencies(
-	database: GraphDatabase,
-	nodeId: number,
-	threshold: number,
+	_database: GraphDatabase,
+	_nodeId: number,
+	_threshold: number,
 ): Promise<GraphDBAnalysisResult["dependencies"]["hotReloaded"]> {
 	// TODO: 핫리로드된 의존성 조회 구현
 	return [];
@@ -569,7 +565,7 @@ async function generateMetadata(
 		const content = await fs.readFile(filePath, "utf-8");
 
 		// 파일 해시 계산
-		const crypto = await import("crypto");
+		const crypto = await import("node:crypto");
 		const fileHash = crypto.createHash("sha256").update(content).digest("hex");
 
 		// 통계 계산

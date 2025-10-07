@@ -3,17 +3,7 @@
  * RDF 주소 파싱 및 변환 유틸리티
  */
 
-import {
-	extractFilePathFromRDF,
-	extractNodeTypeFromRDF,
-	extractProjectNameFromRDF,
-	extractSymbolNameFromRDF,
-	type NodeType,
-	normalizeRDFAddress,
-	parseRDFAddress,
-	type RDFAddress,
-} from "./RDFAddress";
-import type { RDFNodeIdentifier } from "./types";
+import { type NodeType, parseRDFAddress } from "./RDFAddress";
 
 // ===== RDF ADDRESS PARSER TYPES =====
 
@@ -334,7 +324,7 @@ export function groupRDFAddressesBy(
 			groups.set(groupKey, []);
 		}
 
-		groups.get(groupKey)!.push(address);
+		groups.get(groupKey)?.push(address);
 	}
 
 	return groups;

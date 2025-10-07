@@ -3,9 +3,9 @@
  * 외부 링크의 접근성과 상태를 검증하는 시스템
  */
 
-import * as http from "http";
-import * as https from "https";
-import { URL } from "url";
+import * as http from "node:http";
+import * as https from "node:https";
+import { URL } from "node:url";
 
 export interface LinkValidationResult {
 	url: string;

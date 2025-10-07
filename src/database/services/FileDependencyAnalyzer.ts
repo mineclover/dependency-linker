@@ -4,7 +4,7 @@
  */
 
 import type { SupportedLanguage } from "../../core/types";
-import { NodeContext, NodeIdentifier } from "../core/NodeIdentifier";
+import { NodeIdentifier } from "../core/NodeIdentifier";
 import type {
 	GraphDatabase,
 	GraphNode,
@@ -12,15 +12,10 @@ import type {
 } from "../GraphDatabase";
 import { EdgeTypeRegistry } from "../inference/EdgeTypeRegistry";
 import {
-	generateExportIdentifier,
 	generateFileIdentifier,
 	generateLibraryIdentifier,
-	normalizePath,
 } from "../utils/IdentifierGenerator";
-import {
-	type PackageInfo,
-	PackageJsonResolver,
-} from "../utils/PackageJsonResolver";
+import { PackageJsonResolver } from "../utils/PackageJsonResolver";
 
 export interface ImportSource {
 	/** import 구문의 타입 */
@@ -136,7 +131,7 @@ export class FileDependencyAnalyzer {
 					isInheritable: edgeTypeDef.isInheritable,
 					priority: edgeTypeDef.priority,
 				});
-			} catch (error) {
+			} catch (_error) {
 				// Edge type이 이미 존재하면 무시
 				// SQLite UNIQUE constraint 위반 시 에러 발생
 			}
@@ -305,7 +300,7 @@ export class FileDependencyAnalyzer {
 	 * 라이브러리 Import 처리
 	 */
 	private async processLibraryImport(
-		sourceFile: string,
+		_sourceFile: string,
 		importSource: ImportSource,
 		libraryName: string,
 	): Promise<{ node?: GraphNode; missingLink?: MissingLink }> {
@@ -1033,7 +1028,7 @@ export class DependencyAnalysisHelpers {
 	 * Import 소스에서 파일 확장자 추론
 	 */
 	static inferFileExtension(
-		importPath: string,
+		_importPath: string,
 		sourceLanguage: SupportedLanguage,
 	): string[] {
 		const extensions: Record<SupportedLanguage, string[]> = {

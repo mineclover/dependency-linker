@@ -1,5 +1,5 @@
 import { performance } from "node:perf_hooks";
-import type { GraphDatabase, GraphNode } from "../GraphDatabase";
+import type { GraphDatabase } from "../GraphDatabase";
 
 export interface AliasChainTestConfig {
 	maxDepth?: number;
@@ -462,7 +462,7 @@ export class UnknownSymbolAdvancedTester {
 				usageMap.set(sourceFile, []);
 			}
 
-			usageMap.get(sourceFile)!.push({
+			usageMap.get(sourceFile)?.push({
 				aliasName,
 				originalName,
 				sourceFile,

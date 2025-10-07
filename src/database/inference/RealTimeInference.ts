@@ -3,7 +3,7 @@
  * 실시간 추론 시스템 - 변경 감지 및 자동 추론
  */
 
-import { EventEmitter } from "events";
+import { EventEmitter } from "node:events";
 import type { GraphDatabase } from "../GraphDatabase";
 import {
 	CustomInferenceRuleEngine,
@@ -62,7 +62,6 @@ export interface RealTimeInferenceStats {
  * 실시간 추론 시스템
  */
 export class RealTimeInferenceSystem extends EventEmitter {
-	private database: GraphDatabase;
 	private customRuleEngine: CustomInferenceRuleEngine;
 	private config: Required<RealTimeInferenceConfig>;
 	private changeDetectionTimer?: NodeJS.Timeout;
@@ -424,7 +423,7 @@ export class RealTimeInferenceSystem extends EventEmitter {
 		}
 
 		// 처리량 계산 (초당 작업 수)
-		const now = Date.now();
+		const _now = Date.now();
 		const timeWindow = 60000; // 1분
 		// 실제 구현에서는 시간 윈도우 내의 작업 수를 추적
 		this.stats.throughput = totalTasks / (timeWindow / 1000);

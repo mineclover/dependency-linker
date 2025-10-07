@@ -429,10 +429,11 @@ export class GraphStorage {
 
 		const fileNode = nodes[0];
 
-		const dependencies = await this.db.findNodeDependencies(fileNode.id!, [
+		if (!fileNode.id) return null;
+		const dependencies = await this.db.findNodeDependencies(fileNode.id, [
 			"imports",
 		]);
-		const dependents = await this.db.findNodeDependents(fileNode.id!, [
+		const dependents = await this.db.findNodeDependents(fileNode.id, [
 			"imports",
 		]);
 
@@ -475,9 +476,10 @@ export class GraphStorage {
 			return null;
 		}
 
+		if (!fromNodes[0].id || !toNodes[0].id) return null;
 		const path = await this.db.findDependencyPath(
-			fromNodes[0].id!,
-			toNodes[0].id!,
+			fromNodes[0].id,
+			toNodes[0].id,
 		);
 		return path?.nodes || null;
 	}

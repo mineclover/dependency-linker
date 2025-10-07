@@ -271,7 +271,7 @@ export class MarkdownTagTypeValidator {
 	private validateRule(
 		tag: MarkdownTag,
 		rule: string,
-		markdown: string,
+		_markdown: string,
 	): boolean {
 		// 간단한 규칙 검증 로직
 		const context = tag.context || "";

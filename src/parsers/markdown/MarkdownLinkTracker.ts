@@ -10,10 +10,7 @@ import {
 	type LinkValidationResult,
 } from "./ExternalLinkValidator";
 import type { MarkdownRelationship } from "./MarkdownRDFIntegration";
-import {
-	MarkdownRDFIntegration,
-	type MarkdownRDFResult,
-} from "./MarkdownRDFIntegration";
+import { MarkdownRDFIntegration } from "./MarkdownRDFIntegration";
 
 // ===== LINK TRACKING TYPES =====
 

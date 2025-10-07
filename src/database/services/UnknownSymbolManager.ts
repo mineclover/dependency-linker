@@ -171,8 +171,8 @@ export class UnknownSymbolManager {
 
 			// 데이터베이스에 관계 저장
 			await this.database.upsertRelationship({
-				fromNodeId: parseInt(unknownSymbol.id.replace(/\D/g, "")) || 0,
-				toNodeId: parseInt(knownSymbol.id.replace(/\D/g, "")) || 0,
+				fromNodeId: parseInt(unknownSymbol.id.replace(/\D/g, ""), 10) || 0,
+				toNodeId: parseInt(knownSymbol.id.replace(/\D/g, ""), 10) || 0,
 				type: "equivalence",
 				label: `${unknownSymbol.name} is equivalent to ${knownSymbol.name}`,
 				metadata: {
@@ -309,7 +309,7 @@ export class UnknownSymbolManager {
 	 * 동등성 관계 조회
 	 */
 	async getEquivalenceRelations(
-		unknownId: string,
+		_unknownId: string,
 	): Promise<EquivalenceRelation[]> {
 		try {
 			// 간단한 구현 - 실제로는 데이터베이스 쿼리 필요

@@ -9,7 +9,6 @@ import * as fs from "node:fs";
 import * as path from "node:path";
 import { extractMarkdownDependencies } from "../core/MarkdownDependencyExtractor";
 import type {
-	MarkdownDependency,
 	MarkdownDependencyType,
 	MarkdownExtractionResult,
 } from "../core/markdown-types";
@@ -74,7 +73,7 @@ export async function registerMarkdownEdgeTypes(
 	db: GraphDatabase,
 ): Promise<void> {
 	// Register dependency edge types
-	for (const [type, config] of Object.entries(MARKDOWN_EDGE_TYPES)) {
+	for (const [_type, config] of Object.entries(MARKDOWN_EDGE_TYPES)) {
 		await db.createEdgeType({
 			name: config.name,
 			description: config.description,
@@ -433,7 +432,7 @@ export async function queryMarkdownDependencies(
 	);
 
 	// Get all target node IDs
-	const targetNodeIds = sourceRelationships.map((r) => r.toNodeId);
+	const _targetNodeIds = sourceRelationships.map((r) => r.toNodeId);
 
 	// Fetch all nodes to build a map
 	const allNodes = await db.findNodes({});

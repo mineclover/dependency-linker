@@ -385,7 +385,7 @@ export async function runAllEdgeTypeWorkflows(
 		// Workflow 1-4: 기본 설정 및 프로젝트 분석 시스템 구축
 		await createProjectAnalysisWorkflow(database);
 
-		console.log("\n" + "=".repeat(50) + "\n");
+		console.log(`\n${"=".repeat(50)}\n`);
 
 		// Workflow 5: 동적 관리 데모
 		const edgeTypeManager = new EdgeTypeManager(database);

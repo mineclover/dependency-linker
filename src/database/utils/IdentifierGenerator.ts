@@ -40,7 +40,7 @@ export function normalizePath(filePath: string, projectRoot?: string): string {
 
 	// 시작 슬래시 확인
 	if (!normalized.startsWith("/")) {
-		normalized = "/" + normalized;
+		normalized = `/${normalized}`;
 	}
 
 	return normalized;

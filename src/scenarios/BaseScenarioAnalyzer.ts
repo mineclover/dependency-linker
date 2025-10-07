@@ -118,7 +118,7 @@ export abstract class BaseScenarioAnalyzer {
 	 * Override to perform setup or validation before analysis.
 	 * Default implementation does nothing.
 	 */
-	protected async beforeAnalyze(context: AnalysisContext): Promise<void> {
+	protected async beforeAnalyze(_context: AnalysisContext): Promise<void> {
 		// Default: no-op
 	}
 
@@ -129,7 +129,7 @@ export abstract class BaseScenarioAnalyzer {
 	 * Default implementation returns result unchanged.
 	 */
 	protected async afterAnalyze(
-		context: AnalysisContext,
+		_context: AnalysisContext,
 		result: AnalysisResult,
 	): Promise<AnalysisResult> {
 		// Default: return result unchanged
@@ -146,21 +146,21 @@ export abstract class BaseScenarioAnalyzer {
 	/**
 	 * Helper: Get data from shared context
 	 */
-	protected getSharedData<T>(key: string): T | undefined {
+	protected getSharedData<T>(_key: string): T | undefined {
 		return undefined; // Will be implemented in execute context
 	}
 
 	/**
 	 * Helper: Set data in shared context
 	 */
-	protected setSharedData<T>(key: string, value: T): void {
+	protected setSharedData<T>(_key: string, _value: T): void {
 		// Will be implemented in execute context
 	}
 
 	/**
 	 * Helper: Get result from previous scenario
 	 */
-	protected getPreviousResult(scenarioId: string): AnalysisResult | undefined {
+	protected getPreviousResult(_scenarioId: string): AnalysisResult | undefined {
 		return undefined; // Will be implemented in execute context
 	}
 

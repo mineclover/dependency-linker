@@ -510,7 +510,9 @@ export class GraphQueryEngine {
 
 		while (queue.length > 0 && directPaths.length < 10) {
 			// 최대 10개 경로
-			const { nodeId, path } = queue.shift()!;
+			const item = queue.shift();
+			if (!item) continue;
+			const { nodeId, path } = item;
 
 			if (nodeId === endNodeId && path.length > 0) {
 				directPaths.push([...path]);

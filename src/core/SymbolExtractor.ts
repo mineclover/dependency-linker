@@ -16,7 +16,6 @@ import {
 } from "../queries/typescript/tree-sitter-queries";
 import {
 	generateSymbolNamePath,
-	getParentSymbolPath,
 	type ParameterInfo,
 	type SourceLocation,
 	type SymbolDependency,
@@ -366,7 +365,7 @@ export class SymbolExtractor {
 		classMatch: QueryMatch,
 		parentNamePath: string,
 		filePath: string,
-		tree: Parser.Tree,
+		_tree: Parser.Tree,
 		language: SupportedLanguage,
 	): Promise<SymbolInfo[]> {
 		const members: SymbolInfo[] = [];
@@ -453,7 +452,7 @@ export class SymbolExtractor {
 		language: SupportedLanguage,
 	): QueryMatch[] {
 		try {
-			const parser = globalParserManager["getParser"](language);
+			const parser = globalParserManager.getParser(language);
 			const parserInstance = parser.getParser();
 			const parserLanguage = parserInstance.getLanguage();
 			const query = new Parser.Query(parserLanguage, queryString);
@@ -494,8 +493,8 @@ export class SymbolExtractor {
 	 * Extract Python symbols
 	 */
 	private async extractPythonSymbols(
-		filePath: string,
-		parseResult: ParseResult,
+		_filePath: string,
+		_parseResult: ParseResult,
 	): Promise<SymbolInfo[]> {
 		const symbols: SymbolInfo[] = [];
 
@@ -509,8 +508,8 @@ export class SymbolExtractor {
 	 * Extract Java symbols
 	 */
 	private async extractJavaSymbols(
-		filePath: string,
-		parseResult: ParseResult,
+		_filePath: string,
+		_parseResult: ParseResult,
 	): Promise<SymbolInfo[]> {
 		const symbols: SymbolInfo[] = [];
 
@@ -547,7 +546,7 @@ export class SymbolExtractor {
 	 * Extract TypeScript/TSX dependencies
 	 */
 	private extractTypeScriptDependencies(
-		symbols: SymbolInfo[],
+		_symbols: SymbolInfo[],
 		parseResult: ParseResult,
 		language: SupportedLanguage,
 	): SymbolDependency[] {
@@ -750,7 +749,7 @@ export class SymbolExtractor {
 	 * Extract JavaScript/JSX dependencies
 	 */
 	private extractJavaScriptDependencies(
-		symbols: SymbolInfo[],
+		_symbols: SymbolInfo[],
 		parseResult: ParseResult,
 		language: SupportedLanguage,
 	): SymbolDependency[] {

@@ -4,11 +4,10 @@
  * RDF 주소 기반 파일 위치 반환 및 파일 열기 기능을 제공하는 핸들러
  */
 
-import { exec, execSync } from "child_process";
-import * as fs from "fs";
-import * as path from "path";
-import { promisify } from "util";
-import { RDFAddress } from "../../core/RDFAddress.js";
+import { exec, execSync } from "node:child_process";
+import * as fs from "node:fs";
+import * as path from "node:path";
+import { promisify } from "node:util";
 import { GraphDatabase } from "../../database/GraphDatabase";
 
 const execAsync = promisify(exec);
@@ -48,7 +47,7 @@ export class RDFFileHandler {
 			// RDF 주소 파싱 (간단한 파싱)
 			const parts = rdfAddress.split("#");
 			const filePath = parts[0];
-			const fragment = parts[1] || "";
+			const _fragment = parts[1] || "";
 
 			// 파일 경로 구성
 			const absolutePath = path.resolve(filePath);
@@ -209,7 +208,7 @@ export class RDFFileHandler {
 		try {
 			// 간단한 파일 경로에서 라인 정보 추출
 			const parts = rdfAddress.split("#");
-			const filePath = parts[0];
+			const _filePath = parts[0];
 			const fragment = parts[1] || "";
 
 			// 기본 정보 반환

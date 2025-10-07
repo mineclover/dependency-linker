@@ -165,7 +165,7 @@ export class PerformanceMonitor {
 	 * 데이터베이스 성능 벤치마크
 	 */
 	async benchmarkDatabase(
-		database: any,
+		_database: any,
 		operations: Array<{ name: string; operation: () => Promise<any> }>,
 	): Promise<BenchmarkResult> {
 		return this.benchmark(

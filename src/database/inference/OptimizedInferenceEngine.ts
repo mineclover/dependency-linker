@@ -327,7 +327,7 @@ export class OptimizedInferenceEngine {
 		edgeType: string,
 		options: { maxPathLength?: number },
 	): Promise<InferredRelationship[]> {
-		const maxPathLength =
+		const _maxPathLength =
 			options.maxPathLength || this.config.defaultMaxPathLength;
 
 		// Use SQL recursive CTE for transitive inference
@@ -373,7 +373,7 @@ export class OptimizedInferenceEngine {
 		edgeType: string,
 		options: { maxDepth?: number },
 	): Promise<InferredRelationship[]> {
-		const maxDepth = options.maxDepth || this.config.defaultMaxHierarchyDepth;
+		const _maxDepth = options.maxDepth || this.config.defaultMaxHierarchyDepth;
 
 		// Get inheritable relationships
 		const relationships = await this.database.findRelationships({

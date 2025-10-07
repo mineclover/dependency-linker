@@ -320,8 +320,11 @@ export class ContextDocumentGenerator {
 		const parentDir = path.dirname(identifier.documentPath);
 		await fs.mkdir(parentDir, { recursive: true });
 
+		if (!node.id) {
+			throw new Error("Node ID is required");
+		}
 		const metadata: ContextDocumentMetadata = {
-			nodeId: node.id!,
+			nodeId: node.id,
 			type: node.type,
 			filePath,
 			namespace: (node.metadata as any)?.namespace,
@@ -370,8 +373,11 @@ export class ContextDocumentGenerator {
 		const parentDir = path.dirname(identifier.documentPath);
 		await fs.mkdir(parentDir, { recursive: true });
 
+		if (!node.id) {
+			throw new Error("Node ID is required");
+		}
 		const metadata: ContextDocumentMetadata = {
-			nodeId: node.id!,
+			nodeId: node.id,
 			type: node.type,
 			filePath,
 			symbolPath,

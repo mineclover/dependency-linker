@@ -3,12 +3,7 @@
  * RDF 주소 시스템과 통합된 GraphDatabase 확장
  */
 
-import { Database } from "sqlite3";
 import type { NodeType } from "../core/RDFAddress";
-import type {
-	RDFNodeIdentifier,
-	RDFSymbolExtractionResult,
-} from "../core/types";
 import { GraphDatabase } from "./GraphDatabase";
 
 // ===== RDF DATABASE TYPES =====
@@ -95,10 +90,6 @@ export interface RDFStatistics {
  * RDF 통합 GraphDatabase
  */
 export class RDFIntegratedGraphDatabase extends GraphDatabase {
-	constructor(dbPath: string) {
-		super(dbPath);
-	}
-
 	// ===== RDF ADDRESS MANAGEMENT =====
 
 	/**

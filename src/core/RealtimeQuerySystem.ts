@@ -3,12 +3,8 @@
  * 실시간 쿼리 시스템 - WebSocket, Server-Sent Events, Polling 지원
  */
 
-import { EventEmitter } from "events";
-import {
-	AdvancedQueryExecutor,
-	type GraphQLOperation,
-	type QueryAST,
-} from "./AdvancedQueryLanguage";
+import { EventEmitter } from "node:events";
+import { AdvancedQueryExecutor } from "./AdvancedQueryLanguage";
 
 export interface RealtimeQueryConfig {
 	enableWebSocket: boolean;
@@ -187,7 +183,7 @@ export class RealtimeQuerySystem extends EventEmitter {
 			try {
 				const data = JSON.parse(message);
 				await this.handleWebSocketMessage(ws, clientId, data);
-			} catch (error) {
+			} catch (_error) {
 				ws.send(JSON.stringify({ type: "error", message: "Invalid JSON" }));
 			}
 		});
@@ -333,8 +329,8 @@ export class RealtimeQuerySystem extends EventEmitter {
 	 * 쿼리가 변경에 영향을 받는지 확인
 	 */
 	private isQueryAffectedByChange(
-		query: RealtimeQuery,
-		changeEvent: QueryChangeEvent,
+		_query: RealtimeQuery,
+		_changeEvent: QueryChangeEvent,
 	): boolean {
 		// 간단한 구현: 모든 쿼리가 모든 변경에 반응
 		// 실제로는 쿼리 AST를 분석하여 영향받는 테이블/필드 확인
@@ -437,7 +433,7 @@ export class RealtimeQuerySystem extends EventEmitter {
 	 */
 	private cleanupClientQueries(clientId: string): void {
 		// 클라이언트의 모든 쿼리 비활성화
-		for (const [queryId, query] of this.queries.entries()) {
+		for (const [_queryId, query] of this.queries.entries()) {
 			if (query.clientId === clientId) {
 				query.isActive = false;
 			}
@@ -449,17 +445,6 @@ export class RealtimeQuerySystem extends EventEmitter {
 				this.subscriptions.delete(subscriptionId);
 			}
 		}
-	}
-
-	/**
-	 * 결과 비교
-	 */
-	private compareResults(oldResults: any[], newResults: any[]): boolean {
-		if (oldResults.length !== newResults.length) {
-			return true;
-		}
-
-		return JSON.stringify(oldResults) !== JSON.stringify(newResults);
 	}
 
 	/**

@@ -4,11 +4,10 @@
  */
 
 import type { NodeType } from "../core/RDFAddress";
-import { RDFCache, RDFSearchCache, RDFStatisticsCache } from "../core/RDFCache";
+import { RDFSearchCache, RDFStatisticsCache } from "../core/RDFCache";
 import type {
 	RDFAddressSearchResult,
 	RDFAddressStoreOptions,
-	RDFRelationshipSearchResult,
 	RDFRelationshipStoreOptions,
 	RDFStatistics,
 } from "./RDFIntegratedGraphDatabase";

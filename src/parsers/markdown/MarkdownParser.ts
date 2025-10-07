@@ -5,8 +5,6 @@
 
 import Parser = require("tree-sitter");
 
-import type { NodeType } from "../../core/RDFAddress";
-import { createRDFAddress } from "../../core/RDFAddress";
 import type { SupportedLanguage } from "../../core/types";
 import { BaseParser, type ParseResult, type ParserOptions } from "../base";
 
@@ -119,7 +117,7 @@ export class MarkdownParser extends BaseParser {
 		try {
 			const markdownLanguage = require("tree-sitter-markdown");
 			this.parser.setLanguage(markdownLanguage);
-		} catch (error) {
+		} catch (_error) {
 			console.warn(
 				"Tree-sitter markdown language not available, using fallback parsing",
 			);
@@ -161,7 +159,7 @@ export class MarkdownParser extends BaseParser {
 					nodeCount,
 				},
 			};
-		} catch (error) {
+		} catch (_error) {
 			// Tree-sitter 파싱 실패 시 fallback 파싱 사용
 			return this.fallbackParse(sourceCode, options);
 		}
@@ -501,7 +499,7 @@ export class MarkdownParser extends BaseParser {
 					attributes: { level: level.toString(), anchorId },
 				},
 			};
-		} catch (error) {
+		} catch (_error) {
 			return null;
 		}
 	}
@@ -543,7 +541,7 @@ export class MarkdownParser extends BaseParser {
 					column: node.startPosition.column + 1,
 				},
 			};
-		} catch (error) {
+		} catch (_error) {
 			return null;
 		}
 	}
@@ -582,7 +580,7 @@ export class MarkdownParser extends BaseParser {
 					attributes: { url, alt: altText },
 				},
 			};
-		} catch (error) {
+		} catch (_error) {
 			return null;
 		}
 	}
@@ -621,7 +619,7 @@ export class MarkdownParser extends BaseParser {
 					attributes: { language, length: code.length.toString() },
 				},
 			};
-		} catch (error) {
+		} catch (_error) {
 			return null;
 		}
 	}

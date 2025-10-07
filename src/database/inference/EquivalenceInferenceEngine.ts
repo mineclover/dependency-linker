@@ -1,8 +1,6 @@
-import {
-	EquivalenceCandidate,
-	EquivalenceRelation,
-	type UnknownSymbol,
-	type UnknownSymbolManager,
+import type {
+	UnknownSymbol,
+	UnknownSymbolManager,
 } from "../services/UnknownSymbolManager";
 
 export interface EquivalenceRule {
@@ -26,7 +24,6 @@ export interface EquivalenceInferenceResult {
 }
 
 export class EquivalenceInferenceEngine {
-	private unknownSymbolManager: UnknownSymbolManager;
 	private rules: EquivalenceRule[];
 
 	constructor(unknownSymbolManager: UnknownSymbolManager) {
@@ -129,7 +126,7 @@ export class EquivalenceInferenceEngine {
 				matches: async (unknown, known) => {
 					return unknown.name === known.name;
 				},
-				calculateConfidence: async (unknown, known) => {
+				calculateConfidence: async (_unknown, _known) => {
 					return 0.95;
 				},
 			},
@@ -145,7 +142,7 @@ export class EquivalenceInferenceEngine {
 						unknown.name.toLowerCase() === known.name.toLowerCase()
 					);
 				},
-				calculateConfidence: async (unknown, known) => {
+				calculateConfidence: async (_unknown, _known) => {
 					return 0.85;
 				},
 			},

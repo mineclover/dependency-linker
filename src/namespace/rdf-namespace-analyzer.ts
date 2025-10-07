@@ -3,8 +3,8 @@
  * 네임스페이스 기반 RDF 주소 생성 및 분석
  */
 
-import fs from "fs";
-import path from "path";
+import fs from "node:fs";
+import path from "node:path";
 import { analyzeFileWithRDF } from "../api/rdf-analysis";
 import { RDFDatabaseAPI } from "../api/rdf-database-integration";
 import type { NodeType } from "../core/RDFAddress";
@@ -230,7 +230,7 @@ export class RDFNamespaceAnalyzer {
 		projectName: string,
 		analysisResults: RDFAnalysisResult[],
 		errors: string[],
-		warnings: string[],
+		_warnings: string[],
 	): Promise<void> {
 		try {
 			// 파일 읽기
@@ -372,7 +372,7 @@ export class RDFNamespaceAnalyzer {
 	 * RDF 네임스페이스 검색
 	 */
 	async searchRDFInNamespace(
-		namespace: string,
+		_namespace: string,
 		query: string,
 		options: {
 			nodeType?: NodeType;
@@ -393,7 +393,7 @@ export class RDFNamespaceAnalyzer {
 	/**
 	 * RDF 네임스페이스 통계
 	 */
-	async getRDFNamespaceStatistics(namespace: string): Promise<any> {
+	async getRDFNamespaceStatistics(_namespace: string): Promise<any> {
 		if (!this.dbApi) {
 			throw new Error("Database not initialized");
 		}

@@ -451,7 +451,7 @@ export class EdgeTypeManager {
 		};
 	}
 
-	private validateSchema(schema: Record<string, any>): ValidationResult {
+	private validateSchema(_schema: Record<string, any>): ValidationResult {
 		// JSON Schema 유효성 검증 로직
 		return { isValid: true, errors: [] };
 	}
@@ -628,7 +628,7 @@ export class InferenceEngine {
 		if (!condition.pattern) return false;
 
 		// 경로 패턴 매칭 (예: "A -> B -> C")
-		const pathPattern = condition.pattern.split(" -> ");
+		const _pathPattern = condition.pattern.split(" -> ");
 
 		// 노드 타입 제약 확인
 		if (condition.nodeTypeConstraints) {
@@ -662,7 +662,7 @@ export class InferenceEngine {
 			const regex = new RegExp(condition.pattern);
 			const edgeString = `${edge.fromIdentifier} --[${edge.type}]--> ${edge.toIdentifier}`;
 			return regex.test(edgeString);
-		} catch (error) {
+		} catch (_error) {
 			return false;
 		}
 	}

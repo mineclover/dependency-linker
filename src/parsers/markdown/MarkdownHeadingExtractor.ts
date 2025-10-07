@@ -109,7 +109,10 @@ export class MarkdownHeadingExtractor {
 						child.type === "atx_h6_marker",
 				);
 				if (levelNode) {
-					level = parseInt(levelNode.text.replace(/#/g, "").length.toString());
+					level = parseInt(
+						levelNode.text.replace(/#/g, "").length.toString(),
+						10,
+					);
 				}
 			} else if (node.type === "setext_heading") {
 				// Setext 헤딩 (===, ---)

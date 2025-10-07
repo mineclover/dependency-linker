@@ -1,6 +1,5 @@
 import { EquivalenceInferenceEngine } from "../../database/inference/EquivalenceInferenceEngine";
 import {
-	EquivalenceRelation,
 	type UnknownSymbol,
 	UnknownSymbolManager,
 } from "../../database/services/UnknownSymbolManager";

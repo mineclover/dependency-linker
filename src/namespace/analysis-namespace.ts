@@ -3,9 +3,9 @@
  * 네임스페이스 기반 분석 설정 및 실행 관리
  */
 
-import fs from "fs";
+import fs from "node:fs";
+import path from "node:path";
 import { glob } from "glob";
-import path from "path";
 import { analyzeMarkdownFileWithRDF } from "../api/markdown-analysis.js";
 import {
 	type AnalysisConfig,
@@ -354,7 +354,7 @@ export class AnalysisNamespaceManager {
 	private async runAnalysisForFiles(
 		files: string[],
 		config: AnalysisConfig,
-		namespace: NamespaceConfig,
+		_namespace: NamespaceConfig,
 	): Promise<AnalysisReport> {
 		const allSymbols: any[] = [];
 		const allCompliance: any[] = [];

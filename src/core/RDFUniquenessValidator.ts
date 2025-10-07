@@ -3,12 +3,8 @@
  * RDF 주소 고유성 검증 시스템
  */
 
-import {
-	compareRDFAddresses,
-	parseRDFAddress,
-	type RDFAddress,
-} from "./RDFAddress";
-import type { RDFNodeIdentifier, RDFSymbolExtractionResult } from "./types";
+import { parseRDFAddress } from "./RDFAddress";
+import type { RDFSymbolExtractionResult } from "./types";
 
 // ===== UNIQUENESS VALIDATION TYPES =====
 
@@ -128,7 +124,7 @@ function groupSymbolsByRDFAddress(
 			groups.set(key, []);
 		}
 
-		groups.get(key)!.push(symbol);
+		groups.get(key)?.push(symbol);
 	}
 
 	return groups;
@@ -188,11 +184,11 @@ function findStrictDuplicates(
 			symbolGroups.set(key, []);
 		}
 
-		symbolGroups.get(key)!.push(symbol);
+		symbolGroups.get(key)?.push(symbol);
 	}
 
 	// 중복된 심볼명 찾기
-	for (const [symbolName, occurrences] of symbolGroups.entries()) {
+	for (const [_symbolName, occurrences] of symbolGroups.entries()) {
 		if (occurrences.length > 1) {
 			// 같은 파일 내 중복 검사
 			const fileGroups = new Map<string, RDFSymbolExtractionResult[]>();
@@ -201,7 +197,7 @@ function findStrictDuplicates(
 				if (!fileGroups.has(occurrence.rdfAddress)) {
 					fileGroups.set(occurrence.rdfAddress, []);
 				}
-				fileGroups.get(occurrence.rdfAddress)!.push(occurrence);
+				fileGroups.get(occurrence.rdfAddress)?.push(occurrence);
 			}
 
 			// 같은 파일 내 중복

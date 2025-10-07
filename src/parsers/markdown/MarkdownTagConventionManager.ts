@@ -69,7 +69,7 @@ export class MarkdownTagConventionManager {
 	 */
 	async analyzeTags(
 		tags: MarkdownTag[],
-		filePath: string,
+		_filePath: string,
 	): Promise<TagAnalysisResult> {
 		try {
 			// 카테고리 분석

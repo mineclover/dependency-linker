@@ -3,14 +3,8 @@
  * 향상된 메타데이터 추적 시스템
  */
 
-import {
-	type PackageInfo,
-	PackageJsonResolver,
-} from "../../database/utils/PackageJsonResolver";
-import {
-	ExternalLinkValidator,
-	type LinkValidationResult,
-} from "./ExternalLinkValidator";
+import { PackageJsonResolver } from "../../database/utils/PackageJsonResolver";
+import { ExternalLinkValidator } from "./ExternalLinkValidator";
 
 export interface EnhancedMetadata {
 	/** 생성 시간 */
@@ -265,7 +259,7 @@ export class EnhancedMetadataTracker {
 	 * 파일 해시 계산
 	 */
 	private async calculateFileHash(content: string): Promise<string> {
-		const crypto = await import("crypto");
+		const crypto = await import("node:crypto");
 		return crypto.createHash("sha256").update(content).digest("hex");
 	}
 

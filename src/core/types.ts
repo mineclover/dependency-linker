@@ -4,7 +4,7 @@
  */
 
 import type Parser from "tree-sitter";
-import type { NodeType, RDFAddress } from "./RDFAddress";
+import type { NodeType } from "./RDFAddress";
 
 // Re-export QueryResult type
 export interface QueryResult {

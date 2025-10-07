@@ -2,7 +2,6 @@ import {
 	type ContextDocumentGenerator,
 	createContextDocumentGenerator,
 } from "../../context/ContextDocumentGenerator";
-import type { GraphNode } from "../../database/GraphDatabase";
 import { GraphDatabase } from "../../database/GraphDatabase";
 
 export interface ContextDocumentsHandlerOptions {
@@ -67,13 +66,19 @@ export class ContextDocumentsHandler {
 
 			// 의존성 정보 수집
 			if (options?.includeDependencies ?? this.options.includeDependencies) {
-				const deps = await this.database.findNodeDependencies(node.id!);
+				if (!node.id) {
+					throw new Error("Node ID is required");
+				}
+				const deps = await this.database.findNodeDependencies(node.id);
 				dependencies = deps.map((dep) => dep.sourceFile || dep.name);
 			}
 
 			// 의존자 정보 수집
 			if (options?.includeDependents ?? this.options.includeDependents) {
-				const deps = await this.database.findNodeDependents(node.id!);
+				if (!node.id) {
+					throw new Error("Node ID is required");
+				}
+				const deps = await this.database.findNodeDependents(node.id);
 				dependents = deps.map((dep) => dep.sourceFile || dep.name);
 			}
 
@@ -181,13 +186,19 @@ export class ContextDocumentsHandler {
 							options?.includeDependencies ??
 							this.options.includeDependencies
 						) {
-							const deps = await this.database.findNodeDependencies(node.id!);
+							if (!node.id) {
+								throw new Error("Node ID is required");
+							}
+							const deps = await this.database.findNodeDependencies(node.id);
 							dependencies = deps.map((dep) => dep.sourceFile || dep.name);
 						}
 
 						// 의존자 정보 수집
 						if (options?.includeDependents ?? this.options.includeDependents) {
-							const deps = await this.database.findNodeDependents(node.id!);
+							if (!node.id) {
+								throw new Error("Node ID is required");
+							}
+							const deps = await this.database.findNodeDependents(node.id);
 							dependents = deps.map((dep) => dep.sourceFile || dep.name);
 						}
 
@@ -197,7 +208,7 @@ export class ContextDocumentsHandler {
 							dependents,
 						);
 						generatedFiles++;
-					} catch (error) {
+					} catch (_error) {
 						console.warn(
 							`⚠️ 파일 컨텍스트 문서 생성 실패: ${node.sourceFile || node.name}`,
 						);
@@ -216,7 +227,7 @@ export class ContextDocumentsHandler {
 						const symbolPath = node.name || "unknown";
 						await this.generator.generateSymbolContext(node, symbolPath);
 						generatedSymbols++;
-					} catch (error) {
+					} catch (_error) {
 						console.warn(`⚠️ 심볼 컨텍스트 문서 생성 실패: ${node.name}`);
 					}
 				}
@@ -336,9 +347,9 @@ export class ContextDocumentsHandler {
 			if (options?.includeFiles ?? true) {
 				for (const file of documents.files) {
 					try {
-						await require("fs").promises.unlink(file);
+						await require("node:fs").promises.unlink(file);
 						cleanedFiles++;
-					} catch (error) {
+					} catch (_error) {
 						console.warn(`⚠️ 파일 삭제 실패: ${file}`);
 					}
 				}
@@ -348,9 +359,9 @@ export class ContextDocumentsHandler {
 			if (options?.includeSymbols ?? true) {
 				for (const symbol of documents.symbols) {
 					try {
-						await require("fs").promises.unlink(symbol);
+						await require("node:fs").promises.unlink(symbol);
 						cleanedSymbols++;
-					} catch (error) {
+					} catch (_error) {
 						console.warn(`⚠️ 심볼 삭제 실패: ${symbol}`);
 					}
 				}

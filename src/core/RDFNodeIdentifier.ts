@@ -8,7 +8,6 @@ import {
 	extractNamespaceFromSymbol,
 	type NodeType,
 	parseRDFAddress,
-	type RDFAddress,
 } from "./RDFAddress";
 import type {
 	RDFNodeIdentifier,

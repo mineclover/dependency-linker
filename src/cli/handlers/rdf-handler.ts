@@ -1,5 +1,5 @@
-import { existsSync, readFileSync } from "fs";
-import { join } from "path";
+import { existsSync, readFileSync } from "node:fs";
+import { join } from "node:path";
 import { RDFDatabaseAPI } from "../../api/rdf-database-integration";
 import { createRDFAddress, parseRDFAddress } from "../../core/RDFAddress";
 import { validateRDFUniqueness } from "../../core/RDFUniquenessValidator";
@@ -45,7 +45,7 @@ export class RDFHandler {
 		try {
 			// 네임스페이스별 검색
 			if (options.namespace) {
-				const namespaceConfig = await this.loadNamespaceConfig(
+				const _namespaceConfig = await this.loadNamespaceConfig(
 					options.namespace,
 				);
 				const addresses = await this.rdfDatabaseAPI.searchRDFAddresses(
@@ -55,7 +55,9 @@ export class RDFHandler {
 				console.log(
 					`🔍 네임스페이스 "${options.namespace}"에서 "${options.query}" 검색 결과:`,
 				);
-				addresses.forEach((addr) => console.log(`  - ${addr.rdfAddress}`));
+				addresses.forEach((addr) => {
+					console.log(`  - ${addr.rdfAddress}`);
+				});
 				return;
 			}
 
@@ -68,7 +70,9 @@ export class RDFHandler {
 				console.log(
 					`🔍 프로젝트 "${options.project}"에서 "${options.query}" 검색 결과:`,
 				);
-				addresses.forEach((addr) => console.log(`  - ${addr.rdfAddress}`));
+				addresses.forEach((addr) => {
+					console.log(`  - ${addr.rdfAddress}`);
+				});
 				return;
 			}
 
@@ -81,7 +85,9 @@ export class RDFHandler {
 				console.log(
 					`🔍 파일 "${options.file}"에서 "${options.query}" 검색 결과:`,
 				);
-				addresses.forEach((addr) => console.log(`  - ${addr.rdfAddress}`));
+				addresses.forEach((addr) => {
+					console.log(`  - ${addr.rdfAddress}`);
+				});
 				return;
 			}
 
@@ -94,7 +100,9 @@ export class RDFHandler {
 				console.log(
 					`🔍 타입 "${options.type}"에서 "${options.query}" 검색 결과:`,
 				);
-				addresses.forEach((addr) => console.log(`  - ${addr.rdfAddress}`));
+				addresses.forEach((addr) => {
+					console.log(`  - ${addr.rdfAddress}`);
+				});
 				return;
 			}
 
@@ -104,7 +112,9 @@ export class RDFHandler {
 			);
 
 			console.log(`🔍 전체에서 "${options.query}" 검색 결과:`);
-			addresses.forEach((addr) => console.log(`  - ${addr.rdfAddress}`));
+			addresses.forEach((addr) => {
+				console.log(`  - ${addr.rdfAddress}`);
+			});
 		} catch (error) {
 			console.error(`❌ 검색 실패: ${(error as Error).message}`);
 		}
@@ -141,7 +151,7 @@ export class RDFHandler {
 
 			// 네임스페이스 전체 검증
 			if (options.namespace) {
-				const namespaceConfig = await this.loadNamespaceConfig(
+				const _namespaceConfig = await this.loadNamespaceConfig(
 					options.namespace,
 				);
 				const addresses = await this.rdfDatabaseAPI.searchRDFAddresses("");
@@ -201,7 +211,7 @@ export class RDFHandler {
 
 			// 네임스페이스별 통계
 			if (options.namespace) {
-				const namespaceConfig = await this.loadNamespaceConfig(
+				const _namespaceConfig = await this.loadNamespaceConfig(
 					options.namespace,
 				);
 				addresses = await this.rdfDatabaseAPI.searchRDFAddresses("");

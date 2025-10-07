@@ -20,10 +20,6 @@ import { detectCircularDependencies, validateScenarioSpec } from "./validation";
 export class ScenarioRegistry {
 	private scenarios = new Map<string, ScenarioSpec>();
 
-	constructor() {
-		// Constructor for future extensibility
-	}
-
 	/**
 	 * Register a scenario specification
 	 *
@@ -175,7 +171,7 @@ export class ScenarioRegistry {
 		// Build adjacency list and in-degree
 		for (const [id, deps] of dependencies) {
 			for (const dep of deps) {
-				adjList.get(dep)!.add(id);
+				adjList.get(dep)?.add(id);
 				inDegree.set(id, inDegree.get(id)! + 1);
 			}
 		}

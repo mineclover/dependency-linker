@@ -48,7 +48,7 @@ export class MarkdownTagHeadingMapper {
 	async mapTagHeadingRelationships(
 		headings: MarkdownHeading[],
 		tags: MarkdownTag[],
-		projectName: string,
+		_projectName: string,
 	): Promise<TagHeadingMappingResult> {
 		const relationships: TagHeadingRelationship[] = [];
 		const errors: string[] = [];
@@ -166,7 +166,7 @@ export class MarkdownTagHeadingMapper {
 	 */
 	private calculateStrength(
 		tag: MarkdownTag,
-		heading: MarkdownHeading,
+		_heading: MarkdownHeading,
 		distance: number,
 	): number {
 		let strength = 1.0;
@@ -191,8 +191,8 @@ export class MarkdownTagHeadingMapper {
 	 * 관계 타입 결정
 	 */
 	private determineRelationshipType(
-		tag: MarkdownTag,
-		heading: MarkdownHeading,
+		_tag: MarkdownTag,
+		_heading: MarkdownHeading,
 		distance: number,
 	): TagHeadingRelationship["type"] {
 		// 같은 라인에 있으면 직접 관계

@@ -2,7 +2,6 @@ import {
 	EnhancedQuerySystem,
 	type QueryResult,
 } from "../../core/EnhancedQuerySystem";
-import { QueryEngine } from "../../core/QueryEngine";
 import type { RealtimeQuerySystem } from "../../core/RealtimeQuerySystem";
 
 export interface QueryHandlerOptions {
@@ -16,7 +15,6 @@ export interface QueryHandlerOptions {
 export class QueryHandler {
 	private querySystem: EnhancedQuerySystem;
 	private realtimeSystem?: RealtimeQuerySystem;
-	private queryEngine: QueryEngine;
 
 	constructor(options: QueryHandlerOptions = {}) {
 		this.querySystem = new EnhancedQuerySystem({
@@ -26,8 +24,6 @@ export class QueryHandler {
 			cacheSize: options.cacheSize ?? 1000,
 			cacheTTL: options.cacheTTL ?? 300000,
 		});
-
-		this.queryEngine = new QueryEngine();
 	}
 
 	/**

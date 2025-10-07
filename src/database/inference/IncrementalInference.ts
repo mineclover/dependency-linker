@@ -175,9 +175,9 @@ export class IncrementalInferenceEngine {
 		for (const nodeId of nodeIds) {
 			const dirtyNode = this.dirtyNodes.get(nodeId);
 			if (dirtyNode) {
-				dirtyNode.affectedEdgeTypes.forEach((type) =>
-					affectedEdgeTypes.add(type),
-				);
+				dirtyNode.affectedEdgeTypes.forEach((type) => {
+					affectedEdgeTypes.add(type);
+				});
 			}
 		}
 
@@ -189,7 +189,7 @@ export class IncrementalInferenceEngine {
 			}
 
 			// Check cache first
-			const cacheKey = this.generateCacheKey("incremental", edgeType, nodeIds);
+			const _cacheKey = this.generateCacheKey("incremental", edgeType, nodeIds);
 			const cachedResults = this.cache.getResults("hierarchical", edgeType, {
 				nodeIds,
 			});

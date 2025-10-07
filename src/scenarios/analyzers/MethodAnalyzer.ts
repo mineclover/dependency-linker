@@ -316,7 +316,7 @@ export class MethodAnalyzer extends BaseScenarioAnalyzer {
 		const methods: MethodInfo[] = [];
 
 		// Query for method definitions
-		const methodQuery = `
+		const _methodQuery = `
 			(method_definition
 				name: (property_identifier) @method.name
 				parameters: (formal_parameters) @method.params
@@ -397,7 +397,7 @@ export class MethodAnalyzer extends BaseScenarioAnalyzer {
 	 */
 	private parseFieldDefinition(
 		node: Parser.SyntaxNode,
-		context: AnalysisContext,
+		_context: AnalysisContext,
 	): FieldInfo | null {
 		try {
 			// Extract field name - try both "property" and "name" field names
@@ -567,7 +567,7 @@ export class MethodAnalyzer extends BaseScenarioAnalyzer {
 	 */
 	private parseParameters(
 		paramsNode: Parser.SyntaxNode,
-		context: AnalysisContext,
+		_context: AnalysisContext,
 	): ParameterInfo[] {
 		const parameters: ParameterInfo[] = [];
 
@@ -763,7 +763,7 @@ export class MethodAnalyzer extends BaseScenarioAnalyzer {
 		bodyNode: Parser.SyntaxNode,
 		callerIdentifier: string,
 		callerClassName: string | undefined,
-		context: AnalysisContext,
+		_context: AnalysisContext,
 	): MethodCallInfo[] {
 		const calls: MethodCallInfo[] = [];
 
@@ -874,7 +874,7 @@ export class MethodAnalyzer extends BaseScenarioAnalyzer {
 		bodyNode: Parser.SyntaxNode,
 		methodIdentifier: string,
 		methodClassName: string | undefined,
-		context: AnalysisContext,
+		_context: AnalysisContext,
 	): FieldAccessInfo[] {
 		const accesses: FieldAccessInfo[] = [];
 

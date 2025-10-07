@@ -3,9 +3,8 @@
  * 고급 쿼리 시스템 - SQL, GraphQL, 자연어, 실시간 쿼리 통합
  */
 
-import type { GraphQLOperation, QueryAST } from "./AdvancedQueryLanguage";
 import { AdvancedQueryExecutor } from "./AdvancedQueryLanguage";
-import type { RealtimeQuery, RealtimeQueryConfig } from "./RealtimeQuerySystem";
+import type { RealtimeQueryConfig } from "./RealtimeQuerySystem";
 import { RealtimeQuerySystem } from "./RealtimeQuerySystem";
 
 export interface EnhancedQueryConfig {
@@ -405,16 +404,18 @@ export class EnhancedQuerySystem {
 	/**
 	 * 관련 캐시 무효화
 	 */
-	private invalidateRelatedCache(changeEvent: any): void {
+	private invalidateRelatedCache(_changeEvent: any): void {
 		const keysToDelete: string[] = [];
 
-		for (const [key, cached] of this.cache.entries()) {
+		for (const [key, _cached] of this.cache.entries()) {
 			// 간단한 구현: 모든 캐시 무효화
 			// 실제로는 변경 이벤트와 관련된 캐시만 무효화
 			keysToDelete.push(key);
 		}
 
-		keysToDelete.forEach((key) => this.cache.delete(key));
+		keysToDelete.forEach((key) => {
+			this.cache.delete(key);
+		});
 	}
 
 	/**

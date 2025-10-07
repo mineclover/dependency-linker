@@ -3,8 +3,6 @@
  * 성능 모니터링 및 벤치마킹 시스템
  */
 
-import type { PerformanceMetrics } from "../database/OptimizedRDFDatabase";
-
 // ===== PERFORMANCE TYPES =====
 
 /**
@@ -61,7 +59,6 @@ export interface PerformanceReport {
 export class PerformanceMonitor {
 	private measurements: PerformanceMeasurement[] = [];
 	private benchmarks: PerformanceBenchmark[] = [];
-	private isMonitoring: boolean = false;
 
 	/**
 	 * 성능 측정 시작
@@ -193,7 +190,6 @@ export class PerformanceMonitor {
 	 * 모니터링 시작
 	 */
 	startMonitoring(): void {
-		this.isMonitoring = true;
 		console.log("📊 Performance monitoring started");
 	}
 
@@ -201,7 +197,6 @@ export class PerformanceMonitor {
 	 * 모니터링 중지
 	 */
 	stopMonitoring(): void {
-		this.isMonitoring = false;
 		console.log("📊 Performance monitoring stopped");
 	}
 
@@ -274,8 +269,8 @@ export function measurePerformance(
 	metadata?: Record<string, any>,
 ) {
 	return (
-		target: any,
-		propertyName: string,
+		_target: any,
+		_propertyName: string,
 		descriptor: PropertyDescriptor,
 	) => {
 		const method = descriptor.value;

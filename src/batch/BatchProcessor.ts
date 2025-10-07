@@ -424,7 +424,7 @@ export class FileBatchProcessor extends BatchProcessor<string, any> {
 			try {
 				await fs.access(filePath);
 				return await this.fileProcessor(filePath);
-			} catch (error) {
+			} catch (_error) {
 				throw new Error(`File not found: ${filePath}`);
 			}
 		}, options);

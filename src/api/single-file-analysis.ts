@@ -11,9 +11,7 @@ import {
 	FileDependencyAnalyzer,
 	type ImportSource,
 } from "../database/services/FileDependencyAnalyzer";
-import { EnhancedMetadataTracker } from "../parsers/markdown/EnhancedMetadataTracker";
 import { MarkdownLinkTracker } from "../parsers/markdown/MarkdownLinkTracker";
-import { MarkdownParser } from "../parsers/markdown/MarkdownParser";
 
 export interface SingleFileAnalysisResult {
 	/** 파일 정보 */
@@ -134,7 +132,7 @@ export async function analyzeSingleFile(
 	);
 
 	// 마크다운 링크 분석 (마크다운 파일인 경우)
-	let markdownLinks;
+	let markdownLinks: any;
 	if (
 		fileInfo.language === "markdown" &&
 		options.validateMarkdownLinks !== false
@@ -215,7 +213,7 @@ function detectLanguage(filePath: string): SupportedLanguage {
 async function analyzeDependencies(
 	filePath: string,
 	analyzer: FileDependencyAnalyzer,
-	projectRoot: string,
+	_projectRoot: string,
 ): Promise<SingleFileAnalysisResult["dependencies"]> {
 	// 파일 분석 실행
 	// 언어 감지
@@ -227,8 +225,8 @@ async function analyzeDependencies(
 	// import 소스 추출
 	const importSources: ImportSource[] = [];
 	const importRegex = /import\s+.*?\s+from\s+['"](.+?)['"]/g;
-	let match;
-	while ((match = importRegex.exec(content)) !== null) {
+	const matches = content.matchAll(importRegex);
+	for (const match of matches) {
 		importSources.push({
 			type: match[1].startsWith(".")
 				? "relative"
@@ -245,7 +243,7 @@ async function analyzeDependencies(
 	await analyzer.analyzeFile(filePath, language, importSources);
 
 	// 데이터베이스에서 의존성 정보 조회
-	const database = analyzer["database"]; // private 접근
+	const database = analyzer.database; // private 접근
 
 	// 파일 노드 찾기
 	const fileNodes = await database.findNodes({
@@ -263,7 +261,10 @@ async function analyzeDependencies(
 	const fileNode = fileNodes[0];
 
 	// 의존성 관계 조회
-	const dependencies = await database.findNodeDependencies(fileNode.id!, [
+	if (!fileNode.id) {
+		throw new Error("File node ID is required");
+	}
+	const dependencies = await database.findNodeDependencies(fileNode.id, [
 		"imports_file",
 		"imports_library",
 		"uses",
@@ -317,7 +318,7 @@ async function analyzeDependencies(
  */
 async function analyzeMarkdownLinks(
 	filePath: string,
-	content: string,
+	_content: string,
 	projectRoot: string,
 ): Promise<SingleFileAnalysisResult["markdownLinks"]> {
 	const linkTracker = new MarkdownLinkTracker(projectRoot);
@@ -348,14 +349,14 @@ async function analyzeMarkdownLinks(
  * 메타데이터 생성
  */
 async function generateMetadata(
-	filePath: string,
+	_filePath: string,
 	content: string,
 	dependencies: SingleFileAnalysisResult["dependencies"],
-	markdownLinks: SingleFileAnalysisResult["markdownLinks"],
+	_markdownLinks: SingleFileAnalysisResult["markdownLinks"],
 	startTime: number,
 ): Promise<SingleFileAnalysisResult["metadata"]> {
 	// 파일 해시 계산
-	const crypto = await import("crypto");
+	const crypto = await import("node:crypto");
 	const fileHash = crypto.createHash("sha256").update(content).digest("hex");
 
 	// 통계 계산

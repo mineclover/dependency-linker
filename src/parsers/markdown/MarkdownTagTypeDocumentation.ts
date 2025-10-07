@@ -53,7 +53,6 @@ export interface TagTypeDocumentation {
  */
 export class MarkdownTagTypeDocumentationGenerator {
 	private tagTypeContainer: TagTypeContainer;
-	private tagTypeValidator: MarkdownTagTypeValidator;
 
 	constructor() {
 		this.tagTypeContainer = globalTagTypeContainer;
@@ -351,7 +350,7 @@ ${documentation.description}
 	 * 사용 가이드 생성
 	 */
 	private generateUsageGuide(
-		tagTypes: TagTypeDefinition[],
+		_tagTypes: TagTypeDefinition[],
 	): TagTypeDocumentation["usageGuide"] {
 		return {
 			writingRules: [
@@ -410,10 +409,10 @@ ${documentation.description}
 
 		// 사용량 통계
 		// TagValidationResult에는 tagsByType이 없으므로 간단히 처리
-		for (const result of analysisResults) {
+		for (const _result of analysisResults) {
 			// 각 결과에 대해 기본 카운트 추가
-			typeUsageCounts["function_definition"] =
-				(typeUsageCounts["function_definition"] || 0) + 1;
+			typeUsageCounts.function_definition =
+				(typeUsageCounts.function_definition || 0) + 1;
 		}
 
 		const mostUsedTypes = Object.entries(typeUsageCounts)

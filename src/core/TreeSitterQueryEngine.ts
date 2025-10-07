@@ -47,7 +47,7 @@ export class TreeSitterQueryEngine {
 	): QueryMatch[] {
 		try {
 			// 언어별 Language 객체 가져오기
-			let languageObj;
+			let languageObj: any;
 			switch (language) {
 				case "typescript":
 				case "tsx":

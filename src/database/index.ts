@@ -116,7 +116,7 @@ export class GraphAnalysisSystem {
 			if (!nodesByType.has(node.type)) {
 				nodesByType.set(node.type, []);
 			}
-			nodesByType.get(node.type)!.push(node);
+			nodesByType.get(node.type)?.push(node);
 		}
 
 		// 통계 계산

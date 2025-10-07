@@ -74,7 +74,7 @@ export class PerformanceOptimizationHandler {
 	async analyzeProject(
 		projectName?: string,
 		filePatterns?: string[],
-		options?: {
+		_options?: {
 			enableCaching?: boolean;
 			enableBatchProcessing?: boolean;
 			enableVisualization?: boolean;
@@ -378,9 +378,9 @@ export class PerformanceOptimizationHandler {
 			console.log(`🏃 성능 벤치마크 실행`);
 
 			const iterations = options?.iterations || 10;
-			const includeMemory = options?.includeMemory ?? true;
-			const includeCPU = options?.includeCPU ?? true;
-			const includeCache = options?.includeCache ?? true;
+			const _includeMemory = options?.includeMemory ?? true;
+			const _includeCPU = options?.includeCPU ?? true;
+			const _includeCache = options?.includeCache ?? true;
 
 			const results = [];
 

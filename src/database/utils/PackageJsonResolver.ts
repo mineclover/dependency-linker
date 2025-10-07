@@ -3,8 +3,8 @@
  * package.json 파일에서 실제 설치된 라이브러리 버전 정보를 추출
  */
 
-import * as fs from "fs";
-import * as path from "path";
+import * as fs from "node:fs";
+import * as path from "node:path";
 
 export interface PackageInfo {
 	name: string;
@@ -74,7 +74,7 @@ export class PackageJsonResolver {
 		];
 
 		for (const { deps, isDev, isPeer, isOptional } of dependencyTypes) {
-			if (deps && deps[libraryName]) {
+			if (deps?.[libraryName]) {
 				const version = deps[libraryName];
 				const packageInfo: PackageInfo = {
 					name: libraryName,

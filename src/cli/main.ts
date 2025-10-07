@@ -4,8 +4,6 @@
  */
 
 import { Command } from "commander";
-import { glob } from "glob";
-import { createRDFAddress, validateRDFAddress } from "../core/RDFAddress.js";
 // Action 모듈 임포트
 import {
 	executeAnalyzeAction,

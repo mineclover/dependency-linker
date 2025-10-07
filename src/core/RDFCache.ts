@@ -7,7 +7,6 @@ import type {
 	RDFAddressSearchResult,
 	RDFStatistics,
 } from "../database/RDFIntegratedGraphDatabase";
-import type { NodeType } from "./RDFAddress";
 
 // ===== CACHE TYPES =====
 
@@ -185,7 +184,7 @@ export class RDFCache {
 	 * 캐시 정리
 	 */
 	cleanup(): void {
-		const now = Date.now();
+		const _now = Date.now();
 		const expiredKeys: string[] = [];
 
 		for (const [key, item] of this.cache.entries()) {
@@ -194,7 +193,9 @@ export class RDFCache {
 			}
 		}
 
-		expiredKeys.forEach((key) => this.cache.delete(key));
+		expiredKeys.forEach((key) => {
+			this.cache.delete(key);
+		});
 		this.updateStatistics();
 	}
 

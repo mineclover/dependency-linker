@@ -176,7 +176,7 @@ export class NamespaceOptimizer {
 	 * 사용 가능한 namespace 목록 가져오기
 	 */
 	private async getAvailableNamespaces(
-		manager: AnalysisNamespaceManager,
+		_manager: AnalysisNamespaceManager,
 	): Promise<string[]> {
 		try {
 			// 임시로 빈 배열 반환
@@ -269,7 +269,7 @@ export class NamespaceOptimizer {
 	/**
 	 * namespace 메모리 최적화
 	 */
-	private async optimizeNamespaceMemory(namespace: string): Promise<void> {
+	private async optimizeNamespaceMemory(_namespace: string): Promise<void> {
 		// 메모리 사용량 모니터링 및 최적화
 		const memoryUsage = process.memoryUsage();
 		if (memoryUsage.heapUsed > this.options.memoryLimit * 1024 * 1024) {
@@ -284,8 +284,8 @@ export class NamespaceOptimizer {
 	 * 최적화된 설정 생성
 	 */
 	private async generateOptimizedConfig(
-		manager: AnalysisNamespaceManager,
-		namespace: string,
+		_manager: AnalysisNamespaceManager,
+		_namespace: string,
 	): Promise<any> {
 		// namespace별 특성에 맞는 최적화된 설정 생성
 		const baseConfig = {}; // 임시로 빈 객체
@@ -308,7 +308,7 @@ export class NamespaceOptimizer {
 	private async calculatePerformanceMetrics(): Promise<
 		NamespaceOptimizationResult["performanceMetrics"]
 	> {
-		const measurements = {}; // 임시로 빈 객체
+		const _measurements = {}; // 임시로 빈 객체
 		const processingTime = 0;
 
 		// 처리량 계산 (대략적)
@@ -390,7 +390,7 @@ export class NamespaceOptimizer {
 
 		for (const namespace of namespaces) {
 			try {
-				const config = {}; // 임시로 빈 객체
+				const _config = {}; // 임시로 빈 객체
 				const fileCount = 0;
 
 				// 성능 측정

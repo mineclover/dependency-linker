@@ -104,8 +104,6 @@ export interface NodeEvolutionAnalysis {
  */
 export class NodeCentricAnalyzer {
 	private db: GraphDatabase;
-	private queryEngine: GraphQueryEngine;
-	private nodeIdentifier: NodeIdentifier;
 	private defaultOptions: Required<NodeAnalysisOptions>;
 
 	constructor(
@@ -153,7 +151,7 @@ export class NodeCentricAnalyzer {
 
 		return {
 			node: {
-				id: node.id!.toString(),
+				id: node.id?.toString(),
 				identifier: node.identifier,
 				type: node.type,
 				name: node.name,
@@ -182,7 +180,7 @@ export class NodeCentricAnalyzer {
 		}
 
 		const center: NodeReference = {
-			id: centerNode.id!.toString(),
+			id: centerNode.id?.toString(),
 			identifier: centerNode.identifier,
 			type: centerNode.type,
 			name: centerNode.name,
@@ -235,7 +233,7 @@ export class NodeCentricAnalyzer {
 		}
 
 		const nodeRef: NodeReference = {
-			id: node.id!.toString(),
+			id: node.id?.toString(),
 			identifier: node.identifier,
 			type: node.type,
 			name: node.name,
@@ -310,7 +308,7 @@ export class NodeCentricAnalyzer {
 		}
 
 		return path.nodes.map((node, index) => ({
-			id: node.id!.toString(),
+			id: node.id?.toString(),
 			identifier: node.identifier,
 			type: node.type,
 			name: node.name,
@@ -435,11 +433,11 @@ export class NodeCentricAnalyzer {
 			nodeId.toString(),
 			async (id) => {
 				const edges = await this.db.findNodeDependencies(
-					parseInt(id),
+					parseInt(id, 10),
 					options.edgeTypes,
 				);
 				return edges.map((node) => ({
-					to: node.id!.toString(),
+					to: node.id?.toString(),
 					type: "dependency",
 				}));
 			},
@@ -595,7 +593,7 @@ export class NodeCentricAnalyzer {
 
 	private async identifyNodeClusters(
 		nodes: NodeReference[],
-		options: Required<NodeAnalysisOptions>,
+		_options: Required<NodeAnalysisOptions>,
 	): Promise<NodeCluster[]> {
 		// 간단한 클러스터링 알고리즘 (타입 기반)
 		const clusters: NodeCluster[] = [];
@@ -605,7 +603,7 @@ export class NodeCentricAnalyzer {
 			if (!nodesByType.has(node.type)) {
 				nodesByType.set(node.type, []);
 			}
-			nodesByType.get(node.type)!.push(node);
+			nodesByType.get(node.type)?.push(node);
 		});
 
 		for (const [type, typeNodes] of nodesByType) {
@@ -659,7 +657,7 @@ export class NodeCentricAnalyzer {
 		return "high";
 	}
 
-	private estimateChangeFrequency(node: any): number {
+	private estimateChangeFrequency(_node: any): number {
 		// 메타데이터나 파일 정보 기반으로 변경 빈도 추정
 		return Math.random(); // 실제로는 git 이력이나 메타데이터 활용
 	}
@@ -704,7 +702,7 @@ export class NodeCentricAnalyzer {
 	}
 
 	private generateRecommendations(
-		node: any,
+		_node: any,
 		changeFrequency: number,
 		impactRadius: number,
 		stabilityScore: number,

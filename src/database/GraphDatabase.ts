@@ -160,7 +160,7 @@ export class GraphDatabase {
         RETURNING id
       `;
 
-			this.db!.get(
+			this.db?.get(
 				sql,
 				[project.name, project.rootPath, project.description, metadata],
 				(err: Error | null, row: any) => {
@@ -190,7 +190,7 @@ export class GraphDatabase {
         RETURNING id
       `;
 
-			this.db!.get(
+			this.db?.get(
 				sql,
 				[session.projectId, session.name, config, stats],
 				(err: Error | null, row: any) => {
@@ -232,7 +232,7 @@ export class GraphDatabase {
         RETURNING id
       `;
 
-			this.db!.get(
+			this.db?.get(
 				sql,
 				[
 					node.identifier,
@@ -279,7 +279,7 @@ export class GraphDatabase {
         RETURNING id
       `;
 
-			this.db!.get(
+			this.db?.get(
 				sql,
 				[
 					relationship.fromNodeId,
@@ -347,7 +347,7 @@ export class GraphDatabase {
     `;
 
 		return new Promise((resolve, reject) => {
-			this.db!.all(sql, params, (err: Error | null, rows: any[]) => {
+			this.db?.all(sql, params, (err: Error | null, rows: any[]) => {
 				if (err) {
 					reject(new Error(`Failed to find nodes: ${err.message}`));
 				} else {
@@ -427,7 +427,7 @@ export class GraphDatabase {
     `;
 
 		return new Promise((resolve, reject) => {
-			this.db!.all(sql, params, (err: Error | null, rows: any[]) => {
+			this.db?.all(sql, params, (err: Error | null, rows: any[]) => {
 				if (err) {
 					reject(new Error(`Failed to find relationships: ${err.message}`));
 				} else {
@@ -474,7 +474,7 @@ export class GraphDatabase {
 			: [nodeId];
 
 		return new Promise((resolve, reject) => {
-			this.db!.all(sql, params, (err: Error | null, rows: any[]) => {
+			this.db?.all(sql, params, (err: Error | null, rows: any[]) => {
 				if (err) {
 					reject(new Error(`Failed to find node dependencies: ${err.message}`));
 				} else {
@@ -524,7 +524,7 @@ export class GraphDatabase {
 			: [nodeId];
 
 		return new Promise((resolve, reject) => {
-			this.db!.all(sql, params, (err: Error | null, rows: any[]) => {
+			this.db?.all(sql, params, (err: Error | null, rows: any[]) => {
 				if (err) {
 					reject(new Error(`Failed to find node dependents: ${err.message}`));
 				} else {
@@ -587,7 +587,7 @@ export class GraphDatabase {
     `;
 
 		return new Promise((resolve, reject) => {
-			this.db!.get(
+			this.db?.get(
 				sql,
 				[fromNodeId, maxDepth, toNodeId, toNodeId],
 				async (err: Error | null, row: any) => {
@@ -635,11 +635,11 @@ export class GraphDatabase {
              start_line, start_column, end_line, end_column
       FROM nodes
       WHERE id IN (${placeholders})
-      ORDER BY CASE ${nodeIds.map((id, index) => `WHEN id = ? THEN ${index}`).join(" ")} END
+      ORDER BY CASE ${nodeIds.map((_id, index) => `WHEN id = ? THEN ${index}`).join(" ")} END
     `;
 
 		return new Promise((resolve, reject) => {
-			this.db!.all(
+			this.db?.all(
 				sql,
 				[...nodeIds, ...nodeIds],
 				(err: Error | null, rows: any[]) => {
@@ -679,11 +679,11 @@ export class GraphDatabase {
       SELECT id, start_node_id, end_node_id, type, label, metadata, weight, source_file
       FROM edges
       WHERE id IN (${placeholders})
-      ORDER BY CASE ${relationshipIds.map((id, index) => `WHEN id = ? THEN ${index}`).join(" ")} END
+      ORDER BY CASE ${relationshipIds.map((_id, index) => `WHEN id = ? THEN ${index}`).join(" ")} END
     `;
 
 		return new Promise((resolve, reject) => {
-			this.db!.all(
+			this.db?.all(
 				sql,
 				[...relationshipIds, ...relationshipIds],
 				(err: Error | null, rows: any[]) => {
@@ -722,7 +722,7 @@ export class GraphDatabase {
     `;
 
 		return new Promise((resolve, reject) => {
-			this.db!.run(
+			this.db?.run(
 				sql,
 				[
 					definition.type,
@@ -795,7 +795,7 @@ export class GraphDatabase {
 		const sql = `UPDATE edge_types SET ${setParts.join(", ")} WHERE type = ?`;
 
 		return new Promise((resolve, reject) => {
-			this.db!.run(sql, values, (err: Error | null) => {
+			this.db?.run(sql, values, (err: Error | null) => {
 				if (err) {
 					reject(new Error(`Failed to update edge type: ${err.message}`));
 				} else {
@@ -812,7 +812,7 @@ export class GraphDatabase {
 		const sql = `DELETE FROM edge_types WHERE type = ?`;
 
 		return new Promise((resolve, reject) => {
-			this.db!.run(sql, [type], (err: Error | null) => {
+			this.db?.run(sql, [type], (err: Error | null) => {
 				if (err) {
 					reject(new Error(`Failed to delete edge type: ${err.message}`));
 				} else {
@@ -835,7 +835,7 @@ export class GraphDatabase {
     `;
 
 		return new Promise((resolve, reject) => {
-			this.db!.all(sql, [edgeType], (err: Error | null, rows: any[]) => {
+			this.db?.all(sql, [edgeType], (err: Error | null, rows: any[]) => {
 				if (err) {
 					reject(new Error(`Failed to get edges by type: ${err.message}`));
 				} else {
@@ -864,7 +864,7 @@ export class GraphDatabase {
 		const sql = `DELETE FROM edges WHERE type = ? AND JSON_EXTRACT(metadata, '$.inferred') = 1`;
 
 		return new Promise((resolve, reject) => {
-			this.db!.run(sql, [edgeType], (err: Error | null) => {
+			this.db?.run(sql, [edgeType], (err: Error | null) => {
 				if (err) {
 					reject(new Error(`Failed to clear inference cache: ${err.message}`));
 				} else {
@@ -881,7 +881,7 @@ export class GraphDatabase {
 		const sql = `DELETE FROM edges WHERE id = ?`;
 
 		return new Promise((resolve, reject) => {
-			this.db!.run(sql, [relationshipId], (err: Error | null) => {
+			this.db?.run(sql, [relationshipId], (err: Error | null) => {
 				if (err) {
 					reject(new Error(`Failed to delete relationship: ${err.message}`));
 				} else {
@@ -915,7 +915,7 @@ export class GraphDatabase {
 		}
 
 		return new Promise((resolve, reject) => {
-			this.db!.run(sql, params, function (err: Error | null) {
+			this.db?.run(sql, params, function (err: Error | null) {
 				if (err) {
 					reject(
 						new Error(`Failed to delete node relationships: ${err.message}`),
@@ -968,7 +968,7 @@ export class GraphDatabase {
     `;
 
 		return new Promise((resolve, reject) => {
-			this.db!.run(
+			this.db?.run(
 				sql,
 				[sourceFile, ...edgeTypes],
 				function (err: Error | null) {
@@ -995,7 +995,7 @@ export class GraphDatabase {
 		const sql = `DELETE FROM nodes WHERE id = ?`;
 
 		return new Promise((resolve, reject) => {
-			this.db!.run(sql, [nodeId], (err: Error | null) => {
+			this.db?.run(sql, [nodeId], (err: Error | null) => {
 				if (err) {
 					reject(new Error(`Failed to delete node: ${err.message}`));
 				} else {
@@ -1047,7 +1047,7 @@ export class GraphDatabase {
         GROUP BY ${groupByField}
       `;
 
-			this.db!.all(sql, [], (err: Error | null, rows: any[]) => {
+			this.db?.all(sql, [], (err: Error | null, rows: any[]) => {
 				if (err) {
 					reject(new Error(`Failed to get table counts: ${err.message}`));
 				} else {
@@ -1110,7 +1110,7 @@ export class GraphDatabase {
 			: [];
 
 		return new Promise((resolve, reject) => {
-			this.db!.all(sql, params, async (err, rows: any[]) => {
+			this.db?.all(sql, params, async (err, rows: any[]) => {
 				if (err) {
 					reject(
 						new Error(`Failed to find circular dependencies: ${err.message}`),
@@ -1142,7 +1142,7 @@ export class GraphDatabase {
 		if (!this.db) return;
 
 		return new Promise((resolve, reject) => {
-			this.db!.close((err: Error | null) => {
+			this.db?.close((err: Error | null) => {
 				if (err) {
 					reject(new Error(`Failed to close database: ${err.message}`));
 				} else {
@@ -1197,7 +1197,7 @@ export class GraphDatabase {
 				queries.map(
 					(sql) =>
 						new Promise<any>((res, rej) => {
-							this.db!.all(sql, [], (err: Error | null, rows: any) => {
+							this.db?.all(sql, [], (err: Error | null, rows: any) => {
 								if (err) rej(err);
 								else res(rows);
 							});
@@ -1337,7 +1337,7 @@ export class GraphDatabase {
     `;
 
 		return new Promise((resolve, reject) => {
-			this.db!.all(
+			this.db?.all(
 				sql,
 				[fromNodeId, edgeType, maxDepth, edgeType],
 				(err: Error | null, rows: any[]) => {
@@ -1431,7 +1431,7 @@ export class GraphDatabase {
     `;
 
 		return new Promise((resolve, reject) => {
-			this.db!.all(
+			this.db?.all(
 				sql,
 				[
 					fromNodeId,

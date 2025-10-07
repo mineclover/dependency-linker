@@ -444,16 +444,6 @@ export class UnknownSymbolPerformanceOptimizer {
 		return await this.database.runQuery(sql, params);
 	}
 
-	private async getIndexSize(): Promise<number> {
-		const result = await this.database.runQuery(`
-			SELECT SUM(pgsize) as total_size 
-			FROM dbstat 
-			WHERE name LIKE 'idx_%'
-		`);
-
-		return result[0]?.total_size || 0;
-	}
-
 	private generateCacheKey(conditions: any): string {
 		return `unknown_nodes_${JSON.stringify(conditions)}`;
 	}

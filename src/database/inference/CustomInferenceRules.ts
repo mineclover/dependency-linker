@@ -4,7 +4,6 @@
  */
 
 import type { GraphDatabase } from "../GraphDatabase";
-import type { InferredRelationship } from "./InferenceTypes";
 
 export interface CustomRule {
 	id: string;
@@ -426,7 +425,7 @@ export class CustomInferenceRuleEngine implements CustomRuleEngine {
 	 */
 	private async executeUpdatePropertyAction(
 		action: RuleAction,
-		context: RuleExecutionContext,
+		_context: RuleExecutionContext,
 		result: RuleExecutionResult,
 	): Promise<void> {
 		if (!action.propertyName || action.propertyValue === undefined) {
@@ -471,7 +470,7 @@ export class CustomInferenceRuleEngine implements CustomRuleEngine {
 	private async executeCustomFunctionAction(
 		action: RuleAction,
 		context: RuleExecutionContext,
-		result: RuleExecutionResult,
+		_result: RuleExecutionResult,
 	): Promise<void> {
 		if (!action.customFunction) {
 			return;
@@ -515,7 +514,7 @@ export class CustomInferenceRuleEngine implements CustomRuleEngine {
 	private validateCondition(
 		condition: RuleCondition,
 		errors: string[],
-		warnings: string[],
+		_warnings: string[],
 	): void {
 		if (!condition.type) {
 			errors.push("Condition type is required");
@@ -560,7 +559,7 @@ export class CustomInferenceRuleEngine implements CustomRuleEngine {
 	private validateAction(
 		action: RuleAction,
 		errors: string[],
-		warnings: string[],
+		_warnings: string[],
 	): void {
 		if (!action.type) {
 			errors.push("Action type is required");

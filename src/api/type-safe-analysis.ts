@@ -428,7 +428,7 @@ export const DEFAULT_COMPLIANCE_RULES: ComplianceRule[] = [
 			"Interface properties should follow camelCase naming convention",
 		severity: "info",
 		check: (symbols) => {
-			const interfaceSymbols = symbols.filter((s) => s.type === "interface");
+			const _interfaceSymbols = symbols.filter((s) => s.type === "interface");
 			const violations: SymbolInfo[] = [];
 
 			// This is a simplified check - in reality, we'd need to analyze interface properties

@@ -9,17 +9,15 @@ import type { GraphDatabase } from "../GraphDatabase";
 import { ConfigValidators, PERFORMANCE_CONSTANTS } from "./Constants";
 import { EdgeTypeRegistry } from "./EdgeTypeRegistry";
 import { ERROR_CODES, ErrorHandler } from "./ErrorHandler";
-import {
-	type HierarchicalQueryOptions,
-	InferenceCacheEntry,
-	type InferenceEngineConfig,
-	InferencePath,
-	type InferenceResult,
-	type InferenceStatistics,
-	type InferenceValidationResult,
-	type InferredRelationship,
-	type InheritableQueryOptions,
-	type TransitiveQueryOptions,
+import type {
+	HierarchicalQueryOptions,
+	InferenceEngineConfig,
+	InferenceResult,
+	InferenceStatistics,
+	InferenceValidationResult,
+	InferredRelationship,
+	InheritableQueryOptions,
+	TransitiveQueryOptions,
 } from "./InferenceTypes";
 
 export class InferenceEngine {
@@ -67,7 +65,7 @@ export class InferenceEngine {
 			maxDepth = this.config.defaultMaxHierarchyDepth,
 		} = options;
 
-		const startTime = Date.now();
+		const _startTime = Date.now();
 		const inferences: InferredRelationship[] = [];
 
 		// Edge type 정의 가져오기
@@ -153,7 +151,7 @@ export class InferenceEngine {
 			);
 		}
 
-		const inferences: InferredRelationship[] = [];
+		const _inferences: InferredRelationship[] = [];
 
 		// SQL Recursive CTE로 전이적 관계 추론
 		const sql = `
@@ -205,7 +203,7 @@ export class InferenceEngine {
 		return ErrorHandler.safeExecute(
 			() =>
 				new Promise<InferredRelationship[]>((resolve, reject) => {
-					this.database["db"]!.all(
+					this.database.db?.all(
 						sql,
 						[
 							fromNodeId,
@@ -263,7 +261,7 @@ export class InferenceEngine {
 			throw new Error(`Edge type '${inheritableType}' is not inheritable`);
 		}
 
-		const inferences: InferredRelationship[] = [];
+		const _inferences: InferredRelationship[] = [];
 
 		// SQL로 상속 가능한 관계 추론
 		const sql = `
@@ -317,7 +315,7 @@ export class InferenceEngine {
     `;
 
 		return new Promise((resolve, reject) => {
-			this.database["db"]!.all(
+			this.database.db?.all(
 				sql,
 				[
 					fromNodeId,
@@ -451,7 +449,7 @@ export class InferenceEngine {
 	 */
 	private async clearCache(): Promise<void> {
 		return new Promise((resolve, reject) => {
-			this.database["db"]!.run(
+			this.database.db?.run(
 				"DELETE FROM edge_inference_cache",
 				(err: Error | null) => {
 					if (err) {
@@ -507,7 +505,7 @@ export class InferenceEngine {
         WHERE depth > 1  -- 직접 관계 제외
       `;
 
-			this.database["db"]!.run(
+			this.database.db?.run(
 				sql,
 				[edgeType, edgeType, edgeType, this.config.defaultMaxPathLength],
 				function (err: Error | null) {
@@ -541,7 +539,7 @@ export class InferenceEngine {
           AND parent_edge.start_node_id != child_edge.end_node_id
       `;
 
-			this.database["db"]!.run(
+			this.database.db?.run(
 				sql,
 				[edgeType, edgeType, edgeType],
 				function (err: Error | null) {
@@ -638,7 +636,7 @@ export class InferenceEngine {
         LIMIT 100  -- 최대 100개 사이클만
       `;
 
-			this.database["db"]!.all(
+			this.database.db?.all(
 				sql,
 				[edgeType, edgeType],
 				(err: Error | null, rows: any[]) => {
@@ -701,37 +699,6 @@ export class InferenceEngine {
 	}
 
 	/**
-	 * 추론 통계 계산 (Sync version - deprecated)
-	 * @deprecated Use calculateStatisticsAsync for accurate cache count
-	 */
-	private calculateStatistics(
-		inferences: InferredRelationship[],
-	): InferenceStatistics {
-		const inferredByType = {
-			hierarchical: 0,
-			transitive: 0,
-			inheritable: 0,
-		};
-
-		let totalDepth = 0;
-		let maxDepth = 0;
-
-		for (const inference of inferences) {
-			inferredByType[inference.path.inferenceType]++;
-			totalDepth += inference.path.depth;
-			maxDepth = Math.max(maxDepth, inference.path.depth);
-		}
-
-		return {
-			directRelationships: inferences.filter((i) => i.path.depth === 1).length,
-			inferredByType,
-			cachedInferences: 0, // Always 0 in sync version
-			averageDepth: inferences.length > 0 ? totalDepth / inferences.length : 0,
-			maxDepth,
-		};
-	}
-
-	/**
 	 * 캐시된 추론 수 조회 (비동기)
 	 */
 	private async getCachedInferenceCountAsync(): Promise<number> {
@@ -740,7 +707,7 @@ export class InferenceEngine {
 		}
 
 		return new Promise((resolve) => {
-			this.database["db"]!.get(
+			this.database.db?.get(
 				"SELECT COUNT(*) as count FROM edge_inference_cache",
 				(err: Error | null, row: any) => {
 					if (err) {
@@ -752,15 +719,5 @@ export class InferenceEngine {
 				},
 			);
 		});
-	}
-
-	/**
-	 * 캐시된 추론 수 조회 (동기 - 통계 계산용)
-	 * Note: 정확도보다 성능을 위해 0을 반환 (실제 캐시 수는 비동기 메서드 사용)
-	 */
-	private getCachedInferenceCount(): number {
-		// calculateStatistics는 동기 메서드이므로 0 반환
-		// 정확한 캐시 수가 필요하면 getCachedInferenceCountAsync() 사용
-		return 0;
 	}
 }

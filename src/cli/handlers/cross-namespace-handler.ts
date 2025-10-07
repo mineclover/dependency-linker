@@ -180,10 +180,10 @@ export class CrossNamespaceHandler {
 
 			console.log(`🔍 Cross-Namespace 의존성 조회`);
 
-			const crossDeps = await this.graphDB!.getCrossNamespaceDependencies();
+			const crossDeps = await this.graphDB?.getCrossNamespaceDependencies();
 
 			// 필터링 적용
-			let filteredDeps = crossDeps;
+			let filteredDeps = crossDeps || [];
 			if (options?.sourceNamespace) {
 				filteredDeps = filteredDeps.filter(
 					(dep) => dep.sourceNamespace === options.sourceNamespace,
@@ -240,7 +240,8 @@ export class CrossNamespaceHandler {
 			let circularDeps: string[][];
 			if (namespace) {
 				circularDeps =
-					await this.graphDB!.findNamespaceCircularDependencies(namespace);
+					(await this.graphDB?.findNamespaceCircularDependencies(namespace)) ||
+					[];
 			} else {
 				// 모든 네임스페이스의 순환 의존성 조회
 				const config = await configManager.loadConfig(this.options.configPath);
@@ -249,7 +250,7 @@ export class CrossNamespaceHandler {
 
 				for (const ns of namespaceNames) {
 					const nsCircularDeps =
-						await this.graphDB!.findNamespaceCircularDependencies(ns);
+						(await this.graphDB?.findNamespaceCircularDependencies(ns)) || [];
 					circularDeps.push(...nsCircularDeps);
 				}
 			}
@@ -335,8 +336,8 @@ export class CrossNamespaceHandler {
 		namespace: string,
 	): Promise<void> {
 		await this.initializeGraphDB();
-		const crossDeps = await this.graphDB!.getCrossNamespaceDependencies();
-		const namespaceDeps = crossDeps.filter(
+		const crossDeps = await this.graphDB?.getCrossNamespaceDependencies();
+		const namespaceDeps = (crossDeps || []).filter(
 			(dep) =>
 				dep.sourceNamespace === namespace || dep.targetNamespace === namespace,
 		);
@@ -359,11 +360,11 @@ export class CrossNamespaceHandler {
 	 */
 	private async showAllCrossNamespaceDependencies(): Promise<void> {
 		await this.initializeGraphDB();
-		const crossDeps = await this.graphDB!.getCrossNamespaceDependencies();
+		const crossDeps = await this.graphDB?.getCrossNamespaceDependencies();
 
-		if (crossDeps.length > 0) {
+		if ((crossDeps || []).length > 0) {
 			console.log(`\n📋 모든 Cross-Namespace 의존성:`);
-			crossDeps.forEach((dep, index) => {
+			(crossDeps || []).forEach((dep, index) => {
 				console.log(
 					`  ${index + 1}. ${dep.sourceNamespace} → ${dep.targetNamespace}`,
 				);
@@ -405,7 +406,7 @@ export class CrossNamespaceHandler {
 	private async showCircularDependencies(namespace: string): Promise<void> {
 		await this.initializeGraphDB();
 		const circularDeps =
-			await this.graphDB!.findNamespaceCircularDependencies(namespace);
+			(await this.graphDB?.findNamespaceCircularDependencies(namespace)) || [];
 
 		if (circularDeps.length > 0) {
 			console.log(`\n📋 ${namespace} 순환 의존성:`);
@@ -431,7 +432,7 @@ export class CrossNamespaceHandler {
 		let totalEdges = 0;
 		let totalCircularDependencies = 0;
 
-		for (const [namespace, result] of Object.entries(results)) {
+		for (const [_namespace, result] of Object.entries(results)) {
 			totalFiles += result.totalFiles;
 			totalAnalyzedFiles += result.analyzedFiles;
 			totalFailedFiles += result.failedFiles.length;

@@ -41,7 +41,7 @@ export async function executeDependenciesAction(
 			options.file &&
 			!(options.output === "list" || options.output === "json")
 		) {
-			const fs = await import("fs");
+			const fs = await import("node:fs");
 			if (!fs.existsSync(options.file)) {
 				console.log(`❌ File not found: ${options.file}`);
 				process.exit(1);
@@ -56,7 +56,7 @@ export async function executeDependenciesAction(
 			symbolAnalysis = await handler.analyzeSymbolDependencies(
 				options.symbol,
 				options.file,
-				parseInt(options.depth || "2"),
+				parseInt(options.depth || "2", 10),
 				options.includeExternal ?? true,
 				options.includeInternal ?? true,
 			);

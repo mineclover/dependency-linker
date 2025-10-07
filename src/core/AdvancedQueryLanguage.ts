@@ -143,12 +143,12 @@ export class AdvancedQueryParser {
 					break;
 
 				case "LIMIT":
-					ast.limit = parseInt(tokens[i + 1]);
+					ast.limit = parseInt(tokens[i + 1], 10);
 					i += 2;
 					break;
 
 				case "OFFSET":
-					ast.offset = parseInt(tokens[i + 1]);
+					ast.offset = parseInt(tokens[i + 1], 10);
 					i += 2;
 					break;
 
@@ -359,7 +359,7 @@ export class AdvancedQueryParser {
 			return value.slice(1, -1);
 		} else if (value === "true" || value === "false") {
 			return value === "true";
-		} else if (!isNaN(Number(value))) {
+		} else if (!Number.isNaN(Number(value))) {
 			return Number(value);
 		} else if (value === "null") {
 			return null;
@@ -477,7 +477,7 @@ export class AdvancedQueryExecutor {
 		// WHERE 조건 적용
 		if (ast.conditions) {
 			results = results.filter((item) =>
-				this.evaluateConditions(item, ast.conditions!),
+				this.evaluateConditions(item, ast.conditions || []),
 			);
 		}
 
@@ -485,7 +485,7 @@ export class AdvancedQueryExecutor {
 		if (ast.fields && ast.fields.length > 0) {
 			results = results.map((item) => {
 				const selected: any = {};
-				ast.fields!.forEach((field) => {
+				ast.fields?.forEach((field) => {
 					if (field === "*") {
 						Object.assign(selected, item);
 					} else {
@@ -504,7 +504,7 @@ export class AdvancedQueryExecutor {
 		// HAVING 조건 적용
 		if (ast.having) {
 			results = results.filter((item) =>
-				this.evaluateConditions(item, ast.having!),
+				this.evaluateConditions(item, ast.having || []),
 			);
 		}
 
@@ -615,7 +615,7 @@ export class AdvancedQueryExecutor {
 			if (!groups.has(key)) {
 				groups.set(key, []);
 			}
-			groups.get(key)!.push(item);
+			groups.get(key)?.push(item);
 		}
 
 		return Array.from(groups.values()).map((group) => ({
