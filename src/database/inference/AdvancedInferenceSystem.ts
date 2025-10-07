@@ -4,19 +4,19 @@
  */
 
 import type { GraphDatabase } from "../GraphDatabase";
-import type { InferredRelationship } from "./InferenceTypes";
 import {
 	CustomInferenceRuleEngine,
 	type CustomRule,
 	type RuleExecutionContext,
 } from "./CustomInferenceRules";
+import { InferenceEngine } from "./InferenceEngine";
+import type { InferredRelationship } from "./InferenceTypes";
+import { OptimizedInferenceEngine } from "./OptimizedInferenceEngine";
 import {
-	RealTimeInferenceSystem,
 	type ChangeEvent,
 	type RealTimeInferenceConfig,
+	RealTimeInferenceSystem,
 } from "./RealTimeInference";
-import { InferenceEngine } from "./InferenceEngine";
-import { OptimizedInferenceEngine } from "./OptimizedInferenceEngine";
 
 export interface AdvancedInferenceConfig {
 	enableCustomRules: boolean;

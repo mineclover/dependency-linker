@@ -16,6 +16,25 @@ export {
 	initializeAnalysisSystem,
 } from "./api/analysis";
 export {
+	createMarkdownDependencyExtractor,
+	extractMarkdownDependencies,
+} from "./core/MarkdownDependencyExtractor";
+// ===== MARKDOWN DEPENDENCY EXPORTS =====
+export type {
+	MarkdownDependency,
+	MarkdownDependencyType,
+	MarkdownExtractionResult,
+	MarkdownLocation,
+} from "./core/markdown-types";
+export {
+	extractFrontMatter,
+	isAnchorLink,
+	isExternalUrl,
+	MARKDOWN_PATTERNS,
+	normalizeMarkdownPath,
+	parseUrl,
+} from "./core/markdown-types";
+export {
 	executeAllLanguageQueries,
 	executeMultipleTreeSitterQueries,
 	executeTreeSitterQuery,
@@ -25,12 +44,11 @@ export {
 export { globalQueryEngine, QueryEngine } from "./core/QueryEngine";
 // ===== CORE SYSTEM EXPORTS =====
 export type { QueryKey, QueryResult } from "./core/QueryResultMap";
+export type { SymbolExtractorConfig } from "./core/SymbolExtractor";
 export {
-	globalTreeSitterQueryEngine,
-	TreeSitterQueryEngine,
-} from "./core/TreeSitterQueryEngine";
-export type { QueryExecutionContext, SupportedLanguage } from "./core/types";
-
+	createSymbolExtractor,
+	SymbolExtractor,
+} from "./core/SymbolExtractor";
 // ===== SYMBOL EXTRACTION EXPORTS =====
 export type {
 	ParameterInfo,
@@ -50,42 +68,11 @@ export {
 	parseSymbolNamePath,
 	SymbolKind,
 } from "./core/symbol-types";
-export type { SymbolExtractorConfig } from "./core/SymbolExtractor";
 export {
-	createSymbolExtractor,
-	SymbolExtractor,
-} from "./core/SymbolExtractor";
-
-// ===== MARKDOWN DEPENDENCY EXPORTS =====
-export type {
-	MarkdownDependency,
-	MarkdownDependencyType,
-	MarkdownExtractionResult,
-	MarkdownLocation,
-} from "./core/markdown-types";
-export {
-	extractFrontMatter,
-	isAnchorLink,
-	isExternalUrl,
-	MARKDOWN_PATTERNS,
-	normalizeMarkdownPath,
-	parseUrl,
-} from "./core/markdown-types";
-export {
-	createMarkdownDependencyExtractor,
-	extractMarkdownDependencies,
-} from "./core/MarkdownDependencyExtractor";
-export type { MarkdownToGraphOptions } from "./integration/MarkdownToGraph";
-export {
-	getAllSemanticTypes,
-	markdownDirectoryToGraph,
-	markdownFileToGraph,
-	markdownResultToGraph,
-	queryFileHeadings,
-	queryHeadingsBySemanticType,
-	queryMarkdownDependencies,
-	registerMarkdownEdgeTypes,
-} from "./integration/MarkdownToGraph";
+	globalTreeSitterQueryEngine,
+	TreeSitterQueryEngine,
+} from "./core/TreeSitterQueryEngine";
+export type { QueryExecutionContext, SupportedLanguage } from "./core/types";
 export {
 	analyzeDependencyGraph,
 	analyzeFileImpact,
@@ -119,6 +106,17 @@ export type {
 	PathResolutionOptions,
 	PathResolutionResult,
 } from "./graph/types";
+export type { MarkdownToGraphOptions } from "./integration/MarkdownToGraph";
+export {
+	getAllSemanticTypes,
+	markdownDirectoryToGraph,
+	markdownFileToGraph,
+	markdownResultToGraph,
+	queryFileHeadings,
+	queryHeadingsBySemanticType,
+	queryMarkdownDependencies,
+	registerMarkdownEdgeTypes,
+} from "./integration/MarkdownToGraph";
 // Custom Key Mapping
 export type {
 	CustomKeyMapper,
@@ -128,15 +126,15 @@ export {
 	createCustomKeyMapper,
 	predefinedCustomMappings,
 } from "./mappers/CustomKeyMapper";
-// ===== PARSER EXPORTS =====
-export type { ParseResult, ParserOptions } from "./parsers/base";
-export { GoParser } from "./parsers/go";
-export { JavaParser } from "./parsers/java";
-export { globalParserFactory, ParserFactory } from "./parsers/ParserFactory";
-export { globalParserManager, ParserManager } from "./parsers/ParserManager";
-export { PythonParser } from "./parsers/python";
-export { TypeScriptParser } from "./parsers/typescript";
-
+export {
+	ConfigManager,
+	configManager,
+	FilePatternMatcher,
+	filePatternMatcher,
+	NamespaceDependencyAnalyzer,
+	NamespaceGraphDB,
+	namespaceDependencyAnalyzer,
+} from "./namespace";
 // ===== NAMESPACE MODULE EXPORTS =====
 export type {
 	CategorizedFiles,
@@ -146,15 +144,14 @@ export type {
 	NamespaceList,
 	NamespaceWithFiles,
 } from "./namespace/types";
-export {
-	ConfigManager,
-	configManager,
-	FilePatternMatcher,
-	filePatternMatcher,
-	NamespaceDependencyAnalyzer,
-	namespaceDependencyAnalyzer,
-	NamespaceGraphDB,
-} from "./namespace";
+// ===== PARSER EXPORTS =====
+export type { ParseResult, ParserOptions } from "./parsers/base";
+export { GoParser } from "./parsers/go";
+export { JavaParser } from "./parsers/java";
+export { globalParserFactory, ParserFactory } from "./parsers/ParserFactory";
+export { globalParserManager, ParserManager } from "./parsers/ParserManager";
+export { PythonParser } from "./parsers/python";
+export { TypeScriptParser } from "./parsers/typescript";
 
 // ===== VERSION =====
 export const VERSION = "3.0.0";

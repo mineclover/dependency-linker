@@ -1,5 +1,5 @@
-import type { GraphDatabase, GraphNode } from "../GraphDatabase";
 import { performance } from "node:perf_hooks";
+import type { GraphDatabase, GraphNode } from "../GraphDatabase";
 
 export interface BatchUnknownNodeConfig {
 	batchSize?: number;

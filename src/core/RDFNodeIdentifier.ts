@@ -5,10 +5,10 @@
 
 import {
 	createRDFAddress,
-	parseRDFAddress,
 	extractNamespaceFromSymbol,
-	type RDFAddress,
 	type NodeType,
+	parseRDFAddress,
+	type RDFAddress,
 } from "./RDFAddress";
 import type {
 	RDFNodeIdentifier,

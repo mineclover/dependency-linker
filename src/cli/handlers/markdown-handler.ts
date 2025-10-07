@@ -3,23 +3,23 @@
  * 마크다운 관련 CLI 명령어들을 처리
  */
 
-import { MarkdownRDFIntegration } from "../../parsers/markdown/MarkdownRDFIntegration.js";
 import { MarkdownLinkTracker } from "../../parsers/markdown/MarkdownLinkTracker.js";
 import { MarkdownParser } from "../../parsers/markdown/MarkdownParser.js";
+import { MarkdownRDFIntegration } from "../../parsers/markdown/MarkdownRDFIntegration.js";
 import { MarkdownTagCollector } from "../../parsers/markdown/MarkdownTagCollector.js";
-import { MarkdownTagHeadingMapper } from "../../parsers/markdown/MarkdownTagHeadingMapper.js";
 import { MarkdownTagConventionManager } from "../../parsers/markdown/MarkdownTagConventionManager.js";
 import { MarkdownTagDocumentGenerator } from "../../parsers/markdown/MarkdownTagDocumentGenerator.js";
-import { MarkdownTagTypeValidator } from "../../parsers/markdown/MarkdownTagTypeValidator.js";
+import { MarkdownTagHeadingMapper } from "../../parsers/markdown/MarkdownTagHeadingMapper.js";
 import { MarkdownTagTypeDocumentationGenerator } from "../../parsers/markdown/MarkdownTagTypeDocumentation.js";
+import { MarkdownTagTypeValidator } from "../../parsers/markdown/MarkdownTagTypeValidator.js";
 import {
-	exampleMarkdown,
 	exampleHeadings,
+	exampleMarkdown,
 	markdownFiles,
 } from "../examples/markdown-examples.js";
 import {
-	exampleTags,
 	exampleTagRelationships,
+	exampleTags,
 } from "../examples/tag-examples.js";
 
 /**

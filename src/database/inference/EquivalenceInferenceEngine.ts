@@ -1,9 +1,9 @@
 import {
-	UnknownSymbol,
 	EquivalenceCandidate,
 	EquivalenceRelation,
+	type UnknownSymbol,
+	type UnknownSymbolManager,
 } from "../services/UnknownSymbolManager";
-import { UnknownSymbolManager } from "../services/UnknownSymbolManager";
 
 export interface EquivalenceRule {
 	name: string;

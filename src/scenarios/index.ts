@@ -8,58 +8,55 @@
  * - Utility functions
  */
 
-import { ScenarioRegistry } from "./ScenarioRegistry";
 import {
+	BUILTIN_SCENARIOS,
+	type BuiltinScenarioId,
 	basicStructureSpec,
 	fileDependencySpec,
-	symbolDependencySpec,
 	markdownLinkingSpec,
 	methodAnalysisSpec,
-	type BuiltinScenarioId,
-	BUILTIN_SCENARIOS,
+	symbolDependencySpec,
 } from "./builtin";
+import { ScenarioRegistry } from "./ScenarioRegistry";
 
-// ===== Type Exports =====
-export type {
-	ScenarioSpec,
-	NodeTypeSpec,
-	EdgeTypeSpec,
-	SemanticTagSpec,
-	QueryPatternSpec,
-	InferenceRuleSpec,
-	TypeCollection,
-	ScenarioValidationResult,
-	AnalysisResult,
-} from "./types";
-
-export type { BuiltinScenarioId } from "./builtin";
-
-// ===== Class Exports =====
-export { ScenarioRegistry } from "./ScenarioRegistry";
 export {
-	BaseScenarioAnalyzer,
 	type AnalysisContext,
+	BaseScenarioAnalyzer,
 } from "./BaseScenarioAnalyzer";
 
-// ===== Validation Exports =====
-export {
-	validateScenarioSpec,
-	validateNodeTypeSpec,
-	validateEdgeTypeSpec,
-	isValidVersion,
-	isValidScenarioId,
-	detectCircularDependencies,
-} from "./validation";
-
+export type { BuiltinScenarioId } from "./builtin";
 // ===== Built-in Scenarios Exports =====
 export {
+	BUILTIN_SCENARIOS,
 	basicStructureSpec,
 	fileDependencySpec,
-	symbolDependencySpec,
 	markdownLinkingSpec,
 	methodAnalysisSpec,
-	BUILTIN_SCENARIOS,
+	symbolDependencySpec,
 } from "./builtin";
+// ===== Class Exports =====
+export { ScenarioRegistry } from "./ScenarioRegistry";
+// ===== Type Exports =====
+export type {
+	AnalysisResult,
+	EdgeTypeSpec,
+	InferenceRuleSpec,
+	NodeTypeSpec,
+	QueryPatternSpec,
+	ScenarioSpec,
+	ScenarioValidationResult,
+	SemanticTagSpec,
+	TypeCollection,
+} from "./types";
+// ===== Validation Exports =====
+export {
+	detectCircularDependencies,
+	isValidScenarioId,
+	isValidVersion,
+	validateEdgeTypeSpec,
+	validateNodeTypeSpec,
+	validateScenarioSpec,
+} from "./validation";
 
 // ===== Global Registry =====
 

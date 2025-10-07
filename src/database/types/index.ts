@@ -4,5 +4,5 @@
  * Centralized export for all database type-related modules
  */
 
-export * from "./TypeRegistry";
 export * from "./EdgeTypeManager";
+export * from "./TypeRegistry";

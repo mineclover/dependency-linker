@@ -3,7 +3,7 @@
  * 마크다운 태그 컨벤션 관리
  */
 
-import { MarkdownTag } from "./MarkdownTagCollector";
+import type { MarkdownTag } from "./MarkdownTagCollector";
 
 export interface TagCategory {
 	/** 카테고리 이름 */

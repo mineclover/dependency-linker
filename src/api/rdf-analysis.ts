@@ -3,16 +3,16 @@
  * RDF 주소 체계를 사용한 분석 API
  */
 
-import { analyzeFile } from "./analysis";
 import {
-	createRDFNodeIdentifier,
 	convertToRDFSymbolExtractionResult,
+	createRDFNodeIdentifier,
 	mapLanguageToNodeType,
 	type RDFNodeIdentifier,
 	type RDFSymbolExtractionResult,
 } from "../core/RDFNodeIdentifier";
 import type { RDFAnalysisResult, SupportedLanguage } from "../core/types";
 import type { NamespaceConfig } from "../namespace/types";
+import { analyzeFile } from "./analysis";
 
 // ===== RDF ANALYSIS FUNCTIONS =====
 

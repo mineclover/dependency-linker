@@ -134,7 +134,10 @@ export class NodeIdentifier {
 	parseIdentifier(identifier: string): Partial<UniqueNodeIdentity> | null {
 		try {
 			// 외부 라이브러리/패키지 체크
-			if (identifier.startsWith("library#") || identifier.startsWith("package#")) {
+			if (
+				identifier.startsWith("library#") ||
+				identifier.startsWith("package#")
+			) {
 				const [type, name] = identifier.split("#");
 				return {
 					type: type as NodeType,
@@ -261,8 +264,13 @@ export class NodeIdentifier {
 			}
 
 			// 외부 라이브러리/패키지 검증
-			if (identifier.startsWith("library#") || identifier.startsWith("package#")) {
-				return identifier.split("#").length === 2 && identifier.split("#")[1] !== "";
+			if (
+				identifier.startsWith("library#") ||
+				identifier.startsWith("package#")
+			) {
+				return (
+					identifier.split("#").length === 2 && identifier.split("#")[1] !== ""
+				);
 			}
 
 			// RDF 주소 파싱 가능 여부로 검증
@@ -277,7 +285,10 @@ export class NodeIdentifier {
 			}
 
 			// 메타 태그가 있다면 둘 다 있어야 함
-			if ((parsed.nodeType && !parsed.symbolName) || (!parsed.nodeType && parsed.symbolName)) {
+			if (
+				(parsed.nodeType && !parsed.symbolName) ||
+				(!parsed.nodeType && parsed.symbolName)
+			) {
 				return false;
 			}
 

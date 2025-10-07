@@ -4,8 +4,8 @@
  */
 
 import {
-	parseRDFAddress,
 	compareRDFAddresses,
+	parseRDFAddress,
 	type RDFAddress,
 } from "./RDFAddress";
 import type { RDFNodeIdentifier, RDFSymbolExtractionResult } from "./types";

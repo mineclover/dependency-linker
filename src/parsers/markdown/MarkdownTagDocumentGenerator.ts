@@ -3,7 +3,7 @@
  * 마크다운 태그 문서 생성
  */
 
-import { TagAnalysisResult } from "./MarkdownTagConventionManager";
+import type { TagAnalysisResult } from "./MarkdownTagConventionManager";
 
 export interface DocumentGenerationOptions {
 	/** 문서 제목 */

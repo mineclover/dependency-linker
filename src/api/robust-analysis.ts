@@ -64,7 +64,7 @@ export function extractSymbolsWithRegex(
 
 	// 함수 선언 패턴
 	const functionPattern =
-		/^\s*(export\s+)?(async\s+)?function\s+(\w+)\s*\([^)]*\)\s*(?::\s*[\w<>\[\]|&\s]+)?\s*{/;
+		/^\s*(export\s+)?(async\s+)?function\s+(\w+)\s*\([^)]*\)\s*(?::\s*[\w<>[\]|&\s]+)?\s*{/;
 
 	// 화살표 함수 패턴
 	const arrowFunctionPattern =
@@ -72,11 +72,11 @@ export function extractSymbolsWithRegex(
 
 	// 메서드 패턴 (클래스 내부)
 	const methodPattern =
-		/^\s*(public|private|protected)?\s*(static\s+)?(async\s+)?(\w+)\s*\([^)]*\)\s*(?::\s*[\w<>\[\]|&\s]+)?\s*{/;
+		/^\s*(public|private|protected)?\s*(static\s+)?(async\s+)?(\w+)\s*\([^)]*\)\s*(?::\s*[\w<>[\]|&\s]+)?\s*{/;
 
 	// 속성 패턴 (클래스 내부)
 	const propertyPattern =
-		/^\s*(public|private|protected)?\s*(static\s+)?(readonly\s+)?(\w+)\s*:\s*[\w<>\[\]|&\s]+/;
+		/^\s*(public|private|protected)?\s*(static\s+)?(readonly\s+)?(\w+)\s*:\s*[\w<>[\]|&\s]+/;
 
 	let currentClass: string | null = null;
 	let braceCount = 0;

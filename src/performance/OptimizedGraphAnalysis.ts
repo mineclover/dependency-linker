@@ -10,17 +10,17 @@
  * 5. 메모리 최적화
  */
 
-import * as path from "node:path";
 import * as fs from "node:fs/promises";
+import * as path from "node:path";
+import { FileBatchProcessor } from "../batch/BatchProcessor.js";
+import { AdvancedCache } from "../cache/AdvancedCache.js";
+import type { SupportedLanguage } from "../core/types.js";
 import { GraphDatabase } from "../database/GraphDatabase.js";
 import {
 	FileDependencyAnalyzer,
 	type ImportSource,
 } from "../database/services/FileDependencyAnalyzer.js";
-import { AdvancedCache } from "../cache/AdvancedCache.js";
-import { FileBatchProcessor } from "../batch/BatchProcessor.js";
 import { DependencyGraphVisualizer } from "../visualization/DependencyGraphVisualizer.js";
-import type { SupportedLanguage } from "../core/types.js";
 
 export interface OptimizedAnalysisOptions {
 	/** 캐싱 활성화 */
@@ -528,6 +528,3 @@ export class OptimizedGraphAnalysis {
 		}
 	}
 }
-
-
-

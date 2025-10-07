@@ -4,18 +4,18 @@
  */
 
 import fs from "fs";
-import path from "path";
 import { glob } from "glob";
+import path from "path";
+import { analyzeMarkdownFileWithRDF } from "../api/markdown-analysis.js";
 import {
-	analyzeFileTypeSafe,
-	checkCompliance,
-	generateAnalysisReport,
 	type AnalysisConfig,
 	type AnalysisReport,
+	analyzeFileTypeSafe,
 	type ComplianceRule,
+	checkCompliance,
 	DEFAULT_COMPLIANCE_RULES,
+	generateAnalysisReport,
 } from "../api/type-safe-analysis.js";
-import { analyzeMarkdownFileWithRDF } from "../api/markdown-analysis.js";
 
 // ===== NAMESPACE CONFIGURATION =====
 
@@ -368,7 +368,7 @@ export class AnalysisNamespaceManager {
 				}
 
 				const sourceCode = fs.readFileSync(file, "utf-8");
-				
+
 				// 마크다운 파일 감지
 				if (this.isMarkdownFile(file)) {
 					// 마크다운 파일은 RDF 분석 사용
@@ -377,9 +377,9 @@ export class AnalysisNamespaceManager {
 						file,
 						"unknown-project",
 					);
-					
+
 					// RDF 심볼을 일반 심볼 형식으로 변환
-					const convertedSymbols = rdfResult.symbols.map(symbol => ({
+					const convertedSymbols = rdfResult.symbols.map((symbol) => ({
 						name: symbol.symbolName,
 						type: symbol.nodeType,
 						filePath: file,
@@ -387,7 +387,7 @@ export class AnalysisNamespaceManager {
 						columnNumber: symbol.metadata.columnNumber,
 						metadata: symbol.metadata,
 					}));
-					
+
 					allSymbols.push(...convertedSymbols);
 				} else {
 					// 일반 파일은 기존 분석 사용
@@ -425,7 +425,7 @@ export class AnalysisNamespaceManager {
 	 */
 	private isMarkdownFile(filePath: string): boolean {
 		const ext = path.extname(filePath).toLowerCase();
-		return ['.md', '.markdown', '.mdx'].includes(ext);
+		return [".md", ".markdown", ".mdx"].includes(ext);
 	}
 
 	/**

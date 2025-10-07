@@ -5,19 +5,18 @@
  * 아키텍처 원칙에 따라 모듈성을 유지하고 의존성을 명확히 관리합니다.
  */
 
+import type { FileDependencyAnalyzer } from "./FileDependencyAnalyzer";
 import { UnknownSymbolManager } from "./UnknownSymbolManager";
-import { FileDependencyAnalyzer } from "./FileDependencyAnalyzer";
-
-// Unknown Symbol System
-export { UnknownSymbolManager } from "./UnknownSymbolManager";
-export type {
-	UnknownSymbol,
-	EquivalenceCandidate,
-	EquivalenceRelation,
-} from "./UnknownSymbolManager";
 
 // File Dependency Analysis
 export { FileDependencyAnalyzer } from "./FileDependencyAnalyzer";
+export type {
+	EquivalenceCandidate,
+	EquivalenceRelation,
+	UnknownSymbol,
+} from "./UnknownSymbolManager";
+// Unknown Symbol System
+export { UnknownSymbolManager } from "./UnknownSymbolManager";
 
 // Service Factory for dependency injection
 export class ServiceFactory {
@@ -28,28 +27,28 @@ export class ServiceFactory {
 	 * Unknown Symbol Manager 싱글톤 인스턴스 반환
 	 */
 	static getUnknownSymbolManager(): UnknownSymbolManager {
-		if (!this.unknownSymbolManager) {
-			this.unknownSymbolManager = new UnknownSymbolManager();
+		if (!ServiceFactory.unknownSymbolManager) {
+			ServiceFactory.unknownSymbolManager = new UnknownSymbolManager();
 		}
-		return this.unknownSymbolManager;
+		return ServiceFactory.unknownSymbolManager;
 	}
 
 	/**
 	 * File Dependency Analyzer 싱글톤 인스턴스 반환
 	 */
 	static getFileDependencyAnalyzer(): FileDependencyAnalyzer {
-		if (!this.fileDependencyAnalyzer) {
+		if (!ServiceFactory.fileDependencyAnalyzer) {
 			// FileDependencyAnalyzer는 생성자에 인자가 필요하므로 임시로 null 반환
 			throw new Error("FileDependencyAnalyzer requires database parameter");
 		}
-		return this.fileDependencyAnalyzer;
+		return ServiceFactory.fileDependencyAnalyzer;
 	}
 
 	/**
 	 * 모든 서비스 초기화
 	 */
 	static async initializeAll(): Promise<void> {
-		const unknownManager = this.getUnknownSymbolManager();
+		const unknownManager = ServiceFactory.getUnknownSymbolManager();
 		await unknownManager.initialize();
 
 		console.log("✅ 모든 데이터베이스 서비스 초기화 완료");
@@ -59,9 +58,9 @@ export class ServiceFactory {
 	 * 모든 서비스 종료
 	 */
 	static async closeAll(): Promise<void> {
-		if (this.unknownSymbolManager) {
-			await this.unknownSymbolManager.close();
-			this.unknownSymbolManager = null;
+		if (ServiceFactory.unknownSymbolManager) {
+			await ServiceFactory.unknownSymbolManager.close();
+			ServiceFactory.unknownSymbolManager = null;
 		}
 
 		console.log("✅ 모든 데이터베이스 서비스 종료 완료");

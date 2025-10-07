@@ -5,16 +5,16 @@
  * Supports all markdown dependency types and creates appropriate edge types.
  */
 
-import type { GraphDatabase } from "../database/GraphDatabase";
+import * as fs from "node:fs";
+import * as path from "node:path";
+import { extractMarkdownDependencies } from "../core/MarkdownDependencyExtractor";
 import type {
 	MarkdownDependency,
 	MarkdownDependencyType,
 	MarkdownExtractionResult,
 } from "../core/markdown-types";
 import type { SupportedLanguage } from "../core/types";
-import { extractMarkdownDependencies } from "../core/MarkdownDependencyExtractor";
-import * as fs from "node:fs";
-import * as path from "node:path";
+import type { GraphDatabase } from "../database/GraphDatabase";
 
 /**
  * Markdown edge type mapping to GraphDB edge types

@@ -5,12 +5,12 @@
 
 import { EventEmitter } from "events";
 import type { GraphDatabase } from "../GraphDatabase";
-import type { InferredRelationship } from "./InferenceTypes";
 import {
 	CustomInferenceRuleEngine,
 	type CustomRule,
 	type RuleExecutionContext,
 } from "./CustomInferenceRules";
+import type { InferredRelationship } from "./InferenceTypes";
 
 export interface RealTimeInferenceConfig {
 	enableChangeDetection: boolean;

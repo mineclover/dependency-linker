@@ -5,8 +5,8 @@
 
 import type { GraphDatabase } from "../GraphDatabase";
 import { EdgeTypeRegistry } from "./EdgeTypeRegistry";
-import { InferenceLRUCache } from "./LRUCache";
 import type { InferredRelationship } from "./InferenceTypes";
+import { InferenceLRUCache } from "./LRUCache";
 
 export interface IncrementalInferenceConfig {
 	enableIncremental: boolean;
@@ -40,7 +40,10 @@ export class IncrementalInferenceEngine {
 	private dirtyNodes = new Map<number, DirtyNode>();
 	private debounceTimer?: NodeJS.Timeout;
 
-	constructor(database: GraphDatabase, config?: Partial<IncrementalInferenceConfig>) {
+	constructor(
+		database: GraphDatabase,
+		config?: Partial<IncrementalInferenceConfig>,
+	) {
 		this.database = database;
 		this.config = {
 			enableIncremental: config?.enableIncremental ?? true,
@@ -67,7 +70,7 @@ export class IncrementalInferenceEngine {
 			existing.lastModified = now;
 			if (affectedEdgeTypes) {
 				existing.affectedEdgeTypes = [
-					...new Set([...existing.affectedEdgeTypes, ...affectedEdgeTypes])
+					...new Set([...existing.affectedEdgeTypes, ...affectedEdgeTypes]),
 				];
 			}
 		} else {
@@ -91,7 +94,7 @@ export class IncrementalInferenceEngine {
 			return;
 		}
 
-		nodeIds.forEach(nodeId => {
+		nodeIds.forEach((nodeId) => {
 			this.markNodeDirty(nodeId, affectedEdgeTypes);
 		});
 	}
@@ -172,7 +175,9 @@ export class IncrementalInferenceEngine {
 		for (const nodeId of nodeIds) {
 			const dirtyNode = this.dirtyNodes.get(nodeId);
 			if (dirtyNode) {
-				dirtyNode.affectedEdgeTypes.forEach(type => affectedEdgeTypes.add(type));
+				dirtyNode.affectedEdgeTypes.forEach((type) =>
+					affectedEdgeTypes.add(type),
+				);
 			}
 		}
 
@@ -184,22 +189,28 @@ export class IncrementalInferenceEngine {
 			}
 
 			// Check cache first
-			const cacheKey = this.generateCacheKey('incremental', edgeType, nodeIds);
-			const cachedResults = this.cache.getResults('hierarchical', edgeType, { nodeIds });
+			const cacheKey = this.generateCacheKey("incremental", edgeType, nodeIds);
+			const cachedResults = this.cache.getResults("hierarchical", edgeType, {
+				nodeIds,
+			});
 
 			if (cachedResults) {
 				cacheHits++;
 				affectedRelationships += cachedResults.length;
 			} else {
 				cacheMisses++;
-				
+
 				// Recompute for affected nodes
-				const results = await this.recomputeForNodes(nodeIds, edgeType, edgeTypeDef);
+				const results = await this.recomputeForNodes(
+					nodeIds,
+					edgeType,
+					edgeTypeDef,
+				);
 				affectedRelationships += results.length;
 				recomputedNodes += nodeIds.length;
 
 				// Cache results
-				this.cache.cacheResults('hierarchical', edgeType, results, { nodeIds });
+				this.cache.cacheResults("hierarchical", edgeType, results, { nodeIds });
 			}
 		}
 
@@ -247,7 +258,9 @@ export class IncrementalInferenceEngine {
 	/**
 	 * 전이적 추론 계산
 	 */
-	private async computeTransitiveInference(relationship: any): Promise<InferredRelationship[]> {
+	private async computeTransitiveInference(
+		relationship: any,
+	): Promise<InferredRelationship[]> {
 		// Simplified transitive inference
 		// In a real implementation, this would use SQL recursive CTE
 		const results: InferredRelationship[] = [];
@@ -266,7 +279,7 @@ export class IncrementalInferenceEngine {
 				path: {
 					edgeIds: [relationship.id, path.id],
 					depth: 2,
-					inferenceType: 'transitive',
+					inferenceType: "transitive",
 					description: `${relationship.type} → ${path.type}`,
 				},
 				inferredAt: new Date(),
@@ -280,13 +293,15 @@ export class IncrementalInferenceEngine {
 	/**
 	 * 상속 가능한 추론 계산
 	 */
-	private async computeInheritableInference(relationship: any): Promise<InferredRelationship[]> {
+	private async computeInheritableInference(
+		relationship: any,
+	): Promise<InferredRelationship[]> {
 		// Simplified inheritable inference
 		const results: InferredRelationship[] = [];
 
 		// Find inheritable relationships
 		const inheritableRels = await this.database.findRelationships({
-			relationshipTypes: ['contains'],
+			relationshipTypes: ["contains"],
 			fromNodeIds: [relationship.toNodeId],
 		});
 
@@ -298,7 +313,7 @@ export class IncrementalInferenceEngine {
 				path: {
 					edgeIds: [relationship.id, inheritableRel.id],
 					depth: 2,
-					inferenceType: 'inheritable',
+					inferenceType: "inheritable",
 					description: `${relationship.type} → ${inheritableRel.type}`,
 				},
 				inferredAt: new Date(),
@@ -323,9 +338,13 @@ export class IncrementalInferenceEngine {
 	/**
 	 * 캐시 키 생성
 	 */
-	private generateCacheKey(prefix: string, edgeType: string, nodeIds: number[]): string {
+	private generateCacheKey(
+		prefix: string,
+		edgeType: string,
+		nodeIds: number[],
+	): string {
 		const sortedNodeIds = [...nodeIds].sort((a, b) => a - b);
-		return `${prefix}:${edgeType}:${sortedNodeIds.join(',')}`;
+		return `${prefix}:${edgeType}:${sortedNodeIds.join(",")}`;
 	}
 
 	/**

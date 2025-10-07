@@ -3,15 +3,15 @@
  * Graph Database 기반 개선된 단일 파일 분석 API
  */
 
-import * as path from "node:path";
 import * as fs from "node:fs/promises";
+import * as path from "node:path";
+import type { SupportedLanguage } from "../core/types";
+import { GraphDatabase } from "../database/GraphDatabase";
 import {
 	FileDependencyAnalyzer,
 	type ImportSource,
 } from "../database/services/FileDependencyAnalyzer";
-import { GraphDatabase } from "../database/GraphDatabase";
 import { MarkdownLinkTracker } from "../parsers/markdown/MarkdownLinkTracker";
-import type { SupportedLanguage } from "../core/types";
 
 export interface ImprovedSingleFileAnalysisResult {
 	/** 파일 정보 */
@@ -298,7 +298,7 @@ async function queryDependenciesFromGraph(
 	}
 
 	// Graph DB 통계 조회
-	let graphStats: ImprovedSingleFileAnalysisResult["graphStats"] = {
+	const graphStats: ImprovedSingleFileAnalysisResult["graphStats"] = {
 		totalNodes: 0,
 		totalRelationships: 0,
 		fileNodes: 0,

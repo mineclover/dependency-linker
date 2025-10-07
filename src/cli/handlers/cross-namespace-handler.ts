@@ -1,6 +1,6 @@
+import { configManager } from "../../namespace/ConfigManager";
 import { NamespaceDependencyAnalyzer } from "../../namespace/NamespaceDependencyAnalyzer";
 import { NamespaceGraphDB } from "../../namespace/NamespaceGraphDB";
-import { configManager } from "../../namespace/ConfigManager";
 
 export interface CrossNamespaceHandlerOptions {
 	configPath?: string;

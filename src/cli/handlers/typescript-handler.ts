@@ -3,11 +3,9 @@
  * TypeScript 관련 CLI 명령어들을 처리
  */
 
-import { analyzeSingleFileFixed } from "../../api/single-file-analysis-fixed";
-import { analyzeFileWithSimpleGraph } from "../../api/simple-graph-analysis";
-import { analyzeFileWithGraphDB } from "../../api/graph-db-analysis";
 import { analyzeFileWithAdvancedGraph } from "../../api/advanced-graph-analysis";
 import { analyzeFileWithGraphDB as analyzeFileWithGraphBased } from "../../api/graph-based-analysis";
+import { analyzeFileWithGraphDB } from "../../api/graph-db-analysis";
 import {
 	analyzeFilesWithPerformance,
 	DEFAULT_PERFORMANCE_CONFIG,
@@ -16,6 +14,8 @@ import {
 	analyzeFilesRobust,
 	generateRobustAnalysisReport,
 } from "../../api/robust-analysis.js";
+import { analyzeFileWithSimpleGraph } from "../../api/simple-graph-analysis";
+import { analyzeSingleFileFixed } from "../../api/single-file-analysis-fixed";
 import { PerformanceHelper } from "../../core/PerformanceMonitor.js";
 
 /**

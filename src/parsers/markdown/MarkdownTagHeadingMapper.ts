@@ -3,8 +3,8 @@
  * 마크다운에서 태그와 헤딩의 관계 매핑
  */
 
-import { MarkdownTag } from "./MarkdownTagCollector";
-import { MarkdownHeading } from "./MarkdownHeadingExtractor";
+import type { MarkdownHeading } from "./MarkdownHeadingExtractor";
+import type { MarkdownTag } from "./MarkdownTagCollector";
 
 export interface TagHeadingRelationship {
 	/** 태그 */

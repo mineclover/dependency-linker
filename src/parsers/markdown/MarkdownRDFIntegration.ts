@@ -3,10 +3,10 @@
  * 마크다운 심볼을 RDF 형식으로 변환
  */
 
-import { MarkdownParser, type MarkdownSymbol } from "./MarkdownParser";
-import { createRDFAddress } from "../../core/RDFAddress";
 import type { NodeType } from "../../core/RDFAddress";
+import { createRDFAddress } from "../../core/RDFAddress";
 import type { RDFSymbolExtractionResult } from "../../core/types";
+import { MarkdownParser, type MarkdownSymbol } from "./MarkdownParser";
 
 // ===== MARKDOWN RDF TYPES =====
 

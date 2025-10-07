@@ -3,16 +3,16 @@
  * 성능 최적화된 RDF 통합 데이터베이스
  */
 
-import { RDFIntegratedGraphDatabase } from "./RDFIntegratedGraphDatabase";
+import type { NodeType } from "../core/RDFAddress";
 import { RDFCache, RDFSearchCache, RDFStatisticsCache } from "../core/RDFCache";
 import type {
-	RDFAddressStoreOptions,
-	RDFRelationshipStoreOptions,
 	RDFAddressSearchResult,
+	RDFAddressStoreOptions,
 	RDFRelationshipSearchResult,
+	RDFRelationshipStoreOptions,
 	RDFStatistics,
 } from "./RDFIntegratedGraphDatabase";
-import type { NodeType } from "../core/RDFAddress";
+import { RDFIntegratedGraphDatabase } from "./RDFIntegratedGraphDatabase";
 
 // ===== OPTIMIZATION OPTIONS =====
 

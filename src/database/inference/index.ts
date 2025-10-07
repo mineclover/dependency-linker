@@ -11,25 +11,14 @@ export type { EdgeTypeDefinition } from "./EdgeTypeRegistry";
 
 // Edge type management
 export { EdgeTypeRegistry } from "./EdgeTypeRegistry";
-// Core inference engine
-export { InferenceEngine } from "./InferenceEngine";
-// Unknown node resolver
-export { UnknownNodeResolver } from "./UnknownNodeResolver";
 export type {
-	ResolutionResult,
-	ResolvedNode,
-	UnresolvedNode,
-	UnresolvedReason,
-	ResolutionStatistics,
-} from "./UnknownNodeResolver";
-
+	EquivalenceInferenceResult,
+	EquivalenceRule,
+} from "./EquivalenceInferenceEngine";
 // Equivalence Inference Engine (Unknown Symbol System)
 export { EquivalenceInferenceEngine } from "./EquivalenceInferenceEngine";
-export type {
-	EquivalenceRule,
-	EquivalenceInferenceResult,
-} from "./EquivalenceInferenceEngine";
-
+// Core inference engine
+export { InferenceEngine } from "./InferenceEngine";
 // Type definitions
 export type {
 	// Rules and validation
@@ -49,3 +38,12 @@ export type {
 	InheritableQueryOptions,
 	TransitiveQueryOptions,
 } from "./InferenceTypes";
+export type {
+	ResolutionResult,
+	ResolutionStatistics,
+	ResolvedNode,
+	UnresolvedNode,
+	UnresolvedReason,
+} from "./UnknownNodeResolver";
+// Unknown node resolver
+export { UnknownNodeResolver } from "./UnknownNodeResolver";

@@ -3,17 +3,17 @@
  * 마크다운 링크 추적 및 분석 시스템
  */
 
-import * as path from "node:path";
 import * as fs from "node:fs/promises";
-import {
-	MarkdownRDFIntegration,
-	type MarkdownRDFResult,
-} from "./MarkdownRDFIntegration";
-import type { MarkdownRelationship } from "./MarkdownRDFIntegration";
+import * as path from "node:path";
 import {
 	ExternalLinkValidator,
 	type LinkValidationResult,
 } from "./ExternalLinkValidator";
+import type { MarkdownRelationship } from "./MarkdownRDFIntegration";
+import {
+	MarkdownRDFIntegration,
+	type MarkdownRDFResult,
+} from "./MarkdownRDFIntegration";
 
 // ===== LINK TRACKING TYPES =====
 

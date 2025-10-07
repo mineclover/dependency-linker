@@ -12,11 +12,7 @@
 import * as fs from "node:fs/promises";
 import * as path from "node:path";
 import type { SupportedLanguage } from "../core/types";
-import {
-	GraphDatabase,
-	type GraphNode,
-	type GraphRelationship,
-} from "../database/GraphDatabase";
+import { GraphDatabase } from "../database/GraphDatabase";
 import {
 	FileDependencyAnalyzer,
 	type ImportSource,
@@ -414,7 +410,7 @@ async function analyzeChainsRecursive(
 			// 재귀적으로 더 깊은 체인 분석
 			await analyzeChainsRecursive(
 				database,
-				dep.id!,
+				dep.id || 0,
 				maxDepth,
 				currentDepth + 1,
 				newChain,
@@ -502,7 +498,7 @@ async function detectCircularRecursive(
 		for (const dep of directDeps) {
 			await detectCircularRecursive(
 				database,
-				dep.id!,
+				dep.id || 0,
 				visited,
 				recursionStack,
 				currentPath,
@@ -546,7 +542,7 @@ async function analyzeDependencyDepth(
 
 		// 통계 계산
 		for (const [depth, count] of Object.entries(depthCounts)) {
-			const depthNum = parseInt(depth);
+			const depthNum = parseInt(depth, 10);
 			maxDepthFound = Math.max(maxDepthFound, depthNum);
 			totalDepth += depthNum * count;
 			depthCount += count;
@@ -596,7 +592,7 @@ async function analyzeDepthRecursive(
 		for (const dep of directDeps) {
 			await analyzeDepthRecursive(
 				database,
-				dep.id!,
+				dep.id || 0,
 				maxDepth,
 				currentDepth + 1,
 				new Set(visited),
@@ -612,9 +608,9 @@ async function analyzeDepthRecursive(
  * 핫리로드된 의존성 조회
  */
 async function getHotReloadedDependencies(
-	database: GraphDatabase,
-	nodeId: number,
-	enableHotReload: boolean,
+	_database: GraphDatabase,
+	_nodeId: number,
+	_enableHotReload: boolean,
 ): Promise<AdvancedGraphAnalysisResult["dependencies"]["hotReloaded"]> {
 	// TODO: 핫리로드된 의존성 조회 구현
 	return [];
@@ -625,7 +621,7 @@ async function getHotReloadedDependencies(
  */
 async function getAdvancedGraphStatistics(
 	database: GraphDatabase,
-	options: AdvancedAnalysisOptions,
+	_options: AdvancedAnalysisOptions,
 ): Promise<AdvancedGraphAnalysisResult["graphStats"]> {
 	try {
 		// 기본 통계
@@ -777,14 +773,14 @@ function detectLanguage(filePath: string): SupportedLanguage {
 async function generateAdvancedMetadata(
 	filePath: string,
 	dependencies: AdvancedGraphAnalysisResult["dependencies"],
-	performance: AdvancedGraphAnalysisResult["performance"],
+	_performance: AdvancedGraphAnalysisResult["performance"],
 ): Promise<AdvancedGraphAnalysisResult["metadata"]> {
 	try {
 		// 파일 내용 읽기
 		const content = await fs.readFile(filePath, "utf-8");
 
 		// 파일 해시 계산
-		const crypto = await import("crypto");
+		const crypto = await import("node:crypto");
 		const fileHash = crypto.createHash("sha256").update(content).digest("hex");
 
 		// 통계 계산

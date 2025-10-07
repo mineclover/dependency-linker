@@ -5,9 +5,9 @@
  */
 
 import type {
-	ScenarioSpec,
-	NodeTypeSpec,
 	EdgeTypeSpec,
+	NodeTypeSpec,
+	ScenarioSpec,
 	ScenarioValidationResult,
 } from "./types";
 

@@ -87,7 +87,7 @@ export function parseRDFAddress(address: string): ParsedRDFAddress {
 
 	try {
 		// RDF 주소 패턴 검증: project/file#type:symbol
-		const rdfPattern = /^([^\/]+)\/(.+)#([^:]+):(.+)$/;
+		const rdfPattern = /^([^/]+)\/(.+)#([^:]+):(.+)$/;
 		const match = address.match(rdfPattern);
 
 		if (!match) {

@@ -1,9 +1,9 @@
 import {
 	EnhancedQuerySystem,
-	QueryResult,
+	type QueryResult,
 } from "../../core/EnhancedQuerySystem";
-import { RealtimeQuerySystem } from "../../core/RealtimeQuerySystem";
 import { QueryEngine } from "../../core/QueryEngine";
+import type { RealtimeQuerySystem } from "../../core/RealtimeQuerySystem";
 
 export interface QueryHandlerOptions {
 	enableAdvancedQueries?: boolean;
@@ -219,7 +219,7 @@ export class QueryHandler {
 					console.log(`✅ 쿼리 캐시 초기화 완료`);
 					break;
 
-				case "stats":
+				case "stats": {
 					const stats = this.querySystem.getCacheStats();
 					console.log(`📊 쿼리 캐시 통계:`);
 					console.log(`  - 캐시 크기: ${stats.size}개`);
@@ -232,6 +232,7 @@ export class QueryHandler {
 						`  - 가장 최근 항목: ${stats.newestEntry?.toISOString() || "None"}`,
 					);
 					break;
+				}
 
 				case "optimize":
 					this.querySystem.clearCache();

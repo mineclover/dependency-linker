@@ -7,15 +7,15 @@
  * @see features/type-management/RDF_SEARCH_DESIGN.md
  */
 
-import * as path from "node:path";
 import * as fs from "node:fs/promises";
-import type { NodeIdentifier, RdfAddress } from "../core/NodeIdentifier";
-import type { ScenarioRegistry } from "../../scenarios/ScenarioRegistry";
-import type { QueryMatch, SupportedLanguage } from "../../core/types";
-import type { QueryKey } from "../../results";
-import { parseCode } from "../../parsers";
-import { globalTreeSitterQueryEngine } from "../../core/TreeSitterQueryEngine";
+import * as path from "node:path";
 import { getLanguageTreeSitterQueries } from "../../core/QueryBridge";
+import { globalTreeSitterQueryEngine } from "../../core/TreeSitterQueryEngine";
+import type { QueryMatch, SupportedLanguage } from "../../core/types";
+import { parseCode } from "../../parsers";
+import type { QueryKey } from "../../results";
+import type { ScenarioRegistry } from "../../scenarios/ScenarioRegistry";
+import type { NodeIdentifier, RdfAddress } from "../core/NodeIdentifier";
 
 /**
  * 심볼 위치 정보
@@ -277,10 +277,7 @@ export class RdfSearchEngine {
 				for (const nodeType of types.nodeTypes) {
 					allTypes.add(nodeType.toLowerCase());
 				}
-			} catch {
-				// 시나리오를 찾을 수 없는 경우 스킵
-				continue;
-			}
+			} catch {}
 		}
 
 		return allTypes;

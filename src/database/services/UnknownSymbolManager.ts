@@ -1,6 +1,6 @@
-import { GraphDatabase } from "../GraphDatabase";
 import { RDFDatabaseAPI } from "../../api/rdf-database-integration";
 import { parseRDFAddress } from "../../core/RDFAddress";
+import { GraphDatabase } from "../GraphDatabase";
 
 export interface UnknownSymbol {
 	id: string;

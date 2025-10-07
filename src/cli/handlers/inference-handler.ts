@@ -1,7 +1,7 @@
+import { GraphDatabase } from "../../database/GraphDatabase";
 import { AdvancedInferenceSystem } from "../../database/inference/AdvancedInferenceSystem";
 import { InferenceEngine } from "../../database/inference/InferenceEngine";
 import { OptimizedInferenceEngine } from "../../database/inference/OptimizedInferenceEngine";
-import { GraphDatabase } from "../../database/GraphDatabase";
 
 export interface InferenceHandlerOptions {
 	databasePath?: string;

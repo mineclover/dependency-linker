@@ -2,7 +2,6 @@
  * Namespace-based dependency analysis module
  */
 
-export * from "./types";
 export { ConfigManager, configManager } from "./ConfigManager";
 export { FilePatternMatcher, filePatternMatcher } from "./FilePatternMatcher";
 export {
@@ -10,3 +9,4 @@ export {
 	namespaceDependencyAnalyzer,
 } from "./NamespaceDependencyAnalyzer";
 export { NamespaceGraphDB } from "./NamespaceGraphDB";
+export * from "./types";

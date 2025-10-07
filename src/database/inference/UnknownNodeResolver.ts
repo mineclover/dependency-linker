@@ -7,8 +7,11 @@
  * @see features/type-management/UNKNOWN_NODE_RESOLUTION.md
  */
 
-import type { GraphDatabase } from "../GraphDatabase";
-import type { GraphNode, GraphRelationship } from "../GraphDatabase";
+import type {
+	GraphDatabase,
+	GraphNode,
+	GraphRelationship,
+} from "../GraphDatabase";
 
 /**
  * Resolution 결과
@@ -201,9 +204,7 @@ export class UnknownNodeResolver {
 	 * @param unknown Unknown 노드
 	 * @returns 매칭된 실제 타입 노드 또는 null
 	 */
-	private async findActualNode(
-		unknown: GraphNode,
-	): Promise<GraphNode | null> {
+	private async findActualNode(unknown: GraphNode): Promise<GraphNode | null> {
 		// 1. 같은 sourceFile로 모든 노드 검색
 		const candidates = await this.db.findNodes({
 			sourceFiles: [unknown.sourceFile],
@@ -313,7 +314,7 @@ export class UnknownNodeResolver {
 
 			// 현재 노드 조회 (모든 노드 가져온 후 필터링)
 			const allNodes = await this.db.findNodes({});
-			const nodes = allNodes.filter(n => n.id === currentId);
+			const nodes = allNodes.filter((n) => n.id === currentId);
 			if (nodes.length === 0) {
 				return null;
 			}
@@ -324,7 +325,9 @@ export class UnknownNodeResolver {
 			const aliasEdges = await this.db.findRelationships({
 				relationshipTypes: ["aliasOf"],
 			});
-			const currentAliasEdges = aliasEdges.filter(e => e.fromNodeId === currentId);
+			const currentAliasEdges = aliasEdges.filter(
+				(e) => e.fromNodeId === currentId,
+			);
 
 			if (currentAliasEdges.length > 0) {
 				currentId = currentAliasEdges[0].toNodeId;
@@ -336,11 +339,13 @@ export class UnknownNodeResolver {
 			const resolvedEdges = await this.db.findRelationships({
 				relationshipTypes: ["resolvedTo"],
 			});
-			const currentResolvedEdges = resolvedEdges.filter(e => e.fromNodeId === currentId);
+			const currentResolvedEdges = resolvedEdges.filter(
+				(e) => e.fromNodeId === currentId,
+			);
 
 			if (currentResolvedEdges.length > 0) {
 				const actualId = currentResolvedEdges[0].toNodeId;
-				const actualNodes = allNodes.filter(n => n.id === actualId);
+				const actualNodes = allNodes.filter((n) => n.id === actualId);
 				return actualNodes.length > 0 ? actualNodes[0] : null;
 			}
 
@@ -351,7 +356,7 @@ export class UnknownNodeResolver {
 		// 순환 감지 또는 max depth 초과
 		if (currentId !== null) {
 			const allNodes = await this.db.findNodes({});
-			const nodes = allNodes.filter(n => n.id === currentId);
+			const nodes = allNodes.filter((n) => n.id === currentId);
 			return nodes.length > 0 ? nodes[0] : null;
 		}
 
@@ -430,7 +435,7 @@ export class UnknownNodeResolver {
 			const aliasEdges = await this.db.findRelationships({
 				relationshipTypes: ["aliasOf"],
 			});
-			const currentEdges = aliasEdges.filter(e => e.fromNodeId === currentId);
+			const currentEdges = aliasEdges.filter((e) => e.fromNodeId === currentId);
 
 			if (currentEdges.length === 0) {
 				break;

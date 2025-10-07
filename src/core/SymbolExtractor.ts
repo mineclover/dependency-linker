@@ -14,9 +14,9 @@ import {
 	JAVASCRIPT_TREE_SITTER_QUERIES,
 	TYPESCRIPT_TREE_SITTER_QUERIES,
 } from "../queries/typescript/tree-sitter-queries";
-import { globalTreeSitterQueryEngine } from "./TreeSitterQueryEngine";
-import type { QueryMatch, SupportedLanguage } from "./types";
 import {
+	generateSymbolNamePath,
+	getParentSymbolPath,
 	type ParameterInfo,
 	type SourceLocation,
 	type SymbolDependency,
@@ -24,9 +24,9 @@ import {
 	type SymbolExtractionResult,
 	type SymbolInfo,
 	SymbolKind,
-	generateSymbolNamePath,
-	getParentSymbolPath,
 } from "./symbol-types";
+import { globalTreeSitterQueryEngine } from "./TreeSitterQueryEngine";
+import type { QueryMatch, SupportedLanguage } from "./types";
 
 /**
  * Symbol Extractor Configuration

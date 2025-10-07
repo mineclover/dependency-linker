@@ -5,34 +5,32 @@
 
 import { Command } from "commander";
 import { glob } from "glob";
-
-// 핸들러 임포트
-import {
-	runMarkdownAnalysis,
-	runLinkTracking,
-	runHeadingExtraction,
-} from "./handlers/markdown-handler.js";
-import {
-	runTypeScriptAnalysis,
-	runTypeScriptProjectAnalysis,
-	runTypeScriptPerformanceBenchmark,
-} from "./handlers/typescript-handler.js";
-import {
-	UnknownSymbolHandler,
-	CrossNamespaceHandler,
-	InferenceHandler,
-	ContextDocumentsHandler,
-	PerformanceOptimizationHandler,
-} from "./handlers/index.js";
 import { createRDFAddress, validateRDFAddress } from "../core/RDFAddress.js";
-
 // Action 모듈 임포트
 import {
-	executeDependenciesAction,
 	executeAnalyzeAction,
+	executeDependenciesAction,
 	executeRDFAction,
 	executeRDFFileAction,
 } from "./actions/index.js";
+import {
+	ContextDocumentsHandler,
+	CrossNamespaceHandler,
+	InferenceHandler,
+	PerformanceOptimizationHandler,
+	UnknownSymbolHandler,
+} from "./handlers/index.js";
+// 핸들러 임포트
+import {
+	runHeadingExtraction,
+	runLinkTracking,
+	runMarkdownAnalysis,
+} from "./handlers/markdown-handler.js";
+import {
+	runTypeScriptAnalysis,
+	runTypeScriptPerformanceBenchmark,
+	runTypeScriptProjectAnalysis,
+} from "./handlers/typescript-handler.js";
 
 // ============================================================================
 // CLI 프로그램 설정

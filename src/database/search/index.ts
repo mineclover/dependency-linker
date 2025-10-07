@@ -6,5 +6,5 @@
  * @module database/search
  */
 
+export type { RdfSearchOptions, SymbolLocation } from "./RdfSearchEngine";
 export { RdfSearchEngine } from "./RdfSearchEngine";
-export type { SymbolLocation, RdfSearchOptions } from "./RdfSearchEngine";

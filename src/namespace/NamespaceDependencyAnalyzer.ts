@@ -1,9 +1,9 @@
 import path from "node:path";
 import { createDependencyGraphBuilder } from "../graph/DependencyGraphBuilder";
 import type { DependencyGraph, GraphBuildResult } from "../graph/types";
+import { getExecutionOrder, globalScenarioRegistry } from "../scenarios";
 import { configManager } from "./ConfigManager";
 import type { NamespaceDependencyResult } from "./types";
-import { globalScenarioRegistry, getExecutionOrder } from "../scenarios";
 
 /**
  * Namespace-based dependency analyzer

@@ -3,13 +3,13 @@
  * RDF 주소 시스템과 통합된 GraphDatabase 확장
  */
 
-import { GraphDatabase } from "./GraphDatabase";
 import { Database } from "sqlite3";
+import type { NodeType } from "../core/RDFAddress";
 import type {
 	RDFNodeIdentifier,
 	RDFSymbolExtractionResult,
 } from "../core/types";
-import type { NodeType } from "../core/RDFAddress";
+import { GraphDatabase } from "./GraphDatabase";
 
 // ===== RDF DATABASE TYPES =====
 
@@ -277,8 +277,8 @@ export class RDFIntegratedGraphDatabase extends GraphDatabase {
 			limit = 100,
 		} = options;
 
-		let whereConditions: string[] = [];
-		let params: any[] = [];
+		const whereConditions: string[] = [];
+		const params: any[] = [];
 
 		// 기본 검색 쿼리
 		if (query) {
@@ -380,8 +380,8 @@ export class RDFIntegratedGraphDatabase extends GraphDatabase {
 	): Promise<RDFRelationshipSearchResult[]> {
 		const { direction = "both", relationshipType } = options;
 
-		let whereConditions: string[] = [];
-		let params: any[] = [];
+		const whereConditions: string[] = [];
+		const params: any[] = [];
 
 		if (direction === "incoming" || direction === "both") {
 			whereConditions.push("target_rdf_address = ?");

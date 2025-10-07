@@ -4,10 +4,10 @@
  */
 
 import {
-	TagTypeContainer,
-	ExplicitTagType,
-	TagTypeDefinition,
+	type ExplicitTagType,
 	globalTagTypeContainer,
+	type TagTypeContainer,
+	type TagTypeDefinition,
 } from "./MarkdownTagTypeDefinitions";
 import {
 	MarkdownTagTypeValidator,

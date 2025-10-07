@@ -11,7 +11,9 @@ export interface DependenciesActionOptions {
 	database?: string;
 }
 
-export async function executeDependenciesAction(options: DependenciesActionOptions): Promise<void> {
+export async function executeDependenciesAction(
+	options: DependenciesActionOptions,
+): Promise<void> {
 	const handler = new DependencyAnalysisHandler(options.database);
 
 	try {
@@ -154,9 +156,7 @@ export async function executeDependenciesAction(options: DependenciesActionOptio
 			console.log(`🏷️  Tags: ${symbolAnalysis.metadata.tags.join(", ")}`);
 			console.log(`⚡ Complexity: ${symbolAnalysis.metadata.complexity}`);
 			console.log(`👤 Author: ${symbolAnalysis.metadata.author}`);
-			console.log(
-				`📅 Last Modified: ${symbolAnalysis.metadata.lastModified}`,
-			);
+			console.log(`📅 Last Modified: ${symbolAnalysis.metadata.lastModified}`);
 
 			console.log("\n🔗 Nearest Nodes:");
 			console.log(
@@ -189,9 +189,7 @@ export async function executeDependenciesAction(options: DependenciesActionOptio
 		console.log(
 			`  Indirect Connections: ${symbolAnalysis.graphStats.indirectConnections}`,
 		);
-		console.log(
-			`  Average Distance: ${symbolAnalysis.graphStats.avgDistance}`,
-		);
+		console.log(`  Average Distance: ${symbolAnalysis.graphStats.avgDistance}`);
 		console.log(
 			`  Complexity Score: ${symbolAnalysis.graphStats.complexityScore}/10`,
 		);

@@ -16,10 +16,10 @@ import type {
 	MarkdownLocation,
 } from "./markdown-types";
 import {
-	MARKDOWN_PATTERNS,
 	extractFrontMatter,
 	isAnchorLink,
 	isExternalUrl,
+	MARKDOWN_PATTERNS,
 	normalizeMarkdownPath,
 	parseUrl,
 } from "./markdown-types";

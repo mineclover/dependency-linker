@@ -7,10 +7,10 @@
 
 import type {
 	ScenarioSpec,
-	TypeCollection,
 	ScenarioValidationResult,
+	TypeCollection,
 } from "./types";
-import { validateScenarioSpec, detectCircularDependencies } from "./validation";
+import { detectCircularDependencies, validateScenarioSpec } from "./validation";
 /**
  * Scenario Registry
  *

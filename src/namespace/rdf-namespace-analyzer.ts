@@ -3,13 +3,13 @@
  * 네임스페이스 기반 RDF 주소 생성 및 분석
  */
 
-import { RDFDatabaseAPI } from "../api/rdf-database-integration";
-import { analyzeFileWithRDF } from "../api/rdf-analysis";
-import type { NamespaceConfig, RDFConfig } from "./types";
-import type { RDFAnalysisResult, SupportedLanguage } from "../core/types";
-import type { NodeType } from "../core/RDFAddress";
 import fs from "fs";
 import path from "path";
+import { analyzeFileWithRDF } from "../api/rdf-analysis";
+import { RDFDatabaseAPI } from "../api/rdf-database-integration";
+import type { NodeType } from "../core/RDFAddress";
+import type { RDFAnalysisResult, SupportedLanguage } from "../core/types";
+import type { NamespaceConfig, RDFConfig } from "./types";
 
 // ===== RDF NAMESPACE TYPES =====
 

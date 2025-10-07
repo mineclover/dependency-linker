@@ -6,9 +6,9 @@
 
 export { basicStructureSpec } from "./basic-structure";
 export { fileDependencySpec } from "./file-dependency";
-export { symbolDependencySpec } from "./symbol-dependency";
 export { markdownLinkingSpec } from "./markdown-linking";
 export { methodAnalysisSpec } from "./method-analysis";
+export { symbolDependencySpec } from "./symbol-dependency";
 
 /**
  * All built-in scenario specifications

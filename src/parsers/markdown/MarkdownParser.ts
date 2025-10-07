@@ -4,10 +4,11 @@
  */
 
 import Parser = require("tree-sitter");
-import { createRDFAddress } from "../../core/RDFAddress";
+
 import type { NodeType } from "../../core/RDFAddress";
+import { createRDFAddress } from "../../core/RDFAddress";
 import type { SupportedLanguage } from "../../core/types";
-import { BaseParser, type ParserOptions, type ParseResult } from "../base";
+import { BaseParser, type ParseResult, type ParserOptions } from "../base";
 
 // ===== MARKDOWN TYPES =====
 

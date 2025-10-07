@@ -18,8 +18,8 @@ import {
 	normalizePath,
 } from "../utils/IdentifierGenerator";
 import {
-	PackageJsonResolver,
 	type PackageInfo,
+	PackageJsonResolver,
 } from "../utils/PackageJsonResolver";
 
 export interface ImportSource {

@@ -1,7 +1,7 @@
-import { OptimizedGraphAnalysis } from "../../performance/OptimizedGraphAnalysis";
-import { AdvancedCache } from "../../cache/AdvancedCache";
 import { BatchProcessor } from "../../batch/BatchProcessor";
+import { AdvancedCache } from "../../cache/AdvancedCache";
 import { GraphDatabase } from "../../database/GraphDatabase";
+import { OptimizedGraphAnalysis } from "../../performance/OptimizedGraphAnalysis";
 
 export interface PerformanceOptimizationHandlerOptions {
 	projectRoot?: string;
@@ -162,7 +162,7 @@ export class PerformanceOptimizationHandler {
 					console.log(`✅ 캐시 초기화 완료`);
 					break;
 
-				case "stats":
+				case "stats": {
 					const stats = await this.cache.getStats();
 					console.log(`📊 캐시 통계:`);
 					console.log(`  - 총 히트: ${stats.totalHits}개`);
@@ -177,6 +177,7 @@ export class PerformanceOptimizationHandler {
 						`  - 평균 접근 시간: ${Math.round(stats.averageAccessTime)}ms`,
 					);
 					break;
+				}
 
 				case "optimize":
 					await this.cache.clear();
@@ -230,7 +231,7 @@ export class PerformanceOptimizationHandler {
 					console.log(`✅ 배치 처리 중지 완료`);
 					break;
 
-				case "stats":
+				case "stats": {
 					const progress = this.batchProcessor.getProgress();
 					const stats = this.batchProcessor.getStats();
 
@@ -253,6 +254,7 @@ export class PerformanceOptimizationHandler {
 						`  - 캐시 히트율: ${Math.round(stats.cacheHitRate * 100)}%`,
 					);
 					break;
+				}
 
 				case "retry":
 					await this.batchProcessor.retryFailedJobs();

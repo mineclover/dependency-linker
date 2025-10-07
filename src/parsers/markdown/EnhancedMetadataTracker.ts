@@ -4,13 +4,13 @@
  */
 
 import {
+	type PackageInfo,
+	PackageJsonResolver,
+} from "../../database/utils/PackageJsonResolver";
+import {
 	ExternalLinkValidator,
 	type LinkValidationResult,
 } from "./ExternalLinkValidator";
-import {
-	PackageJsonResolver,
-	type PackageInfo,
-} from "../../database/utils/PackageJsonResolver";
 
 export interface EnhancedMetadata {
 	/** 생성 시간 */

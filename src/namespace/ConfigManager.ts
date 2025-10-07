@@ -1,5 +1,7 @@
 import { existsSync } from "node:fs";
 import { readFile, writeFile } from "node:fs/promises";
+import { hasScenario } from "../scenarios";
+import { filePatternMatcher } from "./FilePatternMatcher";
 import type {
 	CategorizedFiles,
 	ConfigFile,
@@ -7,8 +9,6 @@ import type {
 	NamespaceList,
 	NamespaceWithFiles,
 } from "./types";
-import { filePatternMatcher } from "./FilePatternMatcher";
-import { hasScenario } from "../scenarios";
 
 /**
  * Configuration file management for namespace-based dependency analysis

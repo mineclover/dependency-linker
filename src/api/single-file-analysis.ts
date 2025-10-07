@@ -3,17 +3,17 @@
  * 단일 파일 기반 의존성 분석 API
  */
 
-import * as path from "node:path";
 import * as fs from "node:fs/promises";
+import * as path from "node:path";
+import type { SupportedLanguage } from "../core/types";
+import { GraphDatabase } from "../database/GraphDatabase";
 import {
 	FileDependencyAnalyzer,
 	type ImportSource,
 } from "../database/services/FileDependencyAnalyzer";
-import { GraphDatabase } from "../database/GraphDatabase";
+import { EnhancedMetadataTracker } from "../parsers/markdown/EnhancedMetadataTracker";
 import { MarkdownLinkTracker } from "../parsers/markdown/MarkdownLinkTracker";
 import { MarkdownParser } from "../parsers/markdown/MarkdownParser";
-import { EnhancedMetadataTracker } from "../parsers/markdown/EnhancedMetadataTracker";
-import type { SupportedLanguage } from "../core/types";
 
 export interface SingleFileAnalysisResult {
 	/** 파일 정보 */

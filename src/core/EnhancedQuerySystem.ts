@@ -3,10 +3,10 @@
  * 고급 쿼리 시스템 - SQL, GraphQL, 자연어, 실시간 쿼리 통합
  */
 
+import type { GraphQLOperation, QueryAST } from "./AdvancedQueryLanguage";
 import { AdvancedQueryExecutor } from "./AdvancedQueryLanguage";
+import type { RealtimeQuery, RealtimeQueryConfig } from "./RealtimeQuerySystem";
 import { RealtimeQuerySystem } from "./RealtimeQuerySystem";
-import type { QueryAST, GraphQLOperation } from "./AdvancedQueryLanguage";
-import type { RealtimeQueryConfig, RealtimeQuery } from "./RealtimeQuerySystem";
 
 export interface EnhancedQueryConfig {
 	enableAdvancedQueries: boolean;

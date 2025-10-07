@@ -1,9 +1,9 @@
-import {
-	UnknownSymbolManager,
-	UnknownSymbol,
-	EquivalenceRelation,
-} from "../../database/services/UnknownSymbolManager";
 import { EquivalenceInferenceEngine } from "../../database/inference/EquivalenceInferenceEngine";
+import {
+	EquivalenceRelation,
+	type UnknownSymbol,
+	UnknownSymbolManager,
+} from "../../database/services/UnknownSymbolManager";
 
 export class UnknownSymbolHandler {
 	private unknownSymbolManager: UnknownSymbolManager;

@@ -10,7 +10,7 @@
 
 import type { ParseResult } from "../parsers/base";
 import type { ScenarioRegistry } from "./ScenarioRegistry";
-import type { ScenarioSpec, AnalysisResult, TypeCollection } from "./types";
+import type { AnalysisResult, ScenarioSpec, TypeCollection } from "./types";
 
 /**
  * Analysis Context

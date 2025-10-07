@@ -7,9 +7,9 @@ import type { SupportedLanguage } from "../core/types";
 import type { BaseParser, ParserFactory as IParserFactory } from "./base";
 import { GoParser } from "./go";
 import { JavaParser } from "./java";
+import { MarkdownParser } from "./markdown";
 import { PythonParser } from "./python";
 import { TypeScriptParser } from "./typescript";
-import { MarkdownParser } from "./markdown";
 
 /**
  * 통합 파서 팩토리

@@ -7,8 +7,8 @@
 
 import type Parser from "tree-sitter";
 import {
-	BaseScenarioAnalyzer,
 	type AnalysisContext,
+	BaseScenarioAnalyzer,
 } from "../BaseScenarioAnalyzer";
 import type { AnalysisResult } from "../types";
 

@@ -4,14 +4,14 @@
  */
 
 import {
-	parseRDFAddress,
 	extractFilePathFromRDF,
+	extractNodeTypeFromRDF,
 	extractProjectNameFromRDF,
 	extractSymbolNameFromRDF,
-	extractNodeTypeFromRDF,
-	normalizeRDFAddress,
-	type RDFAddress,
 	type NodeType,
+	normalizeRDFAddress,
+	parseRDFAddress,
+	type RDFAddress,
 } from "./RDFAddress";
 import type { RDFNodeIdentifier } from "./types";
 
@@ -321,10 +321,11 @@ export function groupRDFAddressesBy(
 			case "nodeType":
 				groupKey = parsed.nodeType;
 				break;
-			case "namespace":
+			case "namespace": {
 				const { namespace } = extractNamespaceFromSymbol(parsed.symbolName);
 				groupKey = namespace || "global";
 				break;
+			}
 			default:
 				groupKey = "unknown";
 		}

@@ -273,11 +273,11 @@ export function measurePerformance(
 	name: string,
 	metadata?: Record<string, any>,
 ) {
-	return function (
+	return (
 		target: any,
 		propertyName: string,
 		descriptor: PropertyDescriptor,
-	) {
+	) => {
 		const method = descriptor.value;
 
 		descriptor.value = async function (...args: any[]) {
@@ -317,9 +317,12 @@ export class PerformanceHelper {
 		fn: () => Promise<T>,
 		metadata?: Record<string, any>,
 	): Promise<{ result: T; measurement: PerformanceMeasurement }> {
-		const measurementId = this.monitor.startMeasurement(name, metadata);
+		const measurementId = PerformanceHelper.monitor.startMeasurement(
+			name,
+			metadata,
+		);
 		const result = await fn();
-		const measurement = this.monitor.endMeasurement(measurementId);
+		const measurement = PerformanceHelper.monitor.endMeasurement(measurementId);
 
 		if (!measurement) {
 			throw new Error(`Failed to end measurement: ${measurementId}`);
@@ -336,13 +339,13 @@ export class PerformanceHelper {
 		fn: () => Promise<T>,
 		iterations: number = 10,
 	): Promise<PerformanceBenchmark> {
-		return await this.monitor.runBenchmark(name, fn, iterations);
+		return await PerformanceHelper.monitor.runBenchmark(name, fn, iterations);
 	}
 
 	/**
 	 * 리포트 생성
 	 */
 	static generateReport(): PerformanceReport {
-		return this.monitor.generateReport();
+		return PerformanceHelper.monitor.generateReport();
 	}
 }

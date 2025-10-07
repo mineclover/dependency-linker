@@ -6,9 +6,9 @@
  */
 
 import type { GraphDatabase } from "../GraphDatabase";
+import { ConfigValidators, PERFORMANCE_CONSTANTS } from "./Constants";
 import { EdgeTypeRegistry } from "./EdgeTypeRegistry";
-import { ErrorHandler, ERROR_CODES } from "./ErrorHandler";
-import { PERFORMANCE_CONSTANTS, ConfigValidators } from "./Constants";
+import { ERROR_CODES, ErrorHandler } from "./ErrorHandler";
 import {
 	type HierarchicalQueryOptions,
 	InferenceCacheEntry,

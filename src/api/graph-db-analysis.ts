@@ -9,18 +9,18 @@
  * 4. 관계 기반 추론: 직접 탐색 안되는 것들을 매칭
  */
 
-import * as path from "node:path";
 import * as fs from "node:fs/promises";
-import {
-	FileDependencyAnalyzer,
-	type ImportSource,
-} from "../database/services/FileDependencyAnalyzer";
+import * as path from "node:path";
+import type { SupportedLanguage } from "../core/types";
 import {
 	GraphDatabase,
 	type GraphNode,
 	type GraphRelationship,
 } from "../database/GraphDatabase";
-import type { SupportedLanguage } from "../core/types";
+import {
+	FileDependencyAnalyzer,
+	type ImportSource,
+} from "../database/services/FileDependencyAnalyzer";
 
 export interface GraphDBAnalysisResult {
 	/** 파일 정보 */
@@ -198,8 +198,8 @@ async function collectFileData(
 		// import 소스 추출
 		const importSources: ImportSource[] = [];
 		const importRegex = /import\s+.*?\s+from\s+['"](.+?)['"]/g;
-		let match;
-		while ((match = importRegex.exec(content)) !== null) {
+		const matches = content.matchAll(importRegex);
+		for (const match of matches) {
 			importSources.push({
 				type: match[1].startsWith(".")
 					? "relative"
@@ -248,8 +248,11 @@ async function analyzeDependenciesFromGraphDB(
 		const fileNode = fileNodes[0];
 
 		// 직접 의존성 조회 (import 기반)
+		if (!fileNode.id) {
+			throw new Error("File node ID is required");
+		}
 		const directDependencies = await database.findNodeDependencies(
-			fileNode.id!,
+			fileNode.id,
 			["imports_file", "imports_library", "uses"],
 		);
 
@@ -258,7 +261,7 @@ async function analyzeDependenciesFromGraphDB(
 			options.enableInference !== false
 				? await inferDependencies(
 						database,
-						fileNode.id!,
+						fileNode.id,
 						options.inferenceDepth || 2,
 					)
 				: [];
@@ -266,13 +269,13 @@ async function analyzeDependenciesFromGraphDB(
 		// 핫리로드된 의존성
 		const hotReloadedDependencies = await getHotReloadedDependencies(
 			database,
-			fileNode.id!,
+			fileNode.id,
 			options.hotReloadThreshold || 5000,
 		);
 
 		return {
 			direct: directDependencies.map((dep) => ({
-				nodeId: dep.id!,
+				nodeId: dep.id || 0,
 				identifier: dep.identifier,
 				type: dep.type,
 				name: dep.name,
@@ -347,7 +350,7 @@ async function inferDependenciesRecursive(
 		for (const dep of directDeps) {
 			// 추론된 의존성으로 추가
 			inferred.push({
-				nodeId: dep.id!,
+				nodeId: dep.id || 0,
 				identifier: dep.identifier,
 				type: dep.type,
 				name: dep.name,
@@ -359,7 +362,7 @@ async function inferDependenciesRecursive(
 			// 재귀적으로 더 깊은 의존성 추론
 			await inferDependenciesRecursive(
 				database,
-				dep.id!,
+				dep.id || 0,
 				maxDepth,
 				currentDepth + 1,
 				new Set(visited),
@@ -406,8 +409,8 @@ async function performHotReload(
 			// import 소스 추출
 			const importSources: ImportSource[] = [];
 			const importRegex = /import\s+.*?\s+from\s+['"](.+?)['"]/g;
-			let match;
-			while ((match = importRegex.exec(content)) !== null) {
+			const matches = content.matchAll(importRegex);
+			for (const match of matches) {
 				importSources.push({
 					type: match[1].startsWith(".")
 						? "relative"

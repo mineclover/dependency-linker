@@ -6,8 +6,8 @@
 import { EventEmitter } from "events";
 import {
 	AdvancedQueryExecutor,
-	type QueryAST,
 	type GraphQLOperation,
+	type QueryAST,
 } from "./AdvancedQueryLanguage";
 
 export interface RealtimeQueryConfig {
@@ -262,7 +262,6 @@ export class RealtimeQuerySystem extends EventEmitter {
 				) {
 					query.isActive = false;
 					this.emit("queryTimeout", { queryId: query.id });
-					continue;
 				}
 
 				// 쿼리 재실행 (실제 구현에서는 데이터 소스가 필요)
@@ -396,7 +395,7 @@ export class RealtimeQuerySystem extends EventEmitter {
 				}
 				break;
 
-			case "subscribe":
+			case "subscribe": {
 				const subscriptionId = this.subscribeToQuery(
 					data.queryId,
 					clientId,
@@ -414,6 +413,7 @@ export class RealtimeQuerySystem extends EventEmitter {
 				);
 				ws.send(JSON.stringify({ type: "subscribed", subscriptionId }));
 				break;
+			}
 
 			case "unsubscribe":
 				this.unsubscribeFromQuery(data.subscriptionId);

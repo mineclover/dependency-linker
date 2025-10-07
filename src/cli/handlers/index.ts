@@ -5,44 +5,37 @@
  * 아키텍처 원칙에 따라 모듈성을 유지하고 의존성을 명확히 관리합니다.
  */
 
-import { RDFHandler } from "./rdf-handler";
-import { UnknownSymbolHandler } from "./unknown-handler";
-import { QueryHandler } from "./query-handler";
+import { ContextDocumentsHandler } from "./context-documents-handler";
 import { CrossNamespaceHandler } from "./cross-namespace-handler";
 import { InferenceHandler } from "./inference-handler";
-import { ContextDocumentsHandler } from "./context-documents-handler";
 import { PerformanceOptimizationHandler } from "./performance-optimization-handler";
-
-// RDF Handler
-export { RDFHandler } from "./rdf-handler";
-
-// Unknown Symbol Handler
-export { UnknownSymbolHandler } from "./unknown-handler";
-
-// Query Handler
-export { QueryHandler } from "./query-handler";
-
-// Cross-Namespace Handler
-export { CrossNamespaceHandler } from "./cross-namespace-handler";
-
-// Inference Handler
-export { InferenceHandler } from "./inference-handler";
+import { QueryHandler } from "./query-handler";
+import { RDFHandler } from "./rdf-handler";
+import { UnknownSymbolHandler } from "./unknown-handler";
 
 // Context Documents Handler
 export { ContextDocumentsHandler } from "./context-documents-handler";
-
+// Cross-Namespace Handler
+export { CrossNamespaceHandler } from "./cross-namespace-handler";
+// Inference Handler
+export { InferenceHandler } from "./inference-handler";
+// Markdown Handler
+export { runMarkdownAnalysis } from "./markdown-handler";
 // Performance Optimization Handler
 export { PerformanceOptimizationHandler } from "./performance-optimization-handler";
+// Query Handler
+export { QueryHandler } from "./query-handler";
+// RDF Handler
+export { RDFHandler } from "./rdf-handler";
 
 // TypeScript Handler
 export {
 	runTypeScriptAnalysis,
-	runTypeScriptProjectAnalysis,
 	runTypeScriptPerformanceBenchmark,
+	runTypeScriptProjectAnalysis,
 } from "./typescript-handler";
-
-// Markdown Handler
-export { runMarkdownAnalysis } from "./markdown-handler";
+// Unknown Symbol Handler
+export { UnknownSymbolHandler } from "./unknown-handler";
 
 // Handler Factory for dependency injection
 export class HandlerFactory {
@@ -59,84 +52,84 @@ export class HandlerFactory {
 	 * RDF Handler 싱글톤 인스턴스 반환
 	 */
 	static getRDFHandler(): RDFHandler {
-		if (!this.rdfHandler) {
-			this.rdfHandler = new RDFHandler();
+		if (!HandlerFactory.rdfHandler) {
+			HandlerFactory.rdfHandler = new RDFHandler();
 		}
-		return this.rdfHandler;
+		return HandlerFactory.rdfHandler;
 	}
 
 	/**
 	 * Unknown Symbol Handler 싱글톤 인스턴스 반환
 	 */
 	static getUnknownHandler(): UnknownSymbolHandler {
-		if (!this.unknownHandler) {
-			this.unknownHandler = new UnknownSymbolHandler();
+		if (!HandlerFactory.unknownHandler) {
+			HandlerFactory.unknownHandler = new UnknownSymbolHandler();
 		}
-		return this.unknownHandler;
+		return HandlerFactory.unknownHandler;
 	}
 
 	/**
 	 * Query Handler 싱글톤 인스턴스 반환
 	 */
 	static getQueryHandler(): QueryHandler {
-		if (!this.queryHandler) {
-			this.queryHandler = new QueryHandler();
+		if (!HandlerFactory.queryHandler) {
+			HandlerFactory.queryHandler = new QueryHandler();
 		}
-		return this.queryHandler;
+		return HandlerFactory.queryHandler;
 	}
 
 	/**
 	 * Cross-Namespace Handler 싱글톤 인스턴스 반환
 	 */
 	static getCrossNamespaceHandler(): CrossNamespaceHandler {
-		if (!this.crossNamespaceHandler) {
-			this.crossNamespaceHandler = new CrossNamespaceHandler();
+		if (!HandlerFactory.crossNamespaceHandler) {
+			HandlerFactory.crossNamespaceHandler = new CrossNamespaceHandler();
 		}
-		return this.crossNamespaceHandler;
+		return HandlerFactory.crossNamespaceHandler;
 	}
 
 	/**
 	 * Inference Handler 싱글톤 인스턴스 반환
 	 */
 	static getInferenceHandler(): InferenceHandler {
-		if (!this.inferenceHandler) {
-			this.inferenceHandler = new InferenceHandler();
+		if (!HandlerFactory.inferenceHandler) {
+			HandlerFactory.inferenceHandler = new InferenceHandler();
 		}
-		return this.inferenceHandler;
+		return HandlerFactory.inferenceHandler;
 	}
 
 	/**
 	 * Context Documents Handler 싱글톤 인스턴스 반환
 	 */
 	static getContextDocumentsHandler(): ContextDocumentsHandler {
-		if (!this.contextDocumentsHandler) {
-			this.contextDocumentsHandler = new ContextDocumentsHandler();
+		if (!HandlerFactory.contextDocumentsHandler) {
+			HandlerFactory.contextDocumentsHandler = new ContextDocumentsHandler();
 		}
-		return this.contextDocumentsHandler;
+		return HandlerFactory.contextDocumentsHandler;
 	}
 
 	/**
 	 * Performance Optimization Handler 싱글톤 인스턴스 반환
 	 */
 	static getPerformanceOptimizationHandler(): PerformanceOptimizationHandler {
-		if (!this.performanceOptimizationHandler) {
-			this.performanceOptimizationHandler =
+		if (!HandlerFactory.performanceOptimizationHandler) {
+			HandlerFactory.performanceOptimizationHandler =
 				new PerformanceOptimizationHandler();
 		}
-		return this.performanceOptimizationHandler;
+		return HandlerFactory.performanceOptimizationHandler;
 	}
 
 	/**
 	 * 모든 핸들러 초기화
 	 */
 	static async initializeAll(): Promise<void> {
-		const unknownHandler = this.getUnknownHandler();
-		const queryHandler = this.getQueryHandler();
-		const crossNamespaceHandler = this.getCrossNamespaceHandler();
-		const inferenceHandler = this.getInferenceHandler();
-		const contextDocumentsHandler = this.getContextDocumentsHandler();
+		const unknownHandler = HandlerFactory.getUnknownHandler();
+		const queryHandler = HandlerFactory.getQueryHandler();
+		const crossNamespaceHandler = HandlerFactory.getCrossNamespaceHandler();
+		const inferenceHandler = HandlerFactory.getInferenceHandler();
+		const contextDocumentsHandler = HandlerFactory.getContextDocumentsHandler();
 		const performanceOptimizationHandler =
-			this.getPerformanceOptimizationHandler();
+			HandlerFactory.getPerformanceOptimizationHandler();
 
 		await unknownHandler.initialize();
 		await queryHandler.initialize();
@@ -152,34 +145,34 @@ export class HandlerFactory {
 	 * 모든 핸들러 종료
 	 */
 	static async closeAll(): Promise<void> {
-		if (this.unknownHandler) {
-			await this.unknownHandler.close();
-			this.unknownHandler = null;
+		if (HandlerFactory.unknownHandler) {
+			await HandlerFactory.unknownHandler.close();
+			HandlerFactory.unknownHandler = null;
 		}
 
-		if (this.queryHandler) {
-			await this.queryHandler.close();
-			this.queryHandler = null;
+		if (HandlerFactory.queryHandler) {
+			await HandlerFactory.queryHandler.close();
+			HandlerFactory.queryHandler = null;
 		}
 
-		if (this.crossNamespaceHandler) {
-			await this.crossNamespaceHandler.close();
-			this.crossNamespaceHandler = null;
+		if (HandlerFactory.crossNamespaceHandler) {
+			await HandlerFactory.crossNamespaceHandler.close();
+			HandlerFactory.crossNamespaceHandler = null;
 		}
 
-		if (this.inferenceHandler) {
-			await this.inferenceHandler.close();
-			this.inferenceHandler = null;
+		if (HandlerFactory.inferenceHandler) {
+			await HandlerFactory.inferenceHandler.close();
+			HandlerFactory.inferenceHandler = null;
 		}
 
-		if (this.contextDocumentsHandler) {
-			await this.contextDocumentsHandler.close();
-			this.contextDocumentsHandler = null;
+		if (HandlerFactory.contextDocumentsHandler) {
+			await HandlerFactory.contextDocumentsHandler.close();
+			HandlerFactory.contextDocumentsHandler = null;
 		}
 
-		if (this.performanceOptimizationHandler) {
-			await this.performanceOptimizationHandler.close();
-			this.performanceOptimizationHandler = null;
+		if (HandlerFactory.performanceOptimizationHandler) {
+			await HandlerFactory.performanceOptimizationHandler.close();
+			HandlerFactory.performanceOptimizationHandler = null;
 		}
 
 		console.log("✅ 모든 CLI 핸들러 종료 완료");

@@ -3,9 +3,9 @@
  * namespace 기반 CLI 최적화 및 성능 향상
  */
 
-import { AnalysisNamespaceManager } from "../namespace/analysis-namespace";
 import { PerformanceMonitor } from "../core/PerformanceMonitor";
 import { RDFCache } from "../core/RDFCache";
+import type { AnalysisNamespaceManager } from "../namespace/analysis-namespace";
 
 // ===== OPTIMIZATION TYPES =====
 

@@ -5,13 +5,13 @@
 
 import type { GraphDatabase } from "../GraphDatabase";
 import { EdgeTypeRegistry } from "./EdgeTypeRegistry";
-import { InferenceLRUCache } from "./LRUCache";
 import { IncrementalInferenceEngine } from "./IncrementalInference";
-import { PerformanceMonitor } from "./PerformanceMonitor";
 import type {
-	InferredRelationship,
 	InferenceEngineConfig,
+	InferredRelationship,
 } from "./InferenceTypes";
+import { InferenceLRUCache } from "./LRUCache";
+import { PerformanceMonitor } from "./PerformanceMonitor";
 
 export interface OptimizedInferenceConfig extends InferenceEngineConfig {
 	enableLRUCache: boolean;

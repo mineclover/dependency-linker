@@ -1,9 +1,9 @@
 import {
-	ContextDocumentGenerator,
+	type ContextDocumentGenerator,
 	createContextDocumentGenerator,
 } from "../../context/ContextDocumentGenerator";
-import { GraphDatabase } from "../../database/GraphDatabase";
 import type { GraphNode } from "../../database/GraphDatabase";
+import { GraphDatabase } from "../../database/GraphDatabase";
 
 export interface ContextDocumentsHandlerOptions {
 	projectRoot?: string;

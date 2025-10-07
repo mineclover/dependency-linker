@@ -3,7 +3,7 @@
  * 마크다운 태그 유형 검증
  */
 
-import { MarkdownTag } from "./MarkdownTagCollector";
+import type { MarkdownTag } from "./MarkdownTagCollector";
 
 export interface TagValidationResult {
 	/** 유효성 */

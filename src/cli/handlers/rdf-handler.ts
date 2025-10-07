@@ -1,9 +1,9 @@
+import { existsSync, readFileSync } from "fs";
+import { join } from "path";
+import { RDFDatabaseAPI } from "../../api/rdf-database-integration";
 import { createRDFAddress, parseRDFAddress } from "../../core/RDFAddress";
 import { validateRDFUniqueness } from "../../core/RDFUniquenessValidator";
-import { RDFDatabaseAPI } from "../../api/rdf-database-integration";
-import { NamespaceConfig } from "../../namespace/analysis-namespace";
-import { readFileSync, existsSync } from "fs";
-import { join } from "path";
+import type { NamespaceConfig } from "../../namespace/analysis-namespace";
 
 export class RDFHandler {
 	private rdfDatabaseAPI: RDFDatabaseAPI;

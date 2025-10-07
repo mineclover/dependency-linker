@@ -1,10 +1,10 @@
 export {
-	executeAnalyzeAction,
 	type AnalyzeActionOptions,
+	executeAnalyzeAction,
 } from "./analyze-action.js";
 export {
-	executeDependenciesAction,
 	type DependenciesActionOptions,
+	executeDependenciesAction,
 } from "./dependencies-action.js";
 export { executeRDFAction, type RDFActionOptions } from "./rdf-action.js";
 export {

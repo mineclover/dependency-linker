@@ -4,13 +4,12 @@
  * RDF 주소 기반 파일 위치 반환 및 파일 열기 기능을 제공하는 핸들러
  */
 
-import { GraphDatabase } from "../../database/GraphDatabase";
-import { RDFAddress } from "../../core/RDFAddress.js";
+import { exec, execSync } from "child_process";
 import * as fs from "fs";
 import * as path from "path";
-import { exec } from "child_process";
-import { execSync } from "child_process";
 import { promisify } from "util";
+import { RDFAddress } from "../../core/RDFAddress.js";
+import { GraphDatabase } from "../../database/GraphDatabase";
 
 const execAsync = promisify(exec);
 
