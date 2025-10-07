@@ -193,7 +193,7 @@ export async function runTypeScriptProjectAnalysis(
 			// 성능 최적화된 분석 실행
 			console.log("⚡ Using performance optimizations...");
 
-			const config = {
+			const _config = {
 				...DEFAULT_PERFORMANCE_CONFIG,
 				maxConcurrency: parseInt(options.maxConcurrency || "4"),
 				batchSize: parseInt(options.batchSize || "10"),

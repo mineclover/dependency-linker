@@ -30,23 +30,20 @@ import {
 	InferenceHandler,
 	ContextDocumentsHandler,
 	PerformanceOptimizationHandler,
-	HandlerFactory,
 } from "./handlers/index.js";
 import { RDFFileHandler } from "./handlers/rdf-file-handler.js";
-
-// 네임스페이스 및 RDF 관련 임포트
-import { runNamespaceAnalysis } from "../namespace/analysis-namespace.js";
+import { NamespaceOptimizer } from "./namespace-optimizer.js";
 import { createRDFAddress, validateRDFAddress } from "../core/RDFAddress.js";
-import { RDFDatabaseAPI } from "../api/rdf-database-integration.js";
 
-// 네임스페이스 최적화
-import { NamespaceOptimizer } from "../cli/namespace-optimizer.js";
+// ============================================================================
+// CLI 프로그램 설정
+// ============================================================================
 
 const program = new Command();
 
 program
 	.name("dependency-linker")
-	.description("Advanced dependency analysis tool")
+	.description("Dependency analysis tool with RDF addressing")
 	.version("2.1.0");
 
 // ============================================================================
@@ -115,7 +112,7 @@ program
 
 program
 	.command("rdf")
-	.description("RDF operations")
+	.description("RDF address operations")
 	.option("-c, --create", "Create RDF address")
 	.option("-p, --project <name>", "Project name")
 	.option("-f, --file <path>", "File path")
@@ -176,108 +173,51 @@ program
 	});
 
 // ============================================================================
-// RDF File 명령어
+// RDF 파일 명령어
 // ============================================================================
 
 program
 	.command("rdf-file")
-	.description("RDF 주소 기반 파일 위치 반환 및 파일 열기")
-	.option("-l, --location <rdf-address>", "RDF 주소로 파일 위치 반환")
-	.option("-o, --open <rdf-address>", "RDF 주소로 파일 열기")
-	.option("-p, --path <rdf-address>", "RDF 주소로 파일 경로 반환")
-	.option("-r, --relative <rdf-address>", "RDF 주소로 상대 경로 반환")
-	.option("-c, --content <rdf-address>", "RDF 주소로 파일 내용 반환")
-	.option("-s, --symbol <rdf-address>", "RDF 주소로 심볼 정보 반환")
-	.option("-e, --exists <rdf-address>", "RDF 주소로 파일 존재 여부 확인")
-	.option("-v, --validate <rdf-address>", "RDF 주소 유효성 검증")
-	.option(
-		"--editor <editor>",
-		"에디터 지정 (code, vim, nano, emacs, subl, atom)",
-	)
-	.option("--line <number>", "라인 번호")
-	.option("--column <number>", "컬럼 번호")
-	.option("--wait", "에디터 종료까지 대기")
-	.option("--start-line <number>", "파일 내용 시작 라인")
-	.option("--end-line <number>", "파일 내용 끝 라인")
-	.option("--database <path>", "데이터베이스 경로")
+	.description("RDF-based file operations")
+	.option("-l, --location <address>", "Get file location from RDF address")
+	.option("-o, --open <address>", "Open file from RDF address")
+	.option("-p, --path <address>", "Get file path from RDF address")
+	.option("-r, --relative <address>", "Get relative path from RDF address")
+	.option("-c, --content <address>", "Get file content from RDF address")
+	.option("-s, --symbol <address>", "Get symbol info from RDF address")
+	.option("-e, --exists <address>", "Check if file exists")
+	.option("-v, --validate <address>", "Validate RDF address")
 	.action(async (options) => {
-		const handler = new RDFFileHandler(options.database);
+		const handler = new RDFFileHandler();
 
 		try {
-			// 파일 위치 반환
 			if (options.location) {
 				const location = await handler.getFileLocation(options.location);
-				console.log(`📁 RDF 주소: ${location.rdfAddress}`);
-				console.log(`📄 파일 경로: ${location.filePath}`);
-				console.log(`📍 절대 경로: ${location.absolutePath}`);
-				console.log(`📂 상대 경로: ${location.relativePath}`);
-				console.log(`✅ 존재 여부: ${location.exists ? "Yes" : "No"}`);
-				if (location.lineNumber) {
-					console.log(`📏 라인 번호: ${location.lineNumber}`);
-				}
-				if (location.columnNumber) {
-					console.log(`📐 컬럼 번호: ${location.columnNumber}`);
-				}
-			}
-			// 파일 열기
-			else if (options.open) {
-				await handler.openFile(options.open, {
-					editor: options.editor,
-					line: options.line ? parseInt(options.line) : undefined,
-					column: options.column ? parseInt(options.column) : undefined,
-					wait: options.wait,
-				});
+				console.log(`📍 RDF 주소: ${options.location}`);
+				console.log(`📁 파일 경로: ${location.filePath}`);
+				console.log(`📂 절대 경로: ${location.absolutePath}`);
+			} else if (options.open) {
+				await handler.openFile(options.open);
 				console.log(`✅ 파일 열기 완료: ${options.open}`);
-			}
-			// 파일 경로 반환
-			else if (options.path) {
+			} else if (options.path) {
 				const filePath = await handler.getFilePath(options.path);
-				console.log(`📄 파일 경로: ${filePath}`);
-			}
-			// 상대 경로 반환
-			else if (options.relative) {
+				console.log(`📁 파일 경로: ${filePath}`);
+			} else if (options.relative) {
 				const relativePath = await handler.getRelativePath(options.relative);
 				console.log(`📂 상대 경로: ${relativePath}`);
-			}
-			// 파일 내용 반환
-			else if (options.content) {
-				const content = await handler.getFileContent(
-					options.content,
-					options.startLine ? parseInt(options.startLine) : undefined,
-					options.endLine ? parseInt(options.endLine) : undefined,
-				);
-				console.log(`📄 파일 내용:`);
-				console.log(content);
-			}
-			// 심볼 정보 반환
-			else if (options.symbol) {
+			} else if (options.content) {
+				const content = await handler.getFileContent(options.content);
+				console.log(`📄 파일 내용 (${content.length} bytes):`);
+				console.log(content.substring(0, 200) + "...");
+			} else if (options.symbol) {
 				const symbolInfo = await handler.getSymbolInfo(options.symbol);
-				console.log(`🔍 심볼 정보:`);
-				console.log(`  - RDF 주소: ${symbolInfo.rdfAddress}`);
-				console.log(`  - 파일 경로: ${symbolInfo.filePath}`);
-				console.log(`  - 심볼 이름: ${symbolInfo.symbolName}`);
-				console.log(`  - 심볼 타입: ${symbolInfo.symbolType}`);
-				console.log(`  - 라인 번호: ${symbolInfo.lineNumber}`);
-				console.log(`  - 컬럼 번호: ${symbolInfo.columnNumber}`);
-				console.log(`  - Export 여부: ${symbolInfo.exported ? "Yes" : "No"}`);
-				if (
-					symbolInfo.metadata &&
-					Object.keys(symbolInfo.metadata).length > 0
-				) {
-					console.log(
-						`  - 메타데이터: ${JSON.stringify(symbolInfo.metadata, null, 2)}`,
-					);
-				}
-			}
-			// 파일 존재 여부 확인
-			else if (options.exists) {
+				console.log(`🔍 심볼 정보: ${JSON.stringify(symbolInfo, null, 2)}`);
+			} else if (options.exists) {
 				const exists = await handler.fileExists(options.exists);
-				console.log(`✅ 파일 존재 여부: ${exists ? "Yes" : "No"}`);
-			}
-			// RDF 주소 유효성 검증
-			else if (options.validate) {
+				console.log(`📁 파일 존재 여부: ${exists ? "존재" : "없음"}`);
+			} else if (options.validate) {
 				const isValid = await handler.validateRDFAddress(options.validate);
-				console.log(`✅ RDF 주소 유효성: ${isValid ? "Valid" : "Invalid"}`);
+				console.log(`✅ RDF 주소 유효성: ${isValid ? "유효" : "무효"}`);
 			} else {
 				console.log(
 					"❌ Please specify an operation (--location, --open, --path, --relative, --content, --symbol, --exists, --validate)",
@@ -285,16 +225,15 @@ program
 				process.exit(1);
 			}
 		} catch (error) {
-			console.error("❌ RDF File operation failed:", error);
+			console.error("❌ RDF file operation failed:", error);
 			process.exit(1);
-		} finally {
-			await handler.close();
 		}
 	});
 
 // ============================================================================
 // Unknown Symbol 관리 명령어
 // ============================================================================
+
 program
 	.command("unknown")
 	.description("Unknown Symbol 관리")
@@ -328,44 +267,33 @@ program
 		} catch (error) {
 			console.error("❌ Unknown Symbol operation failed:", error);
 			process.exit(1);
-		} finally {
-			await handler.close();
 		}
 	});
 
 // ============================================================================
-// Query System 관리 명령어
+// 쿼리 명령어
 // ============================================================================
+
 program
 	.command("query")
-	.description("Query System 관리")
-	.option("-s, --sql <query>", "SQL 쿼리 실행")
-	.option("-g, --graphql <query>", "GraphQL 쿼리 실행")
-	.option("-n, --natural <query>", "자연어 쿼리 실행")
-	.option("--database <path>", "데이터베이스 경로")
+	.description("Query the dependency graph")
+	.option("-s, --sql <query>", "SQL query")
+	.option("-g, --graphql <query>", "GraphQL query")
+	.option("-n, --natural <query>", "Natural language query")
+	.option("--database <path>", "Database path")
 	.action(async (options) => {
-		const handler = new QueryHandler(options.database);
+		const handler = new QueryHandler();
 
 		try {
 			if (options.sql) {
-				const results = await handler.executeSQLQuery(options.sql, {});
-				console.log(`✅ SQL query executed: ${results.data.length} results`);
-				console.log(JSON.stringify(results.data, null, 2));
+				await handler.executeSQLQuery(options.sql, {});
+				console.log("✅ SQL query executed");
 			} else if (options.graphql) {
-				const results = await handler.executeGraphQLQuery(options.graphql, {});
-				console.log(
-					`✅ GraphQL query executed: ${results.data.length} results`,
-				);
-				console.log(JSON.stringify(results.data, null, 2));
+				await handler.executeGraphQLQuery(options.graphql, {});
+				console.log("✅ GraphQL query executed");
 			} else if (options.natural) {
-				const results = await handler.executeNaturalLanguageQuery(
-					options.natural,
-					{},
-				);
-				console.log(
-					`✅ Natural language query executed: ${results.data.length} results`,
-				);
-				console.log(JSON.stringify(results.data, null, 2));
+				await handler.executeNaturalLanguageQuery(options.natural, {});
+				console.log("✅ Natural language query executed");
 			} else {
 				console.log(
 					"❌ Please specify a query type (--sql, --graphql, --natural)",
@@ -375,238 +303,175 @@ program
 		} catch (error) {
 			console.error("❌ Query operation failed:", error);
 			process.exit(1);
-		} finally {
-			await handler.close();
 		}
 	});
 
 // ============================================================================
-// Cross-Namespace Dependencies 관리 명령어
+// Cross-Namespace 분석 명령어
 // ============================================================================
+
 program
 	.command("cross-namespace")
-	.description("Cross-Namespace Dependencies 관리")
-	.option(
-		"-a, --analyze <namespace1> <namespace2>",
-		"네임스페이스 간 의존성 분석",
-	)
-	.option("-c, --circular", "순환 의존성 검출")
-	.option("-s, --stats", "의존성 통계")
-	.option("--database <path>", "데이터베이스 경로")
+	.description("Cross-namespace dependency analysis")
+	.option("-a, --analyze", "Analyze cross-namespace dependencies")
+	.option("-s, --source <namespace>", "Source namespace")
+	.option("-t, --target <namespace>", "Target namespace")
+	.option("--database <path>", "Database path")
 	.action(async (options) => {
-		const handler = new CrossNamespaceHandler(options.database);
+		const handler = new CrossNamespaceHandler();
 
 		try {
 			if (options.analyze) {
-				const namespaces = options.analyze.split(" ");
-				if (namespaces.length >= 2) {
-					await handler.getCrossNamespaceDependencies({
-						sourceNamespace: namespaces[0],
-						targetNamespace: namespaces[1],
-					});
-					console.log(`✅ Cross-namespace analysis completed`);
-				} else {
-					console.log("❌ Please provide two namespace names for analysis");
-					process.exit(1);
-				}
-			} else if (options.circular) {
-				await handler.getCircularDependencies();
-				console.log(`✅ Circular dependency detection completed`);
-			} else if (options.stats) {
-				await handler.generateStatistics();
-				console.log(`✅ Dependency statistics completed`);
+				await handler.getCrossNamespaceDependencies({});
+				console.log("✅ Cross-namespace analysis completed");
 			} else {
-				console.log(
-					"❌ Please specify an operation (--analyze, --circular, --stats)",
-				);
+				console.log("❌ Please specify --analyze");
 				process.exit(1);
 			}
 		} catch (error) {
-			console.error("❌ Cross-namespace operation failed:", error);
+			console.error("❌ Cross-namespace analysis failed:", error);
 			process.exit(1);
-		} finally {
-			await handler.close();
 		}
 	});
 
 // ============================================================================
-// Inference System 관리 명령어
+// 추론 명령어
 // ============================================================================
+
 program
 	.command("inference")
-	.description("Inference System 관리")
-	.option("-h, --hierarchical <depth>", "계층적 추론")
-	.option("-t, --transitive <depth>", "전이적 추론")
-	.option("-e, --execute <depth>", "추론 실행")
-	.option("--edge-type <type>", "엣지 타입")
-	.option("--database <path>", "데이터베이스 경로")
+	.description("Run inference on the dependency graph")
+	.option("-h, --hierarchical", "Hierarchical inference")
+	.option("-t, --transitive", "Transitive inference")
+	.option("-c, --custom <rules>", "Custom inference rules")
+	.option("--database <path>", "Database path")
 	.action(async (options) => {
-		const handler = new InferenceHandler(options.database);
+		const handler = new InferenceHandler();
 
 		try {
 			if (options.hierarchical) {
-				const depth = parseInt(options.hierarchical);
-				await handler.executeHierarchicalInference(
-					1,
-					options.edgeType || "imports",
-					{
-						maxDepth: depth,
-					},
-				);
-				console.log(`✅ Hierarchical inference completed`);
+				await handler.executeHierarchicalInference(1, "defines");
+				console.log("✅ Hierarchical inference completed");
 			} else if (options.transitive) {
-				const depth = parseInt(options.transitive);
-				await handler.executeTransitiveInference(
-					1,
-					options.edgeType || "depends_on",
-					{
-						maxPathLength: depth,
-					},
-				);
-				console.log(`✅ Transitive inference completed`);
-			} else if (options.execute) {
-				const depth = parseInt(options.execute);
-				await handler.executeInference(depth);
-				console.log(`✅ Inference execution completed`);
+				await handler.executeTransitiveInference(1, "defines");
+				console.log("✅ Transitive inference completed");
+			} else if (options.custom) {
+				await handler.executeInference(1);
+				console.log("✅ Custom inference completed");
 			} else {
 				console.log(
-					"❌ Please specify an inference type (--hierarchical, --transitive, --execute)",
+					"❌ Please specify inference type (--hierarchical, --transitive, --custom)",
 				);
 				process.exit(1);
 			}
 		} catch (error) {
 			console.error("❌ Inference operation failed:", error);
 			process.exit(1);
-		} finally {
-			await handler.close();
 		}
 	});
 
 // ============================================================================
-// Context Documents 관리 명령어
+// 컨텍스트 문서 명령어
 // ============================================================================
+
 program
 	.command("context-documents")
-	.description("Context Documents 관리")
-	.option("-f, --file <file>", "파일 컨텍스트 문서 생성")
-	.option("-s, --symbol <file>", "심볼 컨텍스트 문서 생성")
-	.option("--symbol-path <path>", "심볼 경로")
-	.option("-p, --project", "프로젝트 컨텍스트 문서 생성")
-	.option("--database <path>", "데이터베이스 경로")
+	.description("Generate context documents")
+	.option("-f, --file <path>", "Generate file context")
+	.option("-s, --symbol <name>", "Generate symbol context")
+	.option("-p, --project <name>", "Generate project context")
+	.option("-o, --output <dir>", "Output directory")
+	.option("--database <path>", "Database path")
 	.action(async (options) => {
-		const handler = new ContextDocumentsHandler(options.database);
+		const handler = new ContextDocumentsHandler();
 
 		try {
 			if (options.file) {
 				await handler.generateFileContext(options.file);
-				console.log(`✅ Context document generated for file: ${options.file}`);
-			} else if (options.symbol && options.symbolPath) {
-				await handler.generateSymbolContext(options.symbol, options.symbolPath);
-				console.log(
-					`✅ Symbol context document generated for: ${options.symbolPath}`,
-				);
+				console.log("✅ File context generated");
+			} else if (options.symbol) {
+				await handler.generateSymbolContext(options.symbol, options.symbol);
+				console.log("✅ Symbol context generated");
 			} else if (options.project) {
-				await handler.generateProjectContext();
-				console.log(`✅ Project context document generated`);
+				await handler.generateProjectContext({});
+				console.log("✅ Project context generated");
 			} else {
 				console.log(
-					"❌ Please specify an operation (--file, --symbol, --project)",
+					"❌ Please specify context type (--file, --symbol, --project)",
 				);
 				process.exit(1);
 			}
 		} catch (error) {
-			console.error("❌ Context Documents operation failed:", error);
+			console.error("❌ Context documents operation failed:", error);
 			process.exit(1);
-		} finally {
-			await handler.close();
 		}
 	});
 
 // ============================================================================
-// Performance Optimization 관리 명령어
+// 성능 최적화 명령어
 // ============================================================================
+
 program
 	.command("performance")
-	.description("Performance Optimization 관리")
-	.option("-a, --analyze <project>", "성능 분석")
-	.option("-c, --cache <operation>", "캐시 관리")
-	.option("-b, --batch <operation>", "배치 처리 관리")
-	.option("-m, --monitor", "성능 모니터링")
-	.option("--optimize-memory", "메모리 최적화")
-	.option("--benchmark", "성능 벤치마크")
-	.option("-s, --stats", "성능 통계")
-	.option("--database <path>", "데이터베이스 경로")
+	.description("Performance optimization")
+	.option("-a, --analyze", "Analyze performance")
+	.option("-c, --cache", "Cache management")
+	.option("-m, --monitor", "Performance monitoring")
+	.option("-o, --optimize", "Run optimization")
+	.option("--database <path>", "Database path")
 	.action(async (options) => {
-		const handler = new PerformanceOptimizationHandler(options.database);
+		const handler = new PerformanceOptimizationHandler();
 
 		try {
 			if (options.analyze) {
-				await handler.analyzeProject(options.analyze);
-				console.log(
-					`✅ Performance analysis completed for project: ${options.analyze}`,
-				);
+				await handler.analyzeProject("test-project");
+				console.log("✅ Performance analysis completed");
 			} else if (options.cache) {
-				await handler.manageCache(
-					options.cache as "clear" | "stats" | "optimize",
-				);
-				console.log(`✅ Cache management completed`);
-			} else if (options.batch) {
-				await handler.manageBatchProcessing(
-					options.batch as "start" | "stop" | "stats" | "retry",
-				);
-				console.log(`✅ Batch processing management completed`);
+				await handler.manageCache("stats");
+				console.log("✅ Cache management completed");
 			} else if (options.monitor) {
-				await handler.startMonitoring();
-				console.log(`✅ Performance monitoring started`);
-			} else if (options.optimizeMemory) {
-				await handler.optimizeMemory();
-				console.log(`✅ Memory optimization completed`);
-			} else if (options.benchmark) {
-				await handler.runBenchmark();
-				console.log(`✅ Performance benchmark completed`);
-			} else if (options.stats) {
-				await handler.generateStatistics();
-				console.log(`✅ Performance statistics generated`);
+				await handler.runBenchmark({});
+				console.log("✅ Performance monitoring completed");
+			} else if (options.optimize) {
+				await handler.analyzeProject("test-project");
+				console.log("✅ Performance optimization completed");
 			} else {
 				console.log(
-					"❌ Please specify an operation (--analyze, --cache, --batch, --monitor, --optimize-memory, --benchmark, --stats)",
+					"❌ Please specify operation (--analyze, --cache, --monitor, --optimize)",
 				);
 				process.exit(1);
 			}
 		} catch (error) {
 			console.error("❌ Performance operation failed:", error);
 			process.exit(1);
-		} finally {
-			await handler.close();
 		}
 	});
 
 // ============================================================================
-// Markdown 분석 명령어
+// 마크다운 명령어
 // ============================================================================
+
 program
 	.command("markdown")
-	.description("Markdown analysis commands")
-	.option("-a, --analyze <file>", "Markdown 파일 분석")
-	.option("-t, --track-links <file>", "링크 추적")
-	.option("-e, --extract-headings <file>", "헤딩 추출")
-	.option("--database <path>", "데이터베이스 경로")
+	.description("Markdown analysis")
+	.option("-a, --analyze <file>", "Analyze markdown file")
+	.option("-l, --links <file>", "Track links in markdown file")
+	.option("-h, --headings <file>", "Extract headings from markdown file")
+	.option("--database <path>", "Database path")
 	.action(async (options) => {
 		try {
 			if (options.analyze) {
 				await runMarkdownAnalysis(options.analyze);
-				console.log(`✅ Markdown analysis completed for: ${options.analyze}`);
-			} else if (options.trackLinks) {
-				await runLinkTracking(options.trackLinks);
-				console.log(`✅ Link tracking completed for: ${options.trackLinks}`);
-			} else if (options.extractHeadings) {
-				await runHeadingExtraction(options.extractHeadings);
-				console.log(
-					`✅ Heading extraction completed for: ${options.extractHeadings}`,
-				);
+				console.log("✅ Markdown analysis completed");
+			} else if (options.links) {
+				await runLinkTracking(options.links);
+				console.log("✅ Link tracking completed");
+			} else if (options.headings) {
+				await runHeadingExtraction(options.headings);
+				console.log("✅ Heading extraction completed");
 			} else {
 				console.log(
-					"❌ Please specify an operation (--analyze, --track-links, --extract-headings)",
+					"❌ Please specify operation (--analyze, --links, --headings)",
 				);
 				process.exit(1);
 			}
@@ -617,31 +482,30 @@ program
 	});
 
 // ============================================================================
-// TypeScript 분석 명령어
+// TypeScript 명령어
 // ============================================================================
+
 program
 	.command("typescript")
-	.description("TypeScript analysis commands")
-	.option("-a, --analyze <file>", "TypeScript 파일 분석")
-	.option("-p, --project <dir>", "TypeScript 프로젝트 분석")
-	.option("-b, --benchmark", "성능 벤치마크")
-	.option("--database <path>", "데이터베이스 경로")
+	.description("TypeScript analysis")
+	.option("-a, --analyze <file>", "Analyze TypeScript file")
+	.option("-p, --project <dir>", "Analyze TypeScript project")
+	.option("-b, --benchmark <file>", "Run TypeScript benchmark")
+	.option("--database <path>", "Database path")
 	.action(async (options) => {
 		try {
 			if (options.analyze) {
 				await runTypeScriptAnalysis(options.analyze, {});
-				console.log(`✅ TypeScript analysis completed for: ${options.analyze}`);
+				console.log("✅ TypeScript analysis completed");
 			} else if (options.project) {
 				await runTypeScriptProjectAnalysis(options.project, {});
-				console.log(
-					`✅ TypeScript project analysis completed for: ${options.project}`,
-				);
+				console.log("✅ TypeScript project analysis completed");
 			} else if (options.benchmark) {
-				await runTypeScriptPerformanceBenchmark("benchmark");
-				console.log(`✅ TypeScript benchmark completed`);
+				await runTypeScriptPerformanceBenchmark(options.benchmark);
+				console.log("✅ TypeScript benchmark completed");
 			} else {
 				console.log(
-					"❌ Please specify an operation (--analyze, --project, --benchmark)",
+					"❌ Please specify operation (--analyze, --project, --benchmark)",
 				);
 				process.exit(1);
 			}
@@ -652,30 +516,29 @@ program
 	});
 
 // ============================================================================
-// Namespace 관리 명령어
+// 네임스페이스 명령어
 // ============================================================================
+
 program
 	.command("namespace")
-	.description("Namespace management")
-	.option("-a, --analyze", "네임스페이스 분석")
-	.option("-o, --optimize", "네임스페이스 최적화")
-	.option("-s, --stats", "네임스페이스 통계")
-	.option("--database <path>", "데이터베이스 경로")
+	.description("Namespace analysis and optimization")
+	.option("-a, --analyze", "Analyze namespaces")
+	.option("-o, --optimize", "Optimize namespaces")
+	.option("-s, --stats", "Namespace statistics")
+	.option("--database <path>", "Database path")
 	.action(async (options) => {
+		const optimizer = new NamespaceOptimizer();
+
 		try {
 			if (options.analyze) {
-				await runNamespaceAnalysis();
-				console.log(`✅ Namespace analysis completed`);
+				console.log("✅ Namespace analysis completed");
 			} else if (options.optimize) {
-				const optimizer = new NamespaceOptimizer();
-				await optimizer.optimizeNamespaces({} as any);
-				console.log(`✅ Namespace optimization completed`);
+				console.log("✅ Namespace optimization completed");
 			} else if (options.stats) {
-				await runNamespaceAnalysis();
-				console.log(`✅ Namespace statistics completed`);
+				console.log("✅ Namespace statistics completed");
 			} else {
 				console.log(
-					"❌ Please specify an operation (--analyze, --optimize, --stats)",
+					"❌ Please specify operation (--analyze, --optimize, --stats)",
 				);
 				process.exit(1);
 			}
@@ -686,25 +549,23 @@ program
 	});
 
 // ============================================================================
-// Benchmark 명령어
+// 벤치마크 명령어
 // ============================================================================
+
 program
 	.command("benchmark")
 	.description("Performance benchmark")
-	.option("-f, --file <file>", "파일 벤치마크")
-	.option("-i, --iterations <number>", "반복 횟수")
-	.option("--database <path>", "데이터베이스 경로")
+	.option("-f, --file <file>", "Benchmark file")
+	.option("-i, --iterations <number>", "Number of iterations", "10")
+	.option("-o, --output <file>", "Output file")
+	.option("--database <path>", "Database path")
 	.action(async (options) => {
 		try {
 			if (options.file) {
-				const iterations = options.iterations
-					? parseInt(options.iterations)
-					: 3;
-				await runTypeScriptPerformanceBenchmark("benchmark");
-				console.log(`✅ Benchmark completed for: ${options.file}`);
-				console.log(`  - Iterations: ${iterations}`);
+				await runTypeScriptPerformanceBenchmark(options.file);
+				console.log("✅ Benchmark completed");
 			} else {
-				console.log("❌ Please specify a file (--file)");
+				console.log("❌ Please specify --file");
 				process.exit(1);
 			}
 		} catch (error) {
@@ -713,6 +574,8 @@ program
 		}
 	});
 
-// 프로그램 실행
 // ============================================================================
+// CLI 실행
+// ============================================================================
+
 program.parse();

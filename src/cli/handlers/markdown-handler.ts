@@ -15,18 +15,12 @@ import { MarkdownTagTypeDocumentationGenerator } from "../../parsers/markdown/Ma
 import {
 	exampleMarkdown,
 	exampleHeadings,
-	exampleMarkdowns,
 	markdownFiles,
 } from "../examples/markdown-examples.js";
 import {
 	exampleTags,
 	exampleTagRelationships,
 } from "../examples/tag-examples.js";
-import {
-	exampleAnalysisResults,
-	exampleProjectName,
-	exampleOutputDir,
-} from "../examples/analysis-examples.js";
 
 /**
  * 마크다운 분석 실행

@@ -3,11 +3,7 @@
  * 마크다운 심볼을 RDF 형식으로 변환
  */
 
-import {
-	MarkdownParser,
-	type MarkdownSymbol,
-	type MarkdownParseResult,
-} from "./MarkdownParser";
+import { MarkdownParser, type MarkdownSymbol } from "./MarkdownParser";
 import { createRDFAddress } from "../../core/RDFAddress";
 import type { NodeType } from "../../core/RDFAddress";
 import type { RDFSymbolExtractionResult } from "../../core/types";
@@ -152,7 +148,7 @@ export class MarkdownRDFIntegration {
 					url: symbol.url,
 				} as any,
 			};
-		} catch (error) {
+		} catch (_error) {
 			return null;
 		}
 	}
@@ -212,7 +208,7 @@ export class MarkdownRDFIntegration {
 					url: link.url,
 				},
 			};
-		} catch (error) {
+		} catch (_error) {
 			return null;
 		}
 	}

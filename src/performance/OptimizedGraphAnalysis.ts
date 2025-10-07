@@ -18,7 +18,7 @@ import {
 	type ImportSource,
 } from "../database/services/FileDependencyAnalyzer.js";
 import { AdvancedCache } from "../cache/AdvancedCache.js";
-import { BatchProcessor, FileBatchProcessor } from "../batch/BatchProcessor.js";
+import { FileBatchProcessor } from "../batch/BatchProcessor.js";
 import { DependencyGraphVisualizer } from "../visualization/DependencyGraphVisualizer.js";
 import type { SupportedLanguage } from "../core/types.js";
 
@@ -189,7 +189,8 @@ export class OptimizedGraphAnalysis {
 				: await this.processFilesIndividually(files, projectRoot, projectName);
 
 			// 시각화 생성
-			let visualization;
+			let visualization: any;
+			
 			if (this.options.enableVisualization) {
 				visualization = await this.generateVisualization();
 			}
@@ -215,7 +216,7 @@ export class OptimizedGraphAnalysis {
 	 */
 	private async collectFiles(
 		projectRoot: string,
-		patterns: string[],
+		_patterns: string[],
 	): Promise<string[]> {
 		const files: string[] = [];
 
@@ -255,8 +256,8 @@ export class OptimizedGraphAnalysis {
 	 */
 	private async processBatch(
 		files: string[],
-		projectRoot: string,
-		projectName: string,
+		_projectRoot: string,
+		_projectName: string,
 	): Promise<Map<string, any>> {
 		// 배치 처리기에 파일 추가
 		for (const file of files) {
@@ -282,8 +283,8 @@ export class OptimizedGraphAnalysis {
 	 */
 	private async processFilesIndividually(
 		files: string[],
-		projectRoot: string,
-		projectName: string,
+		_projectRoot: string,
+		_projectName: string,
 	): Promise<Map<string, any>> {
 		const results = new Map<string, any>();
 
@@ -327,7 +328,8 @@ export class OptimizedGraphAnalysis {
 		// import 소스 추출
 		const importSources: ImportSource[] = [];
 		const importRegex = /import\s+.*?\s+from\s+['"](.+?)['"]/g;
-		let match;
+		let match: RegExpExecArray | null;
+		
 		while ((match = importRegex.exec(content)) !== null) {
 			importSources.push({
 				type: match[1].startsWith(".")
