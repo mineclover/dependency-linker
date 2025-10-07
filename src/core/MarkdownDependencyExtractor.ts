@@ -146,7 +146,7 @@ function extractLinks(filePath: string, lines: string[]): MarkdownDependency[] {
 			if (isAnchorLink(url)) {
 				return {
 					from: filePath,
-					to: filePath, // Self-reference
+					to: url, // Keep the anchor URL (#installation)
 					type: "anchor" as MarkdownDependencyType,
 					location: { line: lineNum, column: col },
 					text,
@@ -244,7 +244,7 @@ function extractSymbolReferences(
 
 			return {
 				from: filePath,
-				to: `/${symbol}`, // Serena-compatible name path
+				to: symbol, // Symbol name without path prefix
 				type: "symbol-reference" as MarkdownDependencyType,
 				location: { line: lineNum, column: col },
 				text: symbol,
@@ -319,6 +319,11 @@ function extractHashtags(
 
 		// Skip heading lines (they start with # and have space)
 		if (/^#{1,6}\s/.test(line.trim())) {
+			continue;
+		}
+
+		// Skip lines that contain anchor links (they are handled by extractLinks)
+		if (/\[([^\]]+)\]\(#([^)]+)\)/.test(line)) {
 			continue;
 		}
 

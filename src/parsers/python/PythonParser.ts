@@ -20,7 +20,7 @@ export class PythonParser extends BaseParser {
 		const parser = new Parser();
 		try {
 			// Python 언어 설정
-			parser.setLanguage(Python);
+			parser.setLanguage(Python as any);
 
 			// 언어 설정 검증
 			const setLanguage = parser.getLanguage();
@@ -66,10 +66,12 @@ export class PythonParser extends BaseParser {
 			const parser = this.getParser();
 			const tree = parser.parse(sourceCode);
 
-			if (!tree || !tree.rootNode) {
-				throw new Error(
-					"Failed to parse Python code: No tree or rootNode returned",
-				);
+			if (!tree) {
+				throw new Error("Python parser returned null");
+			}
+
+			if (!tree.rootNode) {
+				throw new Error("Python parsing failed: No rootNode returned");
 			}
 
 			const parseTime = performance.now() - startTime;

@@ -20,7 +20,7 @@ export class GoParser extends BaseParser {
 		const parser = new Parser();
 		try {
 			// Go 언어 설정
-			parser.setLanguage(Go);
+			parser.setLanguage(Go as any);
 
 			// 언어 설정 검증
 			const setLanguage = parser.getLanguage();
@@ -66,10 +66,12 @@ export class GoParser extends BaseParser {
 			const parser = this.getParser();
 			const tree = parser.parse(sourceCode);
 
-			if (!tree || !tree.rootNode) {
-				throw new Error(
-					"Failed to parse Go code: No tree or rootNode returned",
-				);
+			if (!tree) {
+				throw new Error("Go parser returned null");
+			}
+
+			if (!tree.rootNode) {
+				throw new Error("Go parsing failed: No rootNode returned");
 			}
 
 			const parseTime = performance.now() - startTime;

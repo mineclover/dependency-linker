@@ -130,7 +130,7 @@ export const MARKDOWN_PATTERNS = {
 	WIKI_LINK: /\[\[([^\]|]+)(?:\|([^\]]+))?\]\]/g,
 
 	/** Symbol reference: @SymbolName or @function() - matches both class names and function calls */
-	SYMBOL_REF: /@([A-Za-z][a-zA-Z0-9_]*(?:\(\))?)/g,
+	SYMBOL_REF: /@([A-Za-z][a-zA-Z0-9_.]*(?:\(\))?)/g,
 
 	/** HTML comment include: <!-- include:path --> */
 	INCLUDE: /<!--\s*include:\s*([^\s]+)\s*-->/g,
@@ -177,14 +177,11 @@ export function parseUrl(url: string): { path: string; anchor?: string } {
 }
 
 /**
- * Normalize markdown path (remove .md extension, handle relative paths)
+ * Normalize markdown path (handle relative paths, keep extensions)
  */
 export function normalizeMarkdownPath(path: string): string {
-	// Remove .md extension
-	let normalized = path.replace(/\.md$/i, "");
-
 	// Handle ./  and ../
-	normalized = normalized.replace(/^\.\//, "");
+	let normalized = path.replace(/^\.\//, "");
 
 	return normalized;
 }

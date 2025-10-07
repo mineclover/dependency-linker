@@ -20,7 +20,7 @@ export class JavaParser extends BaseParser {
 		const parser = new Parser();
 		try {
 			// Java 언어 설정
-			parser.setLanguage(Java);
+			parser.setLanguage(Java as any);
 
 			// 언어 설정 검증
 			const setLanguage = parser.getLanguage();
@@ -81,10 +81,12 @@ export class JavaParser extends BaseParser {
 				sourceCodeLength: sourceCode.length,
 			});
 
-			if (!tree || !tree.rootNode) {
-				throw new Error(
-					"Failed to parse Java code: No tree or rootNode returned",
-				);
+			if (!tree) {
+				throw new Error("Java parser returned null");
+			}
+
+			if (!tree.rootNode) {
+				throw new Error("Java parsing failed: No rootNode returned");
 			}
 
 			const parseTime = performance.now() - startTime;
