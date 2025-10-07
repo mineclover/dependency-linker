@@ -136,11 +136,11 @@ export class MarkdownRDFIntegration {
 			let targetRDF: string;
 			let relationshipType: "links_to" | "references" | "includes" | "defines";
 
-			if (link.url && link.url.startsWith("http")) {
+			if (link.url?.startsWith("http")) {
 				// 외부 링크
 				targetRDF = link.url;
 				relationshipType = "links_to";
-			} else if (link.url && link.url.startsWith("#")) {
+			} else if (link.url?.startsWith("#")) {
 				// 앵커 링크
 				targetRDF = createRDFAddress({
 					nodeType: "Heading",
@@ -175,10 +175,9 @@ export class MarkdownRDFIntegration {
 						!link.url.startsWith("#")
 							? link.url
 							: undefined,
-					anchorId:
-						link.url && link.url.startsWith("#")
-							? link.url.substring(1)
-							: undefined,
+					anchorId: link.url?.startsWith("#")
+						? link.url.substring(1)
+						: undefined,
 				},
 			};
 		} catch (error) {

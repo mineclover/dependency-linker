@@ -475,12 +475,15 @@ export class UnknownSymbolAdvancedTester {
 		for (const [file, usages] of usageMap) {
 			for (const usage of usages) {
 				if (aliasNames.has(usage.aliasName)) {
-					conflicts.push({
-						file1: aliasNames.get(usage.aliasName)!,
-						file2: file,
-						aliasName: usage.aliasName,
-						originalName,
-					});
+					const existingFile = aliasNames.get(usage.aliasName);
+					if (existingFile) {
+						conflicts.push({
+							file1: existingFile,
+							file2: file,
+							aliasName: usage.aliasName,
+							originalName,
+						});
+					}
 				} else {
 					aliasNames.set(usage.aliasName, file);
 				}
@@ -535,10 +538,10 @@ export class UnknownSymbolAdvancedTester {
 					(n) => n.name === chain[i - 1],
 				);
 
-				if (filteredPrevNode.length > 0) {
+				if (filteredPrevNode.length > 0 && filteredPrevNode[0].id) {
 					await this.database.upsertRelationship({
 						fromNodeId: node,
-						toNodeId: filteredPrevNode[0].id!,
+						toNodeId: filteredPrevNode[0].id,
 						type: "aliasOf",
 						metadata: { aliasName: chain[i] },
 					});
@@ -563,10 +566,15 @@ export class UnknownSymbolAdvancedTester {
 			(n) => n.name === chain[chain.length - 1],
 		);
 
-		if (filteredFirstNode.length > 0 && filteredLastNode.length > 0) {
+		if (
+			filteredFirstNode.length > 0 &&
+			filteredLastNode.length > 0 &&
+			filteredFirstNode[0].id &&
+			filteredLastNode[0].id
+		) {
 			await this.database.upsertRelationship({
-				fromNodeId: filteredLastNode[0].id!,
-				toNodeId: filteredFirstNode[0].id!,
+				fromNodeId: filteredLastNode[0].id,
+				toNodeId: filteredFirstNode[0].id,
 				type: "aliasOf",
 				metadata: { aliasName: chain[chain.length - 1] },
 			});

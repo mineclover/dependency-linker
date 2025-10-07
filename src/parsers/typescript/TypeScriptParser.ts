@@ -20,7 +20,6 @@ class ParserPool {
 	private tsxParsers: Parser[] = [];
 	private maxPoolSize = 10;
 	private currentTsIndex = 0;
-	private currentTsxIndex = 0;
 
 	private constructor() {}
 
@@ -144,7 +143,6 @@ class ParserPool {
 		this.tsParsers = [];
 		this.tsxParsers = [];
 		this.currentTsIndex = 0;
-		this.currentTsxIndex = 0;
 	}
 }
 

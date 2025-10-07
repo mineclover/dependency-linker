@@ -20,7 +20,7 @@ export { UnknownSymbolManager } from "./UnknownSymbolManager";
 
 // Service Factory for dependency injection
 let unknownSymbolManager: UnknownSymbolManager | null = null;
-let fileDependencyAnalyzer: FileDependencyAnalyzer | null = null;
+const fileDependencyAnalyzer: FileDependencyAnalyzer | null = null;
 
 /**
  * Unknown Symbol Manager 싱글톤 인스턴스 반환

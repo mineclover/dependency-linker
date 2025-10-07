@@ -181,7 +181,7 @@ export function parseUrl(url: string): { path: string; anchor?: string } {
  */
 export function normalizeMarkdownPath(path: string): string {
 	// Handle ./  and ../
-	let normalized = path.replace(/^\.\//, "");
+	const normalized = path.replace(/^\.\//, "");
 
 	return normalized;
 }

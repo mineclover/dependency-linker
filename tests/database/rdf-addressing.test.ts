@@ -144,9 +144,7 @@ describe("RDF Addressing System", () => {
 				context,
 			);
 
-			expect(id).toBe(
-				"dependency-linker/src/app.ts#Unknown:TypeScriptParser",
-			);
+			expect(id).toBe("dependency-linker/src/app.ts#Unknown:TypeScriptParser");
 		});
 	});
 
@@ -202,8 +200,7 @@ describe("RDF Addressing System", () => {
 		});
 
 		test("should parse unknown symbol RDF address", () => {
-			const address =
-				"dependency-linker/src/app.ts#Unknown:TypeScriptParser";
+			const address = "dependency-linker/src/app.ts#Unknown:TypeScriptParser";
 
 			const rdf = identifier.parseRdfAddress(address);
 
@@ -256,8 +253,7 @@ describe("RDF Addressing System", () => {
 
 	describe("RDF Address Relations", () => {
 		test("should identify related nodes in same file", () => {
-			const id1 =
-				"dependency-linker/src/parser.ts#Class:TypeScriptParser";
+			const id1 = "dependency-linker/src/parser.ts#Class:TypeScriptParser";
 			const id2 =
 				"dependency-linker/src/parser.ts#Method:TypeScriptParser.parse";
 
@@ -265,16 +261,14 @@ describe("RDF Addressing System", () => {
 		});
 
 		test("should identify unrelated nodes in different files", () => {
-			const id1 =
-				"dependency-linker/src/parser.ts#Class:TypeScriptParser";
+			const id1 = "dependency-linker/src/parser.ts#Class:TypeScriptParser";
 			const id2 = "dependency-linker/src/types.ts#Interface:NodeTypeSpec";
 
 			expect(identifier.areRelated(id1, id2)).toBe(false);
 		});
 
 		test("should identify unrelated nodes in different projects", () => {
-			const id1 =
-				"dependency-linker/src/parser.ts#Class:TypeScriptParser";
+			const id1 = "dependency-linker/src/parser.ts#Class:TypeScriptParser";
 			const id2 = "other-project/src/parser.ts#Class:TypeScriptParser";
 
 			expect(identifier.areRelated(id1, id2)).toBe(false);
@@ -295,8 +289,7 @@ describe("RDF Addressing System", () => {
 		});
 
 		test("should parse symbol identifier to node identity", () => {
-			const address =
-				"dependency-linker/src/parser.ts#Class:TypeScriptParser";
+			const address = "dependency-linker/src/parser.ts#Class:TypeScriptParser";
 
 			const parsed = identifier.parseIdentifier(address);
 

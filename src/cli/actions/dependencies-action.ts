@@ -1,5 +1,5 @@
-import { DependencyAnalysisHandler } from "../handlers/dependency-analysis-handler.js";
 import * as fs from "node:fs";
+import { DependencyAnalysisHandler } from "../handlers/dependency-analysis-handler.js";
 
 export interface DependenciesActionOptions {
 	symbol?: string;
@@ -91,7 +91,7 @@ export async function executeDependenciesAction(
 
 					if (fileSymbols.totalCount === 0) {
 						// 파일 경로를 상대 경로로도 시도
-						const relativePath = options.file.replace(process.cwd() + "/", "");
+						const relativePath = options.file.replace(`${process.cwd()}/`, "");
 						console.log(`📝 Trying relative path: ${relativePath}`);
 						fileSymbols = await handler.getFileSymbols(relativePath);
 

@@ -203,7 +203,7 @@ export class RDFHandler {
 	/**
 	 * RDF 주소 통계
 	 */
-	async generateRDFStatistics(options: {
+	async generateRDFStatistics(_options: {
 		namespace?: string;
 		project?: string;
 		all?: boolean;

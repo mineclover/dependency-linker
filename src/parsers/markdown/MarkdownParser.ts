@@ -4,7 +4,6 @@
  */
 
 import Parser = require("tree-sitter");
-// @ts-ignore - tree-sitter-markdown has no type definitions
 const Markdown = require("tree-sitter-markdown");
 
 import type { SupportedLanguage } from "../../core/types";
@@ -154,7 +153,7 @@ export class MarkdownParser extends BaseParser {
 			const testSource = "# Test";
 			const tree = this.parser.parse(testSource);
 			this.treeSitterAvailable =
-				tree && tree.rootNode && tree.rootNode.type === "document";
+				tree?.rootNode && tree.rootNode.type === "document";
 			return this.treeSitterAvailable;
 		} catch {
 			this.treeSitterAvailable = false;

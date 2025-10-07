@@ -4,7 +4,6 @@
  */
 
 import * as fs from "node:fs/promises";
-import * as path from "node:path";
 import {
 	ExternalLinkValidator,
 	type LinkValidationResult,
@@ -153,12 +152,10 @@ export interface LinkStatistics {
  */
 export class MarkdownLinkTracker {
 	private rdfIntegration: MarkdownRDFIntegration;
-	private projectRoot: string;
 	private linkValidator: ExternalLinkValidator;
 
-	constructor(projectRoot: string) {
+	constructor(_projectRoot: string) {
 		this.rdfIntegration = new MarkdownRDFIntegration();
-		this.projectRoot = projectRoot;
 		this.linkValidator = new ExternalLinkValidator({
 			timeout: 5000,
 			concurrent: 5,
@@ -290,65 +287,11 @@ export class MarkdownLinkTracker {
 	}
 
 	/**
-	 * 개별 링크 분석
-	 */
-	private async analyzeLink(
-		relationship: MarkdownRelationship,
-		sourceFile: string,
-		brokenLinks: BrokenLink[],
-		externalLinks: ExternalLink[],
-		anchorLinks: AnchorLink[],
-	): Promise<void> {
-		const { metadata } = relationship;
-
-		if (relationship.type === "links_to" && metadata.filePath) {
-			// 내부 파일 링크 검증
-			const targetPath = path.resolve(this.projectRoot, metadata.filePath);
-			try {
-				await fs.access(targetPath);
-			} catch {
-				brokenLinks.push({
-					text: metadata.linkText || "",
-					url: metadata.url || "",
-					sourceFile,
-					line: 0, // TODO: 실제 라인 번호 추출
-					error: `File not found: ${metadata.filePath}`,
-				});
-			}
-		} else if (relationship.type === "references" && metadata.anchorId) {
-			// 앵커 링크 검증
-			const isValid = await this.validateAnchorLink(
-				metadata.anchorId,
-				sourceFile,
-			);
-			anchorLinks.push({
-				text: metadata.linkText || "",
-				anchor: metadata.anchorId || "",
-				sourceFile,
-				targetFile: sourceFile,
-				line: 0, // TODO: 실제 라인 번호 추출
-				isValid,
-			});
-		} else if (metadata.url && this.isExternalUrl(metadata.url)) {
-			// 외부 링크 - 검증 포함
-			const validation = await this.linkValidator.validateLink(metadata.url);
-			externalLinks.push({
-				text: metadata.linkText || "",
-				url: metadata.url,
-				sourceFile,
-				line: 0, // TODO: 실제 라인 번호 추출
-				type: this.getExternalLinkType(metadata.url),
-				validation,
-			});
-		}
-	}
-
-	/**
 	 * 직접적인 링크 추출 (테스트 호환성)
 	 */
 	private extractLinksDirectly(
 		sourceCode: string,
-		filePath: string,
+		_filePath: string,
 	): Array<{
 		text: string;
 		url: string;
@@ -405,13 +348,13 @@ export class MarkdownLinkTracker {
 			line: number;
 		},
 		sourceFile: string,
-		brokenLinks: BrokenLink[],
+		_brokenLinks: BrokenLink[],
 		externalLinks: ExternalLink[],
 		anchorLinks: AnchorLink[],
 	): Promise<void> {
 		if (link.type === "external") {
 			// 외부 링크
-			let validation;
+			let validation: any;
 			if (link.url.startsWith("mailto:")) {
 				// mailto 링크는 검증하지 않음
 				validation = {
@@ -494,17 +437,6 @@ export class MarkdownLinkTracker {
 	}
 
 	/**
-	 * 외부 URL 확인
-	 */
-	private isExternalUrl(url: string): boolean {
-		return (
-			url.startsWith("http://") ||
-			url.startsWith("https://") ||
-			url.startsWith("mailto:")
-		);
-	}
-
-	/**
 	 * 외부 링크 타입 결정
 	 */
 	private getExternalLinkType(
@@ -559,41 +491,5 @@ export class MarkdownLinkTracker {
 			validLinks,
 			validityRatio,
 		};
-	}
-
-	/**
-	 * 내부 링크 추출 (테스트 호환성)
-	 */
-	private extractInternalLinks(
-		relationships: MarkdownRelationship[],
-		sourceFile: string,
-	): InternalLink[] {
-		return relationships
-			.filter((rel) => rel.type === "links_to" && rel.metadata.filePath)
-			.map((rel, index) => ({
-				text: rel.metadata.linkText || "",
-				path: rel.metadata.filePath || "",
-				sourceFile,
-				line: index + 1,
-				isValid: true,
-			}));
-	}
-
-	/**
-	 * 이미지 링크 추출 (테스트 호환성)
-	 */
-	private extractImageLinks(
-		relationships: MarkdownRelationship[],
-		sourceFile: string,
-	): ImageLink[] {
-		return relationships
-			.filter((rel) => rel.type === "includes" && rel.metadata.url)
-			.map((rel, index) => ({
-				alt: rel.metadata.linkText || "",
-				src: rel.metadata.url || "",
-				sourceFile,
-				line: index + 1,
-				isValid: true,
-			}));
 	}
 }

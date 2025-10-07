@@ -1,9 +1,9 @@
-import { TypeScriptParser } from "../../parsers/typescript/TypeScriptParser.js";
-import { MarkdownParser } from "../../parsers/markdown/MarkdownParser.js";
-import { RDFIntegratedGraphDatabase } from "../../database/RDFIntegratedGraphDatabase.js";
-import { glob } from "glob";
 import { readFileSync } from "node:fs";
 import { extname } from "node:path";
+import { glob } from "glob";
+import { RDFIntegratedGraphDatabase } from "../../database/RDFIntegratedGraphDatabase.js";
+import { MarkdownParser } from "../../parsers/markdown/MarkdownParser.js";
+import { TypeScriptParser } from "../../parsers/typescript/TypeScriptParser.js";
 
 export class NamespaceHandler {
 	private rdfDatabase: RDFIntegratedGraphDatabase;
@@ -177,7 +177,7 @@ export class NamespaceHandler {
 		}> = [];
 
 		// Tree-sitter AST에서 심볼 추출
-		if (parseResult.tree && parseResult.tree.rootNode) {
+		if (parseResult.tree?.rootNode) {
 			this.extractSymbolsFromNode(parseResult.tree.rootNode, symbols);
 		}
 

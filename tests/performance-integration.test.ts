@@ -146,8 +146,8 @@ describe("성능 통합 테스트", () => {
 
 					// 각 핸들러의 메서드 존재 여부 확인
 					handlers.forEach((handler) => {
-					expect(handler).toBeDefined();
-					expect(typeof handler).toBe("object");
+						expect(handler).toBeDefined();
+						expect(typeof handler).toBe("object");
 					});
 
 					const endTime = Date.now();

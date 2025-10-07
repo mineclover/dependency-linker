@@ -18,13 +18,13 @@ import {
 	PerformanceOptimizationHandler,
 	UnknownSymbolHandler,
 } from "./handlers/index.js";
-import { NamespaceHandler } from "./handlers/namespace-handler.js";
 // 핸들러 임포트
 import {
 	runHeadingExtraction,
 	runLinkTracking,
 	runMarkdownAnalysis,
 } from "./handlers/markdown-handler.js";
+import { NamespaceHandler } from "./handlers/namespace-handler.js";
 import {
 	runTypeScriptAnalysis,
 	runTypeScriptPerformanceBenchmark,

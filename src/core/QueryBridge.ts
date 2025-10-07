@@ -141,7 +141,7 @@ export function initializeTreeSitterQueries(): void {
 		if (queryName === "ts-class-definitions") {
 			console.log(
 				`Registering ${queryName}:`,
-				queryString.substring(0, 100) + "...",
+				`${queryString.substring(0, 100)}...`,
 			);
 		}
 		globalTreeSitterQueryEngine.registerQuery(

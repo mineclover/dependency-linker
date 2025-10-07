@@ -3,9 +3,11 @@
  * 클래스 정의 관련 쿼리들
  */
 
-import type Parser from "tree-sitter";
-import type { QueryFunction } from "../../core/types";
-import type { QueryMatch, QueryExecutionContext } from "../../core/types";
+import type {
+	QueryExecutionContext,
+	QueryFunction,
+	QueryMatch,
+} from "../../core/types";
 import { extractLocation } from "../../utils/ast-helpers";
 
 /**

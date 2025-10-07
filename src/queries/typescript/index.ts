@@ -3,20 +3,20 @@
  * TypeScript 언어별 모든 쿼리들의 통합 익스포트
  */
 
+// ===== CLASS QUERIES =====
+export * from "./classes";
+export { default as classQueries } from "./classes";
 // ===== EXPORT QUERIES =====
 export * from "./exports";
 export { default as exportQueries } from "./exports";
 // ===== IMPORT QUERIES =====
 export * from "./imports";
 export { default as importQueries } from "./imports";
-// ===== CLASS QUERIES =====
-export * from "./classes";
-export { default as classQueries } from "./classes";
 
+import typeScriptClassQueries from "./classes";
 import typeScriptExportQueries from "./exports";
 // ===== CONSOLIDATED EXPORT =====
 import typeScriptImportQueries from "./imports";
-import typeScriptClassQueries from "./classes";
 
 export const typeScriptQueries = {
 	...typeScriptImportQueries,

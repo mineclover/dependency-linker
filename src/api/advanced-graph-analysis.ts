@@ -807,7 +807,3 @@ async function generateAdvancedMetadata(
 		);
 	}
 }
-
-
-
-

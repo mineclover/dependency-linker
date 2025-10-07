@@ -451,7 +451,7 @@ export class RDFIntegratedGraphDatabase extends GraphDatabase {
 
 		// 기본 통계
 		const totalAddresses = await new Promise<any>((resolve, reject) => {
-			this.db!.get(
+			this.db?.get(
 				"SELECT COUNT(*) as count FROM rdf_addresses",
 				(err: any, row: any) => {
 					if (err) reject(err);
@@ -460,7 +460,7 @@ export class RDFIntegratedGraphDatabase extends GraphDatabase {
 			);
 		});
 		const totalRelationships = await new Promise<any>((resolve, reject) => {
-			this.db!.get(
+			this.db?.get(
 				"SELECT COUNT(*) as count FROM rdf_relationships",
 				(err: any, row: any) => {
 					if (err) reject(err);
@@ -471,7 +471,7 @@ export class RDFIntegratedGraphDatabase extends GraphDatabase {
 
 		// 프로젝트 수
 		const projectCount = await new Promise<any>((resolve, reject) => {
-			this.db!.get(
+			this.db?.get(
 				"SELECT COUNT(DISTINCT project_name) as count FROM rdf_addresses",
 				(err: any, row: any) => {
 					if (err) reject(err);
@@ -482,7 +482,7 @@ export class RDFIntegratedGraphDatabase extends GraphDatabase {
 
 		// 파일 수
 		const fileCount = await new Promise<any>((resolve, reject) => {
-			this.db!.get(
+			this.db?.get(
 				"SELECT COUNT(DISTINCT file_path) as count FROM rdf_addresses",
 				(err: any, row: any) => {
 					if (err) reject(err);
@@ -493,7 +493,7 @@ export class RDFIntegratedGraphDatabase extends GraphDatabase {
 
 		// NodeType별 통계
 		const nodeTypeStats = await new Promise<any[]>((resolve, reject) => {
-			this.db!.all(
+			this.db?.all(
 				`
 				SELECT node_type, COUNT(*) as count 
 				FROM rdf_addresses 
@@ -508,7 +508,7 @@ export class RDFIntegratedGraphDatabase extends GraphDatabase {
 
 		// 네임스페이스별 통계
 		const namespaceStats = await new Promise<any[]>((resolve, reject) => {
-			this.db!.all(
+			this.db?.all(
 				`
 				SELECT namespace, COUNT(*) as count 
 				FROM rdf_addresses 
@@ -525,7 +525,7 @@ export class RDFIntegratedGraphDatabase extends GraphDatabase {
 		// 관계 타입별 통계
 		const relationshipTypeStats = await new Promise<any[]>(
 			(resolve, reject) => {
-				this.db!.all(
+				this.db?.all(
 					`
 				SELECT relationship_type, COUNT(*) as count 
 				FROM rdf_relationships 
@@ -541,7 +541,7 @@ export class RDFIntegratedGraphDatabase extends GraphDatabase {
 
 		// 유효하지 않은 주소 수 (파싱 실패)
 		const invalidAddresses = await new Promise<any>((resolve, reject) => {
-			this.db!.get(
+			this.db?.get(
 				`
 				SELECT COUNT(*) as count FROM rdf_addresses 
 				WHERE rdf_address NOT LIKE '%#%' OR rdf_address NOT LIKE '%:%'

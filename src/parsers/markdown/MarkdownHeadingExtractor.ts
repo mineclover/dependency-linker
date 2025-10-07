@@ -49,7 +49,7 @@ export class MarkdownHeadingExtractor {
 			const headings: MarkdownHeading[] = [];
 
 			// Tree-sitter AST에서 헤딩 노드 찾기
-			if (result.tree && result.tree.rootNode) {
+			if (result.tree?.rootNode) {
 				this.extractHeadingsFromNode(result.tree.rootNode, headings);
 			}
 

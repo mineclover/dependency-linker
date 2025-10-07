@@ -75,7 +75,7 @@ export class TreeSitterQueryEngine {
 					language,
 					capturesCount: captures.length,
 					rootNodeType: tree.rootNode?.type,
-					queryString: queryString.substring(0, 100) + "...",
+					queryString: `${queryString.substring(0, 100)}...`,
 				});
 			}
 
