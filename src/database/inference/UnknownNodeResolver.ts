@@ -169,7 +169,8 @@ export class UnknownNodeResolver {
 				// Alias 체인 추적
 				if (unknown.metadata?.isAlias) {
 					aliasChainCount++;
-					const chainLength = await this.getAliasChainLength(unknown.id!);
+					if (!unknown.id) continue;
+					const chainLength = await this.getAliasChainLength(unknown.id);
 					totalChainLength += chainLength;
 				}
 			} else {

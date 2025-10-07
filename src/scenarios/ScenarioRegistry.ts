@@ -130,7 +130,10 @@ export class ScenarioRegistry {
 			}
 
 			allScenarios.add(id);
-			const spec = this.scenarios.get(id)!;
+			const spec = this.scenarios.get(id);
+			if (!spec) {
+				return;
+			}
 
 			const deps = new Set<string>();
 
@@ -172,7 +175,8 @@ export class ScenarioRegistry {
 		for (const [id, deps] of dependencies) {
 			for (const dep of deps) {
 				adjList.get(dep)?.add(id);
-				inDegree.set(id, inDegree.get(id)! + 1);
+				const currentDegree = inDegree.get(id) || 0;
+				inDegree.set(id, currentDegree + 1);
 			}
 		}
 
@@ -187,12 +191,16 @@ export class ScenarioRegistry {
 		// Process queue
 		const result: string[] = [];
 		while (queue.length > 0) {
-			const current = queue.shift()!;
+			const current = queue.shift();
+			if (!current) break;
 			result.push(current);
 
 			// Reduce in-degree for dependents
-			for (const dependent of adjList.get(current)!) {
-				const newDegree = inDegree.get(dependent)! - 1;
+			const dependents = adjList.get(current);
+			if (!dependents) continue;
+			for (const dependent of dependents) {
+				const currentDegree = inDegree.get(dependent) || 0;
+				const newDegree = currentDegree - 1;
 				inDegree.set(dependent, newDegree);
 				if (newDegree === 0) {
 					queue.push(dependent);

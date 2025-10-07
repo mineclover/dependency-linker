@@ -26,8 +26,7 @@ export interface EquivalenceInferenceResult {
 export class EquivalenceInferenceEngine {
 	private rules: EquivalenceRule[];
 
-	constructor(unknownSymbolManager: UnknownSymbolManager) {
-		this.unknownSymbolManager = unknownSymbolManager;
+	constructor(_unknownSymbolManager: UnknownSymbolManager) {
 		this.rules = this.initializeRules();
 	}
 

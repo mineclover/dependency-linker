@@ -225,7 +225,7 @@ export class BatchProcessor<T, R> {
 		_item: any,
 		_index: number,
 	): Promise<T> {
-		let lastError: Error;
+		let lastError: Error | undefined;
 
 		for (let attempt = 1; attempt <= this.options.retryCount; attempt++) {
 			try {

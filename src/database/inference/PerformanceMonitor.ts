@@ -90,7 +90,15 @@ export class PerformanceMonitor {
 		try {
 			const result = await operation();
 			const metric = this.endMeasurement(measurementId);
-			return { result, metric: metric! };
+			return {
+				result,
+				metric: metric || {
+					name: "unknown",
+					startTime: 0,
+					endTime: 0,
+					duration: 0,
+				},
+			};
 		} catch (error) {
 			this.endMeasurement(measurementId);
 			throw error;

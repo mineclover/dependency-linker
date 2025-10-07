@@ -452,7 +452,7 @@ export class SymbolExtractor {
 		language: SupportedLanguage,
 	): QueryMatch[] {
 		try {
-			const parser = globalParserManager.getParser(language);
+			const parser = (globalParserManager as any).getParser(language);
 			const parserInstance = parser.getParser();
 			const parserLanguage = parserInstance.getLanguage();
 			const query = new Parser.Query(parserLanguage, queryString);

@@ -941,8 +941,9 @@ export class GraphDatabase {
 		const sourceNode = nodes[0];
 
 		// 2. 해당 노드에서 나가는 모든 import 관계 삭제
+		if (!sourceNode.id) return 0;
 		const deletedCount = await this.deleteNodeRelationships(
-			sourceNode.id!,
+			sourceNode.id,
 			"outgoing",
 		);
 

@@ -309,7 +309,7 @@ export class OptimizedInferenceEngine {
 			toNodeId: rel.toNodeId,
 			type: edgeType,
 			path: {
-				edgeIds: [rel.id!],
+				edgeIds: [rel.id || 0],
 				depth: 1,
 				inferenceType: "hierarchical" as const,
 				description: `${rel.type} → ${edgeType}`,
@@ -352,7 +352,7 @@ export class OptimizedInferenceEngine {
 					toNodeId: transitiveRel.toNodeId,
 					type: edgeType,
 					path: {
-						edgeIds: [rel.id!, transitiveRel.id!],
+						edgeIds: [rel.id || 0, transitiveRel.id || 0],
 						depth: 2,
 						inferenceType: "transitive" as const,
 						description: `${edgeType} → ${edgeType}`,
@@ -395,7 +395,7 @@ export class OptimizedInferenceEngine {
 					toNodeId: inheritableRel.toNodeId,
 					type: edgeType,
 					path: {
-						edgeIds: [rel.id!, inheritableRel.id!],
+						edgeIds: [rel.id || 0, inheritableRel.id || 0],
 						depth: 2,
 						inferenceType: "inheritable" as const,
 						description: `${edgeType} → contains`,

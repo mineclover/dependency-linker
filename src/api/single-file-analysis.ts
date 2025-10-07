@@ -243,7 +243,7 @@ async function analyzeDependencies(
 	await analyzer.analyzeFile(filePath, language, importSources);
 
 	// 데이터베이스에서 의존성 정보 조회
-	const database = analyzer.database; // private 접근
+	const database = (analyzer as any).database; // private 접근
 
 	// 파일 노드 찾기
 	const fileNodes = await database.findNodes({

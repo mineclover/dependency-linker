@@ -53,6 +53,7 @@ export interface TagTypeDocumentation {
  */
 export class MarkdownTagTypeDocumentationGenerator {
 	private tagTypeContainer: TagTypeContainer;
+	private tagTypeValidator: MarkdownTagTypeValidator;
 
 	constructor() {
 		this.tagTypeContainer = globalTagTypeContainer;

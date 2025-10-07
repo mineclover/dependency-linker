@@ -108,13 +108,11 @@ export class NodeCentricAnalyzer {
 
 	constructor(
 		db: GraphDatabase,
-		queryEngine: GraphQueryEngine,
-		nodeIdentifier: NodeIdentifier,
+		_queryEngine: GraphQueryEngine,
+		_nodeIdentifier: NodeIdentifier,
 		options: Partial<NodeAnalysisOptions> = {},
 	) {
 		this.db = db;
-		this.queryEngine = queryEngine;
-		this.nodeIdentifier = nodeIdentifier;
 		this.defaultOptions = {
 			maxDepth: 10,
 			includeInferred: true,
@@ -142,16 +140,19 @@ export class NodeCentricAnalyzer {
 		}
 
 		// 병렬로 분석 수행
+		if (!node.id) {
+			throw new Error("Node ID is required for analysis");
+		}
 		const [dependencies, dependents, metrics, risks] = await Promise.all([
-			this.analyzeDependencies(node.id!, opts),
-			this.analyzeDependents(node.id!, opts),
-			this.calculateNodeMetrics(node.id!, opts),
-			this.analyzeNodeRisks(node.id!, opts),
+			this.analyzeDependencies(node.id, opts),
+			this.analyzeDependents(node.id, opts),
+			this.calculateNodeMetrics(node.id, opts),
+			this.analyzeNodeRisks(node.id, opts),
 		]);
 
 		return {
 			node: {
-				id: node.id?.toString(),
+				id: node.id?.toString() || "",
 				identifier: node.identifier,
 				type: node.type,
 				name: node.name,
@@ -180,7 +181,7 @@ export class NodeCentricAnalyzer {
 		}
 
 		const center: NodeReference = {
-			id: centerNode.id?.toString(),
+			id: centerNode.id?.toString() || "",
 			identifier: centerNode.identifier,
 			type: centerNode.type,
 			name: centerNode.name,
@@ -190,10 +191,13 @@ export class NodeCentricAnalyzer {
 		};
 
 		// 레벨별 이웃 노드 조회
+		if (!centerNode.id) {
+			throw new Error("Center node ID is required for neighbor analysis");
+		}
 		const [immediate, level2, level3] = await Promise.all([
-			this.getImmediateNeighbors(centerNode.id!, opts),
-			this.getNeighborsAtDistance(centerNode.id!, 2, opts),
-			this.getNeighborsAtDistance(centerNode.id!, 3, opts),
+			this.getImmediateNeighbors(centerNode.id, opts),
+			this.getNeighborsAtDistance(centerNode.id, 2, opts),
+			this.getNeighborsAtDistance(centerNode.id, 3, opts),
 		]);
 
 		// 클러스터 분석
@@ -233,7 +237,7 @@ export class NodeCentricAnalyzer {
 		}
 
 		const nodeRef: NodeReference = {
-			id: node.id?.toString(),
+			id: node.id?.toString() || "",
 			identifier: node.identifier,
 			type: node.type,
 			name: node.name,
@@ -246,10 +250,13 @@ export class NodeCentricAnalyzer {
 		const changeFrequency = this.estimateChangeFrequency(node);
 
 		// 영향 반경 계산
-		const impactRadius = await this.calculateImpactRadius(node.id!, opts);
+		if (!node.id) {
+			throw new Error("Node ID is required for impact analysis");
+		}
+		const impactRadius = await this.calculateImpactRadius(node.id, opts);
 
 		// 안정성 점수 계산
-		const stabilityScore = await this.calculateStabilityScore(node.id!, opts);
+		const stabilityScore = await this.calculateStabilityScore(node.id, opts);
 
 		// 리팩토링 위험도 평가
 		const refactoringRisk = this.assessRefactoringRisk(
@@ -297,9 +304,12 @@ export class NodeCentricAnalyzer {
 			return null;
 		}
 
+		if (!fromNode.id || !toNode.id) {
+			throw new Error("Both node IDs are required for path analysis");
+		}
 		const path = await this.db.findDependencyPath(
-			fromNode.id!,
-			toNode.id!,
+			fromNode.id,
+			toNode.id,
 			opts.maxDepth,
 		);
 
@@ -308,7 +318,7 @@ export class NodeCentricAnalyzer {
 		}
 
 		return path.nodes.map((node, index) => ({
-			id: node.id?.toString(),
+			id: node.id?.toString() || "",
 			identifier: node.identifier,
 			type: node.type,
 			name: node.name,
@@ -437,7 +447,7 @@ export class NodeCentricAnalyzer {
 					options.edgeTypes,
 				);
 				return edges.map((node) => ({
-					to: node.id?.toString(),
+					to: node.id?.toString() || "",
 					type: "dependency",
 				}));
 			},
@@ -561,7 +571,9 @@ export class NodeCentricAnalyzer {
 		const result: NodeReference[] = [];
 
 		while (queue.length > 0) {
-			const { id, dist } = queue.shift()!;
+			const item = queue.shift();
+			if (!item) continue;
+			const { id, dist } = item;
 
 			if (visited.has(id)) continue;
 			visited.add(id);

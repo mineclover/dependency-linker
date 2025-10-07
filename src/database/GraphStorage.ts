@@ -429,7 +429,7 @@ export class GraphStorage {
 
 		const fileNode = nodes[0];
 
-		if (!fileNode.id) return null;
+		if (!fileNode.id) return { dependencies: [], dependents: [] };
 		const dependencies = await this.db.findNodeDependencies(fileNode.id, [
 			"imports",
 		]);

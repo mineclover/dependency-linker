@@ -90,7 +90,7 @@ export interface ValidationResult {
 export class CustomInferenceRuleEngine implements CustomRuleEngine {
 	private rules = new Map<string, CustomRule>();
 	private database: GraphDatabase;
-	private customFunctions = new Map<string, Function>();
+	private customFunctions = new Map<string, (...args: any[]) => any>();
 
 	constructor(database: GraphDatabase) {
 		this.database = database;
@@ -459,7 +459,8 @@ export class CustomInferenceRuleEngine implements CustomRuleEngine {
 		});
 
 		for (const relationship of relationships) {
-			await this.database.deleteRelationship(relationship.id!);
+			if (!relationship.id) continue;
+			await this.database.deleteRelationship(relationship.id);
 			result.deletedRelationships++;
 		}
 	}
@@ -625,7 +626,7 @@ export class CustomInferenceRuleEngine implements CustomRuleEngine {
 	/**
 	 * 사용자 정의 함수 등록
 	 */
-	registerCustomFunction(name: string, func: Function): void {
+	registerCustomFunction(name: string, func: (...args: any[]) => any): void {
 		this.customFunctions.set(name, func);
 	}
 

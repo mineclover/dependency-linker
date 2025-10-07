@@ -203,7 +203,7 @@ export class InferenceEngine {
 		return ErrorHandler.safeExecute(
 			() =>
 				new Promise<InferredRelationship[]>((resolve, reject) => {
-					this.database.db?.all(
+					(this.database as any).db?.all(
 						sql,
 						[
 							fromNodeId,
@@ -315,7 +315,7 @@ export class InferenceEngine {
     `;
 
 		return new Promise((resolve, reject) => {
-			this.database.db?.all(
+			(this.database as any).db?.all(
 				sql,
 				[
 					fromNodeId,
@@ -449,7 +449,7 @@ export class InferenceEngine {
 	 */
 	private async clearCache(): Promise<void> {
 		return new Promise((resolve, reject) => {
-			this.database.db?.run(
+			(this.database as any).db?.run(
 				"DELETE FROM edge_inference_cache",
 				(err: Error | null) => {
 					if (err) {
@@ -505,14 +505,14 @@ export class InferenceEngine {
         WHERE depth > 1  -- 직접 관계 제외
       `;
 
-			this.database.db?.run(
+			(this.database as any).db?.run(
 				sql,
 				[edgeType, edgeType, edgeType, this.config.defaultMaxPathLength],
-				function (err: Error | null) {
+				(err: Error | null, changes: number) => {
 					if (err) {
 						reject(new Error(`Transitive cache failed: ${err.message}`));
 					} else {
-						resolve(this.changes || 0);
+						resolve(changes || 0);
 					}
 				},
 			);
@@ -539,14 +539,14 @@ export class InferenceEngine {
           AND parent_edge.start_node_id != child_edge.end_node_id
       `;
 
-			this.database.db?.run(
+			(this.database as any).db?.run(
 				sql,
 				[edgeType, edgeType, edgeType],
-				function (err: Error | null) {
+				(err: Error | null, changes: number) => {
 					if (err) {
 						reject(new Error(`Inheritable cache failed: ${err.message}`));
 					} else {
-						resolve(this.changes || 0);
+						resolve(changes || 0);
 					}
 				},
 			);
@@ -636,7 +636,7 @@ export class InferenceEngine {
         LIMIT 100  -- 최대 100개 사이클만
       `;
 
-			this.database.db?.all(
+			(this.database as any).db?.all(
 				sql,
 				[edgeType, edgeType],
 				(err: Error | null, rows: any[]) => {
@@ -707,7 +707,7 @@ export class InferenceEngine {
 		}
 
 		return new Promise((resolve) => {
-			this.database.db?.get(
+			(this.database as any).db?.get(
 				"SELECT COUNT(*) as count FROM edge_inference_cache",
 				(err: Error | null, row: any) => {
 					if (err) {
