@@ -13,6 +13,7 @@ import type {
 	RDFStatistics,
 } from "../database/RDFIntegratedGraphDatabase";
 import { RDFIntegratedGraphDatabase } from "../database/RDFIntegratedGraphDatabase";
+import { DATABASE_CONFIG } from "../cli/config/database-config";
 
 // ===== RDF DATABASE API =====
 
@@ -22,8 +23,9 @@ import { RDFIntegratedGraphDatabase } from "../database/RDFIntegratedGraphDataba
 export class RDFDatabaseAPI {
 	private db: RDFIntegratedGraphDatabase;
 
-	constructor(dbPath: string = "./dependency-linker.db") {
-		this.db = new RDFIntegratedGraphDatabase(dbPath);
+	constructor(dbPath?: string) {
+		const databasePath = dbPath || DATABASE_CONFIG.getDatabasePath();
+		this.db = new RDFIntegratedGraphDatabase(databasePath);
 	}
 
 	/**

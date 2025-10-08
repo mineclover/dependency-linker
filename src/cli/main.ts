@@ -182,6 +182,8 @@ program
 		const handler = new InferenceHandler();
 
 		try {
+			// 추론 핸들러 초기화
+			await handler.initialize();
 			if (options.hierarchical) {
 				await handler.executeHierarchicalInference(1, "defines");
 				console.log("✅ Hierarchical inference completed");
@@ -197,6 +199,9 @@ program
 				);
 				process.exit(1);
 			}
+			
+			// 성공적인 완료 후 정상 종료
+			process.exit(0);
 		} catch (error) {
 			console.error("❌ Inference operation failed:", error);
 			process.exit(1);

@@ -49,6 +49,15 @@ export const CORE_TYPES: EdgeTypeDefinition[] = [
 		priority: 0,
 	},
 	{
+		type: "defines",
+		description: "Symbol defines relationship (A defines B)",
+		schema: {},
+		isDirected: true,
+		isTransitive: false,
+		isInheritable: true,
+		priority: 0,
+	},
+	{
 		type: "belongs_to",
 		description: "Ownership relationship (A belongs to B)",
 		schema: {},

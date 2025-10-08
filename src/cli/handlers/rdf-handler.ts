@@ -210,10 +210,19 @@ export class RDFHandler {
 		byType?: boolean;
 	}): Promise<void> {
 		try {
-			// 간단한 통계 출력
+			// 데이터베이스 초기화
+			await this.rdfDatabaseAPI.initialize();
+
+			// 실제 통계 조회
+			const stats = await this.rdfDatabaseAPI.generateRDFStatistics();
+
 			console.log(`📊 RDF statistics`);
-			console.log(`  - 총 RDF 주소: 0개`);
-			console.log(`  - 프로젝트별 분포: 없음`);
+			console.log(`  - 총 RDF 주소: ${stats.totalAddresses}개`);
+			console.log(`  - 프로젝트 수: ${stats.projectCount}개`);
+			console.log(`  - 파일 수: ${stats.fileCount}개`);
+			console.log(
+				`  - 노드 타입별 분포: ${JSON.stringify(stats.nodeTypeCount)}`,
+			);
 		} catch (error) {
 			console.error(`❌ 통계 생성 실패: ${(error as Error).message}`);
 			console.error(`❌ 오류 스택: ${(error as Error).stack}`);

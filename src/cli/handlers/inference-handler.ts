@@ -2,6 +2,7 @@ import { GraphDatabase } from "../../database/GraphDatabase";
 import { AdvancedInferenceSystem } from "../../database/inference/AdvancedInferenceSystem";
 import { InferenceEngine } from "../../database/inference/InferenceEngine";
 import { OptimizedInferenceEngine } from "../../database/inference/OptimizedInferenceEngine";
+import { DATABASE_CONFIG } from "../config/database-config";
 
 export interface InferenceHandlerOptions {
 	databasePath?: string;
@@ -22,7 +23,7 @@ export class InferenceHandler {
 
 	constructor(options: InferenceHandlerOptions = {}) {
 		this.options = {
-			databasePath: options.databasePath || "dependency-linker.db",
+			databasePath: options.databasePath || DATABASE_CONFIG.getDatabasePath(),
 			enableCustomRules: options.enableCustomRules ?? true,
 			enableRealTimeInference: options.enableRealTimeInference ?? true,
 			enableOptimizedInference: options.enableOptimizedInference ?? true,
@@ -444,6 +445,10 @@ export class InferenceHandler {
 	async initialize(): Promise<void> {
 		try {
 			await this.database.initialize();
+
+			// 기본 Edge type들 초기화
+			await this.initializeBasicEdgeTypes();
+
 			console.log("✅ Inference Handler 초기화 완료");
 		} catch (error) {
 			console.error(
@@ -465,6 +470,75 @@ export class InferenceHandler {
 				`❌ Inference Handler 종료 실패: ${(error as Error).message}`,
 			);
 			throw error;
+		}
+	}
+
+	/**
+	 * 기본 Edge type들 초기화
+	 */
+	private async initializeBasicEdgeTypes(): Promise<void> {
+		try {
+			console.log("🔧 Initializing basic edge types for inference...");
+
+			// 기본 Edge type들 정의
+			const basicEdgeTypes = [
+				{
+					type: "defines",
+					description: "Symbol defines relationship (A defines B)",
+					schema: JSON.stringify({}),
+					isDirected: true,
+					isTransitive: false,
+					isInheritable: true,
+					priority: 0,
+				},
+				{
+					type: "imports",
+					description: "File imports another file",
+					schema: JSON.stringify({
+						importPath: "string",
+						isNamespace: "boolean",
+					}),
+					isDirected: true,
+					isTransitive: false,
+					isInheritable: false,
+					priority: 0,
+				},
+				{
+					type: "exports",
+					description: "File exports to another file",
+					schema: JSON.stringify({
+						exportName: "string",
+						isDefault: "boolean",
+					}),
+					isDirected: true,
+					isTransitive: false,
+					isInheritable: false,
+					priority: 0,
+				},
+			];
+
+			// Edge type들 생성
+			for (const edgeType of basicEdgeTypes) {
+				try {
+					await this.database.createEdgeType(edgeType);
+					console.log(`  ✅ Created edge type: ${edgeType.type}`);
+				} catch (error) {
+					// 이미 존재하는 경우 무시
+					if (!(error as Error).message.includes("UNIQUE constraint")) {
+						console.warn(
+							`  ⚠️ Failed to create edge type ${edgeType.type}:`,
+							error,
+						);
+					}
+				}
+			}
+
+			console.log("✅ Basic edge types initialized for inference");
+		} catch (error) {
+			console.error(
+				"❌ Failed to initialize basic edge types for inference:",
+				error,
+			);
 		}
 	}
 }

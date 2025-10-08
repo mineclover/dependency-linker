@@ -1,5 +1,6 @@
 import * as fs from "node:fs";
 import { DependencyAnalysisHandler } from "../handlers/dependency-analysis-handler.js";
+import { DATABASE_CONFIG } from "../config/database-config.js";
 
 export interface DependenciesActionOptions {
 	symbol?: string;
@@ -15,7 +16,9 @@ export interface DependenciesActionOptions {
 export async function executeDependenciesAction(
 	options: DependenciesActionOptions,
 ): Promise<void> {
-	const handler = new DependencyAnalysisHandler(options.database);
+	// 통일된 데이터베이스 경로 사용
+	const databasePath = options.database || DATABASE_CONFIG.getDatabasePath();
+	const handler = new DependencyAnalysisHandler(databasePath);
 
 	try {
 		await handler.initialize();

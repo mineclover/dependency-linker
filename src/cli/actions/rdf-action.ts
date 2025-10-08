@@ -1,4 +1,5 @@
 import { RDFHandler } from "../handlers/rdf-handler.js";
+import { DATABASE_CONFIG } from "../config/database-config.js";
 
 export interface RDFActionOptions {
 	create?: boolean;
@@ -16,6 +17,8 @@ export interface RDFActionOptions {
 export async function executeRDFAction(
 	options: RDFActionOptions,
 ): Promise<void> {
+	// 통일된 데이터베이스 경로 사용
+	const databasePath = options.database || DATABASE_CONFIG.getDatabasePath();
 	const handler = new RDFHandler();
 
 	try {
