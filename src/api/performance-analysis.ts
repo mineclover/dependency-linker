@@ -5,7 +5,7 @@
 
 import fs from "node:fs";
 import { cpus } from "node:os";
-import type { SupportedLanguage } from "../core/types.js";
+import type { SupportedLanguage } from "../core/types";
 
 // ===== PERFORMANCE CONFIGURATION =====
 

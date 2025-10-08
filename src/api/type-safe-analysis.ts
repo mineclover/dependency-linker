@@ -3,13 +3,13 @@
  * 타입 안전성을 강화한 분석 API
  */
 
-import type { QueryKey, QueryResult } from "../core/QueryResultMap.js";
-import type { SupportedLanguage } from "../core/types.js";
+import type { QueryKey, QueryResult } from "../core/QueryResultMap";
+import type { SupportedLanguage } from "../core/types";
 import {
 	type AnalysisOptions,
 	type AnalysisResult,
 	analyzeFile,
-} from "./analysis.js";
+} from "./analysis";
 
 // ===== ENHANCED TYPE DEFINITIONS =====
 

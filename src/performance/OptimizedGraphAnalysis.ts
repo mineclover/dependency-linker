@@ -12,15 +12,15 @@
 
 import * as fs from "node:fs/promises";
 import * as path from "node:path";
-import { FileBatchProcessor } from "../batch/BatchProcessor.js";
-import { AdvancedCache } from "../cache/AdvancedCache.js";
-import type { SupportedLanguage } from "../core/types.js";
-import { GraphDatabase } from "../database/GraphDatabase.js";
+import { FileBatchProcessor } from "../batch/BatchProcessor";
+import { AdvancedCache } from "../cache/AdvancedCache";
+import type { SupportedLanguage } from "../core/types";
+import { GraphDatabase } from "../database/GraphDatabase";
 import {
 	FileDependencyAnalyzer,
 	type ImportSource,
-} from "../database/services/FileDependencyAnalyzer.js";
-import { DependencyGraphVisualizer } from "../visualization/DependencyGraphVisualizer.js";
+} from "../database/services/FileDependencyAnalyzer";
+import { DependencyGraphVisualizer } from "../visualization/DependencyGraphVisualizer";
 
 export interface OptimizedAnalysisOptions {
 	/** 캐싱 활성화 */

@@ -6,7 +6,7 @@
 import fs from "node:fs";
 import path from "node:path";
 import { glob } from "glob";
-import { analyzeMarkdownFileWithRDF } from "../api/markdown-analysis.js";
+import { analyzeMarkdownFileWithRDF } from "../api/markdown-analysis";
 import {
 	type AnalysisConfig,
 	type AnalysisReport,
@@ -15,7 +15,7 @@ import {
 	checkCompliance,
 	DEFAULT_COMPLIANCE_RULES,
 	generateAnalysisReport,
-} from "../api/type-safe-analysis.js";
+} from "../api/type-safe-analysis";
 
 // ===== NAMESPACE CONFIGURATION =====
 

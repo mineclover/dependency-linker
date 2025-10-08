@@ -9,14 +9,14 @@ import { analyzeFileWithGraphDB } from "../../api/graph-db-analysis";
 import {
 	analyzeFilesWithPerformance,
 	DEFAULT_PERFORMANCE_CONFIG,
-} from "../../api/performance-analysis.js";
+} from "../../api/performance-analysis";
 import {
 	analyzeFilesRobust,
 	generateRobustAnalysisReport,
-} from "../../api/robust-analysis.js";
+} from "../../api/robust-analysis";
 import { analyzeFileWithSimpleGraph } from "../../api/simple-graph-analysis";
 import { analyzeSingleFileFixed } from "../../api/single-file-analysis-fixed";
-import { runBenchmark } from "../../core/PerformanceMonitor.js";
+import { runBenchmark } from "../../core/PerformanceMonitor";
 
 /**
  * TypeScript 파일 분석 실행

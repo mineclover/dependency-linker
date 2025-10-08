@@ -10,26 +10,26 @@ import {
 	executeDependenciesAction,
 	executeRDFAction,
 	executeRDFFileAction,
-} from "./actions/index.js";
+} from "./actions/index";
 import {
 	ContextDocumentsHandler,
 	CrossNamespaceHandler,
 	InferenceHandler,
 	PerformanceOptimizationHandler,
 	UnknownSymbolHandler,
-} from "./handlers/index.js";
+} from "./handlers/index";
 // 핸들러 임포트
 import {
 	runHeadingExtraction,
 	runLinkTracking,
 	runMarkdownAnalysis,
-} from "./handlers/markdown-handler.js";
-import { NamespaceHandler } from "./handlers/namespace-handler.js";
+} from "./handlers/markdown-handler";
+import { NamespaceHandler } from "./handlers/namespace-handler";
 import {
 	runTypeScriptAnalysis,
 	runTypeScriptPerformanceBenchmark,
 	runTypeScriptProjectAnalysis,
-} from "./handlers/typescript-handler.js";
+} from "./handlers/typescript-handler";
 
 // ============================================================================
 // CLI 프로그램 설정
@@ -199,7 +199,7 @@ program
 				);
 				process.exit(1);
 			}
-			
+
 			// 성공적인 완료 후 정상 종료
 			process.exit(0);
 		} catch (error) {

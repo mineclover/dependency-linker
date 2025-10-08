@@ -1,6 +1,6 @@
 import * as fs from "node:fs";
-import { DependencyAnalysisHandler } from "../handlers/dependency-analysis-handler.js";
-import { DATABASE_CONFIG } from "../config/database-config.js";
+import { DependencyAnalysisHandler } from "../handlers/dependency-analysis-handler";
+import { DATABASE_CONFIG } from "../config/database-config";
 
 export interface DependenciesActionOptions {
 	symbol?: string;

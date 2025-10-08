@@ -1,4 +1,4 @@
-import { RDFFileHandler } from "../handlers/rdf-file-handler.js";
+import { RDFFileHandler } from "../handlers/rdf-file-handler";
 
 export interface RDFFileActionOptions {
 	location?: string;

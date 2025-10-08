@@ -3,24 +3,24 @@
  * 마크다운 관련 CLI 명령어들을 처리
  */
 
-import { MarkdownLinkTracker } from "../../parsers/markdown/MarkdownLinkTracker.js";
-import { MarkdownParser } from "../../parsers/markdown/MarkdownParser.js";
-import { MarkdownRDFIntegration } from "../../parsers/markdown/MarkdownRDFIntegration.js";
-import { MarkdownTagCollector } from "../../parsers/markdown/MarkdownTagCollector.js";
-import { MarkdownTagConventionManager } from "../../parsers/markdown/MarkdownTagConventionManager.js";
-import { MarkdownTagDocumentGenerator } from "../../parsers/markdown/MarkdownTagDocumentGenerator.js";
-import { MarkdownTagHeadingMapper } from "../../parsers/markdown/MarkdownTagHeadingMapper.js";
-import { MarkdownTagTypeDocumentationGenerator } from "../../parsers/markdown/MarkdownTagTypeDocumentation.js";
-import { MarkdownTagTypeValidator } from "../../parsers/markdown/MarkdownTagTypeValidator.js";
+import { MarkdownLinkTracker } from "../../parsers/markdown/MarkdownLinkTracker";
+import { MarkdownParser } from "../../parsers/markdown/MarkdownParser";
+import { MarkdownRDFIntegration } from "../../parsers/markdown/MarkdownRDFIntegration";
+import { MarkdownTagCollector } from "../../parsers/markdown/MarkdownTagCollector";
+import { MarkdownTagConventionManager } from "../../parsers/markdown/MarkdownTagConventionManager";
+import { MarkdownTagDocumentGenerator } from "../../parsers/markdown/MarkdownTagDocumentGenerator";
+import { MarkdownTagHeadingMapper } from "../../parsers/markdown/MarkdownTagHeadingMapper";
+import { MarkdownTagTypeDocumentationGenerator } from "../../parsers/markdown/MarkdownTagTypeDocumentation";
+import { MarkdownTagTypeValidator } from "../../parsers/markdown/MarkdownTagTypeValidator";
 import {
 	exampleHeadings,
 	exampleMarkdown,
 	markdownFiles,
-} from "../examples/markdown-examples.js";
+} from "../examples/markdown-examples";
 import {
 	exampleTagRelationships,
 	exampleTags,
-} from "../examples/tag-examples.js";
+} from "../examples/tag-examples";
 
 /**
  * 마크다운 분석 실행

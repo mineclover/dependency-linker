@@ -1,5 +1,5 @@
-import { RDFHandler } from "../handlers/rdf-handler.js";
-import { DATABASE_CONFIG } from "../config/database-config.js";
+import { RDFHandler } from "../handlers/rdf-handler";
+import { DATABASE_CONFIG } from "../config/database-config";
 
 export interface RDFActionOptions {
 	create?: boolean;

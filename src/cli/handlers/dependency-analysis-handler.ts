@@ -1,5 +1,5 @@
-import { createRDFAddress } from "../../core/RDFAddress.js";
-import { GraphDatabase } from "../../database/GraphDatabase.js";
+import { createRDFAddress } from "../../core/RDFAddress";
+import { GraphDatabase } from "../../database/GraphDatabase";
 
 export interface SymbolMetadata {
 	type: string;

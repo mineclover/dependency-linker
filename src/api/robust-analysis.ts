@@ -4,7 +4,7 @@
  */
 
 import fs from "node:fs";
-import type { SupportedLanguage } from "../core/types.js";
+import type { SupportedLanguage } from "../core/types";
 
 // ===== ROBUST ANALYSIS TYPES =====
 

@@ -1,13 +1,13 @@
 export {
 	type AnalyzeActionOptions,
 	executeAnalyzeAction,
-} from "./analyze-action.js";
+} from "./analyze-action";
 export {
 	type DependenciesActionOptions,
 	executeDependenciesAction,
-} from "./dependencies-action.js";
-export { executeRDFAction, type RDFActionOptions } from "./rdf-action.js";
+} from "./dependencies-action";
+export { executeRDFAction, type RDFActionOptions } from "./rdf-action";
 export {
 	executeRDFFileAction,
 	type RDFFileActionOptions,
-} from "./rdf-file-action.js";
+} from "./rdf-file-action";

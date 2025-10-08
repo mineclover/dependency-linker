@@ -16,6 +16,8 @@
 		"resolveJsonModule": true,
 		"allowSyntheticDefaultImports": true,
 		"moduleResolution": "node",
+		"allowImportingTsExtensions": false,
+		"noEmit": false,
 		"noImplicitReturns": true,
 		"noFallthroughCasesInSwitch": true,
 		"noImplicitAny": true,

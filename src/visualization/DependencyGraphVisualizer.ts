@@ -16,7 +16,7 @@ import type {
 	GraphDatabase,
 	GraphNode,
 	GraphRelationship,
-} from "../database/GraphDatabase.js";
+} from "../database/GraphDatabase";
 
 export interface GraphVisualizationOptions {
 	/** 출력 형식 */

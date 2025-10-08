@@ -13,7 +13,7 @@
 import { EventEmitter } from "node:events";
 import * as fs from "node:fs/promises";
 import * as path from "node:path";
-import { AdvancedCache } from "../cache/AdvancedCache.js";
+import { AdvancedCache } from "../cache/AdvancedCache";
 
 export interface BatchJob<T, R> {
 	id: string;

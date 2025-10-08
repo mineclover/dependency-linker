@@ -1,15 +1,15 @@
-import { runTypeScriptProjectAnalysis } from "../handlers/typescript-handler.js";
-import { runMarkdownAnalysis } from "../handlers/markdown-handler.js";
-import { TypeScriptParser } from "../../parsers/typescript/TypeScriptParser.js";
-import { SymbolExtractor } from "../../core/SymbolExtractor.js";
-import { RDFIntegratedGraphDatabase } from "../../database/RDFIntegratedGraphDatabase.js";
-import { createRDFAddress } from "../../core/RDFAddress.js";
+import { runTypeScriptProjectAnalysis } from "../handlers/typescript-handler";
+import { runMarkdownAnalysis } from "../handlers/markdown-handler";
+import { TypeScriptParser } from "../../parsers/typescript/TypeScriptParser";
+import { SymbolExtractor } from "../../core/SymbolExtractor";
+import { RDFIntegratedGraphDatabase } from "../../database/RDFIntegratedGraphDatabase";
+import { createRDFAddress } from "../../core/RDFAddress";
 import { promises as fs } from "node:fs";
 import path from "node:path";
 import {
 	DATABASE_CONFIG,
 	initializeUnifiedDatabase,
-} from "../config/database-config.js";
+} from "../config/database-config";
 
 export interface AnalyzeActionOptions {
 	pattern?: string;
