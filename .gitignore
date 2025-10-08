@@ -98,3 +98,4 @@ scenarios/*.db
 scenarios/.dependency-linker/
 scenarios/output/
 scenarios/.tmp/
+*.db
